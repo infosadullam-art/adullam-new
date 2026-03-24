@@ -1,11 +1,11 @@
-// app/search/page.tsx - Version corrigée
+// app/search/page.tsx - Version corrigée avec Suspense
 "use client"
 
 import { Header } from "@/components/header"
 import { MobileHeader } from "@/components/mobile-header"
 import MobileNav from "@/components/mobile-nav"
 import { Footer } from "@/components/footer"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
@@ -25,7 +25,10 @@ interface Product {
   reviews?: number
 }
 
-export default function SearchResultsPage() {
+// ============================================================
+// COMPOSANT INTERNE QUI UTILISE useSearchParams
+// ============================================================
+function SearchContent() {
   const searchParams = useSearchParams()
   const query = searchParams.get('q') || ''
   
@@ -67,11 +70,10 @@ export default function SearchResultsPage() {
         console.log("📦 Réponse API:", data)
 
         if (data.success) {
-          setProducts(data.data) // ← ICI on utilise les vrais produits !
+          setProducts(data.data)
           setPagination(data.pagination)
           setAvailableCategories(data.filters?.categories || [])
           
-          // Met à jour la range de prix
           if (data.filters?.priceRange?.max > 0) {
             setPriceRange([0, data.filters.priceRange.max])
           }
@@ -90,13 +92,11 @@ export default function SearchResultsPage() {
     fetchSearchResults()
   }, [query, selectedCategory, sortBy, pagination.page, priceRange[1]])
 
-  // Fonction pour changer de page
   const handlePageChange = (newPage: number) => {
     setPagination(prev => ({ ...prev, page: newPage }))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  // Réinitialiser les filtres
   const resetFilters = () => {
     setSelectedCategory('')
     setPriceRange([0, 1000])
@@ -452,5 +452,36 @@ export default function SearchResultsPage() {
       </div>
 
     </div>
+  )
+}
+
+// ============================================================
+// LOADING FALLBACK PENDANT LE SUSPENSE
+// ============================================================
+function SearchLoadingFallback() {
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="hidden lg:block"><Header /></div>
+      <div className="block lg:hidden"><MobileHeader /></div>
+      <main className="flex justify-center items-center min-h-[60vh]">
+        <div className="text-center">
+          <Loader2 className="w-10 h-10 text-brand animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">Chargement de la recherche...</p>
+        </div>
+      </main>
+      <Footer />
+      <div className="lg:hidden"><MobileNav /></div>
+    </div>
+  )
+}
+
+// ============================================================
+// PAGE PRINCIPALE AVEC SUSPENSE BOUNDARY
+// ============================================================
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<SearchLoadingFallback />}>
+      <SearchContent />
+    </Suspense>
   )
 }
