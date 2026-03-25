@@ -5,7 +5,7 @@ import { Header } from "@/components/header"
 import { MobileHeader } from "@/components/mobile-header"
 import MobileNav from "@/components/mobile-nav"
 import { Footer } from "@/components/footer"
-import { Bell, Check, Trash2, RefreshCw, Clock, Package, Truck, CreditCard, Star, MessageCircle, Eye } from "lucide-react"
+import { Bell, Check, Trash2, RefreshCw } from "lucide-react"
 import { useState, useEffect, useCallback } from "react"
 import { useAuth } from "@/lib/admin/auth-context"
 import { useApi } from "@/hooks/useApi"
@@ -46,20 +46,32 @@ export default function NotificationsPage() {
       if (filter === 'unread') params.append('unread', 'true')
       
       const response = await fetchWithAuth(`/api/notifications?${params.toString()}`)
-      const data = await response.json()
+      const result = await response.json()
       
-      console.log("📦 API Response:", data) // ✅ Debug
+      console.log("📦 API Response:", result)
       
-      if (data.success) {
-        // ✅ Vérifier que data.data est bien un tableau
-        let newNotifications: Notification[] = []
+      if (result.success) {
+        // ✅ La structure correcte : result.data contient { data: [], pagination: {}, stats: {} }
+        const responseData = result.data || result
         
-        if (Array.isArray(data.data)) {
-          newNotifications = data.data
-        } else if (Array.isArray(data.notifications)) {
-          newNotifications = data.notifications
+        let newNotifications: Notification[] = []
+        let paginationData = {}
+        let statsData = {}
+        
+        // Vérifier la structure
+        if (responseData.data && Array.isArray(responseData.data)) {
+          // Structure: { data: [], pagination: {}, stats: {} }
+          newNotifications = responseData.data
+          paginationData = responseData.pagination || {}
+          statsData = responseData.stats || {}
+        } else if (Array.isArray(responseData)) {
+          // Structure simple: []
+          newNotifications = responseData
+        } else if (responseData.notifications && Array.isArray(responseData.notifications)) {
+          // Structure alternative: { notifications: [] }
+          newNotifications = responseData.notifications
         } else {
-          console.error("Invalid data format:", data)
+          console.error("Structure inconnue:", responseData)
           newNotifications = []
         }
         
@@ -69,17 +81,11 @@ export default function NotificationsPage() {
           setNotifications(prev => [...prev, ...newNotifications])
         }
         
-        // ✅ Vérifier la pagination
-        const pagination = data.pagination || data.meta || {}
-        setHasMore(pagination.hasMore || false)
-        
-        // ✅ Vérifier les stats
-        const stats = data.stats || {}
-        setUnreadCount(stats.unread || 0)
-        
+        setHasMore(paginationData.hasMore || false)
+        setUnreadCount(statsData.unread || 0)
         setPage(pageToLoad + 1)
       } else {
-        toast.error(data.error || "Erreur chargement")
+        toast.error(result.error || "Erreur chargement")
       }
     } catch (error) {
       console.error("❌ Erreur chargement notifications:", error)
