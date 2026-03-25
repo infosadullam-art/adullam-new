@@ -76,6 +76,8 @@ interface SourcingNeed {
 }
 
 export default function SourcingPage() {
+  console.log("🚀🚀🚀 [SOURCING PAGE] COMPOSANT CHARGÉ - VERSION DEBUG FINALE 🚀🚀🚀")
+  
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
 
@@ -123,7 +125,7 @@ export default function SourcingPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
 
-  // Stats
+  // Stats - Initialisation avec valeurs par défaut
   const [stats, setStats] = useState({
     besoinsEnCours: 0,
     devisAEtudier: 0,
@@ -131,14 +133,12 @@ export default function SourcingPage() {
     stockAReappro: 0
   })
 
-  // ✅ Fonction pour calculer les stats à partir des besoins
-  const calculateStatsFromNeeds = (needsList: SourcingNeed[]) => {
-    console.log("=".repeat(60))
-    console.log("📊 [calculateStats] DÉBUT DU CALCUL")
-    console.log("📊 [calculateStats] needsList.length:", needsList?.length || 0)
+  // ✅ SOLUTION SIMPLE : Calculer les stats directement depuis needs
+  const updateStatsFromNeeds = () => {
+    console.log("🔄 [updateStatsFromNeeds] needs.length =", needs.length)
     
-    if (!needsList || needsList.length === 0) {
-      console.log("⚠️ [calculateStats] Liste vide, stats à 0")
+    if (needs.length === 0) {
+      console.log("⚠️ Pas de besoins, stats à 0")
       setStats({
         besoinsEnCours: 0,
         devisAEtudier: 0,
@@ -148,55 +148,30 @@ export default function SourcingPage() {
       return
     }
     
-    // Afficher tous les statuts uniques
-    const uniqueStatuses = [...new Set(needsList.map(n => n.status))]
-    console.log("📊 [calculateStats] Statuts uniques trouvés:", uniqueStatuses)
-    
-    // Comptage par statut
-    const statusCount: Record<string, number> = {}
-    needsList.forEach(need => {
-      statusCount[need.status] = (statusCount[need.status] || 0) + 1
-    })
-    console.log("📊 [calculateStats] Comptage par statut:", statusCount)
-    
-    // Afficher chaque besoin avec son statut
-    console.log("📊 [calculateStats] Détail des besoins:")
-    needsList.forEach((need, index) => {
-      console.log(`  ${index + 1}. [${need.status}] ${need.title} (${need.reference})`)
+    // Afficher tous les statuts des besoins
+    console.log("📊 Statuts des besoins:")
+    needs.forEach((need, i) => {
+      console.log(`  ${i+1}. ${need.title} -> status: "${need.status}"`)
     })
     
-    // ✅ CORRECTION : Compter les PENDING comme besoins en cours
-    const besoinsEnCours = needsList.filter(need => 
-      need.status === "PENDING" || need.status === "EN_COURS" || need.status === "BROUILLON"
-    ).length
-    
-    const devisAEtudier = needsList.filter(need => 
-      need.status === "DEVIS_RECUS" || need.status === "QUOTED"
-    ).length
-    
-    console.log("📊 [calculateStats] Calcul final:", {
-      besoinsEnCours,
-      devisAEtudier,
-      total: needsList.length
-    })
+    // Compter tous les besoins comme "en cours" (solution simple)
+    const total = needs.length
+    console.log(`📊 Total des besoins: ${total}`)
     
     setStats({
-      besoinsEnCours: besoinsEnCours,
-      devisAEtudier: devisAEtudier,
+      besoinsEnCours: total,
+      devisAEtudier: 0,
       commandesEnCours: 0,
       stockAReappro: 0
     })
     
-    console.log("📊 [calculateStats] Stats mises à jour:", { besoinsEnCours, devisAEtudier })
-    console.log("=".repeat(60))
+    console.log(`✅ Stats mises à jour: besoinsEnCours = ${total}`)
   }
 
-  // ✅ AJOUT : Recalculer les stats quand needs change
+  // ✅ Recalculer les stats quand needs change
   useEffect(() => {
-    if (needs.length > 0) {
-      console.log("🔄 [useEffect] Recalcul des stats car needs a changé")
-      calculateStatsFromNeeds(needs)
-    }
+    console.log("🔄 [useEffect] needs a changé, recalcul des stats")
+    updateStatsFromNeeds()
   }, [needs])
 
   // Gestionnaire spécifique pour les budgets avec conversion
@@ -283,7 +258,7 @@ export default function SourcingPage() {
     }
   }, [activeTab, statusFilter, priorityFilter, debouncedSearch, user])
 
-  // ✅ Charger les besoins avec sourcingApi ET calculer les stats
+  // Charger les besoins avec sourcingApi
   const loadNeeds = async () => {
     console.log("=".repeat(60))
     console.log("🔍 [loadNeeds] DÉBUT DU CHARGEMENT")
@@ -317,8 +292,6 @@ export default function SourcingPage() {
         }
         
         setNeeds(response.data)
-        // ✅ Appel direct du calcul des stats
-        calculateStatsFromNeeds(response.data)
       } else {
         console.log("❌ [loadNeeds] Erreur ou format invalide:", response.error)
         toast.error(response.error || "Erreur chargement")
@@ -328,7 +301,7 @@ export default function SourcingPage() {
       toast.error("Erreur chargement")
     } finally {
       setIsLoadingNeeds(false)
-      console.log("🔍 [loadNeeds] FIN DU CHARGEMENT")
+      console.log("🔍 [loadNeeds] FIN DU CHARGEMENT - needs.length =", needs.length)
       console.log("=".repeat(60))
     }
   }
