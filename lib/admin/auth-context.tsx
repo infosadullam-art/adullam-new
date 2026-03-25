@@ -1,3 +1,4 @@
+// lib/admin/auth-context.tsx
 "use client"
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react"
@@ -8,6 +9,8 @@ interface User {
   id: string
   email: string
   role: string
+  name?: string
+  phone?: string
   [key: string]: any
 }
 
@@ -29,14 +32,27 @@ const AuthContext = createContext<AuthContextType>({
   refreshUser: async () => {},
 })
 
+// 🔹 Clé unique pour le token
+const TOKEN_KEY = "accessToken"
+
+// 🔹 Fonction pour nettoyer le token (enlever guillemets et espaces)
+const cleanToken = (token: string | null): string | null => {
+  if (!token) return null
+  return token.replace(/["']/g, '').trim()
+}
+
 // 🔹 Stockage global du token en mémoire + localStorage pour persistance
 let inMemoryAccessToken: string | null = null
 
 // Charger le token du localStorage au démarrage
 if (typeof window !== "undefined") {
-  const storedToken = localStorage.getItem("adullam_token")
+  const storedToken = localStorage.getItem(TOKEN_KEY)
   if (storedToken) {
-    inMemoryAccessToken = storedToken
+    inMemoryAccessToken = cleanToken(storedToken)
+    // Si le token a été nettoyé, on le sauvegarde propre
+    if (inMemoryAccessToken !== storedToken) {
+      localStorage.setItem(TOKEN_KEY, inMemoryAccessToken)
+    }
   }
 }
 
@@ -60,13 +76,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         console.log("🟡 [AuthProvider] Aucun utilisateur connecté")
         setUser(null)
-        localStorage.removeItem("adullam_token")
+        localStorage.removeItem(TOKEN_KEY)
         inMemoryAccessToken = null
       }
     } catch (error) {
       console.log("🔴 [AuthProvider] Erreur refreshUser:", error)
       setUser(null)
-      localStorage.removeItem("adullam_token")
+      localStorage.removeItem(TOKEN_KEY)
       inMemoryAccessToken = null
     } finally {
       setIsLoading(false)
@@ -84,11 +100,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(res.message || "Login failed")
       }
 
-      // 🔹 Stocker token en mémoire et localStorage
+      // 🔹 Stocker token en mémoire et localStorage (nettoyé)
       if (res.accessToken) {
-        console.log("🟢 [AuthProvider] Token stocké")
-        inMemoryAccessToken = res.accessToken
-        localStorage.setItem("adullam_token", res.accessToken)
+        const cleanAccessToken = cleanToken(res.accessToken)
+        console.log("🟢 [AuthProvider] Token stocké (nettoyé)")
+        inMemoryAccessToken = cleanAccessToken
+        localStorage.setItem(TOKEN_KEY, cleanAccessToken!)
       }
 
       // 🔹 Mettre à jour user
@@ -118,41 +135,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       console.log("📦 [AuthProvider] Réponse register COMPLÈTE:", JSON.stringify(res, null, 2))
 
-      // 🔥 Vérifier si la réponse est vide ou invalide
       if (!res || Object.keys(res).length === 0) {
         console.error("🔴 [AuthProvider] Réponse vide ou invalide")
         throw new Error("Le serveur a renvoyé une réponse vide")
       }
 
-      // Si la réponse a un champ success défini
       if (res.success === false) {
         const errorMessage = res.message || res.error || res.errorMessage || "Registration failed"
         console.error("🔴 [AuthProvider] Échec register - message:", errorMessage)
-        console.error("🔴 [AuthProvider] Réponse complète:", res)
         throw new Error(errorMessage)
       }
 
-      // Si la réponse a un champ user, considérer comme succès
       if (res.user || res.id) {
         console.log("🟢 [AuthProvider] Inscription réussie avec réponse:", res)
         
-        // Si on a un token directement
         if (res.accessToken) {
-          inMemoryAccessToken = res.accessToken
-          localStorage.setItem("adullam_token", res.accessToken)
+          const cleanAccessToken = cleanToken(res.accessToken)
+          inMemoryAccessToken = cleanAccessToken
+          localStorage.setItem(TOKEN_KEY, cleanAccessToken!)
         }
         
-        // Si on a un user
         if (res.user) {
           setUser(res.user)
         }
         
-        // Sinon, on essaie de se connecter automatiquement
         await login(email, password)
         return
       }
 
-      // Si on arrive ici, la réponse n'est pas reconnue
       console.error("🔴 [AuthProvider] Format de réponse non reconnu:", res)
       throw new Error("Format de réponse invalide")
       
@@ -175,14 +185,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setUser(null)
     inMemoryAccessToken = null
-    localStorage.removeItem("adullam_token")
+    localStorage.removeItem(TOKEN_KEY)
     router.push("/account?mode=login")
   }
 
   // 🔹 Au chargement, vérifier si un token existe
   useEffect(() => {
-    const token = localStorage.getItem("adullam_token")
+    const token = localStorage.getItem(TOKEN_KEY)
     if (token) {
+      const cleanTokenValue = cleanToken(token)
+      if (cleanTokenValue !== token) {
+        localStorage.setItem(TOKEN_KEY, cleanTokenValue!)
+      }
       console.log("🟡 [AuthProvider] Token trouvé, récupération de l'utilisateur")
       refreshUser()
     } else {
@@ -203,9 +217,10 @@ export const useAuth = () => {
   return context
 }
 
-export const getAccessToken = () => {
+export const getAccessToken = (): string | null => {
   if (typeof window !== "undefined") {
-    return localStorage.getItem("adullam_token")
+    const token = localStorage.getItem(TOKEN_KEY)
+    return token ? cleanToken(token) : null
   }
   return null
 }
