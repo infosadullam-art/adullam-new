@@ -33,7 +33,7 @@ const AuthContext = createContext<AuthContextType>({
 })
 
 // 🔹 Clé unique pour le token
-const TOKEN_KEY = "accessToken"
+const TOKEN_KEY = "adullam_token"
 
 // 🔹 Fonction pour nettoyer le token (enlever guillemets et espaces)
 const cleanToken = (token: string | null): string | null => {
