@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/admin/auth-context"
 import { MapPin, Plus, Edit2, Trash2, Check, X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import { addressesApi } from "@/lib/admin/api-client"  // ✅ AJOUTÉ
 
 interface Address {
   id: string
@@ -46,10 +47,12 @@ export default function AddressesPage() {
 
   const fetchAddresses = async () => {
     try {
-      const res = await fetch("/api/user/addresses")
-      if (res.ok) {
-        const data = await res.json()
-        setAddresses(data.addresses || [])
+      setLoading(true)
+      // ✅ CORRIGÉ : utilise addressesApi au lieu de fetch
+      const response = await addressesApi.list()
+      
+      if (response.success) {
+        setAddresses(response.addresses || [])
       }
     } catch (error) {
       console.error("Erreur:", error)
@@ -61,20 +64,18 @@ export default function AddressesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    const url = editingId 
-      ? `/api/user/addresses/${editingId}`
-      : "/api/user/addresses"
-    
-    const method = editingId ? "PUT" : "POST"
-
     try {
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-      })
+      let response
+      
+      if (editingId) {
+        // ✅ CORRIGÉ : mise à jour d'une adresse
+        response = await addressesApi.update(editingId, formData)
+      } else {
+        // ✅ CORRIGÉ : création d'une adresse
+        response = await addressesApi.create(formData)
+      }
 
-      if (res.ok) {
+      if (response.success) {
         await fetchAddresses()
         resetForm()
       }
@@ -87,11 +88,10 @@ export default function AddressesPage() {
     if (!confirm("Voulez-vous supprimer cette adresse ?")) return
 
     try {
-      const res = await fetch(`/api/user/addresses/${id}`, {
-        method: "DELETE"
-      })
+      // ✅ CORRIGÉ : suppression d'une adresse
+      const response = await addressesApi.delete(id)
 
-      if (res.ok) {
+      if (response.success) {
         await fetchAddresses()
       }
     } catch (error) {

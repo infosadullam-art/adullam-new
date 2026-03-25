@@ -36,11 +36,10 @@ console.log("🔵 [api-client] API_BASE configuré:", API_BASE)
 async function apiClient<T>(
   endpoint: string,
   options: FetchOptions = {},
-  retry = true // 🔹 Pour limiter les boucles sur refresh token
+  retry = true
 ): Promise<T> {
   const { params, headers = {}, ...fetchOptions } = options
 
-  // 🔥 LOGS CRITIQUES
   console.log('🔴 [api-client] ====================')
   console.log('🔴 [api-client] Endpoint demandé:', endpoint)
   console.log('🔴 [api-client] API_BASE utilisé:', API_BASE)
@@ -51,7 +50,6 @@ async function apiClient<T>(
   let url = `${API_BASE}${endpoint}`
   console.log('🔴 [api-client] URL de base construite:', url)
 
-  // 🔹 Ajouter les query params
   if (params) {
     const searchParams = new URLSearchParams()
     Object.entries(params).forEach(([key, value]) => {
@@ -67,11 +65,9 @@ async function apiClient<T>(
   console.log('🔴 [api-client] URL finale:', url)
   console.log('🔴 [api-client] ====================')
 
-  // 🔹 Récupérer le token (mémoire + localStorage)
   const token = inMemoryAccessToken || getStoredToken()
   console.log(`🔵 [api-client] Token pour ${endpoint}:`, token ? "✅ présent" : "❌ absent")
 
-  // 🔹 Préparer headers avec token
   const requestHeaders: HeadersInit = {
     "Content-Type": "application/json",
     ...headers,
@@ -82,7 +78,7 @@ async function apiClient<T>(
     ...fetchOptions,
     mode: "cors",
     headers: requestHeaders,
-    credentials: "include", // 🔹 pour envoyer refreshToken HttpOnly
+    credentials: "include",
   })
 
   console.log(`🔵 [api-client] Statut réponse: ${response.status} pour ${url}`)
@@ -91,7 +87,6 @@ async function apiClient<T>(
   const data =
     contentType?.includes("application/json") ? await response.json() : {}
 
-  // 🔹 Gestion du 401 avec refresh token
   if (
     response.status === 401 &&
     retry &&
@@ -106,7 +101,7 @@ async function apiClient<T>(
       }>(
         "/auth/refresh",
         { method: "POST" },
-        false // 🔹 éviter boucle infinie
+        false
       )
 
       if (!refreshData.success || !refreshData.accessToken) {
@@ -115,11 +110,9 @@ async function apiClient<T>(
       }
 
       console.log('✅ [api-client] Refresh réussi, nouvelle tentative...')
-      // 🔹 Mettre à jour token en mémoire et localStorage
       inMemoryAccessToken = refreshData.accessToken
       setStoredToken(refreshData.accessToken)
 
-      // 🔹 Refaire la requête initiale
       return await apiClient<T>(endpoint, options, false)
     } catch {
       console.log('❌ [api-client] Refresh échoué, déconnexion...')
@@ -422,6 +415,90 @@ export const ordersApi = {
   },
 }
 
+// ------------------- Addresses -------------------
+export interface Address {
+  id: string
+  type: string
+  firstName: string
+  lastName: string
+  company?: string
+  address: string
+  complement?: string
+  city: string
+  postalCode?: string
+  country: string
+  phone: string
+  isDefault: boolean
+  createdAt?: string
+  updatedAt?: string
+}
+
+export const addressesApi = {
+  // 📋 Récupérer toutes les adresses
+  list: () => {
+    console.log("🟡 [addressesApi] list")
+    return apiClient<{ success: boolean; addresses: Address[] }>("/user/addresses")
+  },
+
+  // 🔍 Récupérer une adresse spécifique
+  get: (id: string) => {
+    console.log("🟡 [addressesApi] get:", id)
+    return apiClient<{ success: boolean; address: Address }>(`/user/addresses/${id}`)
+  },
+
+  // ➕ Créer une nouvelle adresse
+  create: (data: Partial<Address>) => {
+    console.log("🟡 [addressesApi] create")
+    return apiClient<{ success: boolean; address: Address; message: string }>("/user/addresses", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+  },
+
+  // ✏️ Mettre à jour une adresse
+  update: (id: string, data: Partial<Address>) => {
+    console.log("🟡 [addressesApi] update:", id)
+    return apiClient<{ success: boolean; address: Address; message: string }>(`/user/addresses/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+  },
+
+  // 🗑️ Supprimer une adresse
+  delete: (id: string) => {
+    console.log("🟡 [addressesApi] delete:", id)
+    return apiClient<{ success: boolean; message: string }>(`/user/addresses/${id}`, {
+      method: "DELETE",
+    })
+  },
+}
+
+// ------------------- Wishlist -------------------
+export const wishlistApi = {
+  // 📋 Récupérer la wishlist
+  list: () => {
+    console.log("🟡 [wishlistApi] list")
+    return apiClient<{ success: boolean; data: any[] }>("/user/wishlist")
+  },
+
+  // ➕ Ajouter un produit à la wishlist
+  add: (productId: string) => {
+    console.log("🟡 [wishlistApi] add:", productId)
+    return apiClient<{ success: boolean; message: string }>("/user/wishlist", {
+      method: "POST",
+      body: JSON.stringify({ productId }),
+    })
+  },
+
+  // 🗑️ Retirer un produit de la wishlist
+  remove: (productId: string) => {
+    console.log("🟡 [wishlistApi] remove:", productId)
+    return apiClient<{ success: boolean; message: string }>(`/user/wishlist/${productId}`, {
+      method: "DELETE",
+    })
+  },
+}
+
 // ------------------- Import -------------------
 export const importApi = {
   list: (params?: Record<string, string | number | boolean | undefined>) => {
@@ -635,25 +712,21 @@ export interface SourcingFilters {
 }
 
 export const sourcingApi = {
-  // 📋 Liste des demandes avec filtres
   list: (params?: SourcingFilters): Promise<{ success: boolean; data: SourcingRequest[]; meta: any }> => {
     console.log("🟡 [sourcingApi] list", params)
     return apiClient("/sourcing", { params })
   },
 
-  // 📊 Statistiques
   getStats: (): Promise<{ success: boolean; data: SourcingStats }> => {
     console.log("🟡 [sourcingApi] getStats")
     return apiClient("/sourcing", { params: { stats: "true" } })
   },
 
-  // 🔍 Récupérer une demande spécifique
   getById: (id: string): Promise<{ success: boolean; data: SourcingRequest }> => {
     console.log("🟡 [sourcingApi] getById:", id)
     return apiClient(`/sourcing/${id}`)
   },
 
-  // ✏️ Mettre à jour une demande
   update: (id: string, data: Partial<SourcingRequest>): Promise<{ success: boolean; data: SourcingRequest }> => {
     console.log("🟡 [sourcingApi] update:", id)
     return apiClient(`/sourcing/${id}`, {
@@ -662,7 +735,6 @@ export const sourcingApi = {
     })
   },
 
-  // 🗑️ Supprimer une demande
   delete: (id: string): Promise<{ success: boolean }> => {
     console.log("🟡 [sourcingApi] delete:", id)
     return apiClient(`/sourcing/${id}`, {
@@ -670,7 +742,6 @@ export const sourcingApi = {
     })
   },
 
-  // 👁️ Marquer comme vu
   markAsViewed: (id: string): Promise<{ success: boolean; data: SourcingRequest }> => {
     console.log("🟡 [sourcingApi] markAsViewed:", id)
     return apiClient(`/sourcing/${id}`, {
@@ -679,13 +750,6 @@ export const sourcingApi = {
     })
   },
 
-  // ============================================================
-  // ✅ NOUVELLES MÉTHODES POUR LA CRÉATION
-  // ============================================================
-
-  /**
-   * Créer une demande sans fichiers (JSON)
-   */
   create: async (data: any): Promise<{ success: boolean; data?: SourcingRequest; error?: string }> => {
     console.log("🟡 [sourcingApi] create (JSON)")
     try {
@@ -716,9 +780,6 @@ export const sourcingApi = {
     }
   },
 
-  /**
-   * Créer une demande avec fichiers (FormData)
-   */
   createWithFiles: async (formData: FormData): Promise<{ success: boolean; data?: SourcingRequest; error?: string; progress?: number }> => {
     console.log("🟡 [sourcingApi] createWithFiles (FormData)")
     try {
@@ -748,9 +809,6 @@ export const sourcingApi = {
     }
   },
 
-  /**
-   * Version unifiée qui détecte automatiquement le type
-   */
   createRequest: async (data: any | FormData): Promise<{ success: boolean; data?: SourcingRequest; error?: string }> => {
     console.log("🟡 [sourcingApi] createRequest")
     if (data instanceof FormData) {
@@ -761,10 +819,6 @@ export const sourcingApi = {
   }
 }
 
-// ============================================================
-// ✅ EXPORT DES FONCTIONS DE TOKEN POUR useApi.ts
-// ============================================================
-export { getStoredToken, setStoredToken }
 // ------------------- Reviews -------------------
 export const reviewsApi = {
   list: (params?: Record<string, string | number | boolean | undefined>) => {
@@ -803,3 +857,8 @@ export const reviewsApi = {
     return apiClient<{ success: boolean; data: any }>("/reviews/stats")
   },
 }
+
+// ============================================================
+// ✅ EXPORT DES FONCTIONS DE TOKEN
+// ============================================================
+export { getStoredToken, setStoredToken }
