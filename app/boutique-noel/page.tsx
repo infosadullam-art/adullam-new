@@ -131,7 +131,7 @@ export default function SourcingPage() {
     stockAReappro: 0
   })
 
-  // ✅ Fonction pour calculer les stats à partir des besoins (AVEC LOGS)
+  // ✅ Fonction pour calculer les stats à partir des besoins
   const calculateStatsFromNeeds = (needsList: SourcingNeed[]) => {
     console.log("=".repeat(60))
     console.log("📊 [calculateStats] DÉBUT DU CALCUL")
@@ -165,6 +165,7 @@ export default function SourcingPage() {
       console.log(`  ${index + 1}. [${need.status}] ${need.title} (${need.reference})`)
     })
     
+    // ✅ CORRECTION : Compter les PENDING comme besoins en cours
     const besoinsEnCours = needsList.filter(need => 
       need.status === "PENDING" || need.status === "EN_COURS" || need.status === "BROUILLON"
     ).length
@@ -186,9 +187,17 @@ export default function SourcingPage() {
       stockAReappro: 0
     })
     
-    console.log("📊 [calculateStats] Stats mises à jour:", stats)
+    console.log("📊 [calculateStats] Stats mises à jour:", { besoinsEnCours, devisAEtudier })
     console.log("=".repeat(60))
   }
+
+  // ✅ AJOUT : Recalculer les stats quand needs change
+  useEffect(() => {
+    if (needs.length > 0) {
+      console.log("🔄 [useEffect] Recalcul des stats car needs a changé")
+      calculateStatsFromNeeds(needs)
+    }
+  }, [needs])
 
   // Gestionnaire spécifique pour les budgets avec conversion
   const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -274,7 +283,7 @@ export default function SourcingPage() {
     }
   }, [activeTab, statusFilter, priorityFilter, debouncedSearch, user])
 
-  // ✅ Charger les besoins avec sourcingApi ET calculer les stats (AVEC LOGS)
+  // ✅ Charger les besoins avec sourcingApi ET calculer les stats
   const loadNeeds = async () => {
     console.log("=".repeat(60))
     console.log("🔍 [loadNeeds] DÉBUT DU CHARGEMENT")
@@ -293,8 +302,6 @@ export default function SourcingPage() {
       
       console.log("🔍 [loadNeeds] Response reçue")
       console.log("🔍 [loadNeeds] Response.success:", response.success)
-      console.log("🔍 [loadNeeds] Response.data type:", typeof response.data)
-      console.log("🔍 [loadNeeds] Response.data isArray:", Array.isArray(response.data))
       console.log("🔍 [loadNeeds] Response.data length:", response.data?.length)
 
       if (response.success && Array.isArray(response.data)) {
@@ -310,6 +317,7 @@ export default function SourcingPage() {
         }
         
         setNeeds(response.data)
+        // ✅ Appel direct du calcul des stats
         calculateStatsFromNeeds(response.data)
       } else {
         console.log("❌ [loadNeeds] Erreur ou format invalide:", response.error)
