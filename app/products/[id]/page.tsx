@@ -187,16 +187,21 @@ export default function ProductPage() {
     const checkWishlist = async () => {
       if (!user || !product) return
       
+      console.log("🔍 [WISHLIST] Vérification si produit en favoris:", product.id)
+      
       try {
         const response = await wishlistApi.list()
+        console.log("🔍 [WISHLIST] Réponse list:", response)
+        
         if (response.success && response.data) {
           const exists = response.data.some((item: any) => 
             item.productId === product.id || item.product?.id === product.id
           )
+          console.log("🔍 [WISHLIST] Produit en favoris:", exists)
           setIsWishlisted(exists)
         }
       } catch (error) {
-        console.error("Erreur vérification wishlist:", error)
+        console.error("❌ Erreur vérification wishlist:", error)
       }
     }
     
@@ -204,36 +209,59 @@ export default function ProductPage() {
   }, [user, product])
 
   // ============================================================
-  // FONCTION POUR AJOUTER/RETIRER DES FAVORIS
+  // FONCTION POUR AJOUTER/RETIRER DES FAVORIS AVEC LOGS
   // ============================================================
   const handleToggleWishlist = async () => {
+    console.log("🔴 [DEBUG] ========== CLIC SUR FAVORIS ==========")
+    console.log("🔴 [DEBUG] handleToggleWishlist appelé")
+    console.log("🔴 [DEBUG] user:", user?.email || "non connecté")
+    console.log("🔴 [DEBUG] productId:", product?.id)
+    console.log("🔴 [DEBUG] isWishlisted actuel:", isWishlisted)
+    
     if (!user) {
+      console.log("🔴 [DEBUG] Pas d'utilisateur, redirection vers login")
       router.push("/account?mode=login")
       return
     }
     
     try {
       if (isWishlisted) {
+        console.log("🔴 [DEBUG] Tentative de RETRAIT du produit des favoris...")
+        console.log("🔴 [DEBUG] Appel wishlistApi.remove avec productId:", product.id)
+        
         const response = await wishlistApi.remove(product.id)
+        console.log("🔴 [DEBUG] Réponse retrait:", response)
+        
         if (response.success) {
+          console.log("✅ [DEBUG] Retrait réussi!")
           setIsWishlisted(false)
           toast.success("Produit retiré des favoris")
         } else {
-          toast.error("Erreur lors du retrait des favoris")
+          console.log("❌ [DEBUG] Retrait échoué:", response.error)
+          toast.error(response.error || "Erreur lors du retrait des favoris")
         }
       } else {
+        console.log("🔴 [DEBUG] Tentative d'AJOUT du produit aux favoris...")
+        console.log("🔴 [DEBUG] Appel wishlistApi.add avec productId:", product.id)
+        
         const response = await wishlistApi.add(product.id)
+        console.log("🔴 [DEBUG] Réponse ajout:", response)
+        
         if (response.success) {
+          console.log("✅ [DEBUG] Ajout réussi!")
           setIsWishlisted(true)
           toast.success("Produit ajouté aux favoris")
         } else {
-          toast.error("Erreur lors de l'ajout aux favoris")
+          console.log("❌ [DEBUG] Ajout échoué:", response.error)
+          toast.error(response.error || "Erreur lors de l'ajout aux favoris")
         }
       }
     } catch (error) {
-      console.error("Erreur wishlist:", error)
+      console.error("❌ [DEBUG] Erreur wishlist:", error)
       toast.error("Une erreur est survenue")
     }
+    
+    console.log("🔴 [DEBUG] ========== FIN CLIC ==========")
   }
 
   // ============================================================
