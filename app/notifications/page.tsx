@@ -1,4 +1,4 @@
-// app/notifications/page.tsx - Version corrigée
+// app/notifications/page.tsx
 "use client"
 
 import { Header } from "@/components/header"
@@ -51,29 +51,38 @@ export default function NotificationsPage() {
       console.log("📦 API Response:", result)
       
       if (result.success) {
-        // ✅ La structure correcte : result.data contient { data: [], pagination: {}, stats: {} }
+        // ✅ Extraire les données de result.data
         const responseData = result.data || result
         
         let newNotifications: Notification[] = []
         let paginationData = {}
         let statsData = {}
         
-        // Vérifier la structure
-        if (responseData.data && Array.isArray(responseData.data)) {
+        // ✅ Vérifier la structure correcte
+        if (responseData && typeof responseData === 'object') {
           // Structure: { data: [], pagination: {}, stats: {} }
-          newNotifications = responseData.data
-          paginationData = responseData.pagination || {}
-          statsData = responseData.stats || {}
-        } else if (Array.isArray(responseData)) {
+          if (responseData.data && Array.isArray(responseData.data)) {
+            newNotifications = responseData.data
+            paginationData = responseData.pagination || {}
+            statsData = responseData.stats || {}
+          } 
           // Structure simple: []
-          newNotifications = responseData
-        } else if (responseData.notifications && Array.isArray(responseData.notifications)) {
+          else if (Array.isArray(responseData)) {
+            newNotifications = responseData
+          }
           // Structure alternative: { notifications: [] }
-          newNotifications = responseData.notifications
-        } else {
-          console.error("Structure inconnue:", responseData)
-          newNotifications = []
+          else if (responseData.notifications && Array.isArray(responseData.notifications)) {
+            newNotifications = responseData.notifications
+            paginationData = responseData.pagination || {}
+            statsData = responseData.stats || {}
+          }
+          // Structure directement dans result.data
+          else if (Array.isArray(result.data)) {
+            newNotifications = result.data
+          }
         }
+        
+        console.log("✅ Notifications extraites:", newNotifications.length)
         
         if (reset) {
           setNotifications(newNotifications)
