@@ -87,6 +87,7 @@ async function apiClient<T>(
   const data =
     contentType?.includes("application/json") ? await response.json() : {}
 
+  // 🔥 Gestion du 401 - NE PAS DÉCONNECTER AUTOMATIQUEMENT
   if (
     response.status === 401 &&
     retry &&
@@ -106,7 +107,8 @@ async function apiClient<T>(
 
       if (!refreshData.success || !refreshData.accessToken) {
         console.log('❌ [api-client] Refresh failed')
-        throw new Error("Refresh failed")
+        // ✅ Ne pas déconnecter, juste renvoyer l'erreur
+        throw new Error("Session expired")
       }
 
       console.log('✅ [api-client] Refresh réussi, nouvelle tentative...')
@@ -114,10 +116,11 @@ async function apiClient<T>(
       setStoredToken(refreshData.accessToken)
 
       return await apiClient<T>(endpoint, options, false)
-    } catch {
-      console.log('❌ [api-client] Refresh échoué, déconnexion...')
-      inMemoryAccessToken = null
-      setStoredToken(null)
+    } catch (error) {
+      console.log('❌ [api-client] Refresh échoué')
+      // ✅ NE PAS EFFACER LE TOKEN ICI
+      // inMemoryAccessToken = null
+      // setStoredToken(null)
       throw new Error("Session expired. Please login again.")
     }
   }
@@ -434,19 +437,14 @@ export interface Address {
 }
 
 export const addressesApi = {
-  // 📋 Récupérer toutes les adresses
   list: () => {
     console.log("🟡 [addressesApi] list")
     return apiClient<{ success: boolean; addresses: Address[] }>("/user/addresses")
   },
-
-  // 🔍 Récupérer une adresse spécifique
   get: (id: string) => {
     console.log("🟡 [addressesApi] get:", id)
     return apiClient<{ success: boolean; address: Address }>(`/user/addresses/${id}`)
   },
-
-  // ➕ Créer une nouvelle adresse
   create: (data: Partial<Address>) => {
     console.log("🟡 [addressesApi] create")
     return apiClient<{ success: boolean; address: Address; message: string }>("/user/addresses", {
@@ -454,8 +452,6 @@ export const addressesApi = {
       body: JSON.stringify(data),
     })
   },
-
-  // ✏️ Mettre à jour une adresse
   update: (id: string, data: Partial<Address>) => {
     console.log("🟡 [addressesApi] update:", id)
     return apiClient<{ success: boolean; address: Address; message: string }>(`/user/addresses/${id}`, {
@@ -463,8 +459,6 @@ export const addressesApi = {
       body: JSON.stringify(data),
     })
   },
-
-  // 🗑️ Supprimer une adresse
   delete: (id: string) => {
     console.log("🟡 [addressesApi] delete:", id)
     return apiClient<{ success: boolean; message: string }>(`/user/addresses/${id}`, {
@@ -475,13 +469,10 @@ export const addressesApi = {
 
 // ------------------- Wishlist -------------------
 export const wishlistApi = {
-  // 📋 Récupérer la wishlist
   list: () => {
     console.log("🟡 [wishlistApi] list")
     return apiClient<{ success: boolean; data: any[] }>("/user/wishlist")
   },
-
-  // ➕ Ajouter un produit à la wishlist
   add: (productId: string) => {
     console.log("🟡 [wishlistApi] add:", productId)
     return apiClient<{ success: boolean; message: string }>("/user/wishlist", {
@@ -489,11 +480,9 @@ export const wishlistApi = {
       body: JSON.stringify({ productId }),
     })
   },
-
-  // 🗑️ Retirer un produit de la wishlist
   remove: (productId: string) => {
     console.log("🟡 [wishlistApi] remove:", productId)
-    return apiClient<{ success: boolean; message: string }>(`/user/wishlist/${productId}`, {
+    return apiClient<{ success: boolean; message: string }>(`/user/wishlist?productId=${productId}`, {
       method: "DELETE",
     })
   },
@@ -638,19 +627,16 @@ export const usersApi = {
       { params }
     )
   },
-
   get: (id: string) => {
     console.log("🟡 [usersApi] get:", id)
     return apiClient<{ success: boolean; data: any }>(`/admin/users/${id}`)
   },
-
   ban: (id: string) => {
     console.log("🟡 [usersApi] ban:", id)
     return apiClient<{ success: boolean }>(`/admin/users/${id}/ban`, {
       method: "POST",
     })
   },
-
   activate: (id: string) => {
     console.log("🟡 [usersApi] activate:", id)
     return apiClient<{ success: boolean }>(`/admin/users/${id}/activate`, {
@@ -716,17 +702,14 @@ export const sourcingApi = {
     console.log("🟡 [sourcingApi] list", params)
     return apiClient("/sourcing", { params })
   },
-
   getStats: (): Promise<{ success: boolean; data: SourcingStats }> => {
     console.log("🟡 [sourcingApi] getStats")
     return apiClient("/sourcing", { params: { stats: "true" } })
   },
-
   getById: (id: string): Promise<{ success: boolean; data: SourcingRequest }> => {
     console.log("🟡 [sourcingApi] getById:", id)
     return apiClient(`/sourcing/${id}`)
   },
-
   update: (id: string, data: Partial<SourcingRequest>): Promise<{ success: boolean; data: SourcingRequest }> => {
     console.log("🟡 [sourcingApi] update:", id)
     return apiClient(`/sourcing/${id}`, {
@@ -734,14 +717,12 @@ export const sourcingApi = {
       body: JSON.stringify(data),
     })
   },
-
   delete: (id: string): Promise<{ success: boolean }> => {
     console.log("🟡 [sourcingApi] delete:", id)
     return apiClient(`/sourcing/${id}`, {
       method: "DELETE",
     })
   },
-
   markAsViewed: (id: string): Promise<{ success: boolean; data: SourcingRequest }> => {
     console.log("🟡 [sourcingApi] markAsViewed:", id)
     return apiClient(`/sourcing/${id}`, {
@@ -749,7 +730,6 @@ export const sourcingApi = {
       body: JSON.stringify({ markAsViewed: true }),
     })
   },
-
   create: async (data: any): Promise<{ success: boolean; data?: SourcingRequest; error?: string }> => {
     console.log("🟡 [sourcingApi] create (JSON)")
     try {
@@ -779,7 +759,6 @@ export const sourcingApi = {
       return { success: false, error: "Erreur de connexion" }
     }
   },
-
   createWithFiles: async (formData: FormData): Promise<{ success: boolean; data?: SourcingRequest; error?: string; progress?: number }> => {
     console.log("🟡 [sourcingApi] createWithFiles (FormData)")
     try {
@@ -808,7 +787,6 @@ export const sourcingApi = {
       return { success: false, error: "Erreur de connexion" }
     }
   },
-
   createRequest: async (data: any | FormData): Promise<{ success: boolean; data?: SourcingRequest; error?: string }> => {
     console.log("🟡 [sourcingApi] createRequest")
     if (data instanceof FormData) {
