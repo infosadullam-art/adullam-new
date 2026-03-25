@@ -236,7 +236,12 @@ export default function CheckoutPage() {
     
     setLoadingAddresses(true);
     try {
-      const res = await fetch("/api/user/addresses");
+      const token = localStorage.getItem('accessToken');
+      const res = await fetch("/api/user/addresses", {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (res.ok) {
         const data = await res.json();
         setAddresses(data.addresses || []);
@@ -270,9 +275,13 @@ export default function CheckoutPage() {
 
   const handleAddAddress = async () => {
     try {
+      const token = localStorage.getItem('accessToken');
       const res = await fetch("/api/user/addresses", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify(newAddress)
       });
 
@@ -345,6 +354,7 @@ export default function CheckoutPage() {
     return totalShippingUSD * (method?.multiplier || 1);
   };
 
+  // ✅ CORRECTION PRINCIPALE : Ajout du token
   const handleSubmit = async () => {
     if (!paymentMethod) return;
     
@@ -352,9 +362,14 @@ export default function CheckoutPage() {
     setError("");
 
     try {
+      const token = localStorage.getItem('accessToken');
+      
       const response = await fetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           items: cart,
           shippingInfo: {
