@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/admin/auth-context"
 import { Package, ChevronRight, ArrowLeft, Clock, CheckCircle, XCircle, Truck } from "lucide-react"
 import Link from "next/link"
-import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter" // ✅ AJOUTÉ
+import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { ordersApi } from "@/lib/admin/api-client"  // ✅ AJOUTÉ
 
 interface Order {
   id: string
@@ -20,7 +21,7 @@ interface Order {
 export default function OrdersPage() {
   const router = useRouter()
   const { user } = useAuth()
-  const { formatPrice } = useCurrencyFormatter() // ✅ AJOUTÉ
+  const { formatPrice } = useCurrencyFormatter()
   
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
@@ -36,10 +37,12 @@ export default function OrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch("/api/orders")
-      if (res.ok) {
-        const data = await res.json()
-        setOrders(data.data || [])
+      setLoading(true)
+      // ✅ CORRIGÉ : utilise ordersApi qui envoie le token
+      const response = await ordersApi.list()
+      
+      if (response.success) {
+        setOrders(response.data || [])
       } else {
         setError("Impossible de charger vos commandes")
       }
@@ -156,7 +159,6 @@ export default function OrdersPage() {
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.status)}`}>
                         {getStatusLabel(order.status)}
                       </span>
-                      {/* ✅ CORRIGÉ : utilise formatPrice */}
                       <span className="font-bold text-lg">{formatPrice(order.total)}</span>
                     </div>
                   </div>
