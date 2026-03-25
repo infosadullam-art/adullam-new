@@ -38,9 +38,9 @@ import { useAuth } from "@/lib/admin/auth-context"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import { sourcingApi } from "@/lib/admin/api-client"
-import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter" // ✅ AJOUTÉ
+import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
-// ✅ Imports manquants pour les composants UI
+// Imports pour les composants UI
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -79,8 +79,8 @@ export default function SourcingPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
 
-  // ✅ HOOK DE DEVISE DYNAMIQUE
-  const { formatPrice, getCurrencySymbol, convertToUSD, convertFromUSD } = useCurrencyFormatter()
+  // Hook de devise dynamique
+  const { formatPrice, getCurrencySymbol, convertToUSD } = useCurrencyFormatter()
 
   const [showForm, setShowForm] = useState(false)
   const [activeTab, setActiveTab] = useState<"besoins">("besoins")
@@ -103,8 +103,8 @@ export default function SourcingPage() {
     description: "",
     quantity: "",
     quantityUnit: "pièces",
-    budgetMin: "", // ✅ Sera en USD après conversion
-    budgetMax: "", // ✅ Sera en USD après conversion
+    budgetMin: "",
+    budgetMax: "",
     deadline: "",
     priority: "MOYENNE",
     fullName: user?.name || "",
@@ -131,13 +131,29 @@ export default function SourcingPage() {
     stockAReappro: 0
   })
 
-  // ✅ Gestionnaire spécifique pour les budgets avec conversion
+  // ✅ Fonction pour calculer les stats à partir des besoins
+  const calculateStatsFromNeeds = (needsList: SourcingNeed[]) => {
+    const besoinsEnCours = needsList.filter(need => 
+      need.status === "PENDING" || need.status === "EN_COURS" || need.status === "BROUILLON"
+    ).length
+    const devisAEtudier = needsList.filter(need => 
+      need.status === "DEVIS_RECUS" || need.status === "QUOTED"
+    ).length
+    
+    setStats({
+      besoinsEnCours: besoinsEnCours,
+      devisAEtudier: devisAEtudier,
+      commandesEnCours: 0,
+      stockAReappro: 0
+    })
+  }
+
+  // Gestionnaire spécifique pour les budgets avec conversion
   const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     
     if (name === "budgetMinLocal") {
       setBudgetMinLocal(value)
-      // Convertir en USD pour l'envoi
       const numericValue = parseFloat(value) || 0
       const usdValue = convertToUSD(numericValue)
       setFormData(prev => ({ ...prev, budgetMin: usdValue.toString() }))
@@ -149,7 +165,7 @@ export default function SourcingPage() {
     }
   }
 
-  // ✅ Vérifier l'authentification avant toute action nécessitant un compte
+  // Vérifier l'authentification avant toute action nécessitant un compte
   const requireAuth = (action: () => void) => {
     if (!user) {
       setPendingAction(() => action)
@@ -163,6 +179,17 @@ export default function SourcingPage() {
   const handleOpenForm = () => {
     requireAuth(() => setShowForm(true))
   }
+
+  // Surveiller les changements d'authentification pour fermer la modale
+  useEffect(() => {
+    if (user && showAuthModal) {
+      setShowAuthModal(false)
+      if (pendingAction) {
+        pendingAction()
+        setPendingAction(null)
+      }
+    }
+  }, [user, showAuthModal, pendingAction])
 
   // Mettre à jour formData quand user change
   useEffect(() => {
@@ -189,7 +216,6 @@ export default function SourcingPage() {
     if (!authLoading) {
       if (user) {
         loadNeeds()
-        loadStats()
       } else {
         setIsLoadingNeeds(false)
       }
@@ -203,7 +229,7 @@ export default function SourcingPage() {
     }
   }, [activeTab, statusFilter, priorityFilter, debouncedSearch, user])
 
-  // Charger les besoins avec sourcingApi
+  // ✅ Charger les besoins avec sourcingApi ET calculer les stats
   const loadNeeds = async () => {
     setIsLoadingNeeds(true)
     try {
@@ -216,6 +242,8 @@ export default function SourcingPage() {
 
       if (response.success) {
         setNeeds(response.data)
+        // ✅ Calculer les stats directement depuis les besoins chargés
+        calculateStatsFromNeeds(response.data)
       } else {
         toast.error(response.error || "Erreur chargement")
       }
@@ -224,23 +252,6 @@ export default function SourcingPage() {
       toast.error("Erreur chargement")
     } finally {
       setIsLoadingNeeds(false)
-    }
-  }
-
-  // Charger les stats
-  const loadStats = async () => {
-    try {
-      const response = await sourcingApi.getStats()
-      if (response.success) {
-        setStats({
-          besoinsEnCours: (response.data.pending || 0) + (response.data.inReview || 0), // ✅ CORRIGÉ
-          devisAEtudier: response.data.quoted || 0, // ✅ CORRIGÉ
-          commandesEnCours: 0,
-          stockAReappro: 0
-        })
-      }
-    } catch (error) {
-      console.error("Erreur stats:", error)
     }
   }
 
@@ -253,7 +264,6 @@ export default function SourcingPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files)
-      // Validation de la taille (max 10 Mo par fichier)
       const validFiles = newFiles.filter(file => file.size <= 10 * 1024 * 1024)
       const invalidFiles = newFiles.filter(file => file.size > 10 * 1024 * 1024)
       
@@ -298,7 +308,7 @@ export default function SourcingPage() {
     return true
   }
 
-  // ✅ FONCTION PRINCIPALE DE SOUMISSION
+  // Fonction principale de soumission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -311,22 +321,17 @@ export default function SourcingPage() {
     try {
       let response;
 
-      // Stratégie : utiliser FormData seulement si des fichiers sont présents
       if (files.length > 0) {
-        // Cas avec fichiers
         const form = new FormData()
         
-        // Ajouter tous les champs du formulaire
         Object.entries(formData).forEach(([key, value]) => {
           if (value) form.append(key, value)
         })
         
-        // Ajouter les fichiers
         files.forEach(file => {
           form.append("documents", file)
         })
 
-        // Simuler une progression (pour UX)
         const progressInterval = setInterval(() => {
           setUploadProgress(prev => Math.min(prev + 10, 90))
         }, 200)
@@ -336,7 +341,6 @@ export default function SourcingPage() {
         clearInterval(progressInterval)
         setUploadProgress(100)
       } else {
-        // Cas sans fichiers (JSON)
         const dataToSend = {
           title: formData.title,
           productType: formData.productType,
@@ -361,7 +365,6 @@ export default function SourcingPage() {
         setShowForm(false)
         resetForm()
         loadNeeds()
-        loadStats()
       } else {
         setSubmitError(response.error || "Erreur lors de la création")
         toast.error(response.error || "Erreur création")
@@ -378,7 +381,7 @@ export default function SourcingPage() {
     }
   }
 
-  // ✅ FONCTION RESET
+  // Fonction reset
   const resetForm = () => {
     setFormData({
       title: "",
@@ -410,7 +413,6 @@ export default function SourcingPage() {
       if (response.success) {
         toast.success("Besoin supprimé")
         loadNeeds()
-        loadStats()
       } else {
         toast.error(response.error || "Erreur suppression")
       }
@@ -421,14 +423,16 @@ export default function SourcingPage() {
   }
 
   const getStatusBadge = (status: SourcingStatus) => {
-    const styles = {
+    const styles: Record<string, string> = {
       BROUILLON: "bg-neutral-100 text-neutral-600",
       EN_COURS: "bg-blue-100 text-blue-600",
       DEVIS_RECUS: "bg-green-100 text-green-600",
       COMMANDE: "bg-purple-100 text-purple-600",
-      ANNULE: "bg-red-100 text-red-600"
+      ANNULE: "bg-red-100 text-red-600",
+      PENDING: "bg-yellow-100 text-yellow-600",
+      QUOTED: "bg-green-100 text-green-600"
     }
-    return styles[status]
+    return styles[status] || "bg-gray-100 text-gray-600"
   }
 
   const getPriorityBadge = (priority: Priority) => {
@@ -439,15 +443,6 @@ export default function SourcingPage() {
       URGENTE: "bg-red-100 text-red-600"
     }
     return styles[priority]
-  }
-
-  // ✅ Gérer le retour après connexion
-  const handleAuthSuccess = () => {
-    setShowAuthModal(false)
-    if (pendingAction) {
-      pendingAction()
-      setPendingAction(null)
-    }
   }
 
   if (authLoading) {
@@ -489,7 +484,7 @@ export default function SourcingPage() {
           </div>
         </div>
 
-        {/* Stats Cards - Afficher seulement si connecté */}
+        {/* Stats Cards */}
         {user ? (
           <div className="max-w-[1440px] mx-auto px-4 lg:px-6 -mt-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -499,7 +494,7 @@ export default function SourcingPage() {
                   <Clock className="w-5 h-5 text-brand" />
                 </div>
                 <p className="text-2xl font-bold">{stats.besoinsEnCours}</p>
-                <p className="text-xs text-muted-foreground mt-1">Nouveaux cette semaine</p>
+                <p className="text-xs text-muted-foreground mt-1">en attente de traitement</p>
               </div>
               
               <div className="bg-white rounded-lg p-6 shadow-sm">
@@ -556,7 +551,7 @@ export default function SourcingPage() {
           </div>
         )}
 
-        {/* Tabs et contenu - Afficher seulement si connecté */}
+        {/* Tabs et contenu */}
         {user && (
           <>
             <div className="max-w-[1440px] mx-auto px-4 lg:px-6 mt-8">
@@ -589,7 +584,7 @@ export default function SourcingPage() {
                         onChange={(e) => setStatusFilter(e.target.value)}
                       >
                         <option value="">Tous les statuts</option>
-                        <option value="BROUILLON">Brouillon</option>
+                        <option value="PENDING">En attente</option>
                         <option value="EN_COURS">En cours</option>
                         <option value="DEVIS_RECUS">Devis reçus</option>
                         <option value="COMMANDE">Commandé</option>
@@ -653,7 +648,7 @@ export default function SourcingPage() {
                               <div className="flex items-center gap-3 mb-2">
                                 <span className="text-sm font-mono text-muted-foreground">{need.reference}</span>
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(need.status)}`}>
-                                  {need.status}
+                                  {need.status === "PENDING" ? "En attente" : need.status}
                                 </span>
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityBadge(need.priority)}`}>
                                   {need.priority}
@@ -669,11 +664,10 @@ export default function SourcingPage() {
                                 </div>
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                   <Calendar className="w-4 h-4" />
-                                  <span>Deadline: {need.deadline ? format(new Date(need.deadline), "dd MMM yyyy") : "Non définie"}</span>
+                                  <span>Deadline: {need.deadline ? format(new Date(need.deadline), "dd MMM yyyy", { locale: fr }) : "Non définie"}</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                   <DollarSign className="w-4 h-4" />
-                                  {/* ✅ PRIX DYNAMIQUE À L'AFFICHAGE */}
                                   <span>
                                     {need.budgetMin ? formatPrice(need.budgetMin) : ""} - {need.budgetMax ? formatPrice(need.budgetMax) : ""}
                                   </span>
@@ -749,14 +743,12 @@ export default function SourcingPage() {
                   </div>
                   
                   <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    {/* Message d'erreur */}
                     {submitError && (
                       <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
                         {submitError}
                       </div>
                     )}
 
-                    {/* Barre de progression */}
                     {isSubmitting && uploadProgress > 0 && (
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
@@ -847,7 +839,7 @@ export default function SourcingPage() {
                       </div>
                     </div>
 
-                    {/* ✅ BUDGETS AVEC DEVISE LOCALE */}
+                    {/* BUDGETS AVEC DEVISE LOCALE */}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-2">
