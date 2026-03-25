@@ -8,6 +8,7 @@ import { Bell, Check, Trash2, RefreshCw, Clock, Package, Truck, CreditCard, Star
 import { useState, useEffect, useCallback } from "react"
 import { useAuth } from "@/lib/admin/auth-context"
 import { useApi } from "@/hooks/useApi"
+import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter" // ✅ Ajout
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import { toast } from "sonner"
@@ -27,6 +28,7 @@ interface Notification {
 export default function NotificationsPage() {
   const { user, isLoading: authLoading } = useAuth()
   const { fetchWithAuth } = useApi()
+  const { formatPrice } = useCurrencyFormatter() // ✅ Hook pour formater les prix
   
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -37,6 +39,33 @@ export default function NotificationsPage() {
     total: 0,
     unread: 0
   })
+
+  // ✅ Formater un message avec des montants en devise dynamique
+  const formatMessageWithPrice = (message: string, metadata?: any): string => {
+    if (!metadata) return message
+    
+    let formattedMessage = message
+    
+    // Pour les notifications de paiement
+    if (metadata.amount) {
+      const formattedAmount = formatPrice(metadata.amount)
+      formattedMessage = formattedMessage.replace(
+        new RegExp(`${metadata.amount}\\s*(?:USD|FCFA)?`, 'g'),
+        formattedAmount
+      )
+    }
+    
+    // Pour les notifications de prix en baisse
+    if (metadata.oldPrice && metadata.newPrice) {
+      const formattedOld = formatPrice(metadata.oldPrice)
+      const formattedNew = formatPrice(metadata.newPrice)
+      formattedMessage = formattedMessage
+        .replace(new RegExp(`${metadata.oldPrice}\\s*(?:USD|FCFA)?`, 'g'), formattedOld)
+        .replace(new RegExp(`${metadata.newPrice}\\s*(?:USD|FCFA)?`, 'g'), formattedNew)
+    }
+    
+    return formattedMessage
+  }
 
   // ✅ Charger les notifications
   const loadNotifications = useCallback(async (pageToLoad: number, reset = false) => {
@@ -53,15 +82,18 @@ export default function NotificationsPage() {
       const data = await response.json()
       
       if (data.success) {
+        const notificationsData = reset ? data.data : [...notifications, ...data.data]
+        
         if (reset) {
           setNotifications(data.data)
         } else {
           setNotifications(prev => [...prev, ...data.data])
         }
-        setHasMore(data.meta?.hasMore || false)
+        
+        setHasMore(data.pagination?.hasMore || false)
         setStats({
-          total: data.meta?.total || 0,
-          unread: data.meta?.unread || 0
+          total: data.pagination?.total || 0,
+          unread: data.stats?.unread || 0
         })
         setPage(pageToLoad + 1)
       } else {
@@ -73,7 +105,7 @@ export default function NotificationsPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [user, fetchWithAuth, filter])
+  }, [user, fetchWithAuth, filter, notifications])
 
   // ✅ Marquer comme lu
   const markAsRead = useCallback(async (id: string) => {
@@ -91,16 +123,18 @@ export default function NotificationsPage() {
           ...prev,
           unread: Math.max(0, prev.unread - 1)
         }))
+        toast.success("Notification marquée comme lue")
       }
     } catch (error) {
       console.error("❌ Erreur marquage lu:", error)
+      toast.error("Erreur lors du marquage")
     }
   }, [fetchWithAuth])
 
   // ✅ Marquer tout comme lu
   const markAllAsRead = useCallback(async () => {
     try {
-      const response = await fetchWithAuth('/api/notifications/read-all', {
+      const response = await fetchWithAuth('/api/notifications', {
         method: 'POST'
       })
       
@@ -381,8 +415,9 @@ export default function NotificationsPage() {
                         {formatDate(notification.createdAt)}
                       </span>
                     </div>
+                    {/* ✅ Message formaté avec devise dynamique */}
                     <p className="text-sm text-gray-500 mt-1">
-                      {notification.message}
+                      {formatMessageWithPrice(notification.message, notification.metadata)}
                     </p>
                     {notification.link && (
                       <a
