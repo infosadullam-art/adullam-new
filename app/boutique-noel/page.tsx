@@ -131,14 +131,53 @@ export default function SourcingPage() {
     stockAReappro: 0
   })
 
-  // ✅ Fonction pour calculer les stats à partir des besoins
+  // ✅ Fonction pour calculer les stats à partir des besoins (AVEC LOGS)
   const calculateStatsFromNeeds = (needsList: SourcingNeed[]) => {
+    console.log("=".repeat(60))
+    console.log("📊 [calculateStats] DÉBUT DU CALCUL")
+    console.log("📊 [calculateStats] needsList.length:", needsList?.length || 0)
+    
+    if (!needsList || needsList.length === 0) {
+      console.log("⚠️ [calculateStats] Liste vide, stats à 0")
+      setStats({
+        besoinsEnCours: 0,
+        devisAEtudier: 0,
+        commandesEnCours: 0,
+        stockAReappro: 0
+      })
+      return
+    }
+    
+    // Afficher tous les statuts uniques
+    const uniqueStatuses = [...new Set(needsList.map(n => n.status))]
+    console.log("📊 [calculateStats] Statuts uniques trouvés:", uniqueStatuses)
+    
+    // Comptage par statut
+    const statusCount: Record<string, number> = {}
+    needsList.forEach(need => {
+      statusCount[need.status] = (statusCount[need.status] || 0) + 1
+    })
+    console.log("📊 [calculateStats] Comptage par statut:", statusCount)
+    
+    // Afficher chaque besoin avec son statut
+    console.log("📊 [calculateStats] Détail des besoins:")
+    needsList.forEach((need, index) => {
+      console.log(`  ${index + 1}. [${need.status}] ${need.title} (${need.reference})`)
+    })
+    
     const besoinsEnCours = needsList.filter(need => 
       need.status === "PENDING" || need.status === "EN_COURS" || need.status === "BROUILLON"
     ).length
+    
     const devisAEtudier = needsList.filter(need => 
       need.status === "DEVIS_RECUS" || need.status === "QUOTED"
     ).length
+    
+    console.log("📊 [calculateStats] Calcul final:", {
+      besoinsEnCours,
+      devisAEtudier,
+      total: needsList.length
+    })
     
     setStats({
       besoinsEnCours: besoinsEnCours,
@@ -146,6 +185,9 @@ export default function SourcingPage() {
       commandesEnCours: 0,
       stockAReappro: 0
     })
+    
+    console.log("📊 [calculateStats] Stats mises à jour:", stats)
+    console.log("=".repeat(60))
   }
 
   // Gestionnaire spécifique pour les budgets avec conversion
@@ -215,8 +257,10 @@ export default function SourcingPage() {
   useEffect(() => {
     if (!authLoading) {
       if (user) {
+        console.log("🔍 [SourcingPage] User connecté, chargement des besoins")
         loadNeeds()
       } else {
+        console.log("🔍 [SourcingPage] User non connecté")
         setIsLoadingNeeds(false)
       }
     }
@@ -225,12 +269,17 @@ export default function SourcingPage() {
   // Recharger quand les filtres changent (uniquement si connecté)
   useEffect(() => {
     if (user && activeTab === "besoins") {
+      console.log("🔍 [SourcingPage] Rechargement dû aux filtres")
       loadNeeds()
     }
   }, [activeTab, statusFilter, priorityFilter, debouncedSearch, user])
 
-  // ✅ Charger les besoins avec sourcingApi ET calculer les stats
+  // ✅ Charger les besoins avec sourcingApi ET calculer les stats (AVEC LOGS)
   const loadNeeds = async () => {
+    console.log("=".repeat(60))
+    console.log("🔍 [loadNeeds] DÉBUT DU CHARGEMENT")
+    console.log("🔍 [loadNeeds] Filtres actifs:", { statusFilter, priorityFilter, debouncedSearch })
+    
     setIsLoadingNeeds(true)
     try {
       const params: Record<string, string> = {}
@@ -238,20 +287,41 @@ export default function SourcingPage() {
       if (priorityFilter) params.priority = priorityFilter
       if (debouncedSearch) params.search = debouncedSearch
 
-      const response = await sourcingApi.list(params)
+      console.log("🔍 [loadNeeds] Params envoyés:", params)
 
-      if (response.success) {
+      const response = await sourcingApi.list(params)
+      
+      console.log("🔍 [loadNeeds] Response reçue")
+      console.log("🔍 [loadNeeds] Response.success:", response.success)
+      console.log("🔍 [loadNeeds] Response.data type:", typeof response.data)
+      console.log("🔍 [loadNeeds] Response.data isArray:", Array.isArray(response.data))
+      console.log("🔍 [loadNeeds] Response.data length:", response.data?.length)
+
+      if (response.success && Array.isArray(response.data)) {
+        console.log(`✅ [loadNeeds] ${response.data.length} besoins chargés`)
+        
+        if (response.data.length > 0) {
+          console.log("📦 [loadNeeds] Premier besoin:", {
+            id: response.data[0].id,
+            title: response.data[0].title,
+            status: response.data[0].status,
+            priority: response.data[0].priority
+          })
+        }
+        
         setNeeds(response.data)
-        // ✅ Calculer les stats directement depuis les besoins chargés
         calculateStatsFromNeeds(response.data)
       } else {
+        console.log("❌ [loadNeeds] Erreur ou format invalide:", response.error)
         toast.error(response.error || "Erreur chargement")
       }
     } catch (error) {
-      console.error("Erreur:", error)
+      console.error("❌ [loadNeeds] Exception:", error)
       toast.error("Erreur chargement")
     } finally {
       setIsLoadingNeeds(false)
+      console.log("🔍 [loadNeeds] FIN DU CHARGEMENT")
+      console.log("=".repeat(60))
     }
   }
 
