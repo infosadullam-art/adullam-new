@@ -143,6 +143,10 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
+  
+  // ✅ États pour sauvegarder les données de la commande
+  const [lastOrderTotal, setLastOrderTotal] = useState<number>(0);
+  const [lastOrderRef, setLastOrderRef] = useState<string>("");
 
   // Adresses
   const [addresses, setAddresses] = useState<any[]>([]);
@@ -354,7 +358,7 @@ export default function CheckoutPage() {
     return totalShippingUSD * (method?.multiplier || 1);
   };
 
-  // ✅ CORRECTION PRINCIPALE : Ajout du token
+  // ✅ CORRECTION : Sauvegarde du total avant clearCart
   const handleSubmit = async () => {
     if (!paymentMethod) return;
     
@@ -363,6 +367,10 @@ export default function CheckoutPage() {
 
     try {
       const token = localStorage.getItem('accessToken');
+      
+      // ✅ Sauvegarder le total avant l'appel
+      const orderTotal = grandTotalUSD;
+      setLastOrderTotal(orderTotal);
       
       const response = await fetch('/api/orders', {
         method: 'POST',
@@ -383,7 +391,7 @@ export default function CheckoutPage() {
             totalUSD, 
             shippingCost: getShippingCost(),
             portePorteTotal: totalPortePorteUSD, 
-            grandTotal: grandTotalUSD 
+            grandTotal: orderTotal 
           },
           country: selectedCountry.code,
           currency
@@ -394,6 +402,13 @@ export default function CheckoutPage() {
 
       if (!response.ok) {
         throw new Error(data.message || "Erreur lors de la commande");
+      }
+
+      // ✅ Sauvegarder la référence de commande
+      if (data.reference) {
+        setLastOrderRef(data.reference);
+      } else if (data.orderId) {
+        setLastOrderRef(data.orderId.slice(-8));
       }
 
       setIsSuccess(true);
@@ -437,6 +452,9 @@ export default function CheckoutPage() {
 
   // ==================== SUCCÈS ====================
   if (isSuccess) {
+    const displayTotal = lastOrderTotal || grandTotalUSD;
+    const displayRef = lastOrderRef || Math.random().toString(36).substring(2, 8).toUpperCase();
+    
     return (
       <div className="min-h-screen" style={{ backgroundColor: softBg }}>
         <div className="hidden lg:block"><Header /></div>
@@ -458,10 +476,12 @@ export default function CheckoutPage() {
               
               <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
                 <p className="text-xs text-gray-500 mb-2">Récapitulatif</p>
-                <p className="text-sm font-medium">#{Math.random().toString(36).substring(2, 8).toUpperCase()}</p>
+                <p className="text-sm font-medium">#{displayRef}</p>
                 <div className="flex justify-between mt-2 text-sm">
                   <span className="text-gray-500">Total</span>
-                  <span className="font-medium" style={{ color: brandColor }}>{formatPrice(grandTotalUSD)}</span>
+                  <span className="font-medium" style={{ color: brandColor }}>
+                    {formatPrice(displayTotal)}
+                  </span>
                 </div>
               </div>
               
@@ -485,14 +505,12 @@ export default function CheckoutPage() {
   // ==================== CHECKOUT ====================
   return (
     <div className="min-h-screen" style={{ backgroundColor: softBg }}>
-      {/* Header - caché sur mobile car on a MobileHeader */}
       <div className="hidden lg:block"><Header /></div>
       <div className="lg:hidden"><MobileHeader /></div>
 
       <main className="py-4 lg:py-8">
         <div className="max-w-6xl mx-auto px-4">
           
-          {/* Fil d'Ariane - caché sur mobile */}
           <div className="hidden lg:flex items-center gap-2 text-xs mb-6">
             <Link href="/" className="text-gray-400 hover:text-gray-600">Accueil</Link>
             <ChevronRight className="w-3 h-3 text-gray-300" />
@@ -501,7 +519,6 @@ export default function CheckoutPage() {
             <span className="text-gray-600">Checkout</span>
           </div>
 
-          {/* Header mobile avec retour */}
           <div className="flex items-center gap-3 mb-4 lg:hidden">
             <button
               onClick={() => router.back()}
@@ -512,10 +529,8 @@ export default function CheckoutPage() {
             <h1 className="text-lg font-medium">Finaliser la commande</h1>
           </div>
 
-          {/* Titre desktop */}
           <h1 className="hidden lg:block text-2xl font-medium mb-6">Finaliser la commande</h1>
 
-          {/* Progression - responsive */}
           <div className="flex items-center justify-between mb-6 lg:mb-8 max-w-2xl">
             {[
               { step: 1, label: "Livraison" },
@@ -546,10 +561,8 @@ export default function CheckoutPage() {
             ))}
           </div>
 
-          {/* Contenu principal - empilé sur mobile */}
           <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 lg:gap-6">
             
-            {/* Formulaire - passe en premier sur mobile */}
             <div className="lg:col-span-2 space-y-4 order-2 lg:order-1">
               
               {/* ÉTAPE 1 - LIVRAISON */}
@@ -560,7 +573,6 @@ export default function CheckoutPage() {
                     Adresse de livraison
                   </h2>
 
-                  {/* Pays */}
                   <div className="mb-3 lg:mb-4">
                     <label className="block text-xs text-gray-500 mb-1">Pays</label>
                     <div className="relative" ref={countryDropdownRef}>
@@ -595,7 +607,6 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  {/* Adresses existantes */}
                   {addresses.length > 0 && !showNewAddressForm && (
                     <div className="mb-3 lg:mb-4">
                       <label className="block text-xs text-gray-500 mb-2">Adresse existante</label>
@@ -652,7 +663,6 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
-                  {/* Formulaire nouvelle adresse */}
                   {(showNewAddressForm || addresses.length === 0) && (
                     <div className="space-y-3">
                       <div className="grid grid-cols-2 gap-2 lg:gap-3">
@@ -792,7 +802,6 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
-                  {/* Bouton continuer */}
                   {!showNewAddressForm && (
                     <button
                       onClick={() => validateStep1() && setStep(2)}
@@ -959,7 +968,6 @@ export default function CheckoutPage() {
                   )}
 
                   <div className="space-y-3">
-                    {/* Adresse */}
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <div className="flex items-center gap-1 mb-2">
                         <Home className="w-3 h-3" style={{ color: brandColor }} />
@@ -974,7 +982,6 @@ export default function CheckoutPage() {
                       </p>
                     </div>
 
-                    {/* Récapitulatif */}
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <div className="space-y-1.5 text-xs">
                         <div className="flex justify-between">
@@ -996,7 +1003,6 @@ export default function CheckoutPage() {
                       </div>
                     </div>
 
-                    {/* Boutons */}
                     <div className="flex gap-2 pt-2">
                       <button
                         onClick={() => setStep(3)}
@@ -1025,7 +1031,6 @@ export default function CheckoutPage() {
               )}
             </div>
 
-            {/* Récapitulatif du panier - en haut sur mobile */}
             <div className="lg:col-span-1 order-1 lg:order-2">
               <div className="bg-white rounded-xl border border-gray-100 p-4 lg:p-5 sticky lg:top-24">
                 <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
@@ -1033,7 +1038,6 @@ export default function CheckoutPage() {
                   Commande ({totalItems})
                 </h2>
 
-                {/* Liste des produits - scrollable sur mobile */}
                 <div className="space-y-2 max-h-60 lg:max-h-80 overflow-y-auto pr-1">
                   {cart.map((item) => (
                     <div key={item.variantKey} className="flex gap-2 pb-2 border-b border-gray-100 last:border-0">
@@ -1064,7 +1068,6 @@ export default function CheckoutPage() {
                   ))}
                 </div>
 
-                {/* Totaux */}
                 <div className="border-t border-gray-100 mt-3 pt-3 space-y-1.5">
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-500">Sous-total</span>
@@ -1080,7 +1083,6 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                {/* Sécurité */}
                 <div className="mt-3 pt-3 border-t border-gray-100">
                   <div className="flex items-center gap-1.5 text-[10px] text-gray-400">
                     <Lock className="w-3 h-3" />
