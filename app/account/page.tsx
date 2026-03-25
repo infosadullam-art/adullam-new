@@ -5,13 +5,14 @@ import {
   Home, Star, ShoppingCart, HelpCircle, User, LogOut, 
   Mail, Phone, MapPin, Package, Heart, ChevronRight, 
   AlertCircle, Eye, EyeOff, ArrowLeft, Shield, CheckCircle,
-  Clock, Lock, Key, Smartphone, MailCheck, Info
+  Clock, Lock, Key, Smartphone, MailCheck, Info, Plus
 } from "lucide-react"
 import Image from "next/image"
 import { useAuth } from "@/lib/admin/auth-context"
 import { FcGoogle } from "react-icons/fc"
 import { FaFacebook, FaApple } from "react-icons/fa"
 import { useRouter } from "next/navigation"
+import { ordersApi, addressesApi, wishlistApi } from "@/lib/admin/api-client"  // ✅ AJOUTÉ
 
 // ============================================================
 // COMPOSANT PRINCIPAL
@@ -66,7 +67,7 @@ export default function AccountPage() {
   const csrfToken = useRef(generateCSRFToken())
 
   // ============================================================
-  // CHARGEMENT DES DONNÉES UTILISATEUR
+  // CHARGEMENT DES DONNÉES UTILISATEUR AVEC LES BONNES APIS
   // ============================================================
   useEffect(() => {
     if (user) {
@@ -78,13 +79,12 @@ export default function AccountPage() {
   }, [user])
 
   const fetchUserData = async () => {
-    // Commandes
+    // Commandes avec ordersApi
     setLoading(prev => ({ ...prev, orders: true }))
     try {
-      const res = await fetch("/api/orders")
-      if (res.ok) {
-        const data = await res.json()
-        setOrders(data.data || [])
+      const response = await ordersApi.list()
+      if (response.success) {
+        setOrders(response.data || [])
       }
     } catch (error) {
       console.error("Erreur chargement commandes:", error)
@@ -92,13 +92,12 @@ export default function AccountPage() {
       setLoading(prev => ({ ...prev, orders: false }))
     }
 
-    // Wishlist
+    // Wishlist avec wishlistApi
     setLoading(prev => ({ ...prev, wishlist: true }))
     try {
-      const res = await fetch("/api/user/wishlist")
-      if (res.ok) {
-        const data = await res.json()
-        setWishlist(data.data || [])
+      const response = await wishlistApi.list()
+      if (response.success) {
+        setWishlist(response.data || [])
       }
     } catch (error) {
       console.error("Erreur chargement wishlist:", error)
@@ -106,13 +105,12 @@ export default function AccountPage() {
       setLoading(prev => ({ ...prev, wishlist: false }))
     }
 
-    // Adresses
+    // Adresses avec addressesApi
     setLoading(prev => ({ ...prev, addresses: true }))
     try {
-      const res = await fetch("/api/user/addresses")
-      if (res.ok) {
-        const data = await res.json()
-        setAddresses(data.data || [])
+      const response = await addressesApi.list()
+      if (response.success) {
+        setAddresses(response.addresses || [])
       }
     } catch (error) {
       console.error("Erreur chargement adresses:", error)
@@ -162,7 +160,7 @@ export default function AccountPage() {
   }
 
   const sanitizeInput = (input: string): string => {
-    return input.replace(/[<>]/g, '') // Supprime les balises HTML potentielles
+    return input.replace(/[<>]/g, '')
   }
 
   // ============================================================
@@ -171,7 +169,7 @@ export default function AccountPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: sanitizeInput(value) }))
-    setError("") // Efface l'erreur à chaque saisie
+    setError("")
   }
 
   const handleSendCode = async () => {
@@ -342,13 +340,6 @@ export default function AccountPage() {
     }
   }
 
-  // 🔴 FONCTION SOCIAL LOGIN COMMENTÉE POUR ÉVITER L'ERREUR 500
-  // const handleSocialLogin = async (provider: string) => {
-  //   const state = generateRandomState()
-  //   sessionStorage.setItem('oauth_state', state)
-  //   window.location.href = `/api/auth/${provider}?state=${state}`
-  // }
-
   const handleLogout = async () => {
     await logout()
     setIsLogged(false)
@@ -362,17 +353,14 @@ export default function AccountPage() {
     if (!confirm("Voulez-vous vraiment supprimer cette adresse ?")) return
     
     try {
-      const res = await fetch(`/api/user/addresses/${id}`, {
-        method: 'DELETE'
-      })
+      const response = await addressesApi.delete(id)
       
-      if (res.ok) {
+      if (response.success) {
         await fetchUserData()
         setSuccess("Adresse supprimée avec succès")
         setTimeout(() => setSuccess(""), 3000)
       } else {
-        const data = await res.json()
-        setError(data.error || "Erreur lors de la suppression")
+        setError("Erreur lors de la suppression")
       }
     } catch (error) {
       console.error("Erreur suppression adresse:", error)
@@ -382,21 +370,35 @@ export default function AccountPage() {
 
   const handleSetDefaultAddress = async (id: string) => {
     try {
-      const res = await fetch(`/api/user/addresses/${id}`, {
-        method: 'PATCH',
-        headers: { 
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ isDefault: true })
-      })
+      const response = await addressesApi.update(id, { isDefault: true })
       
-      if (res.ok) {
+      if (response.success) {
         await fetchUserData()
         setSuccess("Adresse par défaut mise à jour")
         setTimeout(() => setSuccess(""), 3000)
       }
     } catch (error) {
       console.error("Erreur mise à jour adresse:", error)
+    }
+  }
+
+  // ============================================================
+  // GESTION DE LA WISHLIST
+  // ============================================================
+  const handleRemoveFromWishlist = async (id: string) => {
+    if (!confirm("Voulez-vous retirer ce produit de votre liste de souhaits ?")) return
+    
+    try {
+      const response = await wishlistApi.remove(id)
+      
+      if (response.success) {
+        await fetchUserData()
+        setSuccess("Produit retiré de la wishlist")
+        setTimeout(() => setSuccess(""), 3000)
+      }
+    } catch (error) {
+      console.error("Erreur suppression wishlist:", error)
+      setError("Erreur lors de la suppression")
     }
   }
 
@@ -781,7 +783,6 @@ export default function AccountPage() {
                     </div>
                   </div>
 
-                  {/* 🔴 BOUTONS SOCIAUX DÉSACTIVÉS TEMPORAIREMENT */}
                   <div className="grid grid-cols-3 gap-3">
                     <button
                       onClick={() => alert("Connexion Google bientôt disponible")}
@@ -1056,7 +1057,7 @@ export default function AccountPage() {
                       </span>
                     </div>
                     <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                      <span className="font-semibold text-gray-900">{order.total.toLocaleString()} {order.currency}</span>
+                      <span className="font-semibold text-gray-900">{order.total?.toLocaleString()} {order.currency || 'XOF'}</span>
                       <button className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 transition-colors">
                         Voir les détails
                       </button>
@@ -1089,16 +1090,28 @@ export default function AccountPage() {
             ) : wishlist.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {wishlist.map((item) => (
-                  <div key={item.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all group">
-                    <div className="aspect-square bg-gray-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
-                      {item.image ? (
-                        <Image src={item.image} alt={item.productName} width={200} height={200} className="object-cover group-hover:scale-105 transition-transform" />
+                  <div key={item.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all group relative">
+                    <button
+                      onClick={() => handleRemoveFromWishlist(item.id)}
+                      className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
+                    >
+                      <Heart className="w-4 h-4 text-red-500 fill-red-500" />
+                    </button>
+                    <div className="aspect-square bg-gray-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden cursor-pointer"
+                         onClick={() => router.push(`/product/${item.product?.slug || item.productId}`)}>
+                      {item.product?.images?.[0] ? (
+                        <Image src={item.product.images[0]} alt={item.product.name} width={200} height={200} className="object-cover group-hover:scale-105 transition-transform" />
                       ) : (
                         <Package className="w-12 h-12 text-gray-400" />
                       )}
                     </div>
-                    <h3 className="font-medium text-sm text-gray-900 mb-2 line-clamp-2">{item.productName}</h3>
-                    <p className="text-lg font-bold text-gray-900">{item.price.toLocaleString()} {item.currency}</p>
+                    <h3 className="font-medium text-sm text-gray-900 mb-2 line-clamp-2 cursor-pointer hover:text-gray-700"
+                        onClick={() => router.push(`/product/${item.product?.slug || item.productId}`)}>
+                      {item.product?.name || item.productName}
+                    </h3>
+                    <p className="text-lg font-bold text-gray-900">
+                      {(item.product?.price || item.price)?.toLocaleString()} {item.currency || 'XOF'}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -1106,7 +1119,10 @@ export default function AccountPage() {
               <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
                 <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 mb-2">Votre wishlist est vide</p>
-                <button className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors mt-2">
+                <button 
+                  onClick={() => router.push("/products")}
+                  className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors mt-2"
+                >
                   Explorer les produits
                 </button>
               </div>
@@ -1118,7 +1134,10 @@ export default function AccountPage() {
           <div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Mes adresses</h2>
-              <button className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2">
+              <button 
+                onClick={() => router.push("/account/addresses")}
+                className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
+              >
                 <Plus className="w-4 h-4" />
                 Ajouter une adresse
               </button>
@@ -1148,7 +1167,10 @@ export default function AccountPage() {
                       </div>
                     </div>
                     <div className="flex gap-3 pt-4 border-t border-gray-100">
-                      <button className="text-sm text-gray-600 hover:text-gray-900 hover:underline">
+                      <button 
+                        onClick={() => router.push(`/account/addresses?edit=${address.id}`)}
+                        className="text-sm text-gray-600 hover:text-gray-900 hover:underline"
+                      >
                         Modifier
                       </button>
                       {!address.isDefault && (
@@ -1173,7 +1195,10 @@ export default function AccountPage() {
               <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
                 <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 mb-2">Aucune adresse enregistrée</p>
-                <button className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors mt-2">
+                <button 
+                  onClick={() => router.push("/account/addresses")}
+                  className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors mt-2"
+                >
                   Ajouter une adresse
                 </button>
               </div>
@@ -1318,14 +1343,3 @@ function generateCSRFToken(): string {
   return Math.random().toString(36).substring(2, 15) + 
          Math.random().toString(36).substring(2, 15)
 }
-
-function generateRandomState(): string {
-  return Math.random().toString(36).substring(2, 15)
-}
-
-// Icône Plus manquante
-const Plus = (props: any) => (
-  <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M12 5v14M5 12h14" />
-  </svg>
-)
