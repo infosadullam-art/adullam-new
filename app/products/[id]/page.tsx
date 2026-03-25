@@ -35,6 +35,8 @@ import { useLocale } from "@/context/LocaleProvider"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { CurrencyIndicator } from "@/components/currency-indicator"
 import { toast } from "react-hot-toast"
+import { wishlistApi } from "@/lib/admin/api-client"
+import { useAuth } from "@/lib/admin/auth-context"
 
 // ============================================================
 // INTERFACE POUR LES DONNÉES DE L'API LOGISTIQUE
@@ -93,6 +95,7 @@ interface LogisticsData {
 export default function ProductPage() {
   const { id } = useParams()
   const router = useRouter()
+  const { user } = useAuth()
   const [selectedImage, setSelectedImage] = useState(0)
   const [activeTab, setActiveTab] = useState("description")
   const [minQuantity, setMinQuantity] = useState(1)
@@ -176,6 +179,62 @@ export default function ProductPage() {
       })
       .catch((err) => console.error("Erreur produit", err))
   }, [id])
+
+  // ============================================================
+  // VÉRIFICATION SI LE PRODUIT EST DANS LA WISHLIST
+  // ============================================================
+  useEffect(() => {
+    const checkWishlist = async () => {
+      if (!user || !product) return
+      
+      try {
+        const response = await wishlistApi.list()
+        if (response.success && response.data) {
+          const exists = response.data.some((item: any) => 
+            item.productId === product.id || item.product?.id === product.id
+          )
+          setIsWishlisted(exists)
+        }
+      } catch (error) {
+        console.error("Erreur vérification wishlist:", error)
+      }
+    }
+    
+    checkWishlist()
+  }, [user, product])
+
+  // ============================================================
+  // FONCTION POUR AJOUTER/RETIRER DES FAVORIS
+  // ============================================================
+  const handleToggleWishlist = async () => {
+    if (!user) {
+      router.push("/account?mode=login")
+      return
+    }
+    
+    try {
+      if (isWishlisted) {
+        const response = await wishlistApi.remove(product.id)
+        if (response.success) {
+          setIsWishlisted(false)
+          toast.success("Produit retiré des favoris")
+        } else {
+          toast.error("Erreur lors du retrait des favoris")
+        }
+      } else {
+        const response = await wishlistApi.add(product.id)
+        if (response.success) {
+          setIsWishlisted(true)
+          toast.success("Produit ajouté aux favoris")
+        } else {
+          toast.error("Erreur lors de l'ajout aux favoris")
+        }
+      }
+    } catch (error) {
+      console.error("Erreur wishlist:", error)
+      toast.error("Une erreur est survenue")
+    }
+  }
 
   // ============================================================
   // APPEL À L'API LOGISTIQUE
@@ -905,10 +964,10 @@ export default function ProductPage() {
                     <h1 className="text-lg font-medium leading-tight">{productName}</h1>
                   </div>
                   <button 
-                    onClick={() => setIsWishlisted(!isWishlisted)}
-                    className="p-2 -mt-1"
+                    onClick={handleToggleWishlist}
+                    className="p-2 -mt-1 hover:bg-gray-100 rounded-full transition-colors"
                   >
-                    <Heart className={`w-5 h-5 ${isWishlisted ? `fill-[${brandColor}] text-[${brandColor}]` : 'text-gray-300'}`} />
+                    <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
                   </button>
                 </div>
 
@@ -1484,10 +1543,10 @@ export default function ProductPage() {
                   </div>
                   
                   <button 
-                    onClick={() => setIsWishlisted(!isWishlisted)}
+                    onClick={handleToggleWishlist}
                     className="p-1.5 rounded-lg hover:bg-gray-50 transition-colors"
                   >
-                    <Heart className={`w-4 h-4 ${isWishlisted ? `fill-[${brandColor}] text-[${brandColor}]` : 'text-gray-400'}`} />
+                    <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
                   </button>
                 </div>
 
