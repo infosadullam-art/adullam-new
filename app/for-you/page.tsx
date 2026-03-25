@@ -21,6 +21,7 @@ interface Product {
   reviews?: number
   forYouScore?: number
   reason?: string
+  source?: string
   type?: 'prediction' | 'diversity' | 'trending'
 }
 
@@ -34,6 +35,7 @@ export default function ForYouPage() {
   const [hasMore, setHasMore] = useState(true)
   const [initialized, setInitialized] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [sessionId, setSessionId] = useState<string | null>(null)
   const [stats, setStats] = useState({
     predictions: 0,
     diversity: 0,
@@ -43,38 +45,71 @@ export default function ForYouPage() {
   const loaderRef = useRef<HTMLDivElement | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
   const viewedProducts = useRef<Set<string>>(new Set())
-  const sessionId = useRef<string>(crypto.randomUUID())
 
-  // ✅ TRACKER UNE INTERACTION
+  // ✅ Initialiser sessionId uniquement côté client
+  useEffect(() => {
+    // Récupérer depuis localStorage
+    let stored = localStorage.getItem('adullam_session_id')
+    if (!stored) {
+      stored = crypto.randomUUID()
+      localStorage.setItem('adullam_session_id', stored)
+      console.log(`🔍 [SESSION] Nouveau sessionId créé: ${stored}`)
+    } else {
+      console.log(`🔍 [SESSION] SessionId existant depuis localStorage: ${stored}`)
+    }
+    
+    setSessionId(stored)
+    
+    // Sauvegarder dans un cookie pour le backend
+    document.cookie = `sessionId=${stored}; path=/; max-age=86400; SameSite=Lax`
+    console.log(`🍪 [SESSION] SessionId sauvegardé dans cookie: ${stored}`)
+  }, [])
+
+  // ✅ CORRECTION : Utiliser fetchWithAuth et envoyer sessionId
   const trackInteraction = useCallback(async (
     productId: string, 
     type: 'VIEW' | 'CLICK',
     metadata?: any
   ) => {
+    if (!sessionId) {
+      console.warn('⚠️ [TRACK] SessionId non encore initialisé, attente...')
+      return
+    }
+    
     try {
       const product = products.find(p => p.id === productId)
-      await fetch('/api/track', {
+      
+      console.log(`📊 [TRACK] Envoi interaction: ${type} sur ${productId} - Session: ${sessionId}`)
+      
+      const res = await fetchWithAuth('/api/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           productId,
           type,
           context: 'FOR_YOU',
-          sessionId: sessionId.current,
-          page: 'for-you-page',
+          sessionId: sessionId,
           metadata: {
             ...metadata,
             page,
             forYouScore: product?.forYouScore,
             recommendationType: product?.type,
+            source: product?.source,
             reason: product?.reason
           }
         })
       })
+      
+      if (!res.ok) {
+        console.error(`❌ Erreur tracking ${type}:`, res.status)
+      } else {
+        console.log(`✅ [TRACK] ${type} envoyé pour ${productId}`)
+      }
+      
     } catch (err) {
       console.error('❌ Erreur tracking:', err)
     }
-  }, [page, products])
+  }, [page, products, fetchWithAuth, sessionId])
 
   // ✅ TRACKER LES VUES
   useEffect(() => {
@@ -102,9 +137,30 @@ export default function ForYouPage() {
     return () => observer.disconnect()
   }, [products, trackInteraction])
 
+  const generateReason = (score: number, source?: string, type?: string): string => {
+    if (source === 'session_graph') return "Similaire à vos vues"
+    if (source === 'session') return "Similaire à vos vues"
+    if (source === 'als') return "Basé sur vos goûts"
+    if (source === 'trend') return "Tendance de la semaine"
+    if (source === 'new') return "Nouveauté"
+    if (source === 'random') return "Pour varier les découvertes"
+    if (source === 'popular') return "Populaire en ce moment"
+    if (type === 'diversity') return "Découverte"
+    if (type === 'trending') return "Tendance"
+    if (score > 0.9) return "Recommandé"
+    if (score > 0.8) return "Pour vous"
+    if (score > 0.7) return "Populaire"
+    if (score > 0.6) return "Similaire"
+    return "Nouveau"
+  }
+
   // ✅ CHARGER LES RECOMMANDATIONS
   const fetchForYou = useCallback(async (pageToLoad: number) => {
     if (isLoading || !hasMore) return
+    if (!sessionId) {
+      console.warn('⚠️ [FOR-YOU] SessionId non encore initialisé, attente...')
+      return
+    }
     
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
@@ -117,12 +173,13 @@ export default function ForYouPage() {
     try {
       const seenIds = products.map(p => p.id).join(',')
       
-      let url = `/api/graph/recommendations/for-you?page=${pageToLoad}&limit=24`
+      // ✅ Ajouter sessionId dans l'URL
+      let url = `/api/graph/recommendations/for-you?page=${pageToLoad}&limit=24&sessionId=${sessionId}`
       if (seenIds) {
         url += `&seenIds=${seenIds}`
       }
       
-      console.log(`🔍 Fetch page ${pageToLoad} pour For You page`)
+      console.log(`🔍 [FOR-YOU] Fetch page ${pageToLoad}, Session: ${sessionId}, URL: ${url}`)
       
       const res = await fetchWithAuth(url, {
         signal: abortControllerRef.current.signal,
@@ -165,7 +222,8 @@ export default function ForYouPage() {
         rating: p.rating || 4.5,
         reviews: p.reviews || Math.floor(Math.random() * 200) + 50,
         forYouScore: p.forYouScore || p.score || 0.5,
-        reason: p.reason || generateReason(p.forYouScore || 0, p.type),
+        reason: p.reason || generateReason(p.forYouScore || 0, p.source, p.type),
+        source: p.source,
         type: p.type || 'prediction'
       }))
 
@@ -197,17 +255,7 @@ export default function ForYouPage() {
       setIsLoading(false)
       setInitialized(true)
     }
-  }, [isLoading, hasMore, products, fetchWithAuth])
-
-  const generateReason = (score: number, type?: string): string => {
-    if (type === 'diversity') return "Découverte"
-    if (type === 'trending') return "Tendance"
-    if (score > 0.9) return "Recommandé"
-    if (score > 0.8) return "Pour vous"
-    if (score > 0.7) return "Populaire"
-    if (score > 0.6) return "Similaire"
-    return "Nouveau"
-  }
+  }, [isLoading, hasMore, products, fetchWithAuth, sessionId])
 
   const handleProductClick = (productId: string) => {
     trackInteraction(productId, 'CLICK')
@@ -215,8 +263,10 @@ export default function ForYouPage() {
 
   // ✅ CHARGEMENT INITIAL
   useEffect(() => {
-    fetchForYou(1)
-  }, [])
+    if (sessionId) {
+      fetchForYou(1)
+    }
+  }, [fetchForYou, sessionId])
 
   // ✅ SCROLL INFINI
   useEffect(() => {
@@ -333,20 +383,45 @@ export default function ForYouPage() {
                     </span>
                   )}
 
-                  {/* Badge de type */}
-                  {product.type === 'diversity' && (
-                    <span className="absolute top-2 right-2 z-10 bg-purple-100 text-purple-700 text-xs font-medium px-2 py-1 rounded-full border border-purple-200">
-                      Découverte
+                  {/* Badge ALS */}
+                  {product.source === 'als' && (
+                    <span className="absolute top-2 right-2 z-10 bg-amber-100 text-amber-700 text-xs font-medium px-2 py-1 rounded-full border border-amber-200">
+                      {Math.round((product.forYouScore || 0.5) * 100)}%
                     </span>
                   )}
-                  {product.type === 'trending' && (
+
+                  {/* Badge SESSION GRAPH */}
+                  {(product.source === 'session_graph' || product.source === 'session') && (
+                    <span className="absolute top-2 right-2 z-10 bg-indigo-100 text-indigo-700 text-xs font-medium px-2 py-1 rounded-full border border-indigo-200 animate-pulse">
+                      Pour vous
+                    </span>
+                  )}
+
+                  {/* Badge TREND */}
+                  {product.source === 'trend' && (
                     <span className="absolute top-2 right-2 z-10 bg-blue-100 text-blue-700 text-xs font-medium px-2 py-1 rounded-full border border-blue-200">
                       Tendance
                     </span>
                   )}
-                  {product.type === 'prediction' && product.forYouScore && product.forYouScore > 0.8 && (
-                    <span className="absolute top-2 right-2 z-10 bg-amber-100 text-amber-700 text-xs font-medium px-2 py-1 rounded-full border border-amber-200">
-                      {Math.round(product.forYouScore * 100)}%
+
+                  {/* Badge NEW */}
+                  {product.source === 'new' && (
+                    <span className="absolute top-2 right-2 z-10 bg-purple-100 text-purple-700 text-xs font-medium px-2 py-1 rounded-full border border-purple-200 animate-pulse">
+                      Nouveau
+                    </span>
+                  )}
+
+                  {/* Badge RANDOM */}
+                  {product.source === 'random' && (
+                    <span className="absolute top-2 right-2 z-10 bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded-full border border-green-200">
+                      Découverte
+                    </span>
+                  )}
+
+                  {/* Badge POPULAR */}
+                  {product.source === 'popular' && (
+                    <span className="absolute top-2 right-2 z-10 bg-orange-100 text-orange-700 text-xs font-medium px-2 py-1 rounded-full border border-orange-200">
+                      Populaire
                     </span>
                   )}
 
@@ -389,7 +464,7 @@ export default function ForYouPage() {
                       {formatPrice(product.priceUSD)}
                     </span>
 
-                    {/* Raison (pour mobile) */}
+                    {/* Raison */}
                     {product.reason && (
                       <p className="text-[10px] text-gray-400 mt-1 line-clamp-1">
                         {product.reason}
