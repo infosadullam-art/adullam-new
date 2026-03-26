@@ -12,7 +12,8 @@ import { useAuth } from "@/lib/admin/auth-context"
 import { FcGoogle } from "react-icons/fc"
 import { FaFacebook, FaApple } from "react-icons/fa"
 import { useRouter } from "next/navigation"
-import { ordersApi, addressesApi, wishlistApi } from "@/lib/admin/api-client"  // ✅ AJOUTÉ
+import { ordersApi, addressesApi, wishlistApi } from "@/lib/admin/api-client"
+import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
 // ============================================================
 // COMPOSANT PRINCIPAL
@@ -20,6 +21,7 @@ import { ordersApi, addressesApi, wishlistApi } from "@/lib/admin/api-client"  /
 export default function AccountPage() {
   const router = useRouter()
   const { user, login, register, logout, isLoading: authLoading } = useAuth()
+  const { formatPrice } = useCurrencyFormatter()
 
   // États principaux
   const [isLogged, setIsLogged] = useState(false)
@@ -35,6 +37,11 @@ export default function AccountPage() {
     wishlist: false,
     addresses: false
   })
+
+  // Couleurs de la marque
+  const brandColor = "#2B4F3C"
+  const brandGradient = "linear-gradient(135deg, #2B4F3C 0%, #3A6B4E 100%)"
+  const brandLight = "#E8F3E8"
 
   // ============================================================
   // ÉTATS POUR L'AUTHENTIFICATION SÉCURISÉE
@@ -130,7 +137,7 @@ export default function AccountPage() {
     }
     
     if (attempts >= 3) {
-      const blockTime = new Date(Date.now() + 15 * 60000) // 15 minutes
+      const blockTime = new Date(Date.now() + 15 * 60000)
       setBlockedUntil(blockTime)
       setError("Trop de tentatives. Compte bloqué 15 minutes.")
       return false
@@ -1057,7 +1064,7 @@ export default function AccountPage() {
                       </span>
                     </div>
                     <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                      <span className="font-semibold text-gray-900">{order.total?.toLocaleString()} {order.currency || 'XOF'}</span>
+                      <span className="font-semibold text-gray-900">{formatPrice(order.total)}</span>
                       <button className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 transition-colors">
                         Voir les détails
                       </button>
@@ -1089,31 +1096,49 @@ export default function AccountPage() {
               </div>
             ) : wishlist.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {wishlist.map((item) => (
-                  <div key={item.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all group relative">
-                    <button
-                      onClick={() => handleRemoveFromWishlist(item.id)}
-                      className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
-                    >
-                      <Heart className="w-4 h-4 text-red-500 fill-red-500" />
-                    </button>
-                    <div className="aspect-square bg-gray-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden cursor-pointer"
-                         onClick={() => router.push(`/product/${item.product?.slug || item.productId}`)}>
-                      {item.product?.images?.[0] ? (
-                        <Image src={item.product.images[0]} alt={item.product.name} width={200} height={200} className="object-cover group-hover:scale-105 transition-transform" />
-                      ) : (
-                        <Package className="w-12 h-12 text-gray-400" />
-                      )}
+                {wishlist.map((item) => {
+                  // ✅ CORRIGÉ : Utiliser l'ID du produit correctement
+                  const productId = item.product?.id || item.productId
+                  const productName = item.product?.name || item.productName || "Produit"
+                  const productImage = item.product?.images?.[0]
+                  const productPrice = item.product?.price || item.price || 0
+                  
+                  return (
+                    <div key={item.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all group relative">
+                      <button
+                        onClick={() => handleRemoveFromWishlist(item.id)}
+                        className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 z-10"
+                      >
+                        <Heart className="w-4 h-4 text-red-500 fill-red-500" />
+                      </button>
+                      <div 
+                        className="aspect-square bg-gray-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden cursor-pointer"
+                        onClick={() => router.push(`/products/${productId}`)}
+                      >
+                        {productImage ? (
+                          <Image 
+                            src={productImage} 
+                            alt={productName} 
+                            width={200} 
+                            height={200} 
+                            className="object-cover group-hover:scale-105 transition-transform" 
+                          />
+                        ) : (
+                          <Package className="w-12 h-12 text-gray-400" />
+                        )}
+                      </div>
+                      <h3 
+                        className="font-medium text-sm text-gray-900 mb-2 line-clamp-2 cursor-pointer hover:text-gray-700"
+                        onClick={() => router.push(`/products/${productId}`)}
+                      >
+                        {productName}
+                      </h3>
+                      <p className="text-lg font-bold text-gray-900">
+                        {formatPrice(productPrice)}
+                      </p>
                     </div>
-                    <h3 className="font-medium text-sm text-gray-900 mb-2 line-clamp-2 cursor-pointer hover:text-gray-700"
-                        onClick={() => router.push(`/product/${item.product?.slug || item.productId}`)}>
-                      {item.product?.name || item.productName}
-                    </h3>
-                    <p className="text-lg font-bold text-gray-900">
-                      {(item.product?.price || item.price)?.toLocaleString()} {item.currency || 'XOF'}
-                    </p>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             ) : (
               <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
