@@ -64,7 +64,6 @@ export default function WishlistPage() {
       const response = await wishlistApi.remove(id)
       
       if (response.success) {
-        // Supprimer l'élément de la liste
         setWishlist(wishlist.filter(item => item.id !== id))
       }
     } catch (error) {
@@ -77,16 +76,20 @@ export default function WishlistPage() {
   const handleAddToCart = async (productId: string) => {
     // À implémenter avec votre API panier
     console.log("Ajouter au panier:", productId)
-    // Ici tu peux appeler cartApi.add(productId)
   }
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#C72C1C]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2B4F3C]"></div>
       </div>
     )
   }
+
+  // Couleurs de la marque
+  const brandColor = "#2B4F3C"
+  const brandGradient = "linear-gradient(135deg, #2B4F3C 0%, #3A6B4E 100%)"
+  const brandLight = "#E8F3E8"
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -101,8 +104,8 @@ export default function WishlistPage() {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2">
-              <Heart className="w-6 h-6 text-[#C72C1C]" />
-              <h1 className="text-2xl font-bold">Ma liste de souhaits</h1>
+              <Heart className="w-6 h-6" style={{ color: brandColor }} />
+              <h1 className="text-2xl font-bold text-gray-900">Ma liste de souhaits</h1>
             </div>
           </div>
         </div>
@@ -119,7 +122,8 @@ export default function WishlistPage() {
             </p>
             <Link
               href="/"
-              className="inline-block px-6 py-3 bg-[#C72C1C] text-white rounded-lg hover:bg-[#A21F18] transition-colors"
+              className="inline-block px-6 py-3 text-white rounded-lg transition-colors hover:shadow-lg"
+              style={{ background: brandGradient }}
             >
               Découvrir nos produits
             </Link>
@@ -135,8 +139,8 @@ export default function WishlistPage() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
                 >
-                  {/* Image du produit */}
-                  <Link href={`/product/${item.product.slug}`}>
+                  {/* Image du produit - ✅ CORRIGÉ : /products/ au lieu de /product/ */}
+                  <Link href={`/products/${item.product.id}`}>
                     <div className="relative h-48 bg-gray-100">
                       {item.product.images && item.product.images[0] ? (
                         <Image
@@ -155,18 +159,19 @@ export default function WishlistPage() {
 
                   {/* Informations produit */}
                   <div className="p-4">
-                    <Link href={`/product/${item.product.slug}`}>
-                      <h3 className="font-semibold text-lg mb-2 hover:text-[#C72C1C] transition-colors line-clamp-2">
+                    {/* ✅ CORRIGÉ : /products/ au lieu de /product/ */}
+                    <Link href={`/products/${item.product.id}`}>
+                      <h3 className="font-semibold text-lg mb-2 transition-colors line-clamp-2 hover:opacity-80" style={{ color: brandColor }}>
                         {item.product.name}
                       </h3>
                     </Link>
                     
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-xl font-bold text-[#C72C1C]">
+                      <span className="text-xl font-bold" style={{ color: brandColor }}>
                         {formatPrice(item.product.price)}
                       </span>
                       {item.product.stock > 0 ? (
-                        <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                        <span className="text-xs px-2 py-1 rounded" style={{ background: brandLight, color: brandColor }}>
                           En stock
                         </span>
                       ) : (
@@ -183,9 +188,10 @@ export default function WishlistPage() {
                         disabled={item.product.stock === 0}
                         className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                           item.product.stock > 0
-                            ? "bg-[#C72C1C] text-white hover:bg-[#A21F18]"
+                            ? "text-white hover:shadow-lg"
                             : "bg-gray-300 text-gray-500 cursor-not-allowed"
                         }`}
+                        style={item.product.stock > 0 ? { background: brandGradient } : {}}
                       >
                         <ShoppingBag className="w-4 h-4" />
                         Ajouter au panier
