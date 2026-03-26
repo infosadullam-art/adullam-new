@@ -13,72 +13,72 @@ type LocaleContextType = {
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined)
 
-// Mapping pays → devise + locale (Afrique + USA uniquement)
+// Mapping pays → devise + locale
 const countryConfig: Record<string, { currency: string; locale: string }> = {
   // 🌍 AFRIQUE DE L'OUEST (UEMOA - XOF)
-  CI: { currency: "XOF", locale: "fr-CI" }, // Côte d'Ivoire
-  BF: { currency: "XOF", locale: "fr-BF" }, // Burkina Faso
-  SN: { currency: "XOF", locale: "fr-SN" }, // Sénégal
-  ML: { currency: "XOF", locale: "fr-ML" }, // Mali
-  BJ: { currency: "XOF", locale: "fr-BJ" }, // Bénin
-  TG: { currency: "XOF", locale: "fr-TG" }, // Togo
-  NE: { currency: "XOF", locale: "fr-NE" }, // Niger
-  GW: { currency: "XOF", locale: "fr-GW" }, // Guinée-Bissau
+  CI: { currency: "XOF", locale: "fr-CI" },
+  BF: { currency: "XOF", locale: "fr-BF" },
+  SN: { currency: "XOF", locale: "fr-SN" },
+  ML: { currency: "XOF", locale: "fr-ML" },
+  BJ: { currency: "XOF", locale: "fr-BJ" },
+  TG: { currency: "XOF", locale: "fr-TG" },
+  NE: { currency: "XOF", locale: "fr-NE" },
+  GW: { currency: "XOF", locale: "fr-GW" },
   
   // 🌍 AFRIQUE CENTRALE (CEMAC - XAF)
-  CM: { currency: "XAF", locale: "fr-CM" }, // Cameroun
-  CF: { currency: "XAF", locale: "fr-CF" }, // Centrafrique
-  GA: { currency: "XAF", locale: "fr-GA" }, // Gabon
-  CG: { currency: "XAF", locale: "fr-CG" }, // Congo
-  GQ: { currency: "XAF", locale: "fr-GQ" }, // Guinée Équatoriale
-  TD: { currency: "XAF", locale: "fr-TD" }, // Tchad
+  CM: { currency: "XAF", locale: "fr-CM" },
+  CF: { currency: "XAF", locale: "fr-CF" },
+  GA: { currency: "XAF", locale: "fr-GA" },
+  CG: { currency: "XAF", locale: "fr-CG" },
+  GQ: { currency: "XAF", locale: "fr-GQ" },
+  TD: { currency: "XAF", locale: "fr-TD" },
   
   // 🌍 AFRIQUE DE L'OUEST HORS UEMOA
-  NG: { currency: "NGN", locale: "en-NG" }, // Nigeria (Naira)
-  GH: { currency: "GHS", locale: "en-GH" }, // Ghana (Cedi)
-  LR: { currency: "LRD", locale: "en-LR" }, // Liberia (Dollar libérien)
-  SL: { currency: "SLL", locale: "en-SL" }, // Sierra Leone (Leone)
-  GM: { currency: "GMD", locale: "en-GM" }, // Gambie (Dalasi)
-  CV: { currency: "CVE", locale: "pt-CV" }, // Cap-Vert (Escudo)
+  NG: { currency: "NGN", locale: "en-NG" },
+  GH: { currency: "GHS", locale: "en-GH" },
+  LR: { currency: "LRD", locale: "en-LR" },
+  SL: { currency: "SLL", locale: "en-SL" },
+  GM: { currency: "GMD", locale: "en-GM" },
+  CV: { currency: "CVE", locale: "pt-CV" },
   
   // 🌍 AFRIQUE DU NORD
-  MA: { currency: "MAD", locale: "fr-MA" }, // Maroc
-  TN: { currency: "TND", locale: "fr-TN" }, // Tunisie
-  DZ: { currency: "DZD", locale: "fr-DZ" }, // Algérie
-  LY: { currency: "LYD", locale: "ar-LY" }, // Libye
-  EG: { currency: "EGP", locale: "ar-EG" }, // Égypte
-  MR: { currency: "MRU", locale: "fr-MR" }, // Mauritanie
+  MA: { currency: "MAD", locale: "fr-MA" },
+  TN: { currency: "TND", locale: "fr-TN" },
+  DZ: { currency: "DZD", locale: "fr-DZ" },
+  LY: { currency: "LYD", locale: "ar-LY" },
+  EG: { currency: "EGP", locale: "ar-EG" },
+  MR: { currency: "MRU", locale: "fr-MR" },
   
   // 🌍 AFRIQUE DE L'EST
-  KE: { currency: "KES", locale: "en-KE" }, // Kenya
-  UG: { currency: "UGX", locale: "en-UG" }, // Ouganda
-  TZ: { currency: "TZS", locale: "en-TZ" }, // Tanzanie
-  RW: { currency: "RWF", locale: "en-RW" }, // Rwanda
-  BI: { currency: "BIF", locale: "fr-BI" }, // Burundi
-  ET: { currency: "ETB", locale: "am-ET" }, // Éthiopie
-  SO: { currency: "SOS", locale: "so-SO" }, // Somalie
-  DJ: { currency: "DJF", locale: "fr-DJ" }, // Djibouti
-  SD: { currency: "SDG", locale: "ar-SD" }, // Soudan
-  SS: { currency: "SSP", locale: "en-SS" }, // Soudan du Sud
+  KE: { currency: "KES", locale: "en-KE" },
+  UG: { currency: "UGX", locale: "en-UG" },
+  TZ: { currency: "TZS", locale: "en-TZ" },
+  RW: { currency: "RWF", locale: "en-RW" },
+  BI: { currency: "BIF", locale: "fr-BI" },
+  ET: { currency: "ETB", locale: "am-ET" },
+  SO: { currency: "SOS", locale: "so-SO" },
+  DJ: { currency: "DJF", locale: "fr-DJ" },
+  SD: { currency: "SDG", locale: "ar-SD" },
+  SS: { currency: "SSP", locale: "en-SS" },
   
   // 🌍 AFRIQUE AUSTRALE
-  ZA: { currency: "ZAR", locale: "en-ZA" }, // Afrique du Sud
-  NA: { currency: "NAD", locale: "en-NA" }, // Namibie
-  BW: { currency: "BWP", locale: "en-BW" }, // Botswana
-  ZW: { currency: "ZWL", locale: "en-ZW" }, // Zimbabwe
-  MZ: { currency: "MZN", locale: "pt-MZ" }, // Mozambique
-  AO: { currency: "AOA", locale: "pt-AO" }, // Angola
-  ZM: { currency: "ZMW", locale: "en-ZM" }, // Zambie
-  MW: { currency: "MWK", locale: "en-MW" }, // Malawi
-  MG: { currency: "MGA", locale: "fr-MG" }, // Madagascar
-  MU: { currency: "MUR", locale: "en-MU" }, // Maurice
-  KM: { currency: "KMF", locale: "fr-KM" }, // Comores
-  SC: { currency: "SCR", locale: "en-SC" }, // Seychelles
+  ZA: { currency: "ZAR", locale: "en-ZA" },
+  NA: { currency: "NAD", locale: "en-NA" },
+  BW: { currency: "BWP", locale: "en-BW" },
+  ZW: { currency: "ZWL", locale: "en-ZW" },
+  MZ: { currency: "MZN", locale: "pt-MZ" },
+  AO: { currency: "AOA", locale: "pt-AO" },
+  ZM: { currency: "ZMW", locale: "en-ZM" },
+  MW: { currency: "MWK", locale: "en-MW" },
+  MG: { currency: "MGA", locale: "fr-MG" },
+  MU: { currency: "MUR", locale: "en-MU" },
+  KM: { currency: "KMF", locale: "fr-KM" },
+  SC: { currency: "SCR", locale: "en-SC" },
   
-  // 🇺🇸 ÉTATS-UNIS (USD)
-  US: { currency: "USD", locale: "en-US" }, // États-Unis
+  // 🇺🇸 ÉTATS-UNIS
+  US: { currency: "USD", locale: "en-US" },
   
-  // 🌍 Défaut (Côte d'Ivoire)
+  // 🌍 Défaut
   default: { currency: "XOF", locale: "fr-CI" }
 }
 
@@ -86,14 +86,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   const [country, setCountry] = useState("CI")
   const [isLoading, setIsLoading] = useState(true)
 
-  // 🔴 MODE TEST : Forcer le Ghana pour tester
   useEffect(() => {
-    // Commenter cette ligne après le test pour revenir à la normale
-    setCountry("GH")
-    setIsLoading(false)
-    
-    // ⚠️ Tout le code ci-dessous est commenté pour le test
-    /*
     const detectCountry = async () => {
       try {
         // 1. Vérifier localStorage
@@ -126,7 +119,6 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     }
 
     detectCountry()
-    */
   }, [])
 
   const config = countryConfig[country] || countryConfig.default
