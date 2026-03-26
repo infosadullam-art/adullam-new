@@ -15,6 +15,7 @@ interface WishlistItem {
   productId: string
   product: {
     id: string
+    title: string
     name: string
     price: number
     images: string[]
@@ -74,7 +75,6 @@ export default function WishlistPage() {
   }
 
   const handleAddToCart = async (productId: string) => {
-    // À implémenter avec votre API panier
     console.log("Ajouter au panier:", productId)
   }
 
@@ -131,91 +131,93 @@ export default function WishlistPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
-              {wishlist.map((item) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
-                >
-                  {/* Image du produit - ✅ CORRIGÉ : /products/ au lieu de /product/ */}
-                  <Link href={`/products/${item.product.id}`}>
-                    <div className="relative h-48 bg-gray-100">
-                      {item.product.images && item.product.images[0] ? (
+              {wishlist.map((item) => {
+                // ✅ Utiliser l'ID du produit directement
+                const productId = item.product?.id || item.productId
+                const productName = item.product?.title || item.product?.name || "Produit"
+                const productImage = item.product?.images?.[0] || "/placeholder.jpg"
+                const productPrice = item.product?.price || 0
+                const productStock = item.product?.stock || 0
+
+                return (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                  >
+                    {/* Image du produit */}
+                    <Link href={`/products/${productId}`}>
+                      <div className="relative h-48 bg-gray-100">
                         <Image
-                          src={item.product.images[0]}
-                          alt={item.product.name}
+                          src={productImage}
+                          alt={productName}
                           fill
                           className="object-cover hover:scale-105 transition-transform duration-300"
                         />
-                      ) : (
-                        <div className="flex items-center justify-center h-full">
-                          <ShoppingBag className="w-12 h-12 text-gray-400" />
-                        </div>
-                      )}
-                    </div>
-                  </Link>
-
-                  {/* Informations produit */}
-                  <div className="p-4">
-                    {/* ✅ CORRIGÉ : /products/ au lieu de /product/ */}
-                    <Link href={`/products/${item.product.id}`}>
-                      <h3 className="font-semibold text-lg mb-2 transition-colors line-clamp-2 hover:opacity-80" style={{ color: brandColor }}>
-                        {item.product.name}
-                      </h3>
+                      </div>
                     </Link>
-                    
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-xl font-bold" style={{ color: brandColor }}>
-                        {formatPrice(item.product.price)}
-                      </span>
-                      {item.product.stock > 0 ? (
-                        <span className="text-xs px-2 py-1 rounded" style={{ background: brandLight, color: brandColor }}>
-                          En stock
-                        </span>
-                      ) : (
-                        <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
-                          Rupture
-                        </span>
-                      )}
-                    </div>
 
-                    {/* Actions */}
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleAddToCart(item.product.id)}
-                        disabled={item.product.stock === 0}
-                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                          item.product.stock > 0
-                            ? "text-white hover:shadow-lg"
-                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        }`}
-                        style={item.product.stock > 0 ? { background: brandGradient } : {}}
-                      >
-                        <ShoppingBag className="w-4 h-4" />
-                        Ajouter au panier
-                      </button>
-                      <button
-                        onClick={() => handleRemove(item.id)}
-                        disabled={removingId === item.id}
-                        className="p-2 border border-gray-300 rounded-lg hover:bg-red-50 hover:border-red-300 transition-colors"
-                      >
-                        {removingId === item.id ? (
-                          <div className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+                    {/* Informations produit */}
+                    <div className="p-4">
+                      <Link href={`/products/${productId}`}>
+                        <h3 className="font-semibold text-lg mb-2 transition-colors line-clamp-2 hover:opacity-80" style={{ color: brandColor }}>
+                          {productName}
+                        </h3>
+                      </Link>
+                      
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-xl font-bold" style={{ color: brandColor }}>
+                          {formatPrice(productPrice)}
+                        </span>
+                        {productStock > 0 ? (
+                          <span className="text-xs px-2 py-1 rounded" style={{ background: brandLight, color: brandColor }}>
+                            En stock
+                          </span>
                         ) : (
-                          <Trash2 className="w-5 h-5 text-red-600" />
+                          <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
+                            Rupture
+                          </span>
                         )}
-                      </button>
-                    </div>
+                      </div>
 
-                    {/* Date d'ajout */}
-                    <p className="text-xs text-gray-400 mt-3">
-                      Ajouté le {new Date(item.createdAt).toLocaleDateString('fr-FR')}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
+                      {/* Actions */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleAddToCart(productId)}
+                          disabled={productStock === 0}
+                          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                            productStock > 0
+                              ? "text-white hover:shadow-lg"
+                              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          }`}
+                          style={productStock > 0 ? { background: brandGradient } : {}}
+                        >
+                          <ShoppingBag className="w-4 h-4" />
+                          Ajouter au panier
+                        </button>
+                        <button
+                          onClick={() => handleRemove(item.id)}
+                          disabled={removingId === item.id}
+                          className="p-2 border border-gray-300 rounded-lg hover:bg-red-50 hover:border-red-300 transition-colors"
+                        >
+                          {removingId === item.id ? (
+                            <div className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <Trash2 className="w-5 h-5 text-red-600" />
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Date d'ajout */}
+                      <p className="text-xs text-gray-400 mt-3">
+                        Ajouté le {new Date(item.createdAt).toLocaleDateString('fr-FR')}
+                      </p>
+                    </div>
+                  </motion.div>
+                )
+              })}
             </AnimatePresence>
           </div>
         )}
