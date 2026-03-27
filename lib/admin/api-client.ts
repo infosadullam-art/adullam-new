@@ -6,12 +6,21 @@ interface FetchOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>
 }
 
+// 🔹 Fonction de nettoyage du token
+function cleanToken(token: string | null): string | null {
+  if (!token) return null
+  // Si le token est la string "null" ou "undefined"
+  if (token === 'null' || token === 'undefined') return null
+  // Enlève les guillemets, espaces, retours ligne
+  return token.replace(/["'\s\r\n]/g, '').trim()
+}
+
 // 🔹 Fonctions pour gérer le token de façon persistante
 export const getStoredToken = (): string | null => {
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("adullam_token")
     console.log("🔵 [api-client] getStoredToken:", token ? "présent" : "absent")
-    return token
+    return cleanToken(token)
   }
   return null
 }
@@ -19,8 +28,14 @@ export const getStoredToken = (): string | null => {
 export const setStoredToken = (token: string | null) => {
   if (typeof window !== "undefined") {
     if (token) {
-      localStorage.setItem("adullam_token", token)
-      console.log("🟢 [api-client] Token sauvegardé")
+      const cleanedToken = cleanToken(token)
+      if (cleanedToken) {
+        localStorage.setItem("adullam_token", cleanedToken)
+        console.log("🟢 [api-client] Token sauvegardé")
+      } else {
+        localStorage.removeItem("adullam_token")
+        console.log("🟡 [api-client] Token invalide, supprimé")
+      }
     } else {
       localStorage.removeItem("adullam_token")
       console.log("🟡 [api-client] Token supprimé")
@@ -107,7 +122,6 @@ async function apiClient<T>(
 
       if (!refreshData.success || !refreshData.accessToken) {
         console.log('❌ [api-client] Refresh failed')
-        // ✅ Ne pas déconnecter, juste renvoyer l'erreur
         throw new Error("Session expired")
       }
 
@@ -118,9 +132,6 @@ async function apiClient<T>(
       return await apiClient<T>(endpoint, options, false)
     } catch (error) {
       console.log('❌ [api-client] Refresh échoué')
-      // ✅ NE PAS EFFACER LE TOKEN ICI
-      // inMemoryAccessToken = null
-      // setStoredToken(null)
       throw new Error("Session expired. Please login again.")
     }
   }
@@ -148,8 +159,11 @@ export const authApi = {
 
     if (data.success && data.accessToken) {
       console.log("🟢 [authApi] Login réussi, token stocké")
-      inMemoryAccessToken = data.accessToken
-      setStoredToken(data.accessToken)
+      const cleanedToken = cleanToken(data.accessToken)
+      if (cleanedToken) {
+        inMemoryAccessToken = cleanedToken
+        setStoredToken(cleanedToken)
+      }
     }
 
     return data
