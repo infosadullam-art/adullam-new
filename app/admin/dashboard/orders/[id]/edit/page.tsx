@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft, Save, X, Plus, Trash2 } from "lucide-react"
+import { ArrowLeft, Save, X, Plus, Trash2, Truck, Ship, Navigation, Send, Home, Package, Clock, CheckCircle } from "lucide-react"
 import { ordersApi, productsApi } from "@/lib/admin/api-client"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/admin/auth-context"
@@ -31,6 +31,9 @@ interface OrderItem {
   quantity: number
   price: number
   total: number
+  variantSummary?: string
+  shippingMode?: string
+  trackingNumber?: string
 }
 
 interface Order {
@@ -71,9 +74,39 @@ interface Order {
     country: string
   }
   notes?: string
+  defaultShippingMode?: string
+  trackingNumber?: string
 }
 
 const adminPath = "/admin/dashboard"
+
+// Statuts de commande avec icônes et libellés
+const ORDER_STATUSES = [
+  { value: "PENDING", label: "En attente", icon: Clock, color: "text-yellow-600" },
+  { value: "CONFIRMED", label: "Confirmée", icon: CheckCircle, color: "text-green-600" },
+  { value: "PROCESSING", label: "En préparation", icon: Package, color: "text-blue-600" },
+  { value: "SHIPPED", label: "Expédiée (partie fournisseur)", icon: Truck, color: "text-indigo-600" },
+  { value: "IN_TRANSIT", label: "En cours de livraison", icon: Navigation, color: "text-purple-600" },
+  { value: "OUT_FOR_DELIVERY", label: "Livraison aujourd'hui", icon: Send, color: "text-orange-600" },
+  { value: "DELIVERED", label: "Livrée", icon: Home, color: "text-green-600" },
+  { value: "CANCELLED", label: "Annulée", icon: X, color: "text-red-600" },
+  { value: "REFUNDED", label: "Remboursée", icon: X, color: "text-red-600" },
+]
+
+// Statuts de paiement
+const PAYMENT_STATUSES = [
+  { value: "PENDING", label: "En attente", color: "text-yellow-600" },
+  { value: "PAID", label: "Payé", color: "text-green-600" },
+  { value: "FAILED", label: "Échoué", color: "text-red-600" },
+  { value: "REFUNDED", label: "Remboursé", color: "text-orange-600" },
+]
+
+// Modes de livraison
+const SHIPPING_MODES = [
+  { value: "bateau", label: "Maritime", icon: Ship, days: "35-50j" },
+  { value: "avion", label: "Aérien", icon: Truck, days: "15-20j" },
+  { value: "express", label: "Express", icon: Send, days: "7-10j" },
+]
 
 export default function EditOrderPage() {
   const { user, isLoading: authLoading } = useAuth()
@@ -94,6 +127,7 @@ export default function EditOrderPage() {
     total: 0,
     items: [],
     notes: "",
+    defaultShippingMode: "bateau",
     shippingAddress: {
       name: "",
       address1: "",
@@ -101,7 +135,7 @@ export default function EditOrderPage() {
       city: "",
       state: "",
       postalCode: "",
-      country: "US",
+      country: "CI",
       phone: "",
     },
     billingAddress: {
@@ -111,7 +145,7 @@ export default function EditOrderPage() {
       city: "",
       state: "",
       postalCode: "",
-      country: "US",
+      country: "CI",
     },
   })
 
@@ -137,29 +171,41 @@ export default function EditOrderPage() {
           paymentStatus: order.paymentStatus,
           paymentMethod: order.paymentMethod,
           subtotal: order.subtotal,
-          tax: order.tax,
-          shipping: order.shipping,
+          tax: order.tax || 0,
+          shipping: order.shippingCost || 0,
           discount: order.discount || 0,
           total: order.total,
           items: order.items.map((item: any) => ({
             id: item.id,
-            productId: item.product.id,
-            productTitle: item.product.title,
+            productId: item.productId,
+            productTitle: item.productName,
             quantity: item.quantity,
-            price: item.price,
-            total: item.total,
+            price: item.unitPrice,
+            total: item.totalPrice,
+            variantSummary: item.variantSummary,
+            shippingMode: item.shippingMode,
           })),
           notes: order.notes,
-          shippingAddress: order.shippingAddress,
-          billingAddress: order.billingAddress,
+          defaultShippingMode: order.defaultShippingMode || "bateau",
+          trackingNumber: order.trackingNumber,
+          shippingAddress: order.shippingInfo ? {
+            name: `${order.shippingInfo.firstName} ${order.shippingInfo.lastName}`,
+            address1: order.shippingInfo.address,
+            address2: order.shippingInfo.quartier || "",
+            city: order.shippingInfo.city,
+            state: order.shippingInfo.city,
+            postalCode: order.shippingInfo.postalCode || "",
+            country: order.shippingInfo.country || "CI",
+            phone: order.shippingInfo.phone,
+          } : undefined,
         })
       } else {
-        toast.error("Failed to load order")
+        toast.error("Impossible de charger la commande")
         router.push(`${adminPath}/orders`)
       }
     } catch (error) {
       console.error("Failed to load order:", error)
-      toast.error("Failed to load order")
+      toast.error("Impossible de charger la commande")
       router.push(`${adminPath}/orders`)
     } finally {
       setIsLoading(false)
@@ -171,16 +217,31 @@ export default function EditOrderPage() {
     setIsSaving(true)
     
     try {
-      const response = await ordersApi.update(orderId, formData)
+      // Préparer les données pour l'API
+      const updateData = {
+        status: formData.status,
+        paymentStatus: formData.paymentStatus,
+        paymentMethod: formData.paymentMethod,
+        subtotal: formData.subtotal,
+        tax: formData.tax,
+        shippingCost: formData.shipping,
+        discount: formData.discount,
+        total: formData.total,
+        notes: formData.notes,
+        defaultShippingMode: formData.defaultShippingMode,
+        trackingNumber: formData.trackingNumber,
+      }
+      
+      const response = await ordersApi.update(orderId, updateData)
       if (response.success) {
-        toast.success("Order updated successfully")
+        toast.success("Commande mise à jour avec succès")
         router.push(`${adminPath}/orders/${orderId}`)
       } else {
-        toast.error(response.error || "Failed to update order")
+        toast.error(response.error || "Erreur lors de la mise à jour")
       }
     } catch (error) {
       console.error("Failed to update order:", error)
-      toast.error("Failed to update order")
+      toast.error("Erreur lors de la mise à jour")
     } finally {
       setIsSaving(false)
     }
@@ -218,12 +279,20 @@ export default function EditOrderPage() {
     const items = [...(formData.items || [])]
     items[index] = { ...items[index], [field]: value }
     
-    // Recalculate item total
     if (field === 'quantity' || field === 'price') {
       items[index].total = items[index].quantity * items[index].price
     }
     
     calculateTotals(items)
+  }
+
+  const getStatusIcon = (status: string) => {
+    const statusConfig = ORDER_STATUSES.find(s => s.value === status)
+    if (statusConfig) {
+      const Icon = statusConfig.icon
+      return <Icon className={`h-4 w-4 ${statusConfig.color} mr-2`} />
+    }
+    return null
   }
 
   if (isLoading || authLoading) {
@@ -238,8 +307,8 @@ export default function EditOrderPage() {
   return (
     <div>
       <AdminHeader
-        title="Edit Order"
-        description={`Order #${orderId}`}
+        title="Modifier la commande"
+        description={`Commande #${orderId.slice(-8)}`}
         backButton={
           <Button variant="ghost" size="icon" asChild>
             <Link href={`${adminPath}/orders/${orderId}`}>
@@ -252,12 +321,12 @@ export default function EditOrderPage() {
             <Button variant="outline" asChild>
               <Link href={`${adminPath}/orders/${orderId}`}>
                 <X className="mr-2 h-4 w-4" />
-                Cancel
+                Annuler
               </Link>
             </Button>
             <Button onClick={handleSubmit} disabled={isSaving}>
               <Save className="mr-2 h-4 w-4" />
-              {isSaving ? "Saving..." : "Save Changes"}
+              {isSaving ? "Enregistrement..." : "Enregistrer"}
             </Button>
           </div>
         }
@@ -267,35 +336,38 @@ export default function EditOrderPage() {
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue="items" className="space-y-6">
             <TabsList>
-              <TabsTrigger value="items">Items</TabsTrigger>
-              <TabsTrigger value="status">Status</TabsTrigger>
-              <TabsTrigger value="customer">Customer</TabsTrigger>
-              <TabsTrigger value="shipping">Shipping</TabsTrigger>
+              <TabsTrigger value="items">Articles</TabsTrigger>
+              <TabsTrigger value="status">Statut</TabsTrigger>
+              <TabsTrigger value="shipping">Livraison</TabsTrigger>
+              <TabsTrigger value="customer">Client</TabsTrigger>
               <TabsTrigger value="notes">Notes</TabsTrigger>
             </TabsList>
 
             <TabsContent value="items">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle>Order Items</CardTitle>
+                  <CardTitle>Articles de la commande</CardTitle>
                   <Button type="button" variant="outline" size="sm" onClick={addItem}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Add Item
+                    Ajouter un article
                   </Button>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {formData.items?.map((item, index) => (
                     <div key={index} className="flex gap-4 items-start">
                       <div className="flex-1">
-                        <Label>Product</Label>
+                        <Label>Produit</Label>
                         <Input
                           value={item.productTitle}
                           onChange={(e) => updateItem(index, 'productTitle', e.target.value)}
-                          placeholder="Product name"
+                          placeholder="Nom du produit"
                         />
+                        {item.variantSummary && (
+                          <p className="text-xs text-muted-foreground mt-1">{item.variantSummary}</p>
+                        )}
                       </div>
                       <div className="w-24">
-                        <Label>Quantity</Label>
+                        <Label>Quantité</Label>
                         <Input
                           type="number"
                           min="1"
@@ -304,7 +376,7 @@ export default function EditOrderPage() {
                         />
                       </div>
                       <div className="w-32">
-                        <Label>Price</Label>
+                        <Label>Prix unitaire</Label>
                         <Input
                           type="number"
                           step="0.01"
@@ -333,16 +405,22 @@ export default function EditOrderPage() {
                     </div>
                   ))}
 
+                  {formData.items?.length === 0 && (
+                    <p className="text-center text-muted-foreground py-8">
+                      Aucun article dans cette commande
+                    </p>
+                  )}
+
                   <Separator className="my-4" />
 
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span>Subtotal</span>
+                      <span>Sous-total</span>
                       <span className="font-medium">${formData.subtotal?.toFixed(2)}</span>
                     </div>
                     <div className="flex gap-4 items-center">
                       <div className="flex-1">
-                        <Label>Shipping</Label>
+                        <Label>Frais de livraison</Label>
                         <Input
                           type="number"
                           step="0.01"
@@ -355,7 +433,7 @@ export default function EditOrderPage() {
                         />
                       </div>
                       <div className="flex-1">
-                        <Label>Tax</Label>
+                        <Label>Taxes</Label>
                         <Input
                           type="number"
                           step="0.01"
@@ -368,7 +446,7 @@ export default function EditOrderPage() {
                         />
                       </div>
                       <div className="flex-1">
-                        <Label>Discount</Label>
+                        <Label>Réduction</Label>
                         <Input
                           type="number"
                           step="0.01"
@@ -384,7 +462,7 @@ export default function EditOrderPage() {
                     <Separator />
                     <div className="flex justify-between font-bold">
                       <span>Total</span>
-                      <span>${formData.total?.toFixed(2)}</span>
+                      <span className="text-lg">${formData.total?.toFixed(2)}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -394,11 +472,11 @@ export default function EditOrderPage() {
             <TabsContent value="status">
               <Card>
                 <CardHeader>
-                  <CardTitle>Order Status</CardTitle>
+                  <CardTitle>Statut de la commande</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Order Status</Label>
+                    <Label>Statut de la commande</Label>
                     <Select
                       value={formData.status}
                       onValueChange={(value) => setFormData({ ...formData, status: value })}
@@ -407,19 +485,20 @@ export default function EditOrderPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="PENDING">Pending</SelectItem>
-                        <SelectItem value="CONFIRMED">Confirmed</SelectItem>
-                        <SelectItem value="PROCESSING">Processing</SelectItem>
-                        <SelectItem value="SHIPPED">Shipped</SelectItem>
-                        <SelectItem value="DELIVERED">Delivered</SelectItem>
-                        <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                        <SelectItem value="REFUNDED">Refunded</SelectItem>
+                        {ORDER_STATUSES.map((status) => (
+                          <SelectItem key={status.value} value={status.value}>
+                            <div className="flex items-center gap-2">
+                              {getStatusIcon(status.value)}
+                              <span>{status.label}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Payment Status</Label>
+                    <Label>Statut du paiement</Label>
                     <Select
                       value={formData.paymentStatus}
                       onValueChange={(value) => setFormData({ ...formData, paymentStatus: value })}
@@ -428,20 +507,145 @@ export default function EditOrderPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="PENDING">Pending</SelectItem>
-                        <SelectItem value="PAID">Paid</SelectItem>
-                        <SelectItem value="FAILED">Failed</SelectItem>
-                        <SelectItem value="REFUNDED">Refunded</SelectItem>
+                        {PAYMENT_STATUSES.map((status) => (
+                          <SelectItem key={status.value} value={status.value}>
+                            <span className={status.color}>{status.label}</span>
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Payment Method</Label>
+                    <Label>Méthode de paiement</Label>
                     <Input
                       value={formData.paymentMethod}
                       onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
-                      placeholder="e.g., Credit Card, PayPal"
+                      placeholder="ex: MTN Money, Orange Money, Wave, Visa"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="shipping">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Mode de livraison</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Mode de transport</Label>
+                    <Select
+                      value={formData.defaultShippingMode}
+                      onValueChange={(value) => setFormData({ ...formData, defaultShippingMode: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SHIPPING_MODES.map((mode) => {
+                          const Icon = mode.icon
+                          return (
+                            <SelectItem key={mode.value} value={mode.value}>
+                              <div className="flex items-center gap-2">
+                                <Icon className="h-4 w-4" />
+                                <span>{mode.label}</span>
+                                <span className="text-xs text-muted-foreground">({mode.days})</span>
+                              </div>
+                            </SelectItem>
+                          )
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Numéro de suivi</Label>
+                    <Input
+                      value={formData.trackingNumber || ''}
+                      onChange={(e) => setFormData({ ...formData, trackingNumber: e.target.value })}
+                      placeholder="Numéro de suivi du colis"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle>Adresse de livraison</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Nom complet</Label>
+                    <Input
+                      value={formData.shippingAddress?.name || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        shippingAddress: { ...formData.shippingAddress!, name: e.target.value }
+                      })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Adresse</Label>
+                    <Input
+                      value={formData.shippingAddress?.address1 || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        shippingAddress: { ...formData.shippingAddress!, address1: e.target.value }
+                      })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Complément (Optionnel)</Label>
+                    <Input
+                      value={formData.shippingAddress?.address2 || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        shippingAddress: { ...formData.shippingAddress!, address2: e.target.value }
+                      })}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Ville</Label>
+                      <Input
+                        value={formData.shippingAddress?.city || ''}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          shippingAddress: { ...formData.shippingAddress!, city: e.target.value }
+                        })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Code postal</Label>
+                      <Input
+                        value={formData.shippingAddress?.postalCode || ''}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          shippingAddress: { ...formData.shippingAddress!, postalCode: e.target.value }
+                        })}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Pays</Label>
+                    <Input
+                      value={formData.shippingAddress?.country || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        shippingAddress: { ...formData.shippingAddress!, country: e.target.value }
+                      })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Téléphone</Label>
+                    <Input
+                      value={formData.shippingAddress?.phone || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        shippingAddress: { ...formData.shippingAddress!, phone: e.target.value }
+                      })}
                     />
                   </div>
                 </CardContent>
@@ -451,11 +655,11 @@ export default function EditOrderPage() {
             <TabsContent value="customer">
               <Card>
                 <CardHeader>
-                  <CardTitle>Customer Information</CardTitle>
+                  <CardTitle>Informations client</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Name</Label>
+                    <Label>Nom</Label>
                     <Input
                       value={formData.shippingAddress?.name || ''}
                       onChange={(e) => setFormData({
@@ -476,7 +680,7 @@ export default function EditOrderPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Phone</Label>
+                    <Label>Téléphone</Label>
                     <Input
                       value={formData.shippingAddress?.phone || ''}
                       onChange={(e) => setFormData({
@@ -489,167 +693,16 @@ export default function EditOrderPage() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="shipping">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Shipping Address</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Full Name</Label>
-                    <Input
-                      value={formData.shippingAddress?.name || ''}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        shippingAddress: { ...formData.shippingAddress!, name: e.target.value }
-                      })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Address Line 1</Label>
-                    <Input
-                      value={formData.shippingAddress?.address1 || ''}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        shippingAddress: { ...formData.shippingAddress!, address1: e.target.value }
-                      })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Address Line 2 (Optional)</Label>
-                    <Input
-                      value={formData.shippingAddress?.address2 || ''}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        shippingAddress: { ...formData.shippingAddress!, address2: e.target.value }
-                      })}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>City</Label>
-                      <Input
-                        value={formData.shippingAddress?.city || ''}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          shippingAddress: { ...formData.shippingAddress!, city: e.target.value }
-                        })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>State</Label>
-                      <Input
-                        value={formData.shippingAddress?.state || ''}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          shippingAddress: { ...formData.shippingAddress!, state: e.target.value }
-                        })}
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Postal Code</Label>
-                      <Input
-                        value={formData.shippingAddress?.postalCode || ''}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          shippingAddress: { ...formData.shippingAddress!, postalCode: e.target.value }
-                        })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Country</Label>
-                      <Input
-                        value={formData.shippingAddress?.country || ''}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          shippingAddress: { ...formData.shippingAddress!, country: e.target.value }
-                        })}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="mt-6">
-                <CardHeader>
-                  <CardTitle>Billing Address</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2 mb-4">
-                    <input
-                      type="checkbox"
-                      id="sameAsShipping"
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setFormData({
-                            ...formData,
-                            billingAddress: { ...formData.shippingAddress! }
-                          })
-                        }
-                      }}
-                    />
-                    <Label htmlFor="sameAsShipping">Same as shipping address</Label>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Full Name</Label>
-                      <Input
-                        value={formData.billingAddress?.name || ''}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          billingAddress: { ...formData.billingAddress!, name: e.target.value }
-                        })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Address Line 1</Label>
-                      <Input
-                        value={formData.billingAddress?.address1 || ''}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          billingAddress: { ...formData.billingAddress!, address1: e.target.value }
-                        })}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>City</Label>
-                        <Input
-                          value={formData.billingAddress?.city || ''}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            billingAddress: { ...formData.billingAddress!, city: e.target.value }
-                          })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Postal Code</Label>
-                        <Input
-                          value={formData.billingAddress?.postalCode || ''}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            billingAddress: { ...formData.billingAddress!, postalCode: e.target.value }
-                          })}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
             <TabsContent value="notes">
               <Card>
                 <CardHeader>
-                  <CardTitle>Order Notes</CardTitle>
+                  <CardTitle>Notes sur la commande</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Textarea
                     value={formData.notes || ''}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    placeholder="Add any notes about this order..."
+                    placeholder="Ajoutez des notes sur cette commande..."
                     rows={6}
                   />
                 </CardContent>

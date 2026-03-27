@@ -27,7 +27,10 @@ import {
   AlertCircle,
   Tag,
   Weight,
-  Ship
+  Ship,
+  Send,
+  Navigation,
+  Home
 } from "lucide-react"
 import { ordersApi } from "@/lib/admin/api-client"
 import { toast } from "sonner"
@@ -116,7 +119,6 @@ interface Order {
 
 const adminPath = "/admin/dashboard"
 
-// Formatage en USD (dollars)
 function formatCurrency(value: number | undefined | null): string {
   if (value === undefined || value === null || isNaN(value)) {
     return "$0.00"
@@ -150,13 +152,41 @@ function getStatusBadge(status: string) {
   const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
     DELIVERED: "default",
     SHIPPED: "default",
+    IN_TRANSIT: "secondary",
+    OUT_FOR_DELIVERY: "secondary",
     PROCESSING: "secondary",
     CONFIRMED: "secondary",
     PENDING: "outline",
     CANCELLED: "destructive",
     REFUNDED: "destructive",
   }
-  return <Badge variant={variants[status] || "outline"}>{status}</Badge>
+  
+  const labels: Record<string, string> = {
+    DELIVERED: "Livrée",
+    SHIPPED: "Expédiée",
+    IN_TRANSIT: "En transit",
+    OUT_FOR_DELIVERY: "Livraison aujourd'hui",
+    PROCESSING: "En préparation",
+    CONFIRMED: "Confirmée",
+    PENDING: "En attente",
+    CANCELLED: "Annulée",
+    REFUNDED: "Remboursée",
+  }
+  
+  const icons: Record<string, JSX.Element> = {
+    DELIVERED: <CheckCircle className="h-3 w-3 mr-1" />,
+    SHIPPED: <Truck className="h-3 w-3 mr-1" />,
+    IN_TRANSIT: <Navigation className="h-3 w-3 mr-1" />,
+    OUT_FOR_DELIVERY: <Send className="h-3 w-3 mr-1" />,
+    PROCESSING: <Clock className="h-3 w-3 mr-1" />,
+  }
+  
+  return (
+    <Badge variant={variants[status] || "outline"} className="flex items-center gap-1">
+      {icons[status]}
+      {labels[status] || status}
+    </Badge>
+  )
 }
 
 function getPaymentBadge(status: string) {
@@ -166,13 +196,21 @@ function getPaymentBadge(status: string) {
     FAILED: "destructive",
     REFUNDED: "secondary",
   }
-  return <Badge variant={variants[status] || "outline"}>{status}</Badge>
+  
+  const labels: Record<string, string> = {
+    PAID: "Payé",
+    PENDING: "En attente",
+    FAILED: "Échoué",
+    REFUNDED: "Remboursé",
+  }
+  
+  return <Badge variant={variants[status] || "outline"}>{labels[status] || status}</Badge>
 }
 
 function getShippingModeLabel(mode: string) {
   const modes: Record<string, string> = {
-    bateau: "Boat",
-    avion: "Plane",
+    bateau: "Maritime",
+    avion: "Aérien",
     standard: "Standard",
     express: "Express"
   }
@@ -224,18 +262,41 @@ export default function OrderDetailPage() {
   const handleStatusUpdate = async (newStatus: string) => {
     setIsUpdating(true)
     try {
-      const response = await ordersApi.updateStatus(orderId, { status: newStatus })
-      if (response.success) {
-        toast.success(`Order marked as ${newStatus}`)
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus })
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        toast.success(`Commande marquée comme ${getStatusLabel(newStatus)}`)
         loadOrder()
       } else {
-        toast.error(response.error || "Failed to update order")
+        toast.error(data.error || "Failed to update order")
       }
     } catch (error) {
+      console.error("Failed to update order:", error)
       toast.error("Failed to update order")
     } finally {
       setIsUpdating(false)
     }
+  }
+
+  const getStatusLabel = (status: string): string => {
+    const labels: Record<string, string> = {
+      CONFIRMED: "Confirmée",
+      PROCESSING: "En préparation",
+      SHIPPED: "Expédiée",
+      IN_TRANSIT: "En transit",
+      OUT_FOR_DELIVERY: "Livraison aujourd'hui",
+      DELIVERED: "Livrée",
+      CANCELLED: "Annulée"
+    }
+    return labels[status] || status
   }
 
   const handleDelete = async () => {
@@ -295,9 +356,9 @@ export default function OrderDetailPage() {
               </Link>
             </Button>
             <div>
-              <h1 className="text-lg font-semibold">Order {order.orderNumber}</h1>
+              <h1 className="text-lg font-semibold">Commande {order.orderNumber}</h1>
               <p className="text-sm text-muted-foreground">
-                Placed on {formatDate(order.createdAt)}
+                Passée le {formatDate(order.createdAt)}
               </p>
             </div>
           </div>
@@ -305,37 +366,51 @@ export default function OrderDetailPage() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" disabled={isUpdating}>
-                  Update Status
+                  Mettre à jour le statut
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => handleStatusUpdate('CONFIRMED')}>
-                  Confirm
+                  <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+                  Confirmée
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleStatusUpdate('PROCESSING')}>
-                  Process
+                  <Clock className="mr-2 h-4 w-4 text-blue-600" />
+                  En préparation
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => handleStatusUpdate('SHIPPED')}>
-                  Ship
+                  <Truck className="mr-2 h-4 w-4 text-indigo-600" />
+                  Expédiée (partie fournisseur)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleStatusUpdate('IN_TRANSIT')}>
+                  <Navigation className="mr-2 h-4 w-4 text-purple-600" />
+                  En cours de livraison
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleStatusUpdate('OUT_FOR_DELIVERY')}>
+                  <Send className="mr-2 h-4 w-4 text-orange-600" />
+                  Livraison aujourd'hui
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleStatusUpdate('DELIVERED')}>
-                  Deliver
+                  <Home className="mr-2 h-4 w-4 text-green-600" />
+                  Livrée
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => handleStatusUpdate('CANCELLED')} className="text-destructive">
-                  Cancel
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Annulée
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <Button variant="outline" size="sm" asChild>
               <Link href={`${adminPath}/orders/${orderId}/edit`}>
                 <Pencil className="mr-2 h-4 w-4" />
-                Edit
+                Modifier
               </Link>
             </Button>
             <Button variant="destructive" size="sm" onClick={() => setDeleteDialogOpen(true)}>
               <Trash2 className="mr-2 h-4 w-4" />
-              Delete
+              Supprimer
             </Button>
           </div>
         </div>
@@ -350,7 +425,7 @@ export default function OrderDetailPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Package className="h-5 w-5 text-muted-foreground" />
-                  <span className="font-medium">Order Status</span>
+                  <span className="font-medium">Statut commande</span>
                 </div>
                 {getStatusBadge(order.status)}
               </div>
@@ -361,7 +436,7 @@ export default function OrderDetailPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <CreditCard className="h-5 w-5 text-muted-foreground" />
-                  <span className="font-medium">Payment</span>
+                  <span className="font-medium">Paiement</span>
                 </div>
                 {getPaymentBadge(order.paymentStatus)}
               </div>
@@ -372,7 +447,7 @@ export default function OrderDetailPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Tag className="h-5 w-5 text-muted-foreground" />
-                  <span className="font-medium">Items</span>
+                  <span className="font-medium">Articles</span>
                 </div>
                 <span className="font-bold">
                   {order.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0}
@@ -385,7 +460,7 @@ export default function OrderDetailPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Ship className="h-5 w-5 text-muted-foreground" />
-                  <span className="font-medium">Shipping Mode</span>
+                  <span className="font-medium">Mode livraison</span>
                 </div>
                 <Badge variant="outline">
                   {getShippingModeLabel(order.defaultShippingMode)}
@@ -398,18 +473,18 @@ export default function OrderDetailPage() {
         {/* Products Ordered */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Products Ordered</CardTitle>
+            <CardTitle>Produits commandés</CardTitle>
           </CardHeader>
           <CardContent>
             {order.items && order.items.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Product</TableHead>
-                    <TableHead>Shipping Mode</TableHead>
-                    <TableHead>Unit Price</TableHead>
-                    <TableHead>Qty</TableHead>
-                    <TableHead>Total Weight</TableHead>
+                    <TableHead>Produit</TableHead>
+                    <TableHead>Mode livraison</TableHead>
+                    <TableHead>Prix unitaire</TableHead>
+                    <TableHead>Qté</TableHead>
+                    <TableHead>Poids total</TableHead>
                     <TableHead className="text-right">Total</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -466,7 +541,7 @@ export default function OrderDetailPage() {
                 </TableBody>
               </Table>
             ) : (
-              <p className="text-center text-muted-foreground py-8">No items in this order</p>
+              <p className="text-center text-muted-foreground py-8">Aucun article dans cette commande</p>
             )}
           </CardContent>
         </Card>
@@ -476,25 +551,25 @@ export default function OrderDetailPage() {
           {/* Order Summary */}
           <Card>
             <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
+              <CardTitle>Récapitulatif</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="text-muted-foreground">Sous-total</span>
                   <span>{formatCurrency(order.subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Shipping Cost</span>
+                  <span className="text-muted-foreground">Livraison</span>
                   <span>{formatCurrency(order.shippingCost)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Door-to-Door</span>
+                  <span className="text-muted-foreground">Porte-à-porte</span>
                   <span>{formatCurrency(order.portePorteTotal)}</span>
                 </div>
                 {order.discount > 0 && (
                   <div className="flex justify-between text-green-600">
-                    <span className="text-muted-foreground">Discount</span>
+                    <span className="text-muted-foreground">Réduction</span>
                     <span>-{formatCurrency(order.discount)}</span>
                   </div>
                 )}
@@ -510,7 +585,7 @@ export default function OrderDetailPage() {
           {/* Customer Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Customer Information</CardTitle>
+              <CardTitle>Informations client</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -524,7 +599,7 @@ export default function OrderDetailPage() {
                       href={`${adminPath}/users/${order.user.id}`}
                       className="text-sm text-primary hover:underline ml-6"
                     >
-                      View profile
+                      Voir le profil
                     </Link>
                   )}
                 </div>
@@ -552,7 +627,7 @@ export default function OrderDetailPage() {
         {/* Shipping Address */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Shipping Address</CardTitle>
+            <CardTitle>Adresse de livraison</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex gap-3">
@@ -566,7 +641,7 @@ export default function OrderDetailPage() {
                   {order.shippingInfo.city}, {order.shippingInfo.country}
                 </p>
                 {order.shippingInfo.postalCode && (
-                  <p>Postal code: {order.shippingInfo.postalCode}</p>
+                  <p>Code postal: {order.shippingInfo.postalCode}</p>
                 )}
                 {order.shippingInfo.notes && (
                   <p className="text-sm text-muted-foreground mt-2">
@@ -581,16 +656,16 @@ export default function OrderDetailPage() {
         {/* Payment Information */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Payment</CardTitle>
+            <CardTitle>Paiement</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Method</span>
-                <span className="font-medium">{order.paymentMethod || 'Not specified'}</span>
+                <span className="text-muted-foreground">Méthode</span>
+                <span className="font-medium">{order.paymentMethod || 'Non spécifié'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Status</span>
+                <span className="text-muted-foreground">Statut</span>
                 {getPaymentBadge(order.paymentStatus)}
               </div>
             </div>
@@ -601,12 +676,12 @@ export default function OrderDetailPage() {
         {order.trackingNumber && (
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Tracking</CardTitle>
+              <CardTitle>Suivi</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tracking Number</span>
+                  <span className="text-muted-foreground">Numéro de suivi</span>
                   {order.trackingUrl ? (
                     <a 
                       href={order.trackingUrl} 
@@ -640,16 +715,16 @@ export default function OrderDetailPage() {
         {/* Timeline */}
         <Card>
           <CardHeader>
-            <CardTitle>Timeline</CardTitle>
+            <CardTitle>Chronologie</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Created</span>
+                <span className="text-muted-foreground">Créée le</span>
                 <span>{formatDate(order.createdAt)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Last updated</span>
+                <span className="text-muted-foreground">Dernière mise à jour</span>
                 <span>{formatDate(order.updatedAt)}</span>
               </div>
             </div>
@@ -661,15 +736,15 @@ export default function OrderDetailPage() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Order</AlertDialogTitle>
+            <AlertDialogTitle>Supprimer la commande</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete order {order.orderNumber}? This action cannot be undone.
+              Êtes-vous sûr de vouloir supprimer la commande {order.orderNumber} ? Cette action est irréversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive">
-              Delete
+              Supprimer
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
