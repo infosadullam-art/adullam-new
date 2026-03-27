@@ -144,7 +144,7 @@ export default function CheckoutPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
   
-  // ✅ États pour sauvegarder les données de la commande
+  // États pour sauvegarder les données de la commande
   const [lastOrderTotal, setLastOrderTotal] = useState<number>(0);
   const [lastOrderRef, setLastOrderRef] = useState<string>("");
 
@@ -240,7 +240,8 @@ export default function CheckoutPage() {
     
     setLoadingAddresses(true);
     try {
-      const token = localStorage.getItem('accessToken');
+      // ✅ CORRIGÉ : utiliser la bonne clé 'adullam_token'
+      const token = localStorage.getItem('adullam_token');
       const res = await fetch("/api/user/addresses", {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -279,7 +280,8 @@ export default function CheckoutPage() {
 
   const handleAddAddress = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
+      // ✅ CORRIGÉ : utiliser la bonne clé 'adullam_token'
+      const token = localStorage.getItem('adullam_token');
       const res = await fetch("/api/user/addresses", {
         method: "POST",
         headers: { 
@@ -366,9 +368,10 @@ export default function CheckoutPage() {
     setError("");
 
     try {
-      const token = localStorage.getItem('accessToken');
+      // ✅ CORRIGÉ : utiliser la bonne clé 'adullam_token'
+      const token = localStorage.getItem('adullam_token');
       
-      // ✅ Sauvegarder le total avant l'appel
+      // Sauvegarder le total avant l'appel
       const orderTotal = grandTotalUSD;
       setLastOrderTotal(orderTotal);
       
@@ -404,7 +407,7 @@ export default function CheckoutPage() {
         throw new Error(data.message || "Erreur lors de la commande");
       }
 
-      // ✅ Sauvegarder la référence de commande
+      // Sauvegarder la référence de commande
       if (data.reference) {
         setLastOrderRef(data.reference);
       } else if (data.orderId) {
