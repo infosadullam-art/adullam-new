@@ -262,25 +262,37 @@ export default function OrderDetailPage() {
   const handleStatusUpdate = async (newStatus: string) => {
     setIsUpdating(true)
     try {
+      const token = localStorage.getItem('adullam_token')
+      
+      console.log('🔴 [FRONTEND] ========== MISE À JOUR STATUT ==========')
+      console.log('🔴 [FRONTEND] Token présent:', !!token)
+      console.log('🔴 [FRONTEND] Token (premiers 30):', token ? token.substring(0, 30) + '...' : 'ABSENT')
+      console.log('🔴 [FRONTEND] Nouveau statut:', newStatus)
+      console.log('🔴 [FRONTEND] URL:', `/api/orders/${orderId}`)
+      
       const response = await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ status: newStatus })
       })
       
+      console.log('🔴 [FRONTEND] Response status:', response.status)
       const data = await response.json()
+      console.log('🔴 [FRONTEND] Response data:', data)
+      console.log('🔴 [FRONTEND] ========== FIN ==========')
       
       if (response.ok && data.success) {
         toast.success(`Commande marquée comme ${getStatusLabel(newStatus)}`)
         loadOrder()
       } else {
-        toast.error(data.error || "Failed to update order")
+        toast.error(data.error || "Erreur lors de la mise à jour")
       }
     } catch (error) {
       console.error("Failed to update order:", error)
-      toast.error("Failed to update order")
+      toast.error("Erreur lors de la mise à jour")
     } finally {
       setIsUpdating(false)
     }
@@ -301,11 +313,29 @@ export default function OrderDetailPage() {
 
   const handleDelete = async () => {
     try {
-      await ordersApi.delete(orderId)
-      toast.success("Order deleted successfully")
-      router.push(`${adminPath}/orders`)
+      const token = localStorage.getItem('adullam_token')
+      
+      console.log('🔴 [FRONTEND] ========== SUPPRESSION ==========')
+      console.log('🔴 [FRONTEND] Token présent:', !!token)
+      
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      console.log('🔴 [FRONTEND] Response status:', response.status)
+      
+      if (response.ok) {
+        toast.success("Commande supprimée avec succès")
+        router.push(`${adminPath}/orders`)
+      } else {
+        toast.error("Erreur lors de la suppression")
+      }
     } catch (error) {
-      toast.error("Failed to delete order")
+      console.error("Failed to delete order:", error)
+      toast.error("Erreur lors de la suppression")
     }
   }
 
@@ -331,10 +361,10 @@ export default function OrderDetailPage() {
         <Card className="w-[400px]">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-4" />
-            <h2 className="text-lg font-semibold mb-2">Order not found</h2>
-            <p className="text-muted-foreground mb-4">The order you're looking for doesn't exist.</p>
+            <h2 className="text-lg font-semibold mb-2">Commande non trouvée</h2>
+            <p className="text-muted-foreground mb-4">La commande que vous cherchez n'existe pas.</p>
             <Button asChild>
-              <Link href={`${adminPath}/orders`}>Back to Orders</Link>
+              <Link href={`${adminPath}/orders`}>Retour aux commandes</Link>
             </Button>
           </CardContent>
         </Card>
