@@ -98,21 +98,24 @@ const SHIPPING_METHODS = [
     name: "Maritime", 
     icon: Ship, 
     days: "35-50j", 
-    badge: "Économique"
+    badge: "Économique",
+    iconChar: "🚢"
   },
   { 
     id: "avion", 
     name: "Aérien", 
     icon: Zap, 
     days: "15-20j", 
-    badge: "Rapide"
+    badge: "Rapide",
+    iconChar: "✈️"
   },
   { 
     id: "express", 
     name: "Express", 
     icon: Zap, 
     days: "7-10j", 
-    badge: "Prioritaire"
+    badge: "Prioritaire",
+    iconChar: "⚡"
   }
 ];
 
@@ -357,7 +360,7 @@ export default function CheckoutPage() {
     return firstName && lastName && email && phone && address && quartier && city;
   };
 
-  // ✅ CORRECTION : Sauvegarde du total avant clearCart
+  // ✅ CORRECTION : Sauvegarde du total avant clearCart avec envoi des modes par article
   const handleSubmit = async () => {
     if (!paymentMethod) return;
     
@@ -371,6 +374,22 @@ export default function CheckoutPage() {
       const orderTotal = grandTotalUSD;
       setLastOrderTotal(orderTotal);
       
+      // ✅ PRÉPARER LES ARTICLES AVEC LEUR MODE DE LIVRAISON
+      const orderItems = cart.map(item => ({
+        variantKey: item.variantKey,
+        productId: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        shippingMode: item.shippingMode || defaultShippingMode, // Mode de livraison de l'article
+        shippingCost: item.shippingCostUSD || 0,
+        portePorteCost: item.portePorteCostUSD || 0,
+        totalWeight: item.totalWeight || 0,
+        color: item.color,
+        eurSize: item.eurSize,
+        image: item.image
+      }));
+      
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: { 
@@ -378,7 +397,7 @@ export default function CheckoutPage() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          items: cart,
+          items: orderItems, // ✅ Envoi des articles avec leurs modes
           shippingInfo: {
             ...shippingInfo,
             country: selectedCountry.name,
@@ -437,6 +456,18 @@ export default function CheckoutPage() {
     
     const country = AFRICAN_COUNTRIES.find(c => c.code === addr.country);
     if (country) setSelectedCountry(country);
+  };
+
+  // Fonction pour obtenir l'icône du mode de livraison
+  const getShippingIcon = (mode: string) => {
+    const method = SHIPPING_METHODS.find(m => m.id === mode);
+    return method?.iconChar || "🚚";
+  };
+
+  // Fonction pour obtenir le nom du mode de livraison
+  const getShippingName = (mode: string) => {
+    const method = SHIPPING_METHODS.find(m => m.id === mode);
+    return method?.name || mode;
   };
 
   // ==================== LOADING ====================
@@ -813,13 +844,18 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* ÉTAPE 2 - EXPÉDITION */}
+              {/* ÉTAPE 2 - EXPÉDITION GLOBALE */}
               {step === 2 && (
                 <div className="bg-white rounded-xl border border-gray-100 p-4 lg:p-6">
                   <h2 className="text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2">
                     <Truck className="w-4 h-4" style={{ color: brandColor }} />
-                    Mode d'expédition
+                    Mode d'expédition par défaut
                   </h2>
+                  
+                  <p className="text-xs text-gray-500 mb-3">
+                    Choisissez le mode de livraison par défaut pour tous les articles. 
+                    Vous pouvez modifier individuellement chaque article dans le panier.
+                  </p>
 
                   <div className="space-y-2">
                     {SHIPPING_METHODS.map((method) => {
@@ -1038,10 +1074,11 @@ export default function CheckoutPage() {
 
                 <div className="space-y-2 max-h-60 lg:max-h-80 overflow-y-auto pr-1">
                   {cart.map((item) => {
-                    // Troncature du titre
                     const truncatedTitle = item.name && item.name.length > 40 
                       ? item.name.substring(0, 40) + "..." 
                       : item.name || "Produit";
+                    
+                    const shippingMode = item.shippingMode || defaultShippingMode;
                     
                     return (
                       <div key={item.variantKey} className="flex gap-2 pb-2 border-b border-gray-100 last:border-0">
@@ -1061,6 +1098,15 @@ export default function CheckoutPage() {
                               {item.color} {item.eurSize && `• ${item.eurSize}`}
                             </p>
                           )}
+                          {/* ✅ AFFICHAGE DU MODE DE LIVRAISON CHOISI */}
+                          <div className="flex items-center gap-1 mt-1">
+                            <span className="text-[10px] text-gray-400">
+                              {getShippingIcon(shippingMode)}
+                            </span>
+                            <span className="text-[10px] text-gray-500">
+                              {getShippingName(shippingMode)}
+                            </span>
+                          </div>
                           <div className="flex justify-between items-center mt-1">
                             <span className="text-[10px] text-gray-400">x{item.quantity}</span>
                             <span className="text-xs font-medium" style={{ color: brandColor }}>
@@ -1092,10 +1138,15 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
+                {/* ✅ MESSAGE INFORMATIF */}
                 <div className="mt-3 pt-3 border-t border-gray-100">
-                  <div className="flex items-center gap-1.5 text-[10px] text-gray-400">
+                  <div className="flex items-center gap-1.5 text-[10px] text-gray-400 mb-2">
                     <Lock className="w-3 h-3" />
                     <span>Paiement sécurisé</span>
+                  </div>
+                  <div className="text-[9px] text-gray-400 text-center bg-gray-50 p-2 rounded-lg">
+                    💡 Chaque article peut avoir son propre mode de livraison. 
+                    Modifiez-les individuellement dans le panier.
                   </div>
                 </div>
               </div>
