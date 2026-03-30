@@ -265,13 +265,16 @@ export default function ProductPage() {
   }
 
   // ============================================================
-  // APPEL À L'API LOGISTIQUE - AVEC LOG AJOUTÉ
+  // APPEL À L'API LOGISTIQUE - AVEC LOG DE QUANTITÉ AJOUTÉ
   // ============================================================
   useEffect(() => {
     if (!product || !country) return
     
     const grandTotal = getGrandTotal()
     const quantityToUse = grandTotal > 0 ? grandTotal : 1
+    
+    // ✅ LOG AJOUTÉ : Affiche la quantité envoyée à l'API
+    console.log("🔍 [LOGISTICS] Quantité à envoyer:", quantityToUse, "| grandTotal:", grandTotal)
     
     const fetchLogisticsEstimate = async () => {
       setIsLoadingLogistics(true)
@@ -318,7 +321,7 @@ export default function ProductPage() {
     }
     
     fetchLogisticsEstimate()
-  }, [product, country])
+  }, [product, country, getGrandTotal, simpleQuantity, simpleVariantQuantities, complexSelections])
 
   // ============================================================
   // EXTRACTION INTELLIGENTE DES ATTRIBUTS
@@ -848,12 +851,11 @@ export default function ProductPage() {
   ]
 
   // ============================================================
-  // FONCTIONS POUR AFFICHER LES DONNÉES LOGISTIQUES - AVEC LOG AJOUTÉ
+  // FONCTIONS POUR AFFICHER LES DONNÉES LOGISTIQUES
   // ============================================================
   const getShippingCost = (mode: "bateau" | "avion" | "express"): number => {
     if (!logisticsData?.shipping || !logisticsData.shipping[mode]) return 0
     const cost = logisticsData.shipping[mode]?.cost || 0
-    // ✅ LOG AJOUTÉ : Affiche ce qui est affiché
     console.log(`💰 ${mode} affiché:`, cost)
     return cost
   }
