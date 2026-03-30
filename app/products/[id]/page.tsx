@@ -709,7 +709,7 @@ export default function ProductPage() {
   }, [simpleVariantQuantities, complexSelections, simpleQuantity, product, minQuantity])
 
   // ============================================================
-  // FONCTIONS D'ACHAT
+  // FONCTIONS D'ACHAT - CORRIGÉES AVEC VARIANTKEY
   // ============================================================
   const handleAddToCart = () => {
     const grandTotal = getGrandTotal()
@@ -720,6 +720,7 @@ export default function ProductPage() {
     
     let itemsAdded = 0
     
+    // Produit sans variantes
     if (!product.variants || product.variants.length === 0) {
       addToCart({
         id: product.id,
@@ -729,11 +730,12 @@ export default function ProductPage() {
         shippingMode: selectedShipping,
         weight: product.weight,
         image: images[selectedImage] || "/placeholder.svg",
-        variant: null
+        variantKey: `${product.id}`,
       })
       itemsAdded = simpleQuantity
     }
     
+    // Variantes simples (ex: seulement couleur)
     else if (Object.keys(simpleVariantQuantities).length > 0) {
       Object.entries(simpleVariantQuantities).forEach(([value, qty]) => {
         if (qty > 0) {
@@ -745,13 +747,15 @@ export default function ProductPage() {
             shippingMode: selectedShipping,
             weight: product.weight,
             image: attributeImages[`${simpleVariantType}:${value}`] || images[selectedImage] || "/placeholder.svg",
-            variant: value
+            variantKey: `${product.id}_${value}`,
+            color: value,
           })
           itemsAdded += qty
         }
       })
     }
     
+    // Variantes multiples (ex: couleur + pointure)
     else if (Object.keys(complexSelections).length > 0) {
       Object.entries(complexSelections).forEach(([primaryValue, secondarySelections]) => {
         Object.entries(secondarySelections).forEach(([secondaryValue, qty]) => {
@@ -764,7 +768,9 @@ export default function ProductPage() {
               shippingMode: selectedShipping,
               weight: product.weight,
               image: attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`] || images[selectedImage] || "/placeholder.svg",
-              variant: `${primaryValue}|${secondaryValue}`
+              variantKey: `${product.id}_${primaryValue}_${secondaryValue}`,
+              color: primaryValue,
+              eurSize: secondaryValue,
             })
             itemsAdded += qty
           }
