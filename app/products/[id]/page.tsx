@@ -2032,45 +2032,24 @@ export default function ProductPage() {
 
               <div className="text-sm">
                 {activeTab === "description" && (
-                  <div className="grid lg:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="font-medium mb-3 text-gray-900">Description</h3>
-                      <p className="text-gray-700 leading-relaxed">
-                        {product.description || product.cleanedDesc || "Description non disponible"}
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="font-medium mb-3 text-gray-900">Caractéristiques principales</h3>
-                      <ul className="space-y-2 text-gray-700">
-                        {product.features ? (
-                          product.features.map((feature: string, i: number) => (
+                  <div>
+                    <h3 className="font-medium mb-3 text-gray-900">Description</h3>
+                    <p className="text-gray-700 leading-relaxed">
+                      {product.description || product.cleanedDesc || "Description non disponible"}
+                    </p>
+                    {product.features && product.features.length > 0 && (
+                      <div className="mt-6">
+                        <h3 className="font-medium mb-3 text-gray-900">Caractéristiques principales</h3>
+                        <ul className="space-y-2 text-gray-700">
+                          {product.features.map((feature: string, i: number) => (
                             <li key={i} className="flex items-start gap-2">
                               <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: brandColor }} />
                               <span>{feature}</span>
                             </li>
-                          ))
-                        ) : (
-                          <>
-                            <li className="flex items-start gap-2">
-                              <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: brandColor }} />
-                              <span>Réduction active du bruit (ANC) jusqu'à 35dB</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: brandColor }} />
-                              <span>Autonomie de 30 heures avec le boîtier de charge</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: brandColor }} />
-                              <span>Résistance à l'eau IPX5 - Idéal pour le sport</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: brandColor }} />
-                              <span>Bluetooth 5.2 pour une connexion stable</span>
-                            </li>
-                          </>
-                        )}
-                      </ul>
-                    </div>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 )}
                 
