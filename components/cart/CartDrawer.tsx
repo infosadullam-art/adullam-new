@@ -246,32 +246,9 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           )}
         </div>
 
-        {/* Footer - CORRIGÉ avec conversion USD → devise locale */}
+        {/* Footer - Section "Mode par défaut" supprimée */}
         {cart.length > 0 && (
           <div className="border-t border-gray-200 p-4 bg-gray-50">
-            <div className="flex items-center justify-between mb-3 text-xs">
-              <span className="text-gray-600">Mode par défaut:</span>
-              <div className="flex gap-1">
-                {(['bateau', 'avion', 'express'] as const).map((mode) => {
-                  const Icon = shippingIcons[mode]
-                  return (
-                    <button
-                      key={mode}
-                      onClick={() => setDefaultShippingMode(mode)}
-                      className={`p-1.5 rounded text-xs flex items-center gap-1 ${
-                        defaultShippingMode === mode 
-                          ? 'bg-[#2B4F3C] text-white' 
-                          : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      <Icon className="w-3 h-3" />
-                      <span>{shippingLabels[mode]}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
             <div className="space-y-1.5 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Sous-total</span>
