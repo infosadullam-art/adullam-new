@@ -833,9 +833,6 @@ export default function CheckoutPage() {
                   <div className="space-y-4">
                     {cart.map((item) => {
                       const isUpdating = updatingId === item.variantKey;
-                      const truncatedTitle = item.name && item.name.length > 50 
-                        ? item.name.substring(0, 50) + "..." 
-                        : item.name || "Produit";
                       const currentMode = item.shippingMode || defaultShippingMode;
                       
                       return (
@@ -854,7 +851,9 @@ export default function CheckoutPage() {
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{truncatedTitle}</p>
+                              <p className="text-sm font-medium break-words leading-tight">
+                                {item.name || "Produit"}
+                              </p>
                               {(item.color || item.eurSize) && (
                                 <p className="text-xs text-gray-500 mt-0.5">
                                   {item.color} {item.eurSize && `• Pointure ${item.eurSize}`}
@@ -862,8 +861,8 @@ export default function CheckoutPage() {
                               )}
                               <p className="text-xs text-gray-400 mt-1">Quantité: {item.quantity}</p>
                             </div>
-                            <div className="text-right">
-                              <p className="text-sm font-bold" style={{ color: brandColor }}>
+                            <div className="text-right flex-shrink-0">
+                              <p className="text-sm font-bold whitespace-nowrap" style={{ color: brandColor }}>
                                 {formatPrice(item.price * item.quantity)}
                               </p>
                             </div>
@@ -871,7 +870,7 @@ export default function CheckoutPage() {
 
                           <div className="mt-3 pt-2 border-t border-gray-200">
                             <span className="text-xs text-gray-500 mr-2">Expédition:</span>
-                            <div className="flex gap-2 mt-1">
+                            <div className="flex gap-2 mt-1 flex-wrap">
                               {SHIPPING_METHODS.map((method) => (
                                 <button
                                   key={method.id}
@@ -895,7 +894,7 @@ export default function CheckoutPage() {
 
                   <div className="mt-4 pt-3 border-t border-gray-200">
                     <p className="text-xs text-gray-500 mb-2">Appliquer le même mode à tous les articles:</p>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       {SHIPPING_METHODS.map((method) => (
                         <button
                           key={method.id}
@@ -1102,9 +1101,9 @@ export default function CheckoutPage() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium truncate">{truncatedTitle}</p>
+                          <p className="text-xs font-medium break-words leading-tight">{truncatedTitle}</p>
                           {(item.color || item.eurSize) && (
-                            <p className="text-[10px] text-gray-400 mt-0.5 truncate">
+                            <p className="text-[10px] text-gray-400 mt-0.5 break-words">
                               {item.color} {item.eurSize && `• ${item.eurSize}`}
                             </p>
                           )}
@@ -1115,7 +1114,7 @@ export default function CheckoutPage() {
                           </div>
                           <div className="flex justify-between items-center mt-1">
                             <span className="text-[10px] text-gray-400">x{item.quantity}</span>
-                            <span className="text-xs font-medium" style={{ color: brandColor }}>
+                            <span className="text-xs font-medium whitespace-nowrap" style={{ color: brandColor }}>
                               {formatPrice(item.price * item.quantity)}
                             </span>
                           </div>
@@ -1282,9 +1281,6 @@ export default function CheckoutPage() {
                     <div className="space-y-4">
                       {cart.map((item) => {
                         const isUpdating = updatingId === item.variantKey;
-                        const truncatedTitle = item.name && item.name.length > 40 
-                          ? item.name.substring(0, 40) + "..." 
-                          : item.name || "Produit";
                         const currentMode = item.shippingMode || defaultShippingMode;
                         
                         return (
@@ -1293,20 +1289,26 @@ export default function CheckoutPage() {
                               <div className="w-12 h-12 bg-white rounded-lg overflow-hidden flex-shrink-0 border">
                                 <Image src={item.image || "/placeholder.svg"} alt={item.name || "Produit"} width={48} height={48} className="w-full h-full object-contain p-1" />
                               </div>
-                              <div className="flex-1">
-                                <p className="text-sm font-medium truncate">{truncatedTitle}</p>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium break-words leading-tight">
+                                  {item.name || "Produit"}
+                                </p>
                                 {(item.color || item.eurSize) && (
-                                  <p className="text-xs text-gray-500">{item.color} {item.eurSize && `• ${item.eurSize}`}</p>
+                                  <p className="text-xs text-gray-500 mt-0.5">
+                                    {item.color} {item.eurSize && `• ${item.eurSize}`}
+                                  </p>
                                 )}
                                 <p className="text-xs text-gray-400 mt-1">Qté: {item.quantity}</p>
                               </div>
-                              <div className="text-right">
-                                <p className="text-sm font-bold" style={{ color: brandColor }}>{formatPrice(item.price * item.quantity)}</p>
+                              <div className="text-right flex-shrink-0">
+                                <p className="text-sm font-bold whitespace-nowrap" style={{ color: brandColor }}>
+                                  {formatPrice(item.price * item.quantity)}
+                                </p>
                               </div>
                             </div>
                             <div className="mt-3 pt-2 border-t border-gray-200">
                               <span className="text-xs text-gray-500 mr-2">Expédition:</span>
-                              <div className="flex gap-2 mt-1">
+                              <div className="flex gap-2 mt-1 flex-wrap">
                                 {SHIPPING_METHODS.map((method) => (
                                   <button
                                     key={method.id}
@@ -1330,7 +1332,7 @@ export default function CheckoutPage() {
 
                     <div className="mt-4 pt-3 border-t border-gray-200">
                       <p className="text-xs text-gray-500 mb-2">Appliquer à tous:</p>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         {SHIPPING_METHODS.map((method) => (
                           <button
                             key={method.id}
@@ -1353,9 +1355,6 @@ export default function CheckoutPage() {
 
                     <div className="space-y-2 max-h-60 overflow-y-auto">
                       {cart.map((item) => {
-                        const truncatedTitle = item.name && item.name.length > 35 
-                          ? item.name.substring(0, 35) + "..." 
-                          : item.name || "Produit";
                         const shippingMode = item.shippingMode || defaultShippingMode;
                         
                         return (
@@ -1363,11 +1362,17 @@ export default function CheckoutPage() {
                             <div className="w-10 h-10 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 border">
                               <Image src={item.image || "/placeholder.svg"} alt="" width={40} height={40} className="w-full h-full object-contain p-1" />
                             </div>
-                            <div className="flex-1">
-                              <p className="text-xs font-medium truncate">{truncatedTitle}</p>
-                              <div className="flex justify-between items-center mt-1">
-                                <span className="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{getShippingLabel(shippingMode)}</span>
-                                <span className="text-xs font-medium" style={{ color: brandColor }}>{formatPrice(item.price * item.quantity)}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium break-words leading-tight">
+                                {item.name || "Produit"}
+                              </p>
+                              <div className="flex justify-between items-center mt-1 flex-wrap gap-1">
+                                <span className="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                  {getShippingLabel(shippingMode)}
+                                </span>
+                                <span className="text-xs font-medium whitespace-nowrap" style={{ color: brandColor }}>
+                                  {formatPrice(item.price * item.quantity)}
+                                </span>
                               </div>
                               <p className="text-[10px] text-gray-400">x{item.quantity}</p>
                             </div>
@@ -1475,7 +1480,7 @@ export default function CheckoutPage() {
                   
                   <div className="space-y-3">
                     <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-gray-600 break-words">
                         {shippingInfo.firstName} {shippingInfo.lastName}<br />
                         {shippingInfo.address}<br />
                         {shippingInfo.quartier && <>{shippingInfo.quartier}<br /></>}
