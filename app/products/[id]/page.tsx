@@ -854,6 +854,39 @@ export default function ProductPage() {
   ]
 
   // ============================================================
+  // TARIFS DE LIVRAISON (USD) - POUR AFFICHAGE SÉPARÉ
+  // ============================================================
+  const SHIPPING_RATES = {
+    bateau: 4.57,
+    avion: 15.45,
+    express: 24.39
+  }
+
+  const PORTE_PORTE_RATES = {
+    under5kg: 2.44,
+    over5kg: 4.07
+  }
+
+  const getRoundedWeight = (): number => {
+    return logisticsData?.weight?.roundedWeight || 0
+  }
+
+  const getTransportCost = (mode: "bateau" | "avion" | "express"): number => {
+    const roundedWeight = getRoundedWeight()
+    const rate = SHIPPING_RATES[mode]
+    return roundedWeight * rate
+  }
+
+  const getPortePorteCost = (): number => {
+    const roundedWeight = getRoundedWeight()
+    return roundedWeight < 5 ? PORTE_PORTE_RATES.under5kg : PORTE_PORTE_RATES.over5kg
+  }
+
+  const getTotalShippingCost = (mode: "bateau" | "avion" | "express"): number => {
+    return getTransportCost(mode) + getPortePorteCost()
+  }
+
+  // ============================================================
   // FONCTIONS POUR AFFICHER LES DONNÉES LOGISTIQUES
   // ============================================================
   const getShippingCost = (mode: "bateau" | "avion" | "express"): number => {
@@ -1289,7 +1322,7 @@ export default function ProductPage() {
                   </div>
                 </div>
 
-                {/* Mode de livraison */}
+                {/* Mode de livraison AVEC PORTE-À-PORTE SÉPARÉ */}
                 <div className="space-y-1.5">
                   <h3 className="text-xs font-medium text-gray-500">Mode de livraison</h3>
                   {isLoadingLogistics ? (
@@ -1317,7 +1350,9 @@ export default function ProductPage() {
                         const shippingMode = item.mode as "bateau" | "avion" | "express"
                         const isAvailable = logisticsData?.shipping?.[shippingMode]
                         const days = getShippingDays(shippingMode)
-                        const cost = getShippingCost(shippingMode)
+                        const transportCost = getTransportCost(shippingMode)
+                        const portePorteCost = getPortePorteCost()
+                        const totalCost = getTotalShippingCost(shippingMode)
                         
                         if (!isAvailable) return null
                         
@@ -1338,9 +1373,17 @@ export default function ProductPage() {
                             <span className="text-[10px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#6b7280' }}>
                               {days}
                             </span>
-                            <span className="text-xs font-semibold mt-0.5" style={{ color: selectedShipping === shippingMode ? 'white' : brandColor }}>
-                              {formatPrice(cost)}
-                            </span>
+                            <div className="text-center mt-1">
+                              <span className="text-[10px] block" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.7)' : '#9ca3af' }}>
+                                Transport: {formatPrice(transportCost)}
+                              </span>
+                              <span className="text-[10px] block" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.7)' : '#9ca3af' }}>
+                                Porte-à-porte: {formatPrice(portePorteCost)}
+                              </span>
+                              <span className="text-xs font-bold mt-0.5 block" style={{ color: selectedShipping === shippingMode ? 'white' : brandColor }}>
+                                Total: {formatPrice(totalCost)}
+                              </span>
+                            </div>
                           </button>
                         )
                       })}
@@ -1881,7 +1924,9 @@ export default function ProductPage() {
                         const shippingMode = item.mode as "bateau" | "avion" | "express"
                         const isAvailable = logisticsData?.shipping?.[shippingMode]
                         const days = getShippingDays(shippingMode)
-                        const cost = getShippingCost(shippingMode)
+                        const transportCost = getTransportCost(shippingMode)
+                        const portePorteCost = getPortePorteCost()
+                        const totalCost = getTotalShippingCost(shippingMode)
                         const estimatedDate = getEstimatedDate(shippingMode)
                         
                         if (!isAvailable) return null
@@ -1908,8 +1953,14 @@ export default function ProductPage() {
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="font-semibold text-xs" style={{ color: selectedShipping === shippingMode ? 'white' : brandColor }}>
-                                {formatPrice(cost)}
+                              <p className="text-[9px] block" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.7)' : '#9ca3af' }}>
+                                Transport: {formatPrice(transportCost)}
+                              </p>
+                              <p className="text-[9px] block" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.7)' : '#9ca3af' }}>
+                                Porte-à-porte: {formatPrice(portePorteCost)}
+                              </p>
+                              <p className="font-semibold text-xs mt-0.5" style={{ color: selectedShipping === shippingMode ? 'white' : brandColor }}>
+                                Total: {formatPrice(totalCost)}
                               </p>
                               <p className="text-[9px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#9ca3af' }}>
                                 {estimatedDate}
