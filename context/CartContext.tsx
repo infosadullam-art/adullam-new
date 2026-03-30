@@ -20,62 +20,10 @@ export type CartItem = {
   variantKey?: string;
   attributes?: Record<string, string>;
   shippingMode?: ShippingMode;
-  shippingCostUSD?: number; // ✅ Changé : stocké en USD
-  portePorteCostUSD?: number; // ✅ Changé : stocké en USD
+  shippingCostUSD?: number;
+  portePorteCostUSD?: number;
   totalWeight?: number;
-};
-
-// ============================================================
-// TAUX DE LIVRAISON PAR MODE ET PAYS (en USD)
-// ============================================================
-type ShippingRates = {
-  [key in ShippingMode]: {
-    [country: string]: number;
-  };
-};
-
-const SHIPPING_RATES: ShippingRates = {
-  bateau: {
-    CI: 4.57, BF: 4.57, SN: 4.57, ML: 4.57, BJ: 4.57, TG: 4.57, NE: 4.57,
-    CM: 5.20, CF: 5.20, GA: 5.20, CG: 5.20, CD: 6.50,
-    MA: 6.80, TN: 6.80, DZ: 6.80, LY: 7.20, EG: 7.50,
-    ZA: 7.35, NA: 7.35, BW: 7.35, ZM: 7.35, ZW: 7.35, MZ: 7.35, AO: 7.80,
-    KE: 6.90, UG: 6.90, TZ: 6.90, RW: 6.90, ET: 7.10,
-    DEFAULT: 7.35
-  },
-  avion: {
-    CI: 14.69, BF: 14.69, SN: 14.69, ML: 14.69, BJ: 14.69, TG: 14.69, NE: 14.69,
-    CM: 15.20, CF: 15.20, GA: 15.20, CG: 15.20, CD: 16.50,
-    MA: 16.80, TN: 16.80, DZ: 16.80, LY: 17.20, EG: 17.50,
-    ZA: 16.33, NA: 16.33, BW: 16.33, ZM: 16.33, ZW: 16.33, MZ: 16.33, AO: 17.80,
-    KE: 16.90, UG: 16.90, TZ: 16.90, RW: 16.90, ET: 17.10,
-    DEFAULT: 16.33
-  },
-  express: {
-    CI: 24.49, BF: 24.49, SN: 24.49, ML: 24.49, BJ: 24.49, TG: 24.49, NE: 24.49,
-    CM: 25.20, CF: 25.20, GA: 25.20, CG: 25.20, CD: 26.50,
-    MA: 26.80, TN: 26.80, DZ: 26.80, LY: 27.20, EG: 27.50,
-    ZA: 29.39, NA: 29.39, BW: 29.39, ZM: 29.39, ZW: 29.39, MZ: 29.39, AO: 30.80,
-    KE: 28.90, UG: 28.90, TZ: 28.90, RW: 28.90, ET: 29.10,
-    DEFAULT: 29.39
-  }
-};
-
-// ============================================================
-// FRAIS PORTE-À-PORTE PAR PAYS (en USD)
-// ============================================================
-const PORTE_PORTE_RATES_USD = {
-  under5kg: 1.63,
-  over5kg: 3.26
-};
-
-// ============================================================
-// TAUX DE CHANGE (pour l'affichage seulement)
-// ============================================================
-const EXCHANGE_RATES: Record<string, number> = {
-  XOF: 612.75, XAF: 612.75, CDF: 2850, MAD: 10.02, TND: 3.12, DZD: 134.50,
-  GNF: 8600, RWF: 1310, BIF: 2870, MGA: 4550, NGN: 1550, GHS: 15.20, ZAR: 18.40,
-  LYD: 4.8, EGP: 48, MZN: 64, AOA: 830, KES: 130, UGX: 3700, TZS: 2600, ETB: 57,
+  productTitle?: string;
 };
 
 // ============================================================
@@ -112,6 +60,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [shippingMode, setShippingMode] = useState<ShippingMode>("bateau");
   const [ready, setReady] = useState(false);
+  const [cache, setCache] = useState<Map<string, { shippingCost: number; portePorte: number; totalWeight: number }>>(new Map());
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -148,115 +97,172 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("shippingMode", shippingMode);
   }, [shippingMode, ready]);
 
-  // ✅ Calcule les frais de livraison en USD
-  const calculateItemShippingUSD = (item: CartItem, mode: ShippingMode): number => {
+  // ✅ Appel à l'API logistique avec le mode sélectionné
+  const fetchShippingEstimate = async (
+    productId: string,
+    productTitle: string,
+    quantity: number,
+    productWeight: number,
+    destinationCountry: string,
+    mode: ShippingMode
+  ): Promise<{ shippingCost: number; portePorte: number; totalWeight: number } | null> => {
+    try {
+      const params = new URLSearchParams({
+        productId,
+        productTitle,
+        productWeight: productWeight?.toString() || '',
+        quantity: quantity.toString(),
+        country: destinationCountry
+      });
+
+      const response = await fetch(`/api/logistics/estimate?${params}`);
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        const shipping = data.data.shipping;
+        const weight = data.data.weight;
+        
+        // ✅ Utilise le mode sélectionné
+        const selectedShipping = shipping[mode as keyof typeof shipping];
+        
+        return {
+          shippingCost: selectedShipping?.cost || 0,
+          portePorte: 0,
+          totalWeight: weight.roundedWeight || weight.totalWeight || 0
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error("Erreur API logistique:", error);
+      return null;
+    }
+  };
+
+  // ✅ Calcule les frais de livraison via l'API (ou cache) avec le mode
+  const calculateItemCosts = async (item: CartItem, mode: ShippingMode): Promise<{ shippingCost: number; portePorte: number; totalWeight: number }> => {
+    const cacheKey = `${item.id}_${item.variantKey}_${mode}_${country}_${item.quantity}`;
+    
+    if (cache.has(cacheKey)) {
+      return cache.get(cacheKey)!;
+    }
+
+    const result = await fetchShippingEstimate(
+      item.id,
+      item.name || item.productTitle || "Produit",
+      item.quantity,
+      item.weight || 0.5,
+      country,
+      mode
+    );
+
+    if (result) {
+      setCache(prev => new Map(prev).set(cacheKey, result));
+      return result;
+    }
+
+    // Fallback si l'API échoue
     const itemWeight = (item.weight || 0.5) * item.quantity;
     const roundedWeight = Math.ceil(itemWeight);
-    const ratePerKgUSD = SHIPPING_RATES[mode][country] || SHIPPING_RATES[mode].DEFAULT;
-    return ratePerKgUSD * roundedWeight;
+    return {
+      shippingCost: 0,
+      portePorte: 0,
+      totalWeight: roundedWeight
+    };
   };
 
-  // ✅ Calcule les frais de porte-à-porte en USD
-  const calculateItemPortePorteUSD = (item: CartItem): number => {
-    const itemWeight = (item.weight || 0.5) * item.quantity;
-    return itemWeight < 5 ? PORTE_PORTE_RATES_USD.under5kg : PORTE_PORTE_RATES_USD.over5kg;
+  // Mettre à jour un item avec ses frais
+  const updateItemWithCosts = async (item: CartItem, mode: ShippingMode): Promise<CartItem> => {
+    const costs = await calculateItemCosts(item, mode);
+    return {
+      ...item,
+      shippingCostUSD: costs.shippingCost,
+      portePorteCostUSD: costs.portePorte,
+      totalWeight: costs.totalWeight
+    };
   };
 
-  const addToCart = (item: CartItem) => {
-    setCart((prev) => {
-      const variantKey = item.variantKey || `${item.id}_${item.color || ''}_${item.eurSize || ''}`;
-      const existingIndex = prev.findIndex((p) => p.variantKey === variantKey);
+  const addToCart = async (item: CartItem) => {
+    const variantKey = item.variantKey || `${item.id}_${item.color || ''}_${item.eurSize || ''}`;
+    const existingIndex = cart.findIndex((p) => p.variantKey === variantKey);
 
-      if (existingIndex >= 0) {
-        const newCart = [...prev];
-        const existingItem = newCart[existingIndex];
-        const newQuantity = existingItem.quantity + item.quantity;
-        
-        const updatedItem = {
-          ...existingItem,
-          quantity: newQuantity,
-          totalWeight: (existingItem.weight || 0.5) * newQuantity,
-          shippingCostUSD: calculateItemShippingUSD(
-            { ...existingItem, quantity: newQuantity },
-            existingItem.shippingMode!
-          ),
-          portePorteCostUSD: calculateItemPortePorteUSD({ ...existingItem, quantity: newQuantity })
-        };
-        
-        newCart[existingIndex] = updatedItem;
-        return newCart;
-      }
-
+    if (existingIndex >= 0) {
+      const existingItem = cart[existingIndex];
+      const newQuantity = existingItem.quantity + item.quantity;
+      const updatedItem = await updateItemWithCosts(
+        { ...existingItem, quantity: newQuantity },
+        existingItem.shippingMode || shippingMode
+      );
+      
+      const newCart = [...cart];
+      newCart[existingIndex] = updatedItem;
+      setCart(newCart);
+    } else {
       const newItem = {
         ...item,
         weight: item.weight || 0.5,
         variantKey,
         shippingMode: item.shippingMode || shippingMode,
       };
-
-      const shippingCostUSD = calculateItemShippingUSD(newItem, newItem.shippingMode!);
-      const portePorteCostUSD = calculateItemPortePorteUSD(newItem);
-      const totalWeight = (newItem.weight || 0.5) * newItem.quantity;
-
-      const newItemWithCosts = {
-        ...newItem,
-        shippingCostUSD,
-        portePorteCostUSD,
-        totalWeight
-      };
-
-      return [...prev, newItemWithCosts];
-    });
+      const itemWithCosts = await updateItemWithCosts(newItem, newItem.shippingMode!);
+      setCart((prev) => [...prev, itemWithCosts]);
+    }
   };
 
   const removeFromCart = (variantKey: string) => {
     setCart((prev) => prev.filter((item) => item.variantKey !== variantKey));
   };
 
-  const updateQuantity = (variantKey: string, quantity: number) => {
+  const updateQuantity = async (variantKey: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(variantKey);
       return;
     }
 
+    const item = cart.find(i => i.variantKey === variantKey);
+    if (!item) return;
+
+    const updatedItem = await updateItemWithCosts(
+      { ...item, quantity },
+      item.shippingMode!
+    );
+
     setCart((prev) =>
-      prev.map((item) => {
-        if (item.variantKey === variantKey) {
-          return {
-            ...item,
-            quantity,
-            totalWeight: (item.weight || 0.5) * quantity,
-            shippingCostUSD: calculateItemShippingUSD(
-              { ...item, quantity },
-              item.shippingMode!
-            ),
-            portePorteCostUSD: calculateItemPortePorteUSD({ ...item, quantity })
-          };
-        }
-        return item;
-      })
+      prev.map((i) => (i.variantKey === variantKey ? updatedItem : i))
     );
   };
 
-  const updateShippingMode = (variantKey: string, mode: ShippingMode) => {
+  const updateShippingMode = async (variantKey: string, mode: ShippingMode) => {
+    const item = cart.find(i => i.variantKey === variantKey);
+    if (!item) return;
+
+    const updatedItem = await updateItemWithCosts(item, mode);
+
     setCart((prev) =>
-      prev.map((item) => {
-        if (item.variantKey === variantKey) {
-          return {
-            ...item,
-            shippingMode: mode,
-            shippingCostUSD: calculateItemShippingUSD(item, mode)
-          };
-        }
-        return item;
-      })
+      prev.map((i) => (i.variantKey === variantKey ? { ...updatedItem, shippingMode: mode } : i))
     );
   };
 
   const clearCart = () => {
     setCart([]);
     localStorage.removeItem("cart");
+    setCache(new Map());
   };
+
+  // Recalculer tous les items quand le pays change
+  useEffect(() => {
+    const recalcAllItems = async () => {
+      if (!ready || cart.length === 0) return;
+      
+      const updatedCart = await Promise.all(
+        cart.map(async (item) => {
+          return await updateItemWithCosts(item, item.shippingMode || shippingMode);
+        })
+      );
+      setCart(updatedCart);
+    };
+    
+    recalcAllItems();
+  }, [country, ready]);
 
   // ✅ Tous les totaux sont en USD
   const totalUSD = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
