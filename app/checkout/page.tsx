@@ -353,23 +353,75 @@ export default function CheckoutPage() {
     try {
       const token = localStorage.getItem('adullam_token');
       
+      console.log('🔴 [CHECKOUT] ========== DÉBUT COMMANDE ==========');
+      console.log('🔴 [CHECKOUT] Token présent:', !!token);
+      console.log('🔴 [CHECKOUT] Token début:', token?.substring(0, 30) + '...');
+      
+      if (!token) {
+        throw new Error("Vous devez être connecté");
+      }
+      
       const orderTotal = grandTotalUSD;
       setLastOrderTotal(orderTotal);
       
-      const orderItems = cart.map(item => ({
-        variantKey: item.variantKey,
-        productId: item.id,
-        name: item.name,
-        quantity: item.quantity,
-        price: item.price,
-        shippingMode: item.shippingMode || defaultShippingMode,
-        shippingCost: item.shippingCostUSD || 0,
-        portePorteCost: item.portePorteCostUSD || 0,
-        totalWeight: item.totalWeight || 0,
-        color: item.color,
-        eurSize: item.eurSize,
-        image: item.image
-      }));
+      // ✅ PRÉPARER LES ARTICLES AVEC LEUR MODE D'EXPÉDITION
+      const orderItems = cart.map(item => {
+        const shippingMode = item.shippingMode || defaultShippingMode;
+        const shippingCost = item.shippingCostUSD || 0;
+        const portePorteCost = item.portePorteCostUSD || 0;
+        
+        console.log(`🔴 [CHECKOUT] Article: ${item.name?.substring(0, 30)}...`);
+        console.log(`   - shippingMode: ${shippingMode}`);
+        console.log(`   - shippingCost: ${shippingCost}`);
+        console.log(`   - portePorteCost: ${portePorteCost}`);
+        
+        return {
+          id: item.id,
+          variantKey: item.variantKey,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          shippingMode: shippingMode,
+          shippingCost: shippingCost,
+          portePorteCost: portePorteCost,
+          totalWeight: item.totalWeight || 0,
+          color: item.color,
+          eurSize: item.eurSize,
+          image: item.image,
+          weight: item.weight || 0.5
+        };
+      });
+      
+      console.log('🔴 [CHECKOUT] Items préparés:', orderItems.length);
+      
+      const requestBody = {
+        items: orderItems,
+        shippingInfo: {
+          firstName: shippingInfo.firstName,
+          lastName: shippingInfo.lastName,
+          email: shippingInfo.email,
+          phone: shippingInfo.phone,
+          address: shippingInfo.address,
+          quartier: shippingInfo.quartier,
+          city: shippingInfo.city,
+          postalCode: shippingInfo.postalCode,
+          country: selectedCountry.name,
+          countryCode: selectedCountry.code,
+          notes: shippingInfo.notes
+        },
+        paymentMethod: paymentMethod,
+        totals: { 
+          totalUSD, 
+          shippingCost: totalShippingUSD, 
+          portePorteTotal: totalPortePorteUSD, 
+          grandTotal: orderTotal 
+        },
+        country: selectedCountry.code,
+        currency: currency || "XOF",
+        defaultShippingMode: defaultShippingMode
+      };
+      
+      console.log('🔴 [CHECKOUT] Body envoyé:', JSON.stringify(requestBody, null, 2));
       
       const response = await fetch('/api/orders', {
         method: 'POST',
@@ -377,26 +429,20 @@ export default function CheckoutPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          items: orderItems,
-          shippingInfo: {
-            ...shippingInfo,
-            country: selectedCountry.name,
-            countryCode: selectedCountry.code
-          },
-          paymentMethod,
-          totals: { 
-            totalUSD, 
-            shippingCost: totalShippingUSD, 
-            portePorteTotal: totalPortePorteUSD, 
-            grandTotal: orderTotal 
-          },
-          country: selectedCountry.code,
-          currency
-        })
+        body: JSON.stringify(requestBody)
       });
 
+      console.log('🔴 [CHECKOUT] Réponse status:', response.status);
+      
+      if (response.status === 401) {
+        console.log('🔴 [CHECKOUT] 401 - Token invalide, redirection login');
+        localStorage.removeItem('adullam_token');
+        router.push("/account?mode=login&redirect=checkout");
+        throw new Error("Session expirée, veuillez vous reconnecter");
+      }
+
       const data = await response.json();
+      console.log('🔴 [CHECKOUT] Réponse data:', data);
 
       if (!response.ok) {
         throw new Error(data.message || "Erreur lors de la commande");
@@ -408,11 +454,12 @@ export default function CheckoutPage() {
         setLastOrderRef(data.orderId.slice(-8));
       }
 
+      console.log('🔴 [CHECKOUT] Commande réussie! Réf:', lastOrderRef);
       setIsSuccess(true);
       clearCart();
       
     } catch (error: any) {
-      console.error("Erreur:", error);
+      console.error("❌ [CHECKOUT] Erreur:", error);
       setError(error.message || "Une erreur est survenue");
     } finally {
       setIsProcessing(false);
