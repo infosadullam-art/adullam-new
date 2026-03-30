@@ -98,24 +98,21 @@ const SHIPPING_METHODS = [
     name: "Maritime", 
     icon: Ship, 
     days: "35-50j", 
-    badge: "Économique",
-    multiplier: 0.5
+    badge: "Économique"
   },
   { 
     id: "avion", 
     name: "Aérien", 
     icon: Zap, 
     days: "15-20j", 
-    badge: "Rapide",
-    multiplier: 1
+    badge: "Rapide"
   },
   { 
     id: "express", 
     name: "Express", 
     icon: Zap, 
     days: "7-10j", 
-    badge: "Prioritaire",
-    multiplier: 1.5
+    badge: "Prioritaire"
   }
 ];
 
@@ -130,7 +127,9 @@ export default function CheckoutPage() {
     grandTotalUSD,
     totalItems,
     clearCart,
-    updateShippingMode
+    updateShippingMode,
+    shippingMode: defaultShippingMode,
+    setShippingMode: setDefaultShippingMode
   } = useCart();
   
   const { country: userCountry, currency } = useLocale();
@@ -139,7 +138,6 @@ export default function CheckoutPage() {
   // États
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState<"mtn" | "orange" | "wave" | "visa" | null>(null);
-  const [shippingMethod, setShippingMethod] = useState<"bateau" | "avion" | "express">("bateau");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -240,7 +238,6 @@ export default function CheckoutPage() {
     
     setLoadingAddresses(true);
     try {
-      // ✅ CORRIGÉ : utiliser la bonne clé 'adullam_token'
       const token = localStorage.getItem('adullam_token');
       const res = await fetch("/api/user/addresses", {
         headers: {
@@ -280,7 +277,6 @@ export default function CheckoutPage() {
 
   const handleAddAddress = async () => {
     try {
-      // ✅ CORRIGÉ : utiliser la bonne clé 'adullam_token'
       const token = localStorage.getItem('adullam_token');
       const res = await fetch("/api/user/addresses", {
         method: "POST",
@@ -346,18 +342,19 @@ export default function CheckoutPage() {
   };
 
   const handleShippingMethodChange = (method: "bateau" | "avion" | "express") => {
-    setShippingMethod(method);
-    updateShippingMode(method);
+    // Mettre à jour le mode d'expédition par défaut pour tous les nouveaux articles
+    setDefaultShippingMode(method);
+    // Mettre à jour tous les articles existants dans le panier
+    cart.forEach(item => {
+      if (item.variantKey) {
+        updateShippingMode(item.variantKey, method);
+      }
+    });
   };
 
   const validateStep1 = () => {
     const { firstName, lastName, email, phone, address, quartier, city } = shippingInfo;
     return firstName && lastName && email && phone && address && quartier && city;
-  };
-
-  const getShippingCost = () => {
-    const method = SHIPPING_METHODS.find(m => m.id === shippingMethod);
-    return totalShippingUSD * (method?.multiplier || 1);
   };
 
   // ✅ CORRECTION : Sauvegarde du total avant clearCart
@@ -368,7 +365,6 @@ export default function CheckoutPage() {
     setError("");
 
     try {
-      // ✅ CORRIGÉ : utiliser la bonne clé 'adullam_token'
       const token = localStorage.getItem('adullam_token');
       
       // Sauvegarder le total avant l'appel
@@ -388,11 +384,10 @@ export default function CheckoutPage() {
             country: selectedCountry.name,
             countryCode: selectedCountry.code
           },
-          shippingMethod,
           paymentMethod,
           totals: { 
             totalUSD, 
-            shippingCost: getShippingCost(),
+            shippingCost: totalShippingUSD, 
             portePorteTotal: totalPortePorteUSD, 
             grandTotal: orderTotal 
           },
@@ -829,7 +824,7 @@ export default function CheckoutPage() {
                   <div className="space-y-2">
                     {SHIPPING_METHODS.map((method) => {
                       const Icon = method.icon;
-                      const isSelected = shippingMethod === method.id;
+                      const isSelected = defaultShippingMode === method.id;
                       return (
                         <button
                           key={method.id}
@@ -854,7 +849,7 @@ export default function CheckoutPage() {
                           </div>
                           <div className="text-right whitespace-nowrap">
                             <span className="text-sm font-medium" style={{ color: brandColor }}>
-                              {formatPrice(totalShippingUSD * method.multiplier)}
+                              {formatPrice(totalShippingUSD)}
                             </span>
                           </div>
                           {isSelected && (
@@ -993,7 +988,7 @@ export default function CheckoutPage() {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-500">Livraison</span>
-                          <span>{formatPrice(getShippingCost())}</span>
+                          <span>{formatPrice(totalShippingUSD)}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-500">Porte-à-porte</span>
@@ -1042,33 +1037,40 @@ export default function CheckoutPage() {
                 </h2>
 
                 <div className="space-y-2 max-h-60 lg:max-h-80 overflow-y-auto pr-1">
-                  {cart.map((item) => (
-                    <div key={item.variantKey} className="flex gap-2 pb-2 border-b border-gray-100 last:border-0">
-                      <div className="w-12 h-12 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
-                        <Image
-                          src={item.image || "/placeholder.svg"}
-                          alt={item.name || "Produit"}
-                          width={48}
-                          height={48}
-                          className="w-full h-full object-contain p-1"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium truncate">{item.name || "Produit"}</p>
-                        {(item.color || item.eurSize) && (
-                          <p className="text-[10px] text-gray-400 mt-0.5 truncate">
-                            {item.color} {item.eurSize && `• ${item.eurSize}`}
-                          </p>
-                        )}
-                        <div className="flex justify-between items-center mt-1">
-                          <span className="text-[10px] text-gray-400">x{item.quantity}</span>
-                          <span className="text-xs font-medium" style={{ color: brandColor }}>
-                            {formatPrice(item.price * item.quantity)}
-                          </span>
+                  {cart.map((item) => {
+                    // Troncature du titre
+                    const truncatedTitle = item.name && item.name.length > 40 
+                      ? item.name.substring(0, 40) + "..." 
+                      : item.name || "Produit";
+                    
+                    return (
+                      <div key={item.variantKey} className="flex gap-2 pb-2 border-b border-gray-100 last:border-0">
+                        <div className="w-12 h-12 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
+                          <Image
+                            src={item.image || "/placeholder.svg"}
+                            alt={item.name || "Produit"}
+                            width={48}
+                            height={48}
+                            className="w-full h-full object-contain p-1"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium truncate">{truncatedTitle}</p>
+                          {(item.color || item.eurSize) && (
+                            <p className="text-[10px] text-gray-400 mt-0.5 truncate">
+                              {item.color} {item.eurSize && `• ${item.eurSize}`}
+                            </p>
+                          )}
+                          <div className="flex justify-between items-center mt-1">
+                            <span className="text-[10px] text-gray-400">x{item.quantity}</span>
+                            <span className="text-xs font-medium" style={{ color: brandColor }}>
+                              {formatPrice(item.price * item.quantity)}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div className="border-t border-gray-100 mt-3 pt-3 space-y-1.5">
@@ -1078,7 +1080,11 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-500">Livraison</span>
-                    <span className="font-medium">{formatPrice(getShippingCost())}</span>
+                    <span className="font-medium">{formatPrice(totalShippingUSD)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-500">Porte-à-porte</span>
+                    <span className="font-medium">{formatPrice(totalPortePorteUSD)}</span>
                   </div>
                   <div className="flex justify-between text-xs font-medium pt-1.5 border-t border-gray-100">
                     <span>Total</span>
