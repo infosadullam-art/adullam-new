@@ -265,7 +265,7 @@ export default function ProductPage() {
   }
 
   // ============================================================
-  // APPEL À L'API LOGISTIQUE
+  // APPEL À L'API LOGISTIQUE - AVEC LOG AJOUTÉ
   // ============================================================
   useEffect(() => {
     if (!product || !country) return
@@ -290,6 +290,13 @@ export default function ProductPage() {
         const data = await response.json()
         
         if (data.success) {
+          // ✅ LOG AJOUTÉ : Affiche les frais reçus de l'API
+          console.log("📦 FRAIS REÇUS DE L'API:", {
+            bateau: data.data.shipping?.bateau?.cost,
+            avion: data.data.shipping?.avion?.cost,
+            express: data.data.shipping?.express?.cost
+          })
+          
           setLogisticsData(data.data)
           
           if (data.data.shipping) {
@@ -841,11 +848,14 @@ export default function ProductPage() {
   ]
 
   // ============================================================
-  // FONCTIONS POUR AFFICHER LES DONNÉES LOGISTIQUES
+  // FONCTIONS POUR AFFICHER LES DONNÉES LOGISTIQUES - AVEC LOG AJOUTÉ
   // ============================================================
   const getShippingCost = (mode: "bateau" | "avion" | "express"): number => {
     if (!logisticsData?.shipping || !logisticsData.shipping[mode]) return 0
-    return logisticsData.shipping[mode]?.cost || 0
+    const cost = logisticsData.shipping[mode]?.cost || 0
+    // ✅ LOG AJOUTÉ : Affiche ce qui est affiché
+    console.log(`💰 ${mode} affiché:`, cost)
+    return cost
   }
 
   const getEstimatedDate = (mode: "bateau" | "avion" | "express"): string => {
