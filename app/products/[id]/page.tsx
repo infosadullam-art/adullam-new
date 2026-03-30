@@ -856,7 +856,7 @@ export default function ProductPage() {
   ]
 
   // ============================================================
-  // FONCTIONS POUR AFFICHER LES DONNÉES LOGISTIQUES AVEC TRANSPORT ET PORTE-À-PORTE
+  // FONCTIONS POUR AFFICHER LES DONNÉES LOGISTIQUES
   // ============================================================
   const getShippingCost = (mode: "bateau" | "avion" | "express"): number => {
     if (!logisticsData?.shipping || !logisticsData.shipping[mode]) return 0
@@ -883,6 +883,11 @@ export default function ProductPage() {
     const shipping = logisticsData.shipping[mode]
     return `${shipping?.minDays || 0}-${shipping?.maxDays || 0}j`
   }
+
+  // Récupérer le coût de transport pour le mode sélectionné (affiché une seule fois)
+  const selectedTransportCost = getTransportCost(selectedShipping)
+  const selectedPortePorteCost = getPortePorteCost(selectedShipping)
+  const selectedTotalCost = selectedTransportCost + selectedPortePorteCost
 
   // ============================================================
   // RENDU CONDITIONNEL
@@ -1293,7 +1298,7 @@ export default function ProductPage() {
                   </div>
                 </div>
 
-                {/* Mode de livraison - MOBILE AVEC TRANSPORT ET PORTE-À-PORTE SÉPARÉS */}
+                {/* Mode de livraison - MOBILE avec boutons */}
                 <div className="space-y-1.5">
                   <h3 className="text-xs font-medium text-gray-500">Mode de livraison</h3>
                   {isLoadingLogistics ? (
@@ -1315,16 +1320,13 @@ export default function ProductPage() {
                     <>
                       <div className="grid grid-cols-3 gap-1.5">
                         {[
-                          { mode: "bateau", icon: Ship, label: "Mer" },
-                          { mode: "avion", icon: Sparkles, label: "Air" },
-                          { mode: "express", icon: Zap, label: "Express" }
+                          { mode: "bateau", icon: Ship, label: "Mer", days: getShippingDays("bateau"), cost: getShippingCost("bateau") },
+                          { mode: "avion", icon: Sparkles, label: "Air", days: getShippingDays("avion"), cost: getShippingCost("avion") },
+                          { mode: "express", icon: Zap, label: "Express", days: getShippingDays("express"), cost: getShippingCost("express") }
                         ].map((item) => {
                           const shippingMode = item.mode as "bateau" | "avion" | "express"
                           const isAvailable = logisticsData?.shipping?.[shippingMode]
-                          const days = getShippingDays(shippingMode)
-                          const transportCost = getTransportCost(shippingMode)
-                          const portePorteCost = getPortePorteCost(shippingMode)
-                          const totalCost = transportCost + portePorteCost
+                          const totalCost = getShippingCost(shippingMode)
                           
                           if (!isAvailable) return null
                           
@@ -1343,23 +1345,34 @@ export default function ProductPage() {
                                 {item.label}
                               </span>
                               <span className="text-[10px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#6b7280' }}>
-                                {days}
+                                {item.days}
                               </span>
-                              <div className="text-center mt-1">
-                                <span className="text-[10px] block" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.7)' : '#9ca3af' }}>
-                                  Transport: {formatPrice(transportCost)}
-                                </span>
-                                <span className="text-[10px] block" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.7)' : '#9ca3af' }}>
-                                  Porte-à-porte: {formatPrice(portePorteCost)}
-                                </span>
-                                <span className="text-xs font-bold mt-0.5 block" style={{ color: selectedShipping === shippingMode ? 'white' : brandColor }}>
-                                  Total: {formatPrice(totalCost)}
-                                </span>
-                              </div>
+                              <span className="text-xs font-bold mt-0.5" style={{ color: selectedShipping === shippingMode ? 'white' : brandColor }}>
+                                {formatPrice(totalCost)}
+                              </span>
                             </button>
                           )
                         })}
                       </div>
+
+                      {/* Affichage des frais de transport et porte-à-porte pour le mode sélectionné */}
+                      {selectedTransportCost > 0 || selectedPortePorteCost > 0 ? (
+                        <div className="mt-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-gray-600">Frais de transport:</span>
+                            <span className="font-medium">{formatPrice(selectedTransportCost)}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-xs mt-1">
+                            <span className="text-gray-600">Frais de porte-à-porte:</span>
+                            <span className="font-medium">{formatPrice(selectedPortePorteCost)}</span>
+                          </div>
+                          <div className="border-t border-gray-200 my-1"></div>
+                          <div className="flex justify-between items-center text-xs font-bold">
+                            <span className="text-gray-700">Total expédition:</span>
+                            <span style={{ color: brandColor }}>{formatPrice(selectedTotalCost)}</span>
+                          </div>
+                        </div>
+                      ) : null}
                     </>
                   )}
                 </div>
@@ -1888,57 +1901,66 @@ export default function ProductPage() {
                       {logisticsError}
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        { mode: "bateau", icon: Ship, label: "Maritime" },
-                        { mode: "avion", icon: Sparkles, label: "Aérien" },
-                        { mode: "express", icon: Zap, label: "Express" }
-                      ].map((item) => {
-                        const shippingMode = item.mode as "bateau" | "avion" | "express"
-                        const isAvailable = logisticsData?.shipping?.[shippingMode]
-                        const days = getShippingDays(shippingMode)
-                        const transportCost = getTransportCost(shippingMode)
-                        const portePorteCost = getPortePorteCost(shippingMode)
-                        const totalCost = transportCost + portePorteCost
-                        const estimatedDate = getEstimatedDate(shippingMode)
-                        
-                        if (!isAvailable) return null
-                        
-                        return (
-                          <button
-                            key={item.mode}
-                            onClick={() => setSelectedShipping(shippingMode)}
-                            className="flex flex-col items-center p-2 rounded-lg border transition-all hover:shadow-md"
-                            style={{
-                              borderColor: selectedShipping === shippingMode ? brandColor : '#e5e7eb',
-                              background: selectedShipping === shippingMode ? brandGradient : 'white'
-                            }}
-                          >
-                            <item.icon className="w-5 h-5 mb-1" style={{ color: selectedShipping === shippingMode ? 'white' : '#9ca3af' }} />
-                            <span className="text-xs font-medium" style={{ color: selectedShipping === shippingMode ? 'white' : '#374151' }}>
-                              {item.label}
-                            </span>
-                            <span className="text-[10px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#6b7280' }}>
-                              {days}
-                            </span>
-                            <div className="text-center mt-1">
-                              <span className="text-[9px] block" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.7)' : '#9ca3af' }}>
-                                Transport: {formatPrice(transportCost)}
+                    <>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { mode: "bateau", icon: Ship, label: "Maritime", days: getShippingDays("bateau"), cost: getShippingCost("bateau"), estimatedDate: getEstimatedDate("bateau") },
+                          { mode: "avion", icon: Sparkles, label: "Aérien", days: getShippingDays("avion"), cost: getShippingCost("avion"), estimatedDate: getEstimatedDate("avion") },
+                          { mode: "express", icon: Zap, label: "Express", days: getShippingDays("express"), cost: getShippingCost("express"), estimatedDate: getEstimatedDate("express") }
+                        ].map((item) => {
+                          const shippingMode = item.mode as "bateau" | "avion" | "express"
+                          const isAvailable = logisticsData?.shipping?.[shippingMode]
+                          const totalCost = getShippingCost(shippingMode)
+                          
+                          if (!isAvailable) return null
+                          
+                          return (
+                            <button
+                              key={item.mode}
+                              onClick={() => setSelectedShipping(shippingMode)}
+                              className="flex flex-col items-center p-2 rounded-lg border transition-all hover:shadow-md"
+                              style={{
+                                borderColor: selectedShipping === shippingMode ? brandColor : '#e5e7eb',
+                                background: selectedShipping === shippingMode ? brandGradient : 'white'
+                              }}
+                            >
+                              <item.icon className="w-5 h-5 mb-1" style={{ color: selectedShipping === shippingMode ? 'white' : '#9ca3af' }} />
+                              <span className="text-xs font-medium" style={{ color: selectedShipping === shippingMode ? 'white' : '#374151' }}>
+                                {item.label}
                               </span>
-                              <span className="text-[9px] block" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.7)' : '#9ca3af' }}>
-                                Porte-à-porte: {formatPrice(portePorteCost)}
+                              <span className="text-[10px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#6b7280' }}>
+                                {item.days}
                               </span>
-                              <span className="text-xs font-bold mt-1 block" style={{ color: selectedShipping === shippingMode ? 'white' : brandColor }}>
-                                Total: {formatPrice(totalCost)}
+                              <span className="text-xs font-bold mt-1" style={{ color: selectedShipping === shippingMode ? 'white' : brandColor }}>
+                                {formatPrice(totalCost)}
                               </span>
-                            </div>
-                            <p className="text-[9px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#9ca3af' }}>
-                              {estimatedDate}
-                            </p>
-                          </button>
-                        )
-                      })}
-                    </div>
+                              <p className="text-[9px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#9ca3af' }}>
+                                {item.estimatedDate}
+                              </p>
+                            </button>
+                          )
+                        })}
+                      </div>
+
+                      {/* Affichage des frais de transport et porte-à-porte pour le mode sélectionné */}
+                      {selectedTransportCost > 0 || selectedPortePorteCost > 0 ? (
+                        <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-gray-600">Frais de transport:</span>
+                            <span className="font-medium">{formatPrice(selectedTransportCost)}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-sm mt-1">
+                            <span className="text-gray-600">Frais de porte-à-porte:</span>
+                            <span className="font-medium">{formatPrice(selectedPortePorteCost)}</span>
+                          </div>
+                          <div className="border-t border-gray-200 my-2"></div>
+                          <div className="flex justify-between items-center text-sm font-bold">
+                            <span className="text-gray-700">Total expédition:</span>
+                            <span style={{ color: brandColor }}>{formatPrice(selectedTotalCost)}</span>
+                          </div>
+                        </div>
+                      ) : null}
+                    </>
                   )}
                 </div>
 
