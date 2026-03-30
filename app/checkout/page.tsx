@@ -93,30 +93,9 @@ const AFRICAN_COUNTRIES = [
 
 // Modes d'expédition
 const SHIPPING_METHODS = [
-  { 
-    id: "bateau", 
-    name: "Maritime", 
-    icon: Ship, 
-    days: "35-50j", 
-    badge: "Économique",
-    label: "Mer"
-  },
-  { 
-    id: "avion", 
-    name: "Aérien", 
-    icon: Zap, 
-    days: "15-20j", 
-    badge: "Rapide",
-    label: "Air"
-  },
-  { 
-    id: "express", 
-    name: "Express", 
-    icon: Zap, 
-    days: "7-10j", 
-    badge: "Prioritaire",
-    label: "Express"
-  }
+  { id: "bateau", name: "Maritime", icon: Ship, days: "35-50j", badge: "Économique", label: "Mer" },
+  { id: "avion", name: "Aérien", icon: Zap, days: "15-20j", badge: "Rapide", label: "Air" },
+  { id: "express", name: "Express", icon: Zap, days: "7-10j", badge: "Prioritaire", label: "Express" }
 ];
 
 export default function CheckoutPage() {
@@ -345,13 +324,13 @@ export default function CheckoutPage() {
     setIsCountryDropdownOpen(false);
   };
 
-  const handleShippingModeChange = async (variantKey: string, mode: "bateau" | "avion" | "express") => {
+  const handleIndividualShippingChange = async (variantKey: string, mode: "bateau" | "avion" | "express") => {
     setUpdatingId(variantKey);
     updateShippingMode(variantKey, mode);
     setTimeout(() => setUpdatingId(null), 300);
   };
 
-  const handleGlobalShippingModeChange = (method: "bateau" | "avion" | "express") => {
+  const handleGlobalShippingChange = (method: "bateau" | "avion" | "express") => {
     setDefaultShippingMode(method);
     // Mettre à jour tous les articles existants
     cart.forEach(item => {
@@ -460,15 +439,14 @@ export default function CheckoutPage() {
     if (country) setSelectedCountry(country);
   };
 
-  // Fonction pour obtenir le nom du mode de livraison
-  const getShippingName = (mode: string) => {
-    const method = SHIPPING_METHODS.find(m => m.id === mode);
-    return method?.name || mode;
-  };
-
   const getShippingLabel = (mode: string) => {
     const method = SHIPPING_METHODS.find(m => m.id === mode);
     return method?.label || mode;
+  };
+
+  const getShippingName = (mode: string) => {
+    const method = SHIPPING_METHODS.find(m => m.id === mode);
+    return method?.name || mode;
   };
 
   // ==================== LOADING ====================
@@ -845,58 +823,97 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* ÉTAPE 2 - EXPÉDITION GLOBALE */}
+              {/* ÉTAPE 2 - EXPÉDITION AVEC CHOIX INDIVIDUEL PAR PRODUIT */}
               {step === 2 && (
                 <div className="bg-white rounded-xl border border-gray-100 p-4 lg:p-6">
                   <h2 className="text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2">
                     <Truck className="w-4 h-4" style={{ color: brandColor }} />
-                    Mode d'expédition par défaut
+                    Mode d'expédition par produit
                   </h2>
                   
                   <p className="text-xs text-gray-500 mb-4">
-                    Choisissez le mode de livraison par défaut pour tous les articles. 
-                    Vous pouvez modifier individuellement chaque article ci-dessous.
+                    Choisissez le mode d'expédition pour chaque article.
                   </p>
 
-                  <div className="space-y-2">
-                    {SHIPPING_METHODS.map((method) => {
-                      const Icon = method.icon;
-                      const isSelected = defaultShippingMode === method.id;
+                  <div className="space-y-4">
+                    {cart.map((item) => {
+                      const isUpdating = updatingId === item.variantKey;
+                      const truncatedTitle = item.name && item.name.length > 50 
+                        ? item.name.substring(0, 50) + "..." 
+                        : item.name || "Produit";
+                      const currentMode = item.shippingMode || defaultShippingMode;
+                      
                       return (
-                        <button
-                          key={method.id}
-                          onClick={() => handleGlobalShippingModeChange(method.id as any)}
-                          className={`w-full p-3 border rounded-lg flex items-center gap-3 transition-all ${
-                            isSelected 
-                              ? 'border-[#2B4F3C] bg-[#2B4F3C]/5' 
-                              : 'border-gray-100 hover:border-gray-200'
-                          }`}
+                        <div 
+                          key={item.variantKey} 
+                          className={`bg-gray-50 rounded-lg p-3 border border-gray-100 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'}`}
                         >
-                          <div className="p-2 rounded-full bg-gray-100 flex-shrink-0">
-                            <Icon className="w-4 h-4 text-gray-600" />
-                          </div>
-                          <div className="flex-1 text-left min-w-0">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-sm font-medium">{method.name}</span>
-                              <span className="text-xs px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-600 whitespace-nowrap">
-                                {method.badge}
-                              </span>
+                          {/* Image et titre */}
+                          <div className="flex gap-3">
+                            <div className="w-12 h-12 bg-white rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
+                              <Image
+                                src={item.image || "/placeholder.svg"}
+                                alt={item.name || "Produit"}
+                                width={48}
+                                height={48}
+                                className="w-full h-full object-contain p-1"
+                              />
                             </div>
-                            <p className="text-xs text-gray-400 mt-0.5">{method.days}</p>
-                          </div>
-                          <div className="text-right whitespace-nowrap">
-                            <span className="text-sm font-medium" style={{ color: brandColor }}>
-                              {formatPrice(totalShippingUSD)}
-                            </span>
-                          </div>
-                          {isSelected && (
-                            <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: brandColor }}>
-                              <Check className="w-3 h-3 text-white" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{truncatedTitle}</p>
+                              {(item.color || item.eurSize) && (
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                  {item.color} {item.eurSize && `• Pointure ${item.eurSize}`}
+                                </p>
+                              )}
+                              <p className="text-xs text-gray-400 mt-1">Quantité: {item.quantity}</p>
                             </div>
-                          )}
-                        </button>
+                            <div className="text-right">
+                              <p className="text-sm font-bold" style={{ color: brandColor }}>
+                                {formatPrice(item.price * item.quantity)}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Sélecteur de mode d'expédition */}
+                          <div className="mt-3 pt-2 border-t border-gray-200">
+                            <span className="text-xs text-gray-500 mr-2">Expédition:</span>
+                            <div className="flex gap-2 mt-1">
+                              {SHIPPING_METHODS.map((method) => (
+                                <button
+                                  key={method.id}
+                                  onClick={() => handleIndividualShippingChange(item.variantKey!, method.id as any)}
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                    currentMode === method.id
+                                      ? 'text-white'
+                                      : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
+                                  }`}
+                                  style={currentMode === method.id ? { background: brandGradient } : {}}
+                                >
+                                  {method.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
                       );
                     })}
+                  </div>
+
+                  {/* Bouton pour appliquer à tous */}
+                  <div className="mt-4 pt-3 border-t border-gray-200">
+                    <p className="text-xs text-gray-500 mb-2">Appliquer le même mode à tous les articles:</p>
+                    <div className="flex gap-2">
+                      {SHIPPING_METHODS.map((method) => (
+                        <button
+                          key={method.id}
+                          onClick={() => handleGlobalShippingChange(method.id as any)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                        >
+                          {method.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="flex gap-2 mt-4">
@@ -1024,7 +1041,7 @@ export default function CheckoutPage() {
                           <span>{formatPrice(totalUSD)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-500">Livraison</span>
+                          <span className="text-gray-500">Expédition</span>
                           <span>{formatPrice(totalShippingUSD)}</span>
                         </div>
                         <div className="flex justify-between">
@@ -1073,67 +1090,45 @@ export default function CheckoutPage() {
                   Commande ({totalItems})
                 </h2>
 
-                {/* Liste des articles avec choix du mode de livraison individuel */}
-                <div className="space-y-3 max-h-80 lg:max-h-96 overflow-y-auto pr-1">
+                {/* RÉSUMÉ - UNIQUEMENT AFFICHAGE DU MODE CHOISI (PAS DE BOUTONS) */}
+                <div className="space-y-2 max-h-60 lg:max-h-80 overflow-y-auto pr-1">
                   {cart.map((item) => {
-                    const isUpdating = updatingId === item.variantKey;
-                    const truncatedTitle = item.name && item.name.length > 35 
-                      ? item.name.substring(0, 35) + "..." 
+                    const truncatedTitle = item.name && item.name.length > 40 
+                      ? item.name.substring(0, 40) + "..." 
                       : item.name || "Produit";
                     
-                    const currentMode = item.shippingMode || defaultShippingMode;
+                    const shippingMode = item.shippingMode || defaultShippingMode;
                     
                     return (
-                      <div 
-                        key={item.variantKey} 
-                        className={`bg-gray-50 rounded-lg p-3 border border-gray-100 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'}`}
-                      >
-                        {/* Image et titre */}
-                        <div className="flex gap-2">
-                          <div className="w-12 h-12 bg-white rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
-                            <Image
-                              src={item.image || "/placeholder.svg"}
-                              alt={item.name || "Produit"}
-                              width={48}
-                              height={48}
-                              className="w-full h-full object-contain p-1"
-                            />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium truncate">{truncatedTitle}</p>
-                            {(item.color || item.eurSize) && (
-                              <p className="text-[10px] text-gray-400 mt-0.5 truncate">
-                                {item.color} {item.eurSize && `• ${item.eurSize}`}
-                              </p>
-                            )}
-                          </div>
+                      <div key={item.variantKey} className="flex gap-2 pb-2 border-b border-gray-100 last:border-0">
+                        <div className="w-12 h-12 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
+                          <Image
+                            src={item.image || "/placeholder.svg"}
+                            alt={item.name || "Produit"}
+                            width={48}
+                            height={48}
+                            className="w-full h-full object-contain p-1"
+                          />
                         </div>
-
-                        {/* Sélecteur de mode de livraison individuel */}
-                        <div className="mt-2 flex items-center gap-1">
-                          <span className="text-[10px] text-gray-500 mr-1">Livraison:</span>
-                          {SHIPPING_METHODS.map((method) => (
-                            <button
-                              key={method.id}
-                              onClick={() => handleShippingModeChange(item.variantKey!, method.id as any)}
-                              className={`px-2 py-1 rounded text-[10px] font-medium transition-all ${
-                                currentMode === method.id
-                                  ? 'text-white'
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              }`}
-                              style={currentMode === method.id ? { background: brandGradient } : {}}
-                            >
-                              {method.label}
-                            </button>
-                          ))}
-                        </div>
-
-                        {/* Prix et quantité */}
-                        <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-200">
-                          <span className="text-[10px] text-gray-400">x{item.quantity}</span>
-                          <span className="text-xs font-bold" style={{ color: brandColor }}>
-                            {formatPrice(item.price * item.quantity)}
-                          </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium truncate">{truncatedTitle}</p>
+                          {(item.color || item.eurSize) && (
+                            <p className="text-[10px] text-gray-400 mt-0.5 truncate">
+                              {item.color} {item.eurSize && `• ${item.eurSize}`}
+                            </p>
+                          )}
+                          {/* AFFICHAGE DU MODE CHOISI (SANS BOUTONS) */}
+                          <div className="mt-1">
+                            <span className="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                              {getShippingLabel(shippingMode)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center mt-1">
+                            <span className="text-[10px] text-gray-400">x{item.quantity}</span>
+                            <span className="text-xs font-medium" style={{ color: brandColor }}>
+                              {formatPrice(item.price * item.quantity)}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     );
@@ -1146,7 +1141,7 @@ export default function CheckoutPage() {
                     <span className="font-medium">{formatPrice(totalUSD)}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">Livraison</span>
+                    <span className="text-gray-500">Expédition</span>
                     <span className="font-medium">{formatPrice(totalShippingUSD)}</span>
                   </div>
                   <div className="flex justify-between text-xs">
