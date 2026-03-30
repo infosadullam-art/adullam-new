@@ -332,7 +332,6 @@ export default function CheckoutPage() {
 
   const handleGlobalShippingChange = (method: "bateau" | "avion" | "express") => {
     setDefaultShippingMode(method);
-    // Mettre à jour tous les articles existants
     cart.forEach(item => {
       if (item.variantKey) {
         updateShippingMode(item.variantKey, method);
@@ -442,11 +441,6 @@ export default function CheckoutPage() {
   const getShippingLabel = (mode: string) => {
     const method = SHIPPING_METHODS.find(m => m.id === mode);
     return method?.label || mode;
-  };
-
-  const getShippingName = (mode: string) => {
-    const method = SHIPPING_METHODS.find(m => m.id === mode);
-    return method?.name || mode;
   };
 
   // ==================== LOADING ====================
@@ -569,9 +563,10 @@ export default function CheckoutPage() {
             ))}
           </div>
 
-          <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 lg:gap-6">
+          {/* Layout Desktop: 2 colonnes */}
+          <div className="hidden lg:flex flex-col lg:grid lg:grid-cols-3 gap-4 lg:gap-6">
             
-            <div className="lg:col-span-2 space-y-4 order-2 lg:order-1">
+            <div className="lg:col-span-2 space-y-4">
               
               {/* ÉTAPE 1 - LIVRAISON */}
               {step === 1 && (
@@ -848,7 +843,6 @@ export default function CheckoutPage() {
                           key={item.variantKey} 
                           className={`bg-gray-50 rounded-lg p-3 border border-gray-100 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'}`}
                         >
-                          {/* Image et titre */}
                           <div className="flex gap-3">
                             <div className="w-12 h-12 bg-white rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
                               <Image
@@ -875,7 +869,6 @@ export default function CheckoutPage() {
                             </div>
                           </div>
 
-                          {/* Sélecteur de mode d'expédition */}
                           <div className="mt-3 pt-2 border-t border-gray-200">
                             <span className="text-xs text-gray-500 mr-2">Expédition:</span>
                             <div className="flex gap-2 mt-1">
@@ -900,7 +893,6 @@ export default function CheckoutPage() {
                     })}
                   </div>
 
-                  {/* Bouton pour appliquer à tous */}
                   <div className="mt-4 pt-3 border-t border-gray-200">
                     <p className="text-xs text-gray-500 mb-2">Appliquer le même mode à tous les articles:</p>
                     <div className="flex gap-2">
@@ -1083,20 +1075,19 @@ export default function CheckoutPage() {
               )}
             </div>
 
-            <div className="lg:col-span-1 order-1 lg:order-2">
+            {/* Desktop: Résumé à droite */}
+            <div className="lg:col-span-1">
               <div className="bg-white rounded-xl border border-gray-100 p-4 lg:p-5 sticky lg:top-24">
                 <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
                   <Truck className="w-4 h-4" style={{ color: brandColor }} />
                   Commande ({totalItems})
                 </h2>
 
-                {/* RÉSUMÉ - UNIQUEMENT AFFICHAGE DU MODE CHOISI (PAS DE BOUTONS) */}
-                <div className="space-y-2 max-h-60 lg:max-h-80 overflow-y-auto pr-1">
+                <div className="space-y-2 max-h-80 lg:max-h-96 overflow-y-auto pr-1">
                   {cart.map((item) => {
                     const truncatedTitle = item.name && item.name.length > 40 
                       ? item.name.substring(0, 40) + "..." 
                       : item.name || "Produit";
-                    
                     const shippingMode = item.shippingMode || defaultShippingMode;
                     
                     return (
@@ -1117,7 +1108,6 @@ export default function CheckoutPage() {
                               {item.color} {item.eurSize && `• ${item.eurSize}`}
                             </p>
                           )}
-                          {/* AFFICHAGE DU MODE CHOISI (SANS BOUTONS) */}
                           <div className="mt-1">
                             <span className="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
                               {getShippingLabel(shippingMode)}
@@ -1161,6 +1151,316 @@ export default function CheckoutPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Layout Mobile: Résumé en bas après les choix */}
+          <div className="lg:hidden">
+            {/* Contenu principal */}
+            <div className="space-y-4">
+              
+              {/* ÉTAPE 1 - LIVRAISON (Mobile) */}
+              {step === 1 && (
+                <div className="bg-white rounded-xl border border-gray-100 p-4">
+                  <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
+                    <MapPin className="w-4 h-4" style={{ color: brandColor }} />
+                    Adresse de livraison
+                  </h2>
+
+                  <div className="mb-3">
+                    <label className="block text-xs text-gray-500 mb-1">Pays</label>
+                    <div className="relative" ref={countryDropdownRef}>
+                      <button
+                        type="button"
+                        onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white flex items-center justify-between text-sm"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span>{selectedCountry.flag}</span>
+                          <span>{selectedCountry.name}</span>
+                        </div>
+                        <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${isCountryDropdownOpen ? 'rotate-90' : ''}`} />
+                      </button>
+                      {isCountryDropdownOpen && (
+                        <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                          {AFRICAN_COUNTRIES.map((country) => (
+                            <button
+                              key={country.code}
+                              onClick={() => handleCountryChange(country)}
+                              className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm border-b"
+                            >
+                              <span>{country.flag}</span>
+                              <span>{country.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {addresses.length > 0 && !showNewAddressForm ? (
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-2">Adresse existante</label>
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {addresses
+                          .filter(a => a.country === selectedCountry.code)
+                          .map((addr) => (
+                            <button
+                              key={addr.id}
+                              onClick={() => selectAddress(addr)}
+                              className={`w-full p-3 border rounded-lg text-left transition-all ${
+                                selectedAddressId === addr.id
+                                  ? 'border-[#2B4F3C] bg-[#2B4F3C]/5'
+                                  : 'border-gray-100'
+                              }`}
+                            >
+                              <div className="flex items-start gap-2">
+                                <div className={`mt-1 w-4 h-4 rounded-full border flex items-center justify-center ${
+                                  selectedAddressId === addr.id ? 'border-[#2B4F3C]' : 'border-gray-300'
+                                }`}>
+                                  {selectedAddressId === addr.id && (
+                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: brandColor }} />
+                                  )}
+                                </div>
+                                <div className="text-xs flex-1">
+                                  <p className="font-medium">{addr.firstName} {addr.lastName}</p>
+                                  <p className="text-gray-500">{addr.address}</p>
+                                  <p className="text-gray-500">{addr.city}</p>
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                      </div>
+                      <button
+                        onClick={() => setShowNewAddressForm(true)}
+                        className="w-full mt-3 py-2 border border-dashed rounded-lg text-xs text-gray-500 flex items-center justify-center gap-1"
+                      >
+                        <Plus className="w-3 h-3" /> Nouvelle adresse
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-2">
+                        <input type="text" name="firstName" value={shippingInfo.firstName} onChange={handleInputChange} placeholder="Prénom" className="px-3 py-2 text-sm border rounded-lg" />
+                        <input type="text" name="lastName" value={shippingInfo.lastName} onChange={handleInputChange} placeholder="Nom" className="px-3 py-2 text-sm border rounded-lg" />
+                      </div>
+                      <input type="email" name="email" value={shippingInfo.email} onChange={handleInputChange} placeholder="Email" className="w-full px-3 py-2 text-sm border rounded-lg" />
+                      <input type="tel" name="phone" value={shippingInfo.phone} onChange={handleInputChange} placeholder="Téléphone" className="w-full px-3 py-2 text-sm border rounded-lg" />
+                      <input type="text" name="address" value={shippingInfo.address} onChange={handleInputChange} placeholder="Adresse" className="w-full px-3 py-2 text-sm border rounded-lg" />
+                      <input type="text" name="quartier" value={shippingInfo.quartier} onChange={handleInputChange} placeholder="Quartier" className="w-full px-3 py-2 text-sm border rounded-lg" />
+                      <div className="grid grid-cols-2 gap-2">
+                        <input type="text" name="city" value={shippingInfo.city} onChange={handleInputChange} placeholder="Ville" className="px-3 py-2 text-sm border rounded-lg" />
+                        <input type="text" name="postalCode" value={shippingInfo.postalCode} onChange={handleInputChange} placeholder="Code postal" className="px-3 py-2 text-sm border rounded-lg" />
+                      </div>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => validateStep1() && setStep(2)}
+                    disabled={!validateStep1()}
+                    className="w-full mt-4 py-2.5 text-sm font-medium text-white rounded-lg disabled:opacity-50"
+                    style={{ background: brandGradient }}
+                  >
+                    Continuer
+                  </button>
+                </div>
+              )}
+
+              {/* ÉTAPE 2 - EXPÉDITION (Mobile) */}
+              {step === 2 && (
+                <>
+                  <div className="bg-white rounded-xl border border-gray-100 p-4">
+                    <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
+                      <Truck className="w-4 h-4" style={{ color: brandColor }} />
+                      Mode d'expédition par produit
+                    </h2>
+                    
+                    <p className="text-xs text-gray-500 mb-4">
+                      Choisissez le mode d'expédition pour chaque article.
+                    </p>
+
+                    <div className="space-y-4">
+                      {cart.map((item) => {
+                        const isUpdating = updatingId === item.variantKey;
+                        const truncatedTitle = item.name && item.name.length > 40 
+                          ? item.name.substring(0, 40) + "..." 
+                          : item.name || "Produit";
+                        const currentMode = item.shippingMode || defaultShippingMode;
+                        
+                        return (
+                          <div key={item.variantKey} className={`bg-gray-50 rounded-lg p-3 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'}`}>
+                            <div className="flex gap-3">
+                              <div className="w-12 h-12 bg-white rounded-lg overflow-hidden flex-shrink-0 border">
+                                <Image src={item.image || "/placeholder.svg"} alt={item.name || "Produit"} width={48} height={48} className="w-full h-full object-contain p-1" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm font-medium truncate">{truncatedTitle}</p>
+                                {(item.color || item.eurSize) && (
+                                  <p className="text-xs text-gray-500">{item.color} {item.eurSize && `• ${item.eurSize}`}</p>
+                                )}
+                                <p className="text-xs text-gray-400 mt-1">Qté: {item.quantity}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-sm font-bold" style={{ color: brandColor }}>{formatPrice(item.price * item.quantity)}</p>
+                              </div>
+                            </div>
+                            <div className="mt-3 pt-2 border-t border-gray-200">
+                              <span className="text-xs text-gray-500 mr-2">Expédition:</span>
+                              <div className="flex gap-2 mt-1">
+                                {SHIPPING_METHODS.map((method) => (
+                                  <button
+                                    key={method.id}
+                                    onClick={() => handleIndividualShippingChange(item.variantKey!, method.id as any)}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
+                                      currentMode === method.id
+                                        ? 'text-white'
+                                        : 'bg-white border border-gray-200 text-gray-600'
+                                    }`}
+                                    style={currentMode === method.id ? { background: brandGradient } : {}}
+                                  >
+                                    {method.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-gray-200">
+                      <p className="text-xs text-gray-500 mb-2">Appliquer à tous:</p>
+                      <div className="flex gap-2">
+                        {SHIPPING_METHODS.map((method) => (
+                          <button
+                            key={method.id}
+                            onClick={() => handleGlobalShippingChange(method.id as any)}
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600"
+                          >
+                            {method.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 mt-4">
+                      <button onClick={() => setStep(1)} className="flex-1 py-2 text-sm border rounded-lg">Retour</button>
+                      <button onClick={() => setStep(3)} className="flex-1 py-2 text-sm font-medium text-white rounded-lg" style={{ background: brandGradient }}>Continuer</button>
+                    </div>
+                  </div>
+
+                  {/* Mobile: Résumé en bas */}
+                  <div className="bg-white rounded-xl border border-gray-100 p-4">
+                    <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
+                      <Truck className="w-4 h-4" style={{ color: brandColor }} />
+                      Récapitulatif ({totalItems})
+                    </h2>
+
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {cart.map((item) => {
+                        const truncatedTitle = item.name && item.name.length > 35 
+                          ? item.name.substring(0, 35) + "..." 
+                          : item.name || "Produit";
+                        const shippingMode = item.shippingMode || defaultShippingMode;
+                        
+                        return (
+                          <div key={item.variantKey} className="flex gap-2 pb-2 border-b border-gray-100">
+                            <div className="w-10 h-10 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 border">
+                              <Image src={item.image || "/placeholder.svg"} alt="" width={40} height={40} className="w-full h-full object-contain p-1" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-xs font-medium truncate">{truncatedTitle}</p>
+                              <div className="flex justify-between items-center mt-1">
+                                <span className="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{getShippingLabel(shippingMode)}</span>
+                                <span className="text-xs font-medium" style={{ color: brandColor }}>{formatPrice(item.price * item.quantity)}</span>
+                              </div>
+                              <p className="text-[10px] text-gray-400">x{item.quantity}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="border-t border-gray-100 mt-3 pt-3 space-y-1.5">
+                      <div className="flex justify-between text-xs"><span>Sous-total</span><span>{formatPrice(totalUSD)}</span></div>
+                      <div className="flex justify-between text-xs"><span>Expédition</span><span>{formatPrice(totalShippingUSD)}</span></div>
+                      <div className="flex justify-between text-xs"><span>Porte-à-porte</span><span>{formatPrice(totalPortePorteUSD)}</span></div>
+                      <div className="flex justify-between text-sm font-bold pt-1.5 border-t"><span>Total</span><span style={{ color: brandColor }}>{formatPrice(grandTotalUSD)}</span></div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* ÉTAPE 3 - PAIEMENT (Mobile) */}
+              {step === 3 && (
+                <div className="bg-white rounded-xl border border-gray-100 p-4">
+                  <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
+                    <CreditCard className="w-4 h-4" style={{ color: brandColor }} />
+                    Mode de paiement
+                  </h2>
+
+                  {error && <div className="mb-3 p-2 bg-red-50 rounded-lg text-xs text-red-600">{error}</div>}
+
+                  <div className="space-y-2">
+                    {[
+                      { id: 'mtn', name: 'MTN Money', icon: '📱' },
+                      { id: 'orange', name: 'Orange Money', icon: '📱' },
+                      { id: 'wave', name: 'Wave', icon: '🌊' },
+                      { id: 'visa', name: 'Carte bancaire', icon: '💳' }
+                    ].map((method) => (
+                      <button
+                        key={method.id}
+                        onClick={() => setPaymentMethod(method.id as any)}
+                        className={`w-full p-3 border rounded-lg flex items-center gap-3 ${
+                          paymentMethod === method.id ? 'border-[#2B4F3C] bg-[#2B4F3C]/5' : 'border-gray-100'
+                        }`}
+                      >
+                        <span className="text-lg">{method.icon}</span>
+                        <span className="flex-1 text-left text-sm">{method.name}</span>
+                        {paymentMethod === method.id && <Check className="w-4 h-4" style={{ color: brandColor }} />}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2 mt-4">
+                    <button onClick={() => setStep(2)} className="flex-1 py-2 text-sm border rounded-lg">Retour</button>
+                    <button onClick={() => paymentMethod && setStep(4)} disabled={!paymentMethod} className="flex-1 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-50" style={{ background: brandGradient }}>Continuer</button>
+                  </div>
+                </div>
+              )}
+
+              {/* ÉTAPE 4 - CONFIRMATION (Mobile) */}
+              {step === 4 && (
+                <div className="bg-white rounded-xl border border-gray-100 p-4">
+                  <h2 className="text-sm font-medium mb-3">Confirmation</h2>
+                  
+                  <div className="space-y-3">
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-600">
+                        {shippingInfo.firstName} {shippingInfo.lastName}<br />
+                        {shippingInfo.address}<br />
+                        {shippingInfo.quartier && <>{shippingInfo.quartier}<br /></>}
+                        {shippingInfo.city}<br />
+                        {shippingInfo.phone}
+                      </p>
+                    </div>
+
+                    <div className="bg-gray-50 p-3 rounded-lg space-y-1.5 text-xs">
+                      <div className="flex justify-between"><span>Sous-total</span><span>{formatPrice(totalUSD)}</span></div>
+                      <div className="flex justify-between"><span>Expédition</span><span>{formatPrice(totalShippingUSD)}</span></div>
+                      <div className="flex justify-between"><span>Porte-à-porte</span><span>{formatPrice(totalPortePorteUSD)}</span></div>
+                      <div className="flex justify-between font-bold pt-1 border-t"><span>Total</span><span style={{ color: brandColor }}>{formatPrice(grandTotalUSD)}</span></div>
+                    </div>
+
+                    <div className="flex gap-2 pt-2">
+                      <button onClick={() => setStep(3)} className="flex-1 py-2 text-sm border rounded-lg">Retour</button>
+                      <button onClick={handleSubmit} disabled={isProcessing} className="flex-1 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-50" style={{ background: brandGradient }}>
+                        {isProcessing ? 'Traitement...' : 'Confirmer'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
