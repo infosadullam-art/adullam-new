@@ -42,7 +42,6 @@ export default function CartPage() {
   const { country, setCountry, currency } = useLocale();
   const { formatPrice, getCurrencySymbol } = useCurrencyFormatter();
   
-  const [openShipping, setOpenShipping] = useState(false);
   const [openCountry, setOpenCountry] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
@@ -114,6 +113,13 @@ export default function CartPage() {
 
   // Poids total
   const totalWeight = cart.reduce((sum, item) => sum + (item.totalWeight || 0), 0);
+
+  // Fonction pour tronquer le titre du produit
+  const truncateTitle = (title: string, maxLength: number = 60) => {
+    if (!title) return "Produit";
+    if (title.length <= maxLength) return title;
+    return title.substring(0, maxLength) + "...";
+  };
 
   return (
     <div className="min-h-screen bg-neutral-light">
@@ -204,7 +210,10 @@ export default function CartPage() {
                       <div className="flex-1">
                         <div className="flex justify-between">
                           <div>
-                            <h3 className="font-semibold">{item.name || "Produit"}</h3>
+                            {/* ✅ Titre du produit réduit à 60 caractères max */}
+                            <h3 className="font-semibold text-sm lg:text-base line-clamp-2">
+                              {truncateTitle(item.name || "Produit", 60)}
+                            </h3>
                             
                             {/* VARIANTES */}
                             {(item.color || item.eurSize) && (
@@ -342,45 +351,6 @@ export default function CartPage() {
                   </select>
                 </div>
 
-                {/* ACCORDÉON EXPEDITION (mode par défaut) */}
-                <div className="mb-4 border rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => setOpenShipping(!openShipping)}
-                    className="w-full flex justify-between items-center p-4 font-semibold hover:bg-brand hover:text-white transition-colors"
-                  >
-                    Mode d'expédition par défaut
-                    <ChevronDown
-                      className={`transition-transform ${openShipping ? "rotate-180" : ""}`}
-                    />
-                  </button>
-
-                  {openShipping && (
-                    <div className="border-t">
-                      {Object.entries(shippingIcons).map(([key, Icon]) => (
-                        <button
-                          key={key}
-                          onClick={() => setDefaultShippingMode(key as any)}
-                          className={`
-                            w-full flex items-center justify-between p-4 border-b transition-colors
-                            ${defaultShippingMode === key 
-                              ? 'bg-brand/10 text-brand' 
-                              : 'hover:bg-neutral-light'
-                            }
-                          `}
-                        >
-                          <div className="flex items-center gap-3">
-                            <Icon className="w-5 h-5" />
-                            <span className="font-medium">{shippingLabels[key as keyof typeof shippingLabels]}</span>
-                          </div>
-                          {defaultShippingMode === key && (
-                            <span className="text-sm">✓</span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
                 {/* Détails des frais */}
                 <div className="border-t pt-4 space-y-3">
                   <div className="flex justify-between text-sm">
@@ -416,13 +386,13 @@ export default function CartPage() {
                     <p className="font-medium mb-2">Récapitulatif des articles :</p>
                     {cart.map((item) => (
                       <div key={item.variantKey} className="flex justify-between text-xs py-1">
-                        <span className="text-gray-600">
-                          {item.name || "Produit"} 
+                        <span className="text-gray-600 truncate max-w-[200px]">
+                          {truncateTitle(item.name || "Produit", 40)} 
                           {item.color && ` - ${item.color}`}
                           {item.eurSize && ` (${item.eurSize})`}
                           <span className="text-gray-400 ml-1">x{item.quantity}</span>
                         </span>
-                        <span className="font-medium">{formatPrice(item.price * item.quantity)}</span>
+                        <span className="font-medium ml-2">{formatPrice(item.price * item.quantity)}</span>
                       </div>
                     ))}
                   </div>
