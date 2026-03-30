@@ -1308,43 +1308,49 @@ export default function ProductPage() {
                       {logisticsError}
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 gap-1.5">
-                      {[
-                        { mode: "bateau", icon: Ship, label: "Mer" },
-                        { mode: "avion", icon: Sparkles, label: "Air" },
-                        { mode: "express", icon: Zap, label: "Express" }
-                      ].map((item) => {
-                        const shippingMode = item.mode as "bateau" | "avion" | "express"
-                        const isAvailable = logisticsData?.shipping?.[shippingMode]
-                        const days = getShippingDays(shippingMode)
-                        const cost = getShippingCost(shippingMode)
-                        
-                        if (!isAvailable) return null
-                        
-                        return (
-                          <button
-                            key={item.mode}
-                            onClick={() => setSelectedShipping(shippingMode)}
-                            className="flex flex-col items-center p-2 rounded-lg border transition-all hover:shadow-md"
-                            style={{
-                              borderColor: selectedShipping === shippingMode ? brandColor : '#e5e7eb',
-                              background: selectedShipping === shippingMode ? brandGradient : 'white'
-                            }}
-                          >
-                            <item.icon className="w-4 h-4 mb-1" style={{ color: selectedShipping === shippingMode ? 'white' : '#9ca3af' }} />
-                            <span className="text-xs font-medium" style={{ color: selectedShipping === shippingMode ? 'white' : '#374151' }}>
-                              {item.label}
-                            </span>
-                            <span className="text-[10px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#6b7280' }}>
-                              {days}
-                            </span>
-                            <span className="text-xs font-semibold mt-0.5" style={{ color: selectedShipping === shippingMode ? 'white' : brandColor }}>
-                              {formatPrice(cost)}
-                            </span>
-                          </button>
-                        )
-                      })}
-                    </div>
+                    <>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[
+                          { mode: "bateau", icon: Ship, label: "Mer" },
+                          { mode: "avion", icon: Sparkles, label: "Air" },
+                          { mode: "express", icon: Zap, label: "Express" }
+                        ].map((item) => {
+                          const shippingMode = item.mode as "bateau" | "avion" | "express"
+                          const isAvailable = logisticsData?.shipping?.[shippingMode]
+                          const days = getShippingDays(shippingMode)
+                          const cost = getShippingCost(shippingMode)
+                          
+                          if (!isAvailable) return null
+                          
+                          return (
+                            <button
+                              key={item.mode}
+                              onClick={() => setSelectedShipping(shippingMode)}
+                              className="flex flex-col items-center p-2 rounded-lg border transition-all hover:shadow-md"
+                              style={{
+                                borderColor: selectedShipping === shippingMode ? brandColor : '#e5e7eb',
+                                background: selectedShipping === shippingMode ? brandGradient : 'white'
+                              }}
+                            >
+                              <item.icon className="w-4 h-4 mb-1" style={{ color: selectedShipping === shippingMode ? 'white' : '#9ca3af' }} />
+                              <span className="text-xs font-medium" style={{ color: selectedShipping === shippingMode ? 'white' : '#374151' }}>
+                                {item.label}
+                              </span>
+                              <span className="text-[10px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#6b7280' }}>
+                                {days}
+                              </span>
+                              <span className="text-xs font-semibold mt-0.5" style={{ color: selectedShipping === shippingMode ? 'white' : brandColor }}>
+                                {formatPrice(cost)}
+                              </span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                      {/* Frais porte-à-porte inclus */}
+                      <div className="text-center mt-1">
+                        <span className="text-[10px] text-gray-400">* Frais de porte-à-porte inclus</span>
+                      </div>
+                    </>
                   )}
                 </div>
 
