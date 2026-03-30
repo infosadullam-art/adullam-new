@@ -374,6 +374,11 @@ export default function OrderDetailPage() {
 
   const customerName = order.user?.name || `${order.shippingInfo.firstName} ${order.shippingInfo.lastName}`
 
+  // ✅ CORRECTION : Calculer les frais à partir des items
+  const subtotalFromItems = order.items?.reduce((sum, item) => sum + (item.totalPrice || 0), 0) || 0
+  const shippingFromItems = order.items?.reduce((sum, item) => sum + (item.shippingCost || 0), 0) || 0
+  const portePorteFromItems = order.items?.reduce((sum, item) => sum + (item.portePorteCost || 0), 0) || 0
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -578,7 +583,7 @@ export default function OrderDetailPage() {
 
         {/* Order Summary and Customer Info */}
         <div className="grid gap-6 lg:grid-cols-2 mb-6">
-          {/* Order Summary */}
+          {/* Order Summary - CORRIGÉ */}
           <Card>
             <CardHeader>
               <CardTitle>Récapitulatif</CardTitle>
@@ -587,15 +592,15 @@ export default function OrderDetailPage() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Sous-total</span>
-                  <span>{formatCurrency(order.subtotal)}</span>
+                  <span>{formatCurrency(subtotalFromItems)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Livraison</span>
-                  <span>{formatCurrency(order.shippingCost)}</span>
+                  <span>{formatCurrency(shippingFromItems)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Porte-à-porte</span>
-                  <span>{formatCurrency(order.portePorteTotal)}</span>
+                  <span>{formatCurrency(portePorteFromItems)}</span>
                 </div>
                 {order.discount > 0 && (
                   <div className="flex justify-between text-green-600">
