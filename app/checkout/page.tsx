@@ -568,7 +568,7 @@ export default function CheckoutPage() {
             
             <div className="lg:col-span-2 space-y-4">
               
-              {/* ÉTAPE 1 - LIVRAISON */}
+              {/* ÉTAPE 1 - LIVRAISON Desktop */}
               {step === 1 && (
                 <div className="bg-white rounded-xl border border-gray-100 p-4 lg:p-6">
                   <h2 className="text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2">
@@ -818,7 +818,7 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* ÉTAPE 2 - EXPÉDITION AVEC CHOIX INDIVIDUEL PAR PRODUIT */}
+              {/* ÉTAPE 2 - EXPÉDITION Desktop */}
               {step === 2 && (
                 <div className="bg-white rounded-xl border border-gray-100 p-4 lg:p-6">
                   <h2 className="text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2">
@@ -926,7 +926,7 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* ÉTAPE 3 - PAIEMENT */}
+              {/* ÉTAPE 3 - PAIEMENT Desktop */}
               {step === 3 && (
                 <div className="bg-white rounded-xl border border-gray-100 p-4 lg:p-6">
                   <h2 className="text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2">
@@ -999,7 +999,7 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* ÉTAPE 4 - CONFIRMATION */}
+              {/* ÉTAPE 4 - CONFIRMATION Desktop */}
               {step === 4 && (
                 <div className="bg-white rounded-xl border border-gray-100 p-4 lg:p-6">
                   <h2 className="text-sm lg:text-base font-medium mb-3 lg:mb-4">Confirmation</h2>
@@ -1154,12 +1154,11 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Layout Mobile: Résumé en bas après les choix */}
+          {/* Layout Mobile: Résumé totalement en bas après tous les choix */}
           <div className="lg:hidden">
-            {/* Contenu principal */}
             <div className="space-y-4">
               
-              {/* ÉTAPE 1 - LIVRAISON (Mobile) */}
+              {/* ÉTAPE 1 - LIVRAISON Mobile */}
               {step === 1 && (
                 <div className="bg-white rounded-xl border border-gray-100 p-4">
                   <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
@@ -1266,9 +1265,10 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* ÉTAPE 2 - EXPÉDITION (Mobile) */}
+              {/* ÉTAPE 2 - EXPÉDITION Mobile - Résumé en bas après tous les choix */}
               {step === 2 && (
                 <>
+                  {/* Bloc de sélection des modes d'expédition */}
                   <div className="bg-white rounded-xl border border-gray-100 p-4">
                     <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
                       <Truck className="w-4 h-4" style={{ color: brandColor }} />
@@ -1342,14 +1342,9 @@ export default function CheckoutPage() {
                         ))}
                       </div>
                     </div>
-
-                    <div className="flex gap-2 mt-4">
-                      <button onClick={() => setStep(1)} className="flex-1 py-2 text-sm border rounded-lg">Retour</button>
-                      <button onClick={() => setStep(3)} className="flex-1 py-2 text-sm font-medium text-white rounded-lg" style={{ background: brandGradient }}>Continuer</button>
-                    </div>
                   </div>
 
-                  {/* Mobile: Résumé en bas */}
+                  {/* RÉSUMÉ - Totalement en bas après tous les choix */}
                   <div className="bg-white rounded-xl border border-gray-100 p-4">
                     <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
                       <Truck className="w-4 h-4" style={{ color: brandColor }} />
@@ -1382,57 +1377,101 @@ export default function CheckoutPage() {
                     </div>
 
                     <div className="border-t border-gray-100 mt-3 pt-3 space-y-1.5">
-                      <div className="flex justify-between text-xs"><span>Sous-total</span><span>{formatPrice(totalUSD)}</span></div>
-                      <div className="flex justify-between text-xs"><span>Expédition</span><span>{formatPrice(totalShippingUSD)}</span></div>
-                      <div className="flex justify-between text-xs"><span>Porte-à-porte</span><span>{formatPrice(totalPortePorteUSD)}</span></div>
-                      <div className="flex justify-between text-sm font-bold pt-1.5 border-t"><span>Total</span><span style={{ color: brandColor }}>{formatPrice(grandTotalUSD)}</span></div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-500">Sous-total</span>
+                        <span>{formatPrice(totalUSD)}</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-500">Expédition</span>
+                        <span>{formatPrice(totalShippingUSD)}</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-500">Porte-à-porte</span>
+                        <span>{formatPrice(totalPortePorteUSD)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm font-bold pt-1.5 border-t border-gray-100">
+                        <span>Total</span>
+                        <span style={{ color: brandColor }}>{formatPrice(grandTotalUSD)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Boutons de navigation */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setStep(1)}
+                      className="flex-1 py-2.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Retour
+                    </button>
+                    <button
+                      onClick={() => setStep(3)}
+                      className="flex-1 py-2.5 text-sm font-medium text-white rounded-lg transition-colors"
+                      style={{ background: brandGradient }}
+                    >
+                      Continuer
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* ÉTAPE 3 - PAIEMENT Mobile */}
+              {step === 3 && (
+                <>
+                  <div className="bg-white rounded-xl border border-gray-100 p-4">
+                    <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
+                      <CreditCard className="w-4 h-4" style={{ color: brandColor }} />
+                      Mode de paiement
+                    </h2>
+
+                    {error && <div className="mb-3 p-2 bg-red-50 rounded-lg text-xs text-red-600">{error}</div>}
+
+                    <div className="space-y-2">
+                      {[
+                        { id: 'mtn', name: 'MTN Money', icon: '📱' },
+                        { id: 'orange', name: 'Orange Money', icon: '📱' },
+                        { id: 'wave', name: 'Wave', icon: '🌊' },
+                        { id: 'visa', name: 'Carte bancaire', icon: '💳' }
+                      ].map((method) => (
+                        <button
+                          key={method.id}
+                          onClick={() => setPaymentMethod(method.id as any)}
+                          className={`w-full p-3 border rounded-lg flex items-center gap-3 ${
+                            paymentMethod === method.id ? 'border-[#2B4F3C] bg-[#2B4F3C]/5' : 'border-gray-100'
+                          }`}
+                        >
+                          <span className="text-lg">{method.icon}</span>
+                          <span className="flex-1 text-left text-sm">{method.name}</span>
+                          {paymentMethod === method.id && <Check className="w-4 h-4" style={{ color: brandColor }} />}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex gap-2 mt-4">
+                      <button onClick={() => setStep(2)} className="flex-1 py-2 text-sm border rounded-lg">Retour</button>
+                      <button onClick={() => paymentMethod && setStep(4)} disabled={!paymentMethod} className="flex-1 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-50" style={{ background: brandGradient }}>Continuer</button>
+                    </div>
+                  </div>
+
+                  {/* Résumé de la commande pour l'étape paiement */}
+                  <div className="bg-white rounded-xl border border-gray-100 p-4">
+                    <h2 className="text-sm font-medium mb-3">Récapitulatif</h2>
+                    <div className="space-y-1.5 text-xs">
+                      <div className="flex justify-between"><span>Sous-total</span><span>{formatPrice(totalUSD)}</span></div>
+                      <div className="flex justify-between"><span>Expédition</span><span>{formatPrice(totalShippingUSD)}</span></div>
+                      <div className="flex justify-between"><span>Porte-à-porte</span><span>{formatPrice(totalPortePorteUSD)}</span></div>
+                      <div className="flex justify-between font-bold pt-1 border-t"><span>Total</span><span style={{ color: brandColor }}>{formatPrice(grandTotalUSD)}</span></div>
                     </div>
                   </div>
                 </>
               )}
 
-              {/* ÉTAPE 3 - PAIEMENT (Mobile) */}
-              {step === 3 && (
-                <div className="bg-white rounded-xl border border-gray-100 p-4">
-                  <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
-                    <CreditCard className="w-4 h-4" style={{ color: brandColor }} />
-                    Mode de paiement
-                  </h2>
-
-                  {error && <div className="mb-3 p-2 bg-red-50 rounded-lg text-xs text-red-600">{error}</div>}
-
-                  <div className="space-y-2">
-                    {[
-                      { id: 'mtn', name: 'MTN Money', icon: '📱' },
-                      { id: 'orange', name: 'Orange Money', icon: '📱' },
-                      { id: 'wave', name: 'Wave', icon: '🌊' },
-                      { id: 'visa', name: 'Carte bancaire', icon: '💳' }
-                    ].map((method) => (
-                      <button
-                        key={method.id}
-                        onClick={() => setPaymentMethod(method.id as any)}
-                        className={`w-full p-3 border rounded-lg flex items-center gap-3 ${
-                          paymentMethod === method.id ? 'border-[#2B4F3C] bg-[#2B4F3C]/5' : 'border-gray-100'
-                        }`}
-                      >
-                        <span className="text-lg">{method.icon}</span>
-                        <span className="flex-1 text-left text-sm">{method.name}</span>
-                        {paymentMethod === method.id && <Check className="w-4 h-4" style={{ color: brandColor }} />}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="flex gap-2 mt-4">
-                    <button onClick={() => setStep(2)} className="flex-1 py-2 text-sm border rounded-lg">Retour</button>
-                    <button onClick={() => paymentMethod && setStep(4)} disabled={!paymentMethod} className="flex-1 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-50" style={{ background: brandGradient }}>Continuer</button>
-                  </div>
-                </div>
-              )}
-
-              {/* ÉTAPE 4 - CONFIRMATION (Mobile) */}
+              {/* ÉTAPE 4 - CONFIRMATION Mobile */}
               {step === 4 && (
                 <div className="bg-white rounded-xl border border-gray-100 p-4">
                   <h2 className="text-sm font-medium mb-3">Confirmation</h2>
+                  
+                  {error && <div className="mb-3 p-2 bg-red-50 rounded-lg text-xs text-red-600">{error}</div>}
                   
                   <div className="space-y-3">
                     <div className="bg-gray-50 p-3 rounded-lg">
