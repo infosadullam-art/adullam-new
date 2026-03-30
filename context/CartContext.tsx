@@ -97,7 +97,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("shippingMode", shippingMode);
   }, [shippingMode, ready]);
 
-  // ✅ Appel à l'API logistique avec le mode sélectionné
+  // ✅ Appel à l'API logistique avec le mode sélectionné - CORRIGÉ pour récupérer transportCost et portePorteCost
   const fetchShippingEstimate = async (
     productId: string,
     productTitle: string,
@@ -126,8 +126,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         const selectedShipping = shipping[mode as keyof typeof shipping];
         
         return {
-          shippingCost: selectedShipping?.cost || 0,
-          portePorte: 0,
+          shippingCost: selectedShipping?.transportCost || selectedShipping?.cost || 0,
+          portePorte: selectedShipping?.portePorteCost || 0,
           totalWeight: weight.roundedWeight || weight.totalWeight || 0
         };
       }
