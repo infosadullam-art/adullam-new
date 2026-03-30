@@ -153,6 +153,9 @@ export default function ProductPage() {
   const [modalQuantities, setModalQuantities] = useState<Record<string, number>>({})
   const [modalAttrName, setModalAttrName] = useState<string>("")
 
+  // ✅ AJOUT : État pour la quantité totale à envoyer à l'API
+  const [totalQuantity, setTotalQuantity] = useState(1)
+
   const { formatPrice, getCurrencySymbol } = useCurrencyFormatter()
   const [product, setProduct] = useState<any>(null)
 
@@ -209,7 +212,7 @@ export default function ProductPage() {
   }, [user, product])
 
   // ============================================================
-  // FONCTION POUR AJOUTER/RETIRER DES FAVORIS AVEC LOGS
+  // FONCTION POUR AJOUTER/RETIRER DES FAVORIS
   // ============================================================
   const handleToggleWishlist = async () => {
     console.log("🔴 [DEBUG] ========== CLIC SUR FAVORIS ==========")
@@ -265,16 +268,18 @@ export default function ProductPage() {
   }
 
   // ============================================================
-  // APPEL À L'API LOGISTIQUE - AVEC LOG DE QUANTITÉ AJOUTÉ
+  // ✅ MISE À JOUR DE LA QUANTITÉ TOTALE QUAND LES SÉLECTIONS CHANGENT
+  // ============================================================
+  useEffect(() => {
+    const newTotal = getGrandTotal()
+    setTotalQuantity(newTotal > 0 ? newTotal : 1)
+  }, [simpleQuantity, simpleVariantQuantities, complexSelections])
+
+  // ============================================================
+  // ✅ APPEL À L'API LOGISTIQUE - CORRIGÉ AVEC totalQuantity
   // ============================================================
   useEffect(() => {
     if (!product || !country) return
-    
-    const grandTotal = getGrandTotal()
-    const quantityToUse = grandTotal > 0 ? grandTotal : 1
-    
-    // ✅ LOG AJOUTÉ : Affiche la quantité envoyée à l'API
-    console.log("🔍 [LOGISTICS] Quantité à envoyer:", quantityToUse, "| grandTotal:", grandTotal)
     
     const fetchLogisticsEstimate = async () => {
       setIsLoadingLogistics(true)
@@ -285,15 +290,16 @@ export default function ProductPage() {
           productId: product.id,
           productTitle: product.title || product.name || "Produit",
           productWeight: product.weight?.toString() || '',
-          quantity: quantityToUse.toString(),
+          quantity: totalQuantity.toString(),
           country: country
         })
+        
+        console.log("🔍 [LOGISTICS] Quantité envoyée:", totalQuantity)
         
         const response = await fetch(`/api/logistics/estimate?${params}`)
         const data = await response.json()
         
         if (data.success) {
-          // ✅ LOG AJOUTÉ : Affiche les frais reçus de l'API
           console.log("📦 FRAIS REÇUS DE L'API:", {
             bateau: data.data.shipping?.bateau?.cost,
             avion: data.data.shipping?.avion?.cost,
@@ -314,6 +320,7 @@ export default function ProductPage() {
           setLogisticsError(data.error || "Erreur lors du calcul des frais de livraison")
         }
       } catch (error) {
+        console.error("❌ Erreur API logistique:", error)
         setLogisticsError("Impossible de calculer les frais de livraison")
       } finally {
         setIsLoadingLogistics(false)
@@ -321,7 +328,7 @@ export default function ProductPage() {
     }
     
     fetchLogisticsEstimate()
-  }, [product, country, getGrandTotal, simpleQuantity, simpleVariantQuantities, complexSelections])
+  }, [product, country, totalQuantity])
 
   // ============================================================
   // EXTRACTION INTELLIGENTE DES ATTRIBUTS
@@ -470,15 +477,13 @@ export default function ProductPage() {
   }, [product])
 
   // ============================================================
-  // RECHERCHE DE L'IMAGE PRINCIPALE - CORRIGÉ POUR LES VARIANTES
+  // RECHERCHE DE L'IMAGE PRINCIPALE
   // ============================================================
   useEffect(() => {
     if (!product) return
     
     if (product.variants && product.variants.length > 0) {
-      // CAS 1: Variantes simples
       if (Object.keys(simpleVariantQuantities).length > 0) {
-        // Priorité 1: Image de la variante cliquée (même si quantité = 0)
         if (selectedSimpleValue && attributeImages[`${simpleVariantType}:${selectedSimpleValue}`]) {
           const imgIndex = images.findIndex(i => i === attributeImages[`${simpleVariantType}:${selectedSimpleValue}`])
           if (imgIndex !== -1) {
@@ -487,7 +492,6 @@ export default function ProductPage() {
           }
         }
         
-        // Priorité 2: Image de la première variante avec quantité > 0
         for (const [value, qty] of Object.entries(simpleVariantQuantities)) {
           if (qty > 0 && attributeImages[`${simpleVariantType}:${value}`]) {
             const imgIndex = images.findIndex(i => i === attributeImages[`${simpleVariantType}:${value}`])
@@ -498,7 +502,6 @@ export default function ProductPage() {
           }
         }
       } 
-      // CAS 2: Variantes multiples
       else if (Object.keys(complexSelections).length > 0) {
         for (const [primaryValue, secondarySelections] of Object.entries(complexSelections)) {
           if (Object.keys(secondarySelections).length > 0 && attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]) {
@@ -516,7 +519,7 @@ export default function ProductPage() {
   }, [simpleVariantQuantities, complexSelections, selectedSimpleValue, product, attributeImages, images, simpleVariantType])
 
   // ============================================================
-  // FONCTIONS POUR VARIANTES SIMPLES (1 attribut) - AVEC POPUP
+  // FONCTIONS POUR VARIANTES SIMPLES
   // ============================================================
   const openSimpleVariantModal = (value: string) => {
     setSelectedSimpleValue(value)
@@ -705,7 +708,7 @@ export default function ProductPage() {
   }, [simpleVariantQuantities, complexSelections, simpleQuantity, product, minQuantity])
 
   // ============================================================
-  // FONCTIONS D'ACHAT AVEC NOTIFICATION
+  // FONCTIONS D'ACHAT
   // ============================================================
   const handleAddToCart = () => {
     const grandTotal = getGrandTotal()
