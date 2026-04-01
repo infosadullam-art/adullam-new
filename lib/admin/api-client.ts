@@ -1,6 +1,7 @@
 // lib/admin/api-client.ts
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://outstanding-enchantment-production-109f.up.railway.app/api"
+const PYTHON_API_BASE = "https://laudable-integrity-production-5344.up.railway.app/api"
 
 interface FetchOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>
@@ -216,10 +217,12 @@ export const dashboardApi = {
     })
   },
 
+  // ✅ Ces 6 fonctions vont directement au service Python
   getCycleMetrics: async () => {
-    console.log("🟡 [dashboardApi] getCycleMetrics")
+    console.log("🟡 [dashboardApi] getCycleMetrics -> Python Service")
     try {
-      const data = await apiClient<{ success: boolean; data: any }>("/admin/cycle/metrics")
+      const res = await fetch(`${PYTHON_API_BASE}/admin/cycle/metrics`)
+      const data = await res.json()
       return data
     } catch (error) {
       console.error('❌ Erreur cycle metrics:', error)
@@ -235,9 +238,10 @@ export const dashboardApi = {
   },
 
   getQualityMetrics: async () => {
-    console.log("🟡 [dashboardApi] getQualityMetrics")
+    console.log("🟡 [dashboardApi] getQualityMetrics -> Python Service")
     try {
-      const data = await apiClient<{ success: boolean; data: any }>("/admin/cycle/quality")
+      const res = await fetch(`${PYTHON_API_BASE}/admin/cycle/quality`)
+      const data = await res.json()
       return data
     } catch (error) {
       console.error('❌ Erreur quality metrics:', error)
@@ -255,9 +259,10 @@ export const dashboardApi = {
   },
 
   getColdStartMetrics: async () => {
-    console.log("🟡 [dashboardApi] getColdStartMetrics")
+    console.log("🟡 [dashboardApi] getColdStartMetrics -> Python Service")
     try {
-      const data = await apiClient<{ success: boolean; data: any }>("/admin/cycle/coldstart")
+      const res = await fetch(`${PYTHON_API_BASE}/admin/cycle/coldstart`)
+      const data = await res.json()
       return data
     } catch (error) {
       console.error('❌ Erreur coldstart metrics:', error)
@@ -272,9 +277,10 @@ export const dashboardApi = {
   },
 
   getDiversityMetrics: async () => {
-    console.log("🟡 [dashboardApi] getDiversityMetrics")
+    console.log("🟡 [dashboardApi] getDiversityMetrics -> Python Service")
     try {
-      const data = await apiClient<{ success: boolean; data: any }>("/admin/cycle/diversity")
+      const res = await fetch(`${PYTHON_API_BASE}/admin/cycle/diversity`)
+      const data = await res.json()
       return data
     } catch (error) {
       console.error('❌ Erreur diversity metrics:', error)
@@ -291,9 +297,10 @@ export const dashboardApi = {
   },
 
   getScrollMetrics: async () => {
-    console.log("🟡 [dashboardApi] getScrollMetrics")
+    console.log("🟡 [dashboardApi] getScrollMetrics -> Python Service")
     try {
-      const data = await apiClient<{ success: boolean; data: any }>("/admin/cycle/scroll")
+      const res = await fetch(`${PYTHON_API_BASE}/admin/cycle/scroll`)
+      const data = await res.json()
       return data
     } catch (error) {
       console.error('❌ Erreur scroll metrics:', error)
@@ -314,9 +321,10 @@ export const dashboardApi = {
   },
 
   getAlerts: async () => {
-    console.log("🟡 [dashboardApi] getAlerts")
+    console.log("🟡 [dashboardApi] getAlerts -> Python Service")
     try {
-      const data = await apiClient<{ success: boolean; data: any }>("/admin/cycle/alerts")
+      const res = await fetch(`${PYTHON_API_BASE}/admin/cycle/alerts`)
+      const data = await res.json()
       return data
     } catch (error) {
       console.error('❌ Erreur chargement alertes:', error)
