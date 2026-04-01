@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { notificationsApi } from "@/lib/admin/api-client"
 import { 
   Bell, 
@@ -40,8 +39,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Progress } from "@/components/ui/progress"
-import { Separator } from "@/components/ui/separator"
 
 interface Notification {
   id: string
@@ -180,37 +177,71 @@ export default function NotificationsPage() {
         notificationsApi.stats()
       ])
 
-      // ✅ CORRECTION : Vérifier la structure de la réponse
-      // La réponse a la structure: { success: true, data: [...], pagination: {...} }
-      if (notifRes && notifRes.success) {
-        // ✅ Extraire le tableau des notifications
-        const notificationData = notifRes.data || []
-        // ✅ Vérifier que c'est bien un tableau
-        setNotifications(Array.isArray(notificationData) ? notificationData : [])
-        // ✅ Extraire les métadonnées de pagination
-        if (notifRes.pagination) {
-          setMeta({
-            page: notifRes.pagination.page || page,
-            totalPages: notifRes.pagination.totalPages || 1,
-            total: notifRes.pagination.total || 0
-          })
-        } else {
-          setMeta({
-            page: page,
-            totalPages: 1,
-            total: notificationData.length
-          })
-        }
+      // ✅ LOGS POUR DEBUG
+      console.log("🔍 notifRes complet:", notifRes)
+      console.log("🔍 type de notifRes:", typeof notifRes)
+      console.log("🔍 notifRes.data:", notifRes?.data)
+
+      // ✅ EXTRACTION ROBUSTE DES NOTIFICATIONS
+      let notificationData: Notification[] = []
+
+      if (Array.isArray(notifRes)) {
+        notificationData = notifRes
+      } else if (notifRes?.data && Array.isArray(notifRes.data)) {
+        notificationData = notifRes.data
+      } else if (notifRes?.data?.data && Array.isArray(notifRes.data.data)) {
+        notificationData = notifRes.data.data
+      } else if (notifRes?.notifications && Array.isArray(notifRes.notifications)) {
+        notificationData = notifRes.notifications
+      } else if (notifRes?.success && notifRes?.data && Array.isArray(notifRes.data)) {
+        notificationData = notifRes.data
       } else {
-        setNotifications([])
-        setMeta(null)
+        // Essayer de trouver un tableau n'importe où dans l'objet
+        for (const key in notifRes) {
+          if (notifRes[key] && Array.isArray(notifRes[key])) {
+            notificationData = notifRes[key]
+            console.log(`🔍 Tableau trouvé dans la clé: ${key}`)
+            break
+          }
+        }
+      }
+
+      console.log("✅ notificationData extrait:", notificationData.length, "éléments")
+      setNotifications(notificationData)
+      
+      // ✅ EXTRACTION DE LA PAGINATION
+      if (notifRes?.pagination) {
+        setMeta({
+          page: notifRes.pagination.page || page,
+          totalPages: notifRes.pagination.totalPages || 1,
+          total: notifRes.pagination.total || 0
+        })
+      } else if (notifRes?.data?.pagination) {
+        setMeta({
+          page: notifRes.data.pagination.page || page,
+          totalPages: notifRes.data.pagination.totalPages || 1,
+          total: notifRes.data.pagination.total || 0
+        })
+      } else {
+        setMeta({
+          page: page,
+          totalPages: Math.ceil(notificationData.length / 20) || 1,
+          total: notificationData.length
+        })
       }
       
-      if (statsRes && statsRes.success) {
+      // ✅ EXTRACTION DES STATS
+      if (statsRes && statsRes.success && statsRes.data) {
+        setStats(statsRes.data as NotificationStats)
+      } else if (statsRes && typeof statsRes === 'object' && !statsRes.success) {
+        // Si statsRes est directement l'objet stats
+        setStats(statsRes as NotificationStats)
+      } else if (statsRes && statsRes.data) {
         setStats(statsRes.data as NotificationStats)
       } else {
         setStats(null)
       }
+      
     } catch (error) {
       console.error("Failed to load notifications:", error)
       toast.error("Failed to load notifications")
