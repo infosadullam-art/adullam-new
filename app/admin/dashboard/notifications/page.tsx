@@ -30,7 +30,7 @@ import {
   Package,
   Users,
   MoreHorizontal
-} from "lucide-react"  // ← AJOUT DE Package et Users ici
+} from "lucide-react"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/admin/auth-context"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -180,16 +180,42 @@ export default function NotificationsPage() {
         notificationsApi.stats()
       ])
 
-      if (notifRes.success) {
-        setNotifications(notifRes.data as Notification[])
-        setMeta(notifRes.meta as Meta)
+      // ✅ CORRECTION : Vérifier la structure de la réponse
+      // La réponse a la structure: { success: true, data: [...], pagination: {...} }
+      if (notifRes && notifRes.success) {
+        // ✅ Extraire le tableau des notifications
+        const notificationData = notifRes.data || []
+        // ✅ Vérifier que c'est bien un tableau
+        setNotifications(Array.isArray(notificationData) ? notificationData : [])
+        // ✅ Extraire les métadonnées de pagination
+        if (notifRes.pagination) {
+          setMeta({
+            page: notifRes.pagination.page || page,
+            totalPages: notifRes.pagination.totalPages || 1,
+            total: notifRes.pagination.total || 0
+          })
+        } else {
+          setMeta({
+            page: page,
+            totalPages: 1,
+            total: notificationData.length
+          })
+        }
+      } else {
+        setNotifications([])
+        setMeta(null)
       }
-      if (statsRes.success) {
+      
+      if (statsRes && statsRes.success) {
         setStats(statsRes.data as NotificationStats)
+      } else {
+        setStats(null)
       }
     } catch (error) {
       console.error("Failed to load notifications:", error)
       toast.error("Failed to load notifications")
+      setNotifications([])
+      setStats(null)
     } finally {
       setIsLoading(false)
       setIsRefreshing(false)
@@ -414,7 +440,7 @@ export default function NotificationsPage() {
         </div>
 
         {/* Channel Breakdown avec liens */}
-        {stats?.byChannel && (
+        {stats?.byChannel && Object.keys(stats.byChannel).length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle>By Channel</CardTitle>
@@ -511,7 +537,7 @@ export default function NotificationsPage() {
               data={notifications}
               isLoading={isLoading}
               pagination={
-                meta
+                meta && meta.totalPages > 1
                   ? {
                       page: meta.page,
                       totalPages: meta.totalPages,
