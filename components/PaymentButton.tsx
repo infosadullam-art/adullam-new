@@ -24,7 +24,7 @@ export function PaymentButton({ email, amount, orderId, onSuccess, onError, chil
         body: JSON.stringify({
           email,
           amount,
-          metadata: { order_id: orderId },
+          orderId,
         }),
       });
 
@@ -34,10 +34,10 @@ export function PaymentButton({ email, amount, orderId, onSuccess, onError, chil
         window.location.href = data.authorization_url;
         onSuccess?.();
       } else {
-        onError?.(data.error || 'Erreur d\'initialisation');
+        onError?.(data.error || 'Erreur d\'initialisation du paiement');
       }
     } catch (error) {
-      onError?.('Erreur de connexion');
+      onError?.('Erreur de connexion au serveur');
     } finally {
       setLoading(false);
     }
@@ -47,15 +47,16 @@ export function PaymentButton({ email, amount, orderId, onSuccess, onError, chil
     <button
       onClick={handlePayment}
       disabled={loading}
-      className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      className="flex-1 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      style={{ background: 'linear-gradient(135deg, #2B4F3C 0%, #3A6B4E 100%)' }}
     >
       {loading ? (
         <>
-          <Loader2 className="h-5 w-5 animate-spin" />
-          Chargement...
+          <Loader2 className="w-4 h-4 animate-spin" />
+          Traitement...
         </>
       ) : (
-        children || 'Payer avec Paystack'
+        children || 'Payer'
       )}
     </button>
   );
