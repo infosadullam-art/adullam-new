@@ -30,6 +30,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { PaymentButton } from "@/components/PaymentButton";
 
 // Couleurs dynamiques
 const brandColor = "#2B4F3C";
@@ -344,150 +345,14 @@ export default function CheckoutPage() {
     return firstName && lastName && email && phone && address && quartier && city;
   };
 
-  const handleSubmit = async () => {
-    if (!paymentMethod) return;
-    
-    setIsProcessing(true);
-    setError("");
-
-    try {
-      const token = localStorage.getItem('adullam_token');
-      
-      console.log('🔴 [CHECKOUT] ========== DÉBUT COMMANDE ==========');
-      console.log('🔴 [CHECKOUT] Token présent:', !!token);
-      console.log('🔴 [CHECKOUT] Token début:', token?.substring(0, 30) + '...');
-      
-      if (!token) {
-        throw new Error("Vous devez être connecté");
-      }
-      
-      const orderTotal = grandTotalUSD;
-      setLastOrderTotal(orderTotal);
-      
-      // ✅ PRÉPARER LES ARTICLES AVEC LEUR MODE D'EXPÉDITION
-      const orderItems = cart.map(item => {
-        const shippingMode = item.shippingMode || defaultShippingMode;
-        const shippingCost = item.shippingCostUSD || 0;
-        const portePorteCost = item.portePorteCostUSD || 0;
-        
-        console.log(`🔴 [CHECKOUT] Article: ${item.name?.substring(0, 30)}...`);
-        console.log(`   - shippingMode: ${shippingMode}`);
-        console.log(`   - shippingCost: ${shippingCost}`);
-        console.log(`   - portePorteCost: ${portePorteCost}`);
-        
-        return {
-          id: item.id,
-          variantKey: item.variantKey,
-          name: item.name,
-          quantity: item.quantity,
-          price: item.price,
-          shippingMode: shippingMode,
-          shippingCost: shippingCost,
-          portePorteCost: portePorteCost,
-          totalWeight: item.totalWeight || 0,
-          color: item.color,
-          eurSize: item.eurSize,
-          image: item.image,
-          weight: item.weight || 0.5
-        };
-      });
-      
-      console.log('🔴 [CHECKOUT] Items préparés:', orderItems.length);
-      
-      const requestBody = {
-        items: orderItems,
-        shippingInfo: {
-          firstName: shippingInfo.firstName,
-          lastName: shippingInfo.lastName,
-          email: shippingInfo.email,
-          phone: shippingInfo.phone,
-          address: shippingInfo.address,
-          quartier: shippingInfo.quartier,
-          city: shippingInfo.city,
-          postalCode: shippingInfo.postalCode,
-          country: selectedCountry.name,
-          countryCode: selectedCountry.code,
-          notes: shippingInfo.notes
-        },
-        paymentMethod: paymentMethod,
-        totals: { 
-          totalUSD, 
-          shippingCost: totalShippingUSD, 
-          portePorteTotal: totalPortePorteUSD, 
-          grandTotal: orderTotal 
-        },
-        country: selectedCountry.code,
-        currency: currency || "XOF",
-        defaultShippingMode: defaultShippingMode
-      };
-      
-      console.log('🔴 [CHECKOUT] Body envoyé:', JSON.stringify(requestBody, null, 2));
-      
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(requestBody)
-      });
-
-      console.log('🔴 [CHECKOUT] Réponse status:', response.status);
-      
-      if (response.status === 401) {
-        console.log('🔴 [CHECKOUT] 401 - Token invalide, redirection login');
-        localStorage.removeItem('adullam_token');
-        router.push("/account?mode=login&redirect=checkout");
-        throw new Error("Session expirée, veuillez vous reconnecter");
-      }
-
-      const data = await response.json();
-      console.log('🔴 [CHECKOUT] Réponse data:', data);
-
-      if (!response.ok) {
-        throw new Error(data.message || "Erreur lors de la commande");
-      }
-
-      if (data.reference) {
-        setLastOrderRef(data.reference);
-      } else if (data.orderId) {
-        setLastOrderRef(data.orderId.slice(-8));
-      }
-
-      console.log('🔴 [CHECKOUT] Commande réussie! Réf:', lastOrderRef);
-      setIsSuccess(true);
-      clearCart();
-      
-    } catch (error: any) {
-      console.error("❌ [CHECKOUT] Erreur:", error);
-      setError(error.message || "Une erreur est survenue");
-    } finally {
-      setIsProcessing(false);
-    }
+  const handlePaymentSuccess = () => {
+    console.log('✅ Paiement initialisé avec succès');
   };
 
-  const selectAddress = (addr: any) => {
-    setSelectedAddressId(addr.id);
-    setShippingInfo({
-      firstName: addr.firstName,
-      lastName: addr.lastName,
-      email: user?.email || "",
-      phone: addr.phone,
-      address: addr.address,
-      quartier: addr.quartier || "",
-      city: addr.city,
-      postalCode: addr.postalCode || "",
-      country: addr.country || "CI",
-      notes: ""
-    });
-    
-    const country = AFRICAN_COUNTRIES.find(c => c.code === addr.country);
-    if (country) setSelectedCountry(country);
-  };
-
-  const getShippingLabel = (mode: string) => {
-    const method = SHIPPING_METHODS.find(m => m.id === mode);
-    return method?.label || mode;
+  const handlePaymentError = (paymentError: string) => {
+    console.error('❌ Erreur paiement:', paymentError);
+    setError(paymentError);
+    setStep(3);
   };
 
   // ==================== LOADING ====================
@@ -1045,7 +910,7 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* ÉTAPE 4 - CONFIRMATION Desktop */}
+              {/* ÉTAPE 4 - CONFIRMATION Desktop avec PaymentButton */}
               {step === 4 && (
                 <div className="bg-white rounded-xl border border-gray-100 p-4 lg:p-6">
                   <h2 className="text-sm lg:text-base font-medium mb-3 lg:mb-4">Confirmation</h2>
@@ -1100,21 +965,15 @@ export default function CheckoutPage() {
                       >
                         Retour
                       </button>
-                      <button
-                        onClick={handleSubmit}
-                        disabled={isProcessing}
-                        className="flex-1 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                        style={{ background: brandGradient }}
+                      <PaymentButton
+                        email={shippingInfo.email || user?.email || ""}
+                        amount={grandTotalUSD}
+                        orderId={lastOrderRef}
+                        onSuccess={handlePaymentSuccess}
+                        onError={handlePaymentError}
                       >
-                        {isProcessing ? (
-                          <>
-                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            <span>Traitement...</span>
-                          </>
-                        ) : (
-                          'Confirmer'
-                        )}
-                      </button>
+                        Payer {formatPrice(grandTotalUSD)}
+                      </PaymentButton>
                     </div>
                   </div>
                 </div>
@@ -1311,10 +1170,9 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* ÉTAPE 2 - EXPÉDITION Mobile - Résumé en bas après tous les choix */}
+              {/* ÉTAPE 2 - EXPÉDITION Mobile */}
               {step === 2 && (
                 <>
-                  {/* Bloc de sélection des modes d'expédition */}
                   <div className="bg-white rounded-xl border border-gray-100 p-4">
                     <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
                       <Truck className="w-4 h-4" style={{ color: brandColor }} />
@@ -1393,7 +1251,6 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  {/* RÉSUMÉ - Totalement en bas après tous les choix */}
                   <div className="bg-white rounded-xl border border-gray-100 p-4">
                     <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
                       <Truck className="w-4 h-4" style={{ color: brandColor }} />
@@ -1448,7 +1305,6 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  {/* Boutons de navigation */}
                   <div className="flex gap-2">
                     <button
                       onClick={() => setStep(1)}
@@ -1505,7 +1361,6 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  {/* Résumé de la commande pour l'étape paiement */}
                   <div className="bg-white rounded-xl border border-gray-100 p-4">
                     <h2 className="text-sm font-medium mb-3">Récapitulatif</h2>
                     <div className="space-y-1.5 text-xs">
@@ -1518,7 +1373,7 @@ export default function CheckoutPage() {
                 </>
               )}
 
-              {/* ÉTAPE 4 - CONFIRMATION Mobile */}
+              {/* ÉTAPE 4 - CONFIRMATION Mobile avec PaymentButton */}
               {step === 4 && (
                 <div className="bg-white rounded-xl border border-gray-100 p-4">
                   <h2 className="text-sm font-medium mb-3">Confirmation</h2>
@@ -1545,9 +1400,15 @@ export default function CheckoutPage() {
 
                     <div className="flex gap-2 pt-2">
                       <button onClick={() => setStep(3)} className="flex-1 py-2 text-sm border rounded-lg">Retour</button>
-                      <button onClick={handleSubmit} disabled={isProcessing} className="flex-1 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-50" style={{ background: brandGradient }}>
-                        {isProcessing ? 'Traitement...' : 'Confirmer'}
-                      </button>
+                      <PaymentButton
+                        email={shippingInfo.email || user?.email || ""}
+                        amount={grandTotalUSD}
+                        orderId={lastOrderRef}
+                        onSuccess={handlePaymentSuccess}
+                        onError={handlePaymentError}
+                      >
+                        Payer {formatPrice(grandTotalUSD)}
+                      </PaymentButton>
                     </div>
                   </div>
                 </div>

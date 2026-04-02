@@ -1,10 +1,12 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 
-export default function PaymentCallbackPage() {
+// Composant séparé qui utilise useSearchParams
+function PaymentCallbackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
@@ -80,5 +82,22 @@ export default function PaymentCallbackPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// Page principale avec Suspense boundary
+export default function PaymentCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 rounded-lg shadow-md text-center max-w-md">
+          <Loader2 className="h-16 w-16 text-blue-500 animate-spin mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Chargement...</h2>
+          <p className="text-gray-600">Veuillez patienter</p>
+        </div>
+      </div>
+    }>
+      <PaymentCallbackContent />
+    </Suspense>
   );
 }
