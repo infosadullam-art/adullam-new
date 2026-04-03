@@ -7,7 +7,7 @@ import { LocaleProvider } from "@/context/LocaleProvider"
 import { CartProvider } from "@/context/CartContext"
 import { AuthProvider } from "@/lib/admin/auth-context"
 import { Toaster } from "react-hot-toast"
-import * as Sentry from "@sentry/nextjs"  // ← AJOUTER
+import * as Sentry from "@sentry/nextjs"
 
 // ✅ Poppins avec tous les poids
 const poppins = Poppins({ 
@@ -130,6 +130,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </LocaleProvider>
           </AuthProvider>
         </GlobalErrorBoundary>
+        {/* ✅ Analytics doit être en dehors du ErrorBoundary mais dans body */}
         <Analytics />
       </body>
     </html>
