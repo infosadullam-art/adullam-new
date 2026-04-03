@@ -99,6 +99,16 @@ const SHIPPING_METHODS = [
   { id: "express", name: "Express", icon: Zap, days: "7-10j", badge: "Prioritaire", label: "Express" }
 ];
 
+// Fonction pour obtenir le libellé du mode d'expédition
+const getShippingLabel = (mode: string): string => {
+  const labels: Record<string, string> = {
+    'bateau': 'Maritime (35-50j)',
+    'avion': 'Aérien (15-20j)',
+    'express': 'Express (7-10j)'
+  };
+  return labels[mode] || mode;
+};
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
@@ -257,6 +267,25 @@ export default function CheckoutPage() {
     } finally {
       setLoadingAddresses(false);
     }
+  };
+
+  const selectAddress = (addr: any) => {
+    setSelectedAddressId(addr.id);
+    setShippingInfo({
+      firstName: addr.firstName,
+      lastName: addr.lastName,
+      email: user?.email || "",
+      phone: addr.phone,
+      address: addr.address,
+      quartier: addr.quartier || "",
+      city: addr.city,
+      postalCode: addr.postalCode || "",
+      country: addr.country || "CI",
+      notes: ""
+    });
+    
+    const country = AFRICAN_COUNTRIES.find(c => c.code === addr.country);
+    if (country) setSelectedCountry(country);
   };
 
   const handleAddAddress = async () => {
