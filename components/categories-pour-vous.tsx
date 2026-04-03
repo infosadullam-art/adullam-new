@@ -17,19 +17,19 @@ interface Product {
 const slides = [
   {
     id: 1,
-    image: "/slides/spring-1.jpg",
+    image: "/slides/Spring-1.jpg",
     title: "Collection printemps",
     href: "/collections/printemps",
   },
   {
     id: 2,
-    image: "/slides/spring-2.jpg",
+    image: "/slides/Spring-2.jpg",
     title: "Nouveautés mode",
     href: "/collections/nouveautes",
   },
   {
     id: 3,
-    image: "/slides/spring-3.jpg",
+    image: "/slides/Spring-3.jpg",
     title: "Tendances 2026",
     href: "/collections/tendances",
   },
