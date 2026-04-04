@@ -7,12 +7,23 @@ interface PaymentButtonProps {
   email: string;
   amount: number;
   orderId?: string;
+  couponCode?: string | null;
+  couponDiscount?: number;
   onSuccess?: () => void;
   onError?: (error: string) => void;
   children?: React.ReactNode;
 }
 
-export function PaymentButton({ email, amount, orderId, onSuccess, onError, children }: PaymentButtonProps) {
+export function PaymentButton({ 
+  email, 
+  amount, 
+  orderId, 
+  couponCode, 
+  couponDiscount = 0,
+  onSuccess, 
+  onError, 
+  children 
+}: PaymentButtonProps) {
   const [loading, setLoading] = useState(false);
 
   const handlePayment = async () => {
@@ -25,6 +36,8 @@ export function PaymentButton({ email, amount, orderId, onSuccess, onError, chil
           email,
           amount,
           orderId,
+          couponCode,
+          couponDiscount,
         }),
       });
 

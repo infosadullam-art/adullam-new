@@ -31,6 +31,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PaymentButton } from "@/components/PaymentButton";
+import { CouponInput } from "@/components/CouponInput";
 
 // Couleurs dynamiques
 const brandColor = "#2B4F3C";
@@ -139,6 +140,11 @@ export default function CheckoutPage() {
   // États pour sauvegarder les données de la commande
   const [lastOrderTotal, setLastOrderTotal] = useState<number>(0);
   const [lastOrderRef, setLastOrderRef] = useState<string>("");
+
+  // États pour les coupons
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const finalTotal = Math.max(0, grandTotalUSD - discountAmount);
 
   // Adresses
   const [addresses, setAddresses] = useState<any[]>([]);
@@ -384,6 +390,17 @@ export default function CheckoutPage() {
     setStep(3);
   };
 
+  const handleApplyCoupon = (coupon: any) => {
+    setAppliedCoupon(coupon);
+    setDiscountAmount(coupon.discountAmount);
+    setError("");
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setDiscountAmount(0);
+  };
+
   // ==================== LOADING ====================
   if (authLoading) {
     return (
@@ -395,7 +412,7 @@ export default function CheckoutPage() {
 
   // ==================== SUCCÈS ====================
   if (isSuccess) {
-    const displayTotal = lastOrderTotal || grandTotalUSD;
+    const displayTotal = lastOrderTotal || finalTotal;
     const displayRef = lastOrderRef || Math.random().toString(36).substring(2, 8).toUpperCase();
     
     return (
@@ -980,12 +997,27 @@ export default function CheckoutPage() {
                           <span className="text-gray-500">Porte-à-porte</span>
                           <span>{formatPrice(totalPortePorteUSD)}</span>
                         </div>
+                        {discountAmount > 0 && (
+                          <div className="flex justify-between text-green-600">
+                            <span>Réduction ({appliedCoupon?.code})</span>
+                            <span>- {formatPrice(discountAmount)}</span>
+                          </div>
+                        )}
                         <div className="border-t border-gray-200 pt-1.5 mt-1.5 flex justify-between font-medium">
                           <span>Total</span>
-                          <span style={{ color: brandColor }}>{formatPrice(grandTotalUSD)}</span>
+                          <span style={{ color: brandColor }}>{formatPrice(finalTotal)}</span>
                         </div>
                       </div>
                     </div>
+
+                    {/* Input coupon */}
+                    <CouponInput
+                      onApply={handleApplyCoupon}
+                      onRemove={handleRemoveCoupon}
+                      appliedCoupon={appliedCoupon}
+                      cartTotal={grandTotalUSD}
+                      userId={user?.id}
+                    />
 
                     <div className="flex gap-2 pt-2">
                       <button
@@ -996,12 +1028,14 @@ export default function CheckoutPage() {
                       </button>
                       <PaymentButton
                         email={shippingInfo.email || user?.email || ""}
-                        amount={grandTotalUSD}
+                        amount={finalTotal}
                         orderId={lastOrderRef}
+                        couponCode={appliedCoupon?.code}
+                        couponDiscount={discountAmount}
                         onSuccess={handlePaymentSuccess}
                         onError={handlePaymentError}
                       >
-                        Payer {formatPrice(grandTotalUSD)}
+                        Payer {formatPrice(finalTotal)}
                       </PaymentButton>
                     </div>
                   </div>
@@ -1072,9 +1106,15 @@ export default function CheckoutPage() {
                     <span className="text-gray-500">Porte-à-porte</span>
                     <span className="font-medium">{formatPrice(totalPortePorteUSD)}</span>
                   </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-xs text-green-600">
+                      <span>Réduction ({appliedCoupon?.code})</span>
+                      <span>- {formatPrice(discountAmount)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-xs font-medium pt-1.5 border-t border-gray-100">
                     <span>Total</span>
-                    <span style={{ color: brandColor }}>{formatPrice(grandTotalUSD)}</span>
+                    <span style={{ color: brandColor }}>{formatPrice(finalTotal)}</span>
                   </div>
                 </div>
 
@@ -1327,10 +1367,27 @@ export default function CheckoutPage() {
                         <span className="text-gray-500">Porte-à-porte</span>
                         <span>{formatPrice(totalPortePorteUSD)}</span>
                       </div>
+                      {discountAmount > 0 && (
+                        <div className="flex justify-between text-xs text-green-600">
+                          <span>Réduction ({appliedCoupon?.code})</span>
+                          <span>- {formatPrice(discountAmount)}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between text-sm font-bold pt-1.5 border-t border-gray-100">
                         <span>Total</span>
-                        <span style={{ color: brandColor }}>{formatPrice(grandTotalUSD)}</span>
+                        <span style={{ color: brandColor }}>{formatPrice(finalTotal)}</span>
                       </div>
+                    </div>
+
+                    {/* Input coupon mobile */}
+                    <div className="mt-3">
+                      <CouponInput
+                        onApply={handleApplyCoupon}
+                        onRemove={handleRemoveCoupon}
+                        appliedCoupon={appliedCoupon}
+                        cartTotal={grandTotalUSD}
+                        userId={user?.id}
+                      />
                     </div>
                   </div>
 
@@ -1396,7 +1453,13 @@ export default function CheckoutPage() {
                       <div className="flex justify-between"><span>Sous-total</span><span>{formatPrice(totalUSD)}</span></div>
                       <div className="flex justify-between"><span>Expédition</span><span>{formatPrice(totalShippingUSD)}</span></div>
                       <div className="flex justify-between"><span>Porte-à-porte</span><span>{formatPrice(totalPortePorteUSD)}</span></div>
-                      <div className="flex justify-between font-bold pt-1 border-t"><span>Total</span><span style={{ color: brandColor }}>{formatPrice(grandTotalUSD)}</span></div>
+                      {discountAmount > 0 && (
+                        <div className="flex justify-between text-green-600">
+                          <span>Réduction</span>
+                          <span>- {formatPrice(discountAmount)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between font-bold pt-1 border-t"><span>Total</span><span style={{ color: brandColor }}>{formatPrice(finalTotal)}</span></div>
                     </div>
                   </div>
                 </>
@@ -1424,19 +1487,36 @@ export default function CheckoutPage() {
                       <div className="flex justify-between"><span>Sous-total</span><span>{formatPrice(totalUSD)}</span></div>
                       <div className="flex justify-between"><span>Expédition</span><span>{formatPrice(totalShippingUSD)}</span></div>
                       <div className="flex justify-between"><span>Porte-à-porte</span><span>{formatPrice(totalPortePorteUSD)}</span></div>
-                      <div className="flex justify-between font-bold pt-1 border-t"><span>Total</span><span style={{ color: brandColor }}>{formatPrice(grandTotalUSD)}</span></div>
+                      {discountAmount > 0 && (
+                        <div className="flex justify-between text-green-600">
+                          <span>Réduction ({appliedCoupon?.code})</span>
+                          <span>- {formatPrice(discountAmount)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between font-bold pt-1 border-t"><span>Total</span><span style={{ color: brandColor }}>{formatPrice(finalTotal)}</span></div>
                     </div>
+
+                    {/* Input coupon mobile */}
+                    <CouponInput
+                      onApply={handleApplyCoupon}
+                      onRemove={handleRemoveCoupon}
+                      appliedCoupon={appliedCoupon}
+                      cartTotal={grandTotalUSD}
+                      userId={user?.id}
+                    />
 
                     <div className="flex gap-2 pt-2">
                       <button onClick={() => setStep(3)} className="flex-1 py-2 text-sm border rounded-lg">Retour</button>
                       <PaymentButton
                         email={shippingInfo.email || user?.email || ""}
-                        amount={grandTotalUSD}
+                        amount={finalTotal}
                         orderId={lastOrderRef}
+                        couponCode={appliedCoupon?.code}
+                        couponDiscount={discountAmount}
                         onSuccess={handlePaymentSuccess}
                         onError={handlePaymentError}
                       >
-                        Payer {formatPrice(grandTotalUSD)}
+                        Payer {formatPrice(finalTotal)}
                       </PaymentButton>
                     </div>
                   </div>
