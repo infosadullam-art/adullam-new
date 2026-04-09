@@ -967,9 +967,10 @@ export default function ProductPage() {
                     />
                   </button>
                   
-                  {/* Points indicateurs - Nouveau design avec max 12 points */}
+                  {/* Points indicateurs - Design épuré avec max 12 points et carrousel */}
                   <div className="absolute bottom-4 left-0 right-0 flex justify-center">
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-lg">
+                    <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-white/80 backdrop-blur-sm shadow-md">
+                      {/* Premiers points (max 12) */}
                       <div className="flex gap-1.5">
                         {safeImages.slice(0, 12).map((_, idx) => (
                           <button
@@ -977,17 +978,31 @@ export default function ProductPage() {
                             onClick={() => setSelectedImage(idx)}
                             className={`transition-all duration-200 rounded-full ${
                               selectedImage === idx 
-                                ? 'w-2 h-2 bg-[#2B4F3C] scale-100' 
-                                : 'w-1.5 h-1.5 bg-gray-300 scale-90'
+                                ? 'w-2 h-2 bg-[#2B4F3C]' 
+                                : 'w-1.5 h-1.5 bg-gray-400'
                             }`}
                           />
                         ))}
                       </div>
+                      
+                      {/* Carrousel pour les images supplémentaires */}
                       {safeImages.length > 12 && (
-                        <div className="pl-2 border-l border-gray-200">
-                          <span className="text-[10px] font-medium text-gray-500">
+                        <div className="flex items-center gap-1 pl-1.5 border-l border-gray-300">
+                          <button
+                            onClick={() => setSelectedImage(Math.max(0, selectedImage - 1))}
+                            className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                          >
+                            <ChevronLeft className="w-3 h-3 text-gray-500" />
+                          </button>
+                          <span className="text-[9px] font-medium text-gray-500 min-w-[32px] text-center">
                             {selectedImage + 1}/{safeImages.length}
                           </span>
+                          <button
+                            onClick={() => setSelectedImage(Math.min(safeImages.length - 1, selectedImage + 1))}
+                            className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                          >
+                            <ChevronRight className="w-3 h-3 text-gray-500" />
+                          </button>
                         </div>
                       )}
                     </div>
