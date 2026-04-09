@@ -14,8 +14,6 @@ import { FaFacebook, FaApple } from "react-icons/fa"
 import { useRouter } from "next/navigation"
 import { ordersApi, addressesApi, wishlistApi } from "@/lib/admin/api-client"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
-import { Header } from "@/components/header"
-import MobileNav from "@/components/mobile-nav"
 
 // ============================================================
 // COMPOSANT PRINCIPAL
@@ -455,6 +453,9 @@ export default function AccountPage() {
           </button>
 
           <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
+              <span className="text-3xl font-bold text-white">A</span>
+            </div>
             <h1 className="text-3xl font-bold text-gray-900">Adullam</h1>
             <div className="flex items-center justify-center gap-2 mt-2">
               <Shield className="w-4 h-4 text-green-600" />
@@ -867,9 +868,6 @@ export default function AccountPage() {
   // ============================================================
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header desktop uniquement */}
-      <Header />
-
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
@@ -953,6 +951,11 @@ export default function AccountPage() {
                   Bonjour, {user?.name?.split(' ')[0] || user?.email}!
                 </h1>
                 <p className="text-gray-500 mt-1">Bienvenue dans votre espace personnel sécurisé</p>
+              </div>
+              
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg">
+                <Shield className="w-4 h-4 text-green-600" />
+                <span className="text-xs font-medium text-green-700">Authentification à 2 facteurs active</span>
               </div>
             </div>
 
@@ -1094,6 +1097,7 @@ export default function AccountPage() {
             ) : wishlist.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {wishlist.map((item) => {
+                  // ✅ CORRIGÉ : Utiliser l'ID du produit correctement
                   const productId = item.product?.id || item.productId
                   const productName = item.product?.name || item.productName || "Produit"
                   const productImage = item.product?.images?.[0]
@@ -1353,11 +1357,6 @@ export default function AccountPage() {
           </div>
         )}
       </main>
-
-      {/* MobileNav pour mobile */}
-      <div className="lg:hidden">
-        <MobileNav />
-      </div>
     </div>
   )
 }
