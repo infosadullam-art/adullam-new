@@ -18,15 +18,23 @@ const categoryItems = [
 export function MobileHeader() {
   const [showMenu, setShowMenu] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [cartClicked, setCartClicked] = useState(false) // 👈 État pour l'indicateur
   const router = useRouter()
   const { user, logout, isLoading } = useAuth()
 
-  // ✅ CORRIGÉ: Utiliser 'q' au lieu de 'query' comme paramètre
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault()
     if (searchQuery.trim() !== "") {
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`) // ← ICI q= au lieu de query=
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
     }
+  }
+
+  const handleCartClick = () => {
+    setCartClicked(true)           // 👈 Active l'indicateur
+    router.push("/cart")
+    setTimeout(() => {
+      setCartClicked(false)        // 👈 Le désactive après 500ms
+    }, 500)
   }
 
   const handleLogout = async () => {
@@ -78,16 +86,25 @@ export function MobileHeader() {
               )}
             </button>
             
-            <button className="relative text-brand hover:text-brand/80 transition-colors" onClick={() => router.push("/cart")}>
+            {/* Panier avec indicateur de clic */}
+            <button 
+              className="relative text-brand hover:text-brand/80 transition-colors" 
+              onClick={handleCartClick}  // 👈 Utilise handleCartClick
+            >
               <ShoppingCart className="w-6 h-6" />
+              {/* Indicateur temporaire au clic */}
+              {cartClicked && (
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-ping" />
+              )}
             </button>
+
             <button className="text-brand hover:text-brand/80 transition-colors" onClick={() => setShowMenu(!showMenu)}>
               {showMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
 
-        {/* Search Bar - ✅ CORRIGÉ: Ajout du formulaire avec handleSearch */}
+        {/* Search Bar */}
         <form className="relative" onSubmit={handleSearch}>
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
@@ -103,13 +120,12 @@ export function MobileHeader() {
         </form>
       </div>
 
-      {/* Menu latéral */}
+      {/* Menu latéral - inchangé */}
       <div
         className={`fixed top-0 left-0 w-72 h-full bg-white shadow-lg z-50 transform transition-transform duration-300 overflow-y-auto ${
           showMenu ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* Close button + logo */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-brand rounded flex items-center justify-center">
@@ -122,15 +138,12 @@ export function MobileHeader() {
           </button>
         </div>
 
-        {/* Menu Items */}
         <div className="flex flex-col mt-4">
-          {/* SECTION AUTHENTIFICATION */}
           {isLoading ? (
             <div className="px-4 py-3">
               <div className="h-5 bg-gray-200 animate-pulse rounded w-32"></div>
             </div>
           ) : user ? (
-            // UTILISATEUR CONNECTÉ
             <>
               <div className="px-4 py-2 bg-brand/5 mx-4 rounded-lg mb-2">
                 <p className="text-sm font-medium">Bonjour,</p>
@@ -152,7 +165,6 @@ export function MobileHeader() {
               </button>
             </>
           ) : (
-            // UTILISATEUR NON CONNECTÉ
             <>
               <button
                 className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-light transition-colors"
@@ -171,7 +183,6 @@ export function MobileHeader() {
             </>
           )}
 
-          {/* Commandes */}
           <button
             className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-light transition-colors"
             onClick={() => {
@@ -183,7 +194,6 @@ export function MobileHeader() {
             <span>Vos commandes</span>
           </button>
 
-          {/* Favoris */}
           <button
             className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-light transition-colors"
             onClick={() => {
@@ -195,7 +205,6 @@ export function MobileHeader() {
             <span>Favoris</span>
           </button>
 
-          {/* Aide */}
           <button
             className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-light transition-colors"
             onClick={() => {
@@ -207,7 +216,6 @@ export function MobileHeader() {
             <span>Besoins d’aide</span>
           </button>
 
-          {/* Catégories */}
           <div className="mt-4 px-4">
             <h3 className="text-sm font-semibold mb-2">Catégories</h3>
             <div className="flex flex-col gap-2">
