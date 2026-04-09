@@ -1,8 +1,7 @@
 "use client"
 
 import { Home, Grid3x3, Newspaper, Bell, User } from "lucide-react"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 
 const navItems = [
   { icon: Home, label: "Accueil", id: "home", path: "/" },
@@ -13,8 +12,22 @@ const navItems = [
 ]
 
 export default function MobileNav() {
-  const [activeTab, setActiveTab] = useState("home")
+  const pathname = usePathname()
   const router = useRouter()
+
+  // Déterminer l'onglet actif basé sur le chemin
+  const getActiveTab = () => {
+    if (pathname === "/") return "home"
+    if (pathname === "/categories") return "categories"
+    if (pathname === "/feed") return "feed"
+    if (pathname === "/notifications") return "notifications"
+    if (pathname === "/account") return "account"
+    // Pour les sous-routes comme /account?mode=login
+    if (pathname.startsWith("/account")) return "account"
+    return "home"
+  }
+
+  const activeTab = getActiveTab()
 
   return (
     <div className="lg:hidden">
@@ -31,30 +44,33 @@ export default function MobileNav() {
               <button
                 key={item.id}
                 onClick={() => {
-                  setActiveTab(item.id)
                   router.push(item.path)
                 }}
                 className="flex flex-col items-center justify-center gap-0.5 relative"
               >
                 <div className="relative">
-                  <Icon className={`w-5 h-5 transition-colors duration-200 ${
-                    isActive ? "text-black" : "text-gray-900"
-                  }`} />
+                  <Icon 
+                    className={`w-5 h-5 transition-colors duration-200 ${
+                      isActive ? "text-[#C72C1C]" : "text-gray-500"
+                    }`} 
+                  />
                   {item.badge && (
                     <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-600 text-white rounded-full text-[8px] flex items-center justify-center font-bold shadow-sm">
                       {item.badge}
                     </span>
                   )}
                 </div>
-                <span className={`text-[9px] font-medium transition-colors duration-200 ${
-                  isActive ? "text-black" : "text-gray-700"
-                }`}>
+                <span 
+                  className={`text-[10px] font-medium transition-colors duration-200 ${
+                    isActive ? "text-[#C72C1C]" : "text-gray-500"
+                  }`}
+                >
                   {item.label}
                 </span>
 
-                {/* Indicateur actif - point noir */}
+                {/* Indicateur actif - barre rouge en haut */}
                 {isActive && (
-                  <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-black rounded-full" />
+                  <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-[#C72C1C] rounded-full" />
                 )}
               </button>
             )
