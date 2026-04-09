@@ -27,7 +27,7 @@ export default function FeedPage() {
   }))
 
   return (
-    <div className="min-h-screen bg-neutral-light">
+    <div className="min-h-screen bg-neutral-light pb-20 lg:pb-0">
       {/* Header */}
       <div className="hidden lg:block">
         <Header />
@@ -37,7 +37,7 @@ export default function FeedPage() {
       </div>
 
       <main className="max-w-[1440px] mx-auto px-4 lg:px-6 py-6">
-        <h1 className="text-2xl lg:text-3xl font-bold mb-6">Fil d’actualité</h1>
+        <h1 className="text-2xl lg:text-3xl font-bold mb-6">Fil d'actualité</h1>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {feedItems.map((item) => (
@@ -71,18 +71,28 @@ export default function FeedPage() {
           ))}
         </div>
 
-        {/* Pagination */}
-        <div className="flex justify-center gap-2 mt-8">
-          <button className="px-4 py-2 border rounded-lg hover:bg-neutral-light">Précédent</button>
-          {[1, 2, 3, 4, 5].map((page) => (
-            <button
-              key={page}
-              className={`px-4 py-2 rounded-lg ${page === 1 ? "bg-[#C72C1C] text-white" : "border hover:bg-neutral-light"}`}
-            >
-              {page}
-            </button>
-          ))}
-          <button className="px-4 py-2 border rounded-lg hover:bg-neutral-light">Suivant</button>
+        {/* Pagination responsive avec scroll horizontal sur mobile */}
+        <div className="flex justify-center mt-8">
+          <div className="overflow-x-auto pb-2 max-w-full">
+            <div className="flex justify-center gap-2 min-w-max">
+              <button className="px-3 py-2 border rounded-lg hover:bg-neutral-light whitespace-nowrap">
+                Précédent
+              </button>
+              {[1, 2, 3, 4, 5].map((page) => (
+                <button
+                  key={page}
+                  className={`px-4 py-2 rounded-lg whitespace-nowrap ${
+                    page === 1 ? "bg-[#C72C1C] text-white" : "border hover:bg-neutral-light"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button className="px-3 py-2 border rounded-lg hover:bg-neutral-light whitespace-nowrap">
+                Suivant
+              </button>
+            </div>
+          </div>
         </div>
       </main>
 
