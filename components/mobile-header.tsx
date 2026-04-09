@@ -1,7 +1,7 @@
 "use client"
 
 import { ShoppingCart, User, Menu, Search, X, Home, Grid3x3, Heart, HelpCircle, Tv, Package, Shirt, LogIn, UserPlus, LogOut } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/admin/auth-context"
 
@@ -18,9 +18,21 @@ const categoryItems = [
 export function MobileHeader() {
   const [showMenu, setShowMenu] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [cartClicked, setCartClicked] = useState(false) // 👈 État pour l'indicateur
+  const [cartClicked, setCartClicked] = useState(false)
   const router = useRouter()
   const { user, logout, isLoading } = useAuth()
+
+  // Empêcher le scroll de l'arrière-plan quand le menu est ouvert
+  useEffect(() => {
+    if (showMenu) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = ""
+    }
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [showMenu])
 
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault()
@@ -30,10 +42,10 @@ export function MobileHeader() {
   }
 
   const handleCartClick = () => {
-    setCartClicked(true)           // 👈 Active l'indicateur
+    setCartClicked(true)
     router.push("/cart")
     setTimeout(() => {
-      setCartClicked(false)        // 👈 Le désactive après 500ms
+      setCartClicked(false)
     }, 500)
   }
 
@@ -86,13 +98,11 @@ export function MobileHeader() {
               )}
             </button>
             
-            {/* Panier avec indicateur de clic */}
             <button 
               className="relative text-brand hover:text-brand/80 transition-colors" 
-              onClick={handleCartClick}  // 👈 Utilise handleCartClick
+              onClick={handleCartClick}
             >
               <ShoppingCart className="w-6 h-6" />
-              {/* Indicateur temporaire au clic */}
               {cartClicked && (
                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-ping" />
               )}
@@ -120,12 +130,13 @@ export function MobileHeader() {
         </form>
       </div>
 
-      {/* Menu latéral - inchangé */}
+      {/* Menu latéral - CORRIGÉ */}
       <div
         className={`fixed top-0 left-0 w-72 h-full bg-white shadow-lg z-50 transform transition-transform duration-300 overflow-y-auto ${
           showMenu ? "translate-x-0" : "-translate-x-full"
         }`}
       >
+        {/* Header du menu - SANS LE BOUTON X */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-brand rounded flex items-center justify-center">
@@ -133,12 +144,11 @@ export function MobileHeader() {
             </div>
             <span className="text-xl font-bold text-navy">ADULLLAM</span>
           </div>
-          <button onClick={() => setShowMenu(false)}>
-            <X className="w-6 h-6" />
-          </button>
+          {/* ❌ BOUTON X SUPPRIMÉ */}
         </div>
 
-        <div className="flex flex-col mt-4">
+        {/* Menu Items */}
+        <div className="flex flex-col mt-4 pb-20">
           {isLoading ? (
             <div className="px-4 py-3">
               <div className="h-5 bg-gray-200 animate-pulse rounded w-32"></div>
@@ -213,7 +223,7 @@ export function MobileHeader() {
             }}
           >
             <HelpCircle className="w-5 h-5" />
-            <span>Besoins d’aide</span>
+            <span>Besoins d'aide</span>
           </button>
 
           <div className="mt-4 px-4">
