@@ -967,19 +967,30 @@ export default function ProductPage() {
                     />
                   </button>
                   
-                  {/* Points indicateurs - CORRIGÉS */}
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/30 backdrop-blur-sm px-3 py-1.5 rounded-full">
-                    {safeImages.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedImage(idx)}
-                        className={`transition-all duration-200 rounded-full ${
-                          selectedImage === idx 
-                            ? 'w-2.5 h-2.5 bg-white' 
-                            : 'w-1.5 h-1.5 bg-white/60'
-                        }`}
-                      />
-                    ))}
+                  {/* Points indicateurs - Nouveau design avec max 12 points */}
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-lg">
+                      <div className="flex gap-1.5">
+                        {safeImages.slice(0, 12).map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setSelectedImage(idx)}
+                            className={`transition-all duration-200 rounded-full ${
+                              selectedImage === idx 
+                                ? 'w-2 h-2 bg-[#2B4F3C] scale-100' 
+                                : 'w-1.5 h-1.5 bg-gray-300 scale-90'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      {safeImages.length > 12 && (
+                        <div className="pl-2 border-l border-gray-200">
+                          <span className="text-[10px] font-medium text-gray-500">
+                            {selectedImage + 1}/{safeImages.length}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -1007,7 +1018,7 @@ export default function ProductPage() {
                 )}
               </div>
 
-              {/* Mobile Product Info */}
+              {/* Mobile Product Info - le reste est identique */}
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
@@ -1569,7 +1580,7 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* SECTION DESKTOP */}
+            {/* SECTION DESKTOP - inchangée */}
             <div className="hidden lg:grid lg:grid-cols-12 gap-6 lg:gap-8 mb-16">
               
               {/* GALLERY DESKTOP */}
@@ -2068,7 +2079,7 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* Desktop Tabs */}
+            {/* Desktop Tabs - inchangé */}
             <div className="hidden lg:block mt-8 bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 shadow-sm">
               <div className="border-b border-gray-200 mb-6">
                 <div className="flex gap-6">
@@ -2224,7 +2235,7 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* RELATED PRODUCTS */}
+            {/* RELATED PRODUCTS - inchangé */}
             <div className="mt-8 lg:mt-12">
               <div className="flex items-center justify-between mb-4 lg:mb-6">
                 <h2 className="text-base lg:text-lg font-medium">Vous aimerez aussi</h2>
