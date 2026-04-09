@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation"
 
 const navItems = [
   { icon: Home, label: "Accueil", id: "home", path: "/" },
-  { icon: Search, label: "Sourcing", id: "sourcing", path: "/sourcing" },
+  { icon: Search, label: "Sourcing", id: "sourcing", path: "/boutique-noel" },
   { icon: Newspaper, label: "Fil d'actualité", id: "feed", path: "/feed" },
   { icon: Bell, label: "Notifications", id: "notifications", path: "/notifications", badge: 1 },
   { icon: User, label: "Compte", id: "account", path: "/account" },
@@ -17,7 +17,7 @@ export default function MobileNav() {
 
   const getActiveTab = () => {
     if (pathname === "/") return "home"
-    if (pathname === "/sourcing") return "sourcing"
+    if (pathname === "/boutique-noel") return "sourcing"
     if (pathname === "/feed") return "feed"
     if (pathname === "/notifications") return "notifications"
     if (pathname === "/account") return "account"
