@@ -71,72 +71,82 @@ export function MobileHeader() {
   }
 
   return (
-    <header className="bg-white border-b border-border sticky top-0 z-50">
-      <div className="px-4 py-3 flex flex-col">
-        <div className="flex items-center justify-between mb-3">
-          {/* Logo */}
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push("/")}>
-            <div className="w-8 h-8 bg-brand rounded flex items-center justify-center">
-              <ShoppingCart className="w-5 h-5 text-white" />
+    <>
+      <header className="bg-white border-b border-border sticky top-0 z-50">
+        <div className="px-4 py-3 flex flex-col">
+          <div className="flex items-center justify-between mb-3">
+            {/* Logo */}
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push("/")}>
+              <div className="w-8 h-8 bg-brand rounded flex items-center justify-center">
+                <ShoppingCart className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-navy">ADULLLAM</span>
             </div>
-            <span className="text-xl font-bold text-navy">ADULLLAM</span>
-          </div>
 
-          {/* Icons */}
-          <div className="flex items-center gap-3">
-            <button 
-              className="text-brand hover:text-brand/80 transition-colors" 
-              onClick={goToAccount}
-            >
-              {user ? (
-                <div className="relative">
+            {/* Icons */}
+            <div className="flex items-center gap-3">
+              <button 
+                className="text-brand hover:text-brand/80 transition-colors" 
+                onClick={goToAccount}
+              >
+                {user ? (
+                  <div className="relative">
+                    <User className="w-6 h-6" />
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></span>
+                  </div>
+                ) : (
                   <User className="w-6 h-6" />
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></span>
-                </div>
-              ) : (
-                <User className="w-6 h-6" />
-              )}
-            </button>
-            
-            <button 
-              className="relative text-brand hover:text-brand/80 transition-colors" 
-              onClick={handleCartClick}
-            >
-              <ShoppingCart className="w-6 h-6" />
-              {cartClicked && (
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-ping" />
-              )}
-            </button>
+                )}
+              </button>
+              
+              <button 
+                className="relative text-brand hover:text-brand/80 transition-colors" 
+                onClick={handleCartClick}
+              >
+                <ShoppingCart className="w-6 h-6" />
+                {cartClicked && (
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-ping" />
+                )}
+              </button>
 
-            <button className="text-brand hover:text-brand/80 transition-colors" onClick={() => setShowMenu(!showMenu)}>
-              {showMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+              <button className="text-brand hover:text-brand/80 transition-colors" onClick={() => setShowMenu(!showMenu)}>
+                {showMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
           </div>
+
+          {/* Search Bar */}
+          <form className="relative" onSubmit={handleSearch}>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Rechercher en Côte d'Ivoire..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-border bg-neutral-light text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-brand/20"
+            />
+            <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-1">
+              <Search className="w-5 h-5 text-muted-foreground" />
+            </button>
+          </form>
         </div>
+      </header>
 
-        {/* Search Bar */}
-        <form className="relative" onSubmit={handleSearch}>
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Rechercher en Côte d'Ivoire..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-border bg-neutral-light text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-brand/20"
-          />
-          <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-1">
-            <Search className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </form>
-      </div>
+      {/* Overlay - clic pour fermer le menu */}
+      {showMenu && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={() => setShowMenu(false)}
+        />
+      )}
 
-      {/* Menu latéral - CORRIGÉ */}
+      {/* Menu latéral */}
       <div
         className={`fixed top-0 left-0 w-72 h-full bg-white shadow-lg z-50 transform transition-transform duration-300 overflow-y-auto ${
           showMenu ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* Header du menu - SANS LE BOUTON X */}
+        {/* Header du menu - sans bouton X */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-brand rounded flex items-center justify-center">
@@ -144,7 +154,6 @@ export function MobileHeader() {
             </div>
             <span className="text-xl font-bold text-navy">ADULLLAM</span>
           </div>
-          {/* ❌ BOUTON X SUPPRIMÉ */}
         </div>
 
         {/* Menu Items */}
@@ -249,6 +258,6 @@ export function MobileHeader() {
           </div>
         </div>
       </div>
-    </header>
+    </>
   )
 }
