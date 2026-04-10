@@ -26,6 +26,8 @@ interface Order {
   currency: string
   items: OrderItem[]
   createdAt: string
+  couponCode?: string | null
+  couponDiscount?: number
 }
 
 interface Meta {
@@ -143,6 +145,26 @@ export default function OrdersPage() {
             {formatCurrency(order.total)}
           </span>
         </Link>
+      ),
+    },
+    {
+      key: "coupon",
+      header: "Coupon",
+      cell: (order: Order) => (
+        <div className="text-sm">
+          {order.couponCode ? (
+            <div>
+              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                🎫 {order.couponCode}
+              </Badge>
+              <p className="text-xs text-muted-foreground mt-1">
+                -{formatCurrency(order.couponDiscount || 0)}
+              </p>
+            </div>
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          )}
+        </div>
       ),
     },
     {
