@@ -115,6 +115,8 @@ interface Order {
   notes?: string
   createdAt: string
   updatedAt: string
+  couponCode?: string | null
+  couponDiscount?: number
 }
 
 const adminPath = "/admin/dashboard"
@@ -374,7 +376,7 @@ export default function OrderDetailPage() {
 
   const customerName = order.user?.name || `${order.shippingInfo.firstName} ${order.shippingInfo.lastName}`
 
-  // ✅ CORRECTION : Calculer les frais à partir des items
+  // Calculer les frais à partir des items
   const subtotalFromItems = order.items?.reduce((sum, item) => sum + (item.totalPrice || 0), 0) || 0
   const shippingFromItems = order.items?.reduce((sum, item) => sum + (item.shippingCost || 0), 0) || 0
   const portePorteFromItems = order.items?.reduce((sum, item) => sum + (item.portePorteCost || 0), 0) || 0
@@ -583,7 +585,7 @@ export default function OrderDetailPage() {
 
         {/* Order Summary and Customer Info */}
         <div className="grid gap-6 lg:grid-cols-2 mb-6">
-          {/* Order Summary - CORRIGÉ */}
+          {/* Order Summary */}
           <Card>
             <CardHeader>
               <CardTitle>Récapitulatif</CardTitle>
@@ -602,6 +604,15 @@ export default function OrderDetailPage() {
                   <span className="text-muted-foreground">Porte-à-porte</span>
                   <span>{formatCurrency(portePorteFromItems)}</span>
                 </div>
+                {/* 🔥 COUPON APPLIQUÉ */}
+                {order.couponCode && (
+                  <div className="flex justify-between text-green-600">
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      🎫 Coupon {order.couponCode}
+                    </span>
+                    <span>-{formatCurrency(order.couponDiscount || 0)}</span>
+                  </div>
+                )}
                 {order.discount > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span className="text-muted-foreground">Réduction</span>
@@ -658,6 +669,28 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Coupon Information Card (optionnel) */}
+        {order.couponCode && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>🎫 Code promo</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-between items-center">
+                <div>
+                  <Badge variant="secondary" className="bg-green-100 text-green-800 text-lg px-3 py-1">
+                    {order.couponCode}
+                  </Badge>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Réduction de {formatCurrency(order.couponDiscount || 0)} appliquée
+                  </p>
+                </div>
+                <Tag className="h-8 w-8 text-green-600" />
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Shipping Address */}
         <Card className="mb-6">
