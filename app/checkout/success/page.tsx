@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Header } from "@/components/header";
@@ -14,7 +15,8 @@ import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter";
 const brandColor = "#2B4F3C";
 const softBg = "#F8FAF9";
 
-export default function CheckoutSuccessPage() {
+// Composant séparé qui utilise useSearchParams
+function CheckoutSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { formatPrice } = useCurrencyFormatter();
@@ -287,5 +289,21 @@ export default function CheckoutSuccessPage() {
       <Footer />
       <div className="lg:hidden"><MobileNav /></div>
     </div>
+  );
+}
+
+// Page principale avec Suspense boundary
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: softBg }}>
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3" style={{ color: brandColor }} />
+          <p className="text-sm text-gray-500">Chargement...</p>
+        </div>
+      </div>
+    }>
+      <CheckoutSuccessContent />
+    </Suspense>
   );
 }
