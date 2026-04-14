@@ -32,7 +32,7 @@ function PaymentCallbackContent() {
           setStatus('success');
           setMessage('Votre paiement a été confirmé avec succès !');
           setTimeout(() => {
-            router.push('/orders');
+            router.push('/account/orders');  // ← MODIFIÉ
           }, 3000);
         } else {
           setStatus('error');
