@@ -112,6 +112,12 @@ export default function NotificationsPage() {
     }
   }, [fetchWithAuth])
 
+  const refreshNotifications = useCallback(() => {
+    setPage(1)
+    setHasMore(true)
+    loadNotifications(1, true)
+  }, []) // ← Dépendances vides pour éviter boucle infinie
+
   const markAllAsRead = useCallback(async () => {
     try {
       const response = await fetchWithAuth('/api/notifications', {
@@ -119,8 +125,7 @@ export default function NotificationsPage() {
       })
       
       if (response.ok) {
-        // 🔥 FORCER LE REACHARGEMENT COMPLET DES NOTIFICATIONS
-        await refreshNotifications()
+        refreshNotifications()
         toast.success("Toutes les notifications marquées comme lues")
       } else {
         toast.error("Erreur lors du marquage")
@@ -150,12 +155,6 @@ export default function NotificationsPage() {
       toast.error("Erreur lors de la suppression")
     }
   }, [fetchWithAuth, notifications])
-
-  const refreshNotifications = useCallback(async () => {
-    setPage(1)
-    setHasMore(true)
-    await loadNotifications(1, true)
-  }, [loadNotifications])
 
   // 🔥 MARQUAGE AUTO DES NOTIFICATIONS VISIBLES (SCROLL)
   useEffect(() => {
@@ -205,12 +204,14 @@ export default function NotificationsPage() {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user, refreshNotifications]);
 
+  // Chargement initial
   useEffect(() => {
     if (user) {
       refreshNotifications()
     }
-  }, [user, filter]) // refreshNotifications n'est plus dans les dépendances pour éviter boucle infinie
+  }, [user, filter]) // Seulement quand user ou filter change
 
+  // Scroll infini
   useEffect(() => {
     if (!hasMore || isLoading || !user) return
     
