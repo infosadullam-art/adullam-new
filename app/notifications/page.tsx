@@ -1,4 +1,3 @@
-// app/notifications/page.tsx
 "use client"
 
 import { Header } from "@/components/header"
@@ -6,7 +5,7 @@ import { MobileHeader } from "@/components/mobile-header"
 import MobileNav from "@/components/mobile-nav"
 import { Footer } from "@/components/footer"
 import { Bell, Check, Trash2, RefreshCw } from "lucide-react"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useAuth } from "@/lib/admin/auth-context"
 import { useApi } from "@/hooks/useApi"
 import { format } from "date-fns"
@@ -34,6 +33,7 @@ export default function NotificationsPage() {
   const [hasMore, setHasMore] = useState(false)
   const [page, setPage] = useState(1)
   const [unreadCount, setUnreadCount] = useState(0)
+  const observerRef = useRef<IntersectionObserver | null>(null)
 
   const loadNotifications = useCallback(async (pageToLoad: number, reset = false) => {
     if (!user) return
@@ -51,32 +51,26 @@ export default function NotificationsPage() {
       console.log("📦 API Response:", result)
       
       if (result.success) {
-        // ✅ Extraire les données de result.data
         const responseData = result.data || result
         
         let newNotifications: Notification[] = []
         let paginationData = {}
         let statsData = {}
         
-        // ✅ Vérifier la structure correcte
         if (responseData && typeof responseData === 'object') {
-          // Structure: { data: [], pagination: {}, stats: {} }
           if (responseData.data && Array.isArray(responseData.data)) {
             newNotifications = responseData.data
             paginationData = responseData.pagination || {}
             statsData = responseData.stats || {}
           } 
-          // Structure simple: []
           else if (Array.isArray(responseData)) {
             newNotifications = responseData
           }
-          // Structure alternative: { notifications: [] }
           else if (responseData.notifications && Array.isArray(responseData.notifications)) {
             newNotifications = responseData.notifications
             paginationData = responseData.pagination || {}
             statsData = responseData.stats || {}
           }
-          // Structure directement dans result.data
           else if (Array.isArray(result.data)) {
             newNotifications = result.data
           }
@@ -167,11 +161,66 @@ export default function NotificationsPage() {
     loadNotifications(1, true)
   }, [loadNotifications])
 
+  // 🔥 MARQUAGE AUTO DES NOTIFICATIONS VISIBLES (SCROLL)
   useEffect(() => {
-    if (user) {
-      refreshNotifications()
+    if (!notifications.length) return;
+    
+    // Nettoyer l'ancien observer
+    if (observerRef.current) {
+      observerRef.current.disconnect();
     }
-  }, [user, filter, refreshNotifications])
+    
+    // Créer un nouvel observer
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.getAttribute('data-notification-id');
+            const notification = notifications.find(n => n.id === id);
+            if (notification && !notification.read) {
+              markAsRead(id!);
+            }
+          }
+        });
+      },
+      { threshold: 0.3 } // 30% visible pour marquer comme lu
+    );
+    
+    // Observer tous les éléments
+    const elements = document.querySelectorAll('[data-notification-id]');
+    elements.forEach(el => observerRef.current?.observe(el));
+    
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [notifications, markAsRead]);
+
+  // 🔥 RECHARGEMENT QUAND L'UTILISATEUR REVIENT SUR L'ONGLET
+  useEffect(() => {
+    if (!user) return;
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshNotifications();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [user, refreshNotifications]);
+
+  // 🔥 RECHARGEMENT PERIODIQUE TOUTES LES 30 SECONDES
+  useEffect(() => {
+    if (!user) return;
+    
+    const interval = setInterval(() => {
+      refreshNotifications();
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [user, refreshNotifications]);
 
   useEffect(() => {
     if (!hasMore || isLoading || !user) return
@@ -284,6 +333,7 @@ export default function NotificationsPage() {
             {filteredNotifications.map((notification) => (
               <div
                 key={notification.id}
+                data-notification-id={notification.id}
                 className={`bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer ${
                   !notification.read ? 'border-l-4 border-brand' : 'opacity-80'
                 }`}
