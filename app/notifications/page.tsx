@@ -119,17 +119,17 @@ export default function NotificationsPage() {
       })
       
       if (response.ok) {
-        setNotifications(prev =>
-          prev.map(n => ({ ...n, read: true }))
-        )
-        setUnreadCount(0)
+        // 🔥 FORCER LE REACHARGEMENT COMPLET DES NOTIFICATIONS
+        await refreshNotifications()
         toast.success("Toutes les notifications marquées comme lues")
+      } else {
+        toast.error("Erreur lors du marquage")
       }
     } catch (error) {
       console.error("❌ Erreur marquage tout lu:", error)
       toast.error("Erreur lors du marquage")
     }
-  }, [fetchWithAuth])
+  }, [fetchWithAuth, refreshNotifications])
 
   const deleteNotification = useCallback(async (id: string) => {
     try {
@@ -151,22 +151,20 @@ export default function NotificationsPage() {
     }
   }, [fetchWithAuth, notifications])
 
-  const refreshNotifications = useCallback(() => {
+  const refreshNotifications = useCallback(async () => {
     setPage(1)
     setHasMore(true)
-    loadNotifications(1, true)
+    await loadNotifications(1, true)
   }, [loadNotifications])
 
   // 🔥 MARQUAGE AUTO DES NOTIFICATIONS VISIBLES (SCROLL)
   useEffect(() => {
     if (!notifications.length) return;
     
-    // Nettoyer l'ancien observer
     if (observerRef.current) {
       observerRef.current.disconnect();
     }
     
-    // Créer un nouvel observer
     observerRef.current = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -176,15 +174,13 @@ export default function NotificationsPage() {
             if (notification && !notification.read) {
               markAsRead(id!);
             }
-            // Une fois marquée, on arrête de l'observer
             observerRef.current?.unobserve(entry.target);
           }
         });
       },
-      { threshold: 0.1 } // 10% visible suffit
+      { threshold: 0.1 }
     );
     
-    // Observer tous les éléments
     const elements = document.querySelectorAll('[data-notif-id]');
     elements.forEach(el => observerRef.current?.observe(el));
     
@@ -213,7 +209,7 @@ export default function NotificationsPage() {
     if (user) {
       refreshNotifications()
     }
-  }, [user, filter, refreshNotifications])
+  }, [user, filter]) // refreshNotifications n'est plus dans les dépendances pour éviter boucle infinie
 
   useEffect(() => {
     if (!hasMore || isLoading || !user) return
