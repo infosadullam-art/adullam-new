@@ -70,19 +70,19 @@ export function MobileHeader() {
     setShowMenu(false)
   }
 
-  // 🔥 Fonctions pour les redirections
+  // 🔥 Redirections vers /account (pas vers des sous-pages)
   const goToOrders = () => {
-    router.push("/account/orders")
+    router.push("/account")
     setShowMenu(false)
   }
 
   const goToFavorites = () => {
-    router.push("/account/wishlist")
+    router.push("/account")
     setShowMenu(false)
   }
 
   const goToHelp = () => {
-    router.push("/account/help")
+    router.push("/account")
     setShowMenu(false)
   }
 
@@ -218,7 +218,7 @@ export function MobileHeader() {
             </>
           )}
 
-          {/* Vos commandes - redirige vers /account/orders */}
+          {/* Vos commandes - redirige vers /account */}
           <button
             className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-light transition-colors"
             onClick={goToOrders}
@@ -227,7 +227,7 @@ export function MobileHeader() {
             <span>Vos commandes</span>
           </button>
 
-          {/* Favoris - redirige vers /account/wishlist */}
+          {/* Favoris - redirige vers /account */}
           <button
             className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-light transition-colors"
             onClick={goToFavorites}
@@ -236,7 +236,7 @@ export function MobileHeader() {
             <span>Favoris</span>
           </button>
 
-          {/* Besoin d'aide - redirige vers /account/help */}
+          {/* Besoin d'aide - redirige vers /account */}
           <button
             className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-light transition-colors"
             onClick={goToHelp}
