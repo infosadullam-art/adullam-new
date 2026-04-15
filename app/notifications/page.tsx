@@ -48,8 +48,6 @@ export default function NotificationsPage() {
       const response = await fetchWithAuth(`/api/notifications?${params.toString()}`)
       const result = await response.json()
       
-      console.log("📦 API Response:", result)
-      
       if (result.success) {
         const responseData = result.data || result
         
@@ -75,8 +73,6 @@ export default function NotificationsPage() {
             newNotifications = result.data
           }
         }
-        
-        console.log("✅ Notifications extraites:", newNotifications.length)
         
         if (reset) {
           setNotifications(newNotifications)
@@ -175,19 +171,21 @@ export default function NotificationsPage() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            const id = entry.target.getAttribute('data-notification-id');
+            const id = entry.target.getAttribute('data-notif-id');
             const notification = notifications.find(n => n.id === id);
             if (notification && !notification.read) {
               markAsRead(id!);
             }
+            // Une fois marquée, on arrête de l'observer
+            observerRef.current?.unobserve(entry.target);
           }
         });
       },
-      { threshold: 0.3 } // 30% visible pour marquer comme lu
+      { threshold: 0.1 } // 10% visible suffit
     );
     
     // Observer tous les éléments
-    const elements = document.querySelectorAll('[data-notification-id]');
+    const elements = document.querySelectorAll('[data-notif-id]');
     elements.forEach(el => observerRef.current?.observe(el));
     
     return () => {
@@ -211,16 +209,11 @@ export default function NotificationsPage() {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user, refreshNotifications]);
 
-  // 🔥 RECHARGEMENT PERIODIQUE TOUTES LES 30 SECONDES
   useEffect(() => {
-    if (!user) return;
-    
-    const interval = setInterval(() => {
-      refreshNotifications();
-    }, 30000);
-    
-    return () => clearInterval(interval);
-  }, [user, refreshNotifications]);
+    if (user) {
+      refreshNotifications()
+    }
+  }, [user, filter, refreshNotifications])
 
   useEffect(() => {
     if (!hasMore || isLoading || !user) return
@@ -333,11 +326,10 @@ export default function NotificationsPage() {
             {filteredNotifications.map((notification) => (
               <div
                 key={notification.id}
-                data-notification-id={notification.id}
+                data-notif-id={notification.id}
                 className={`bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer ${
                   !notification.read ? 'border-l-4 border-brand' : 'opacity-80'
                 }`}
-                onClick={() => !notification.read && markAsRead(notification.id)}
               >
                 <div className="p-4 flex gap-4">
                   <div className="flex-shrink-0">
