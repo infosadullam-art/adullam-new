@@ -70,6 +70,22 @@ export function MobileHeader() {
     setShowMenu(false)
   }
 
+  // 🔥 Fonctions pour les redirections
+  const goToOrders = () => {
+    router.push("/account/orders")
+    setShowMenu(false)
+  }
+
+  const goToFavorites = () => {
+    router.push("/account/wishlist")
+    setShowMenu(false)
+  }
+
+  const goToHelp = () => {
+    router.push("/account/help")
+    setShowMenu(false)
+  }
+
   return (
     <>
       <header className="bg-white border-b border-border sticky top-0 z-50">
@@ -202,37 +218,31 @@ export function MobileHeader() {
             </>
           )}
 
+          {/* Vos commandes - redirige vers /account/orders */}
           <button
             className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-light transition-colors"
-            onClick={() => {
-              router.push("/orders")
-              setShowMenu(false)
-            }}
+            onClick={goToOrders}
           >
             <Package className="w-5 h-5" />
             <span>Vos commandes</span>
           </button>
 
+          {/* Favoris - redirige vers /account/wishlist */}
           <button
             className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-light transition-colors"
-            onClick={() => {
-              router.push("/favorites")
-              setShowMenu(false)
-            }}
+            onClick={goToFavorites}
           >
             <Heart className="w-5 h-5" />
             <span>Favoris</span>
           </button>
 
+          {/* Besoin d'aide - redirige vers /account/help */}
           <button
             className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-light transition-colors"
-            onClick={() => {
-              router.push("/help")
-              setShowMenu(false)
-            }}
+            onClick={goToHelp}
           >
             <HelpCircle className="w-5 h-5" />
-            <span>Besoins d'aide</span>
+            <span>Besoin d'aide</span>
           </button>
 
           <div className="mt-4 px-4">
