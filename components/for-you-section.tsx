@@ -45,8 +45,6 @@ export function ForYouSection() {
     { main: "Sélections", sub: "pour votre style" },
   ]
 
-  const brandGradient = "linear-gradient(135deg, #2B4F3C 0%, #3A6B4E 100%)"
-
   useEffect(() => {
     const interval = setInterval(() => {
       setTitleIndex((prev) => (prev + 1) % titles.length)
@@ -54,27 +52,42 @@ export function ForYouSection() {
     return () => clearInterval(interval)
   }, [])
 
+  // ✅ Initialiser sessionId uniquement côté client
   useEffect(() => {
+    // Récupérer depuis localStorage
     let stored = localStorage.getItem('adullam_session_id')
     if (!stored) {
       stored = crypto.randomUUID()
       localStorage.setItem('adullam_session_id', stored)
+      console.log(`🔍 [SESSION] Nouveau sessionId créé: ${stored}`)
+    } else {
+      console.log(`🔍 [SESSION] SessionId existant depuis localStorage: ${stored}`)
     }
+    
     setSessionId(stored)
+    
+    // Sauvegarder dans un cookie pour le backend
     document.cookie = `sessionId=${stored}; path=/; max-age=86400; SameSite=Lax`
+    console.log(`🍪 [SESSION] SessionId sauvegardé dans cookie: ${stored}`)
   }, [])
 
+  // ✅ CORRECTION : Utiliser fetchWithAuth et envoyer sessionId
   const trackInteraction = useCallback(async (
     productId: string, 
     type: 'VIEW' | 'CLICK',
     metadata?: any
   ) => {
-    if (!sessionId) return
+    if (!sessionId) {
+      console.warn('⚠️ [TRACK] SessionId non encore initialisé, attente...')
+      return
+    }
     
     try {
       const product = products.find(p => p.id === productId)
       
-      await fetchWithAuth('/api/track', {
+      console.log(`📊 [TRACK] Envoi interaction: ${type} sur ${productId} - Session: ${sessionId}`)
+      
+      const res = await fetchWithAuth('/api/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -92,6 +105,17 @@ export function ForYouSection() {
           }
         })
       })
+      
+      if (!res.ok) {
+        console.error(`❌ Erreur tracking ${type}:`, res.status)
+      } else {
+        console.log(`✅ [TRACK] ${type} envoyé pour ${productId}`)
+      }
+      
+      if (type === 'CLICK' && product?.source === 'random') {
+        console.log(`🎯 CLIQUÉ SUR DÉCOUVERTE: ${product.name}`)
+      }
+      
     } catch (err) {
       console.error('❌ Erreur tracking:', err)
     }
@@ -141,7 +165,10 @@ export function ForYouSection() {
 
   const fetchForYou = useCallback(async (pageToLoad: number) => {
     if (isLoading || !hasMore) return
-    if (!sessionId) return
+    if (!sessionId) {
+      console.warn('⚠️ [FOR-YOU] SessionId non encore initialisé, attente...')
+      return
+    }
     
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
@@ -154,14 +181,19 @@ export function ForYouSection() {
     try {
       const seenIds = products.map(p => p.id).join(',')
       
+      // ✅ CORRECTION: Ajouter sessionId dans l'URL
       let url = `/api/graph/recommendations/for-you?page=${pageToLoad}&limit=24&sessionId=${sessionId}`
       if (seenIds) {
         url += `&seenIds=${seenIds}`
       }
       
+      console.log(`🔍 [FOR-YOU] Fetch page ${pageToLoad}, Session: ${sessionId}, URL: ${url}`)
+      
       const res = await fetchWithAuth(url, {
         signal: abortControllerRef.current.signal,
       })
+
+      console.log(`🔍 [FOR-YOU] Status: ${res.status}`)
 
       if (!res.ok) {
         if (res.status === 401) {
@@ -172,18 +204,27 @@ export function ForYouSection() {
       }
 
       const json = await res.json()
+      console.log(`🔍 [FOR-YOU] Réponse reçue: ${json.data?.length} produits`)
 
       if (!json.success || !Array.isArray(json.data)) {
+        console.error("❌ Format invalide:", json)
         setHasMore(false)
         return
       }
 
       if (json.data.length === 0) {
+        console.log("⚠️ Pas de produits reçus")
         setHasMore(false)
         setIsLoading(false)
         setInitialized(true)
         return
       }
+
+      const predictionCount = json.data.filter((p: any) => p.type === 'prediction').length
+      const diversityCount = json.data.filter((p: any) => p.type === 'diversity').length
+      const trendingCount = json.data.filter((p: any) => p.type === 'trending').length
+      
+      console.log(`📊 Page ${pageToLoad}: ${predictionCount} prédictions, ${diversityCount} diversité, ${trendingCount} tendances`)
 
       const predictions = json.data.map((p: any) => ({
         id: p.id,
@@ -202,7 +243,10 @@ export function ForYouSection() {
       const existingIds = new Set(products.map(p => p.id))
       const newProducts = predictions.filter((p: Product) => !existingIds.has(p.id))
 
+      console.log(`🔍 Nouveaux produits: ${newProducts.length}`)
+
       if (newProducts.length === 0) {
+        console.log('⚠️ Plus de nouveaux produits')
         setHasMore(false)
         setIsLoading(false)
         setInitialized(true)
@@ -244,6 +288,7 @@ export function ForYouSection() {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting && !isLoading && hasMore) {
+          console.log(`👀 Scroll vers page ${page}`)
           fetchForYou(page)
         }
       },
@@ -257,13 +302,15 @@ export function ForYouSection() {
     return () => observer.disconnect()
   }, [page, initialized, hasMore, isLoading, fetchForYou])
 
+  // Créer des groupes de 6 produits
   const rows = []
   for (let i = 0; i < products.length; i += 6) {
     rows.push(products.slice(i, i + 6))
   }
 
-  const bgColors = ["bg-gray-50", "bg-gray-100", "bg-gray-50"]
+  const bgColors = ["bg-gray-100", "bg-gray-200", "bg-gray-300"]
 
+  // 🔥 AJOUT : Si pas de produits et pas de chargement, afficher un message
   if (!isLoading && products.length === 0 && !error) {
     return (
       <section className="w-full bg-white py-12 lg:py-16">
@@ -280,22 +327,28 @@ export function ForYouSection() {
     <section className="w-full bg-white py-12 lg:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
+        {/* TITRE DYNAMIQUE */}
         <div className="mb-8 relative">
           <div className="overflow-hidden">
-            <h2 className="text-2xl lg:text-3xl font-light text-gray-900 transition-all duration-700 ease-in-out">
+            <h2 
+              key={titleIndex}
+              className="text-2xl lg:text-3xl font-light text-gray-900 transition-all duration-700 ease-in-out transform hover:scale-[1.02]"
+            >
               {titles[titleIndex].main}{' '}
               <span className="font-medium text-amber-600 relative inline-block">
                 {titles[titleIndex].sub}
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-amber-200 scale-x-0 group-hover:scale-x-100 transition-transform duration-700 origin-left"></span>
               </span>
             </h2>
           </div>
-          <div className="absolute -bottom-2 left-0 w-16 h-0.5 bg-amber-200"></div>
+          <div className="absolute -bottom-2 left-0 w-16 h-0.5 bg-amber-200 animate-pulse-slow"></div>
           <p className="text-xs text-gray-400 mt-4 flex items-center gap-2">
-            <span className="inline-block w-1 h-1 rounded-full bg-amber-400"></span>
+            <span className="inline-block w-1 h-1 rounded-full bg-amber-400 animate-pulse"></span>
             {products.length} articles • mise à jour en continu
           </p>
         </div>
 
+        {/* GRILLE PRODUITS */}
         <div ref={scrollContainerRef} className="space-y-6">
           {error && (
             <div className="text-center py-8 text-red-400 text-sm">
@@ -315,11 +368,53 @@ export function ForYouSection() {
                         data-product-id={product.id}
                         onClick={() => handleProductClick(product.id)}
                       >
-                        {/* Badge style DealCountdown */}
+                        {/* BADGE SESSION GRAPH */}
+                        {(product.source === 'session_graph' || product.source === 'session') && (
+                          <span className="absolute -top-2 -right-2 z-10 bg-indigo-100 text-indigo-700 text-[8px] font-medium px-1.5 py-0.5 rounded-full border border-indigo-200 animate-pulse">
+                            Pour vous
+                          </span>
+                        )}
+                        
+                        {/* BADGE ALS */}
+                        {product.source === 'als' && (
+                          <span className="absolute -top-2 -right-2 z-10 bg-amber-100 text-amber-700 text-[8px] font-medium px-1.5 py-0.5 rounded-full border border-amber-200">
+                            {Math.round((product.forYouScore || 0.5) * 100)}%
+                          </span>
+                        )}
+                        
+                        {/* BADGE TREND */}
+                        {product.source === 'trend' && (
+                          <span className="absolute -top-2 -right-2 z-10 bg-blue-100 text-blue-700 text-[8px] font-medium px-1.5 py-0.5 rounded-full border border-blue-200">
+                            Tendance
+                          </span>
+                        )}
+                        
+                        {/* BADGE NEW */}
+                        {product.source === 'new' && (
+                          <span className="absolute -top-2 -right-2 z-10 bg-purple-100 text-purple-700 text-[8px] font-medium px-1.5 py-0.5 rounded-full border border-purple-200 animate-pulse">
+                            Nouveau
+                          </span>
+                        )}
+                        
+                        {/* BADGE RANDOM */}
+                        {product.source === 'random' && (
+                          <span className="absolute -top-2 -right-2 z-10 bg-green-100 text-green-700 text-[8px] font-medium px-1.5 py-0.5 rounded-full border border-green-200">
+                            Découverte
+                          </span>
+                        )}
+                        
+                        {/* BADGE POPULAR */}
+                        {product.source === 'popular' && (
+                          <span className="absolute -top-2 -right-2 z-10 bg-orange-100 text-orange-700 text-[8px] font-medium px-1.5 py-0.5 rounded-full border border-orange-200">
+                            Populaire
+                          </span>
+                        )}
+                        
+                        {/* RAISON */}
                         {product.reason && (
-                          <div className="absolute top-2 left-2 z-10 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[9px] font-semibold px-2 py-0.5 rounded-full shadow-md">
+                          <span className="absolute top-2 left-2 z-10 bg-white/80 text-gray-600 text-[7px] px-1.5 py-0.5 rounded-full border border-gray-200">
                             {product.reason}
-                          </div>
+                          </span>
                         )}
                         
                         <ProductCard 
@@ -338,6 +433,7 @@ export function ForYouSection() {
             </div>
           ))}
 
+          {/* LOADER */}
           <div className="w-full">
             <div className="h-8"></div>
             <div ref={observerRef} className="flex justify-center py-4">
@@ -359,6 +455,16 @@ export function ForYouSection() {
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 3s ease-in-out infinite;
+        }
+      `}</style>
     </section>
   )
 }
