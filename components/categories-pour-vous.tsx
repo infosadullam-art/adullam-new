@@ -164,7 +164,8 @@ export function CategoriesPourVous() {
                   href={`/products/${product.id}`}
                   className="group block"
                 >
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden hover:shadow-lg transition-all border border-white/20 hover:border-white/40">
+                  {/* Cadre produit blanc */}
+                  <div className="bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all border border-gray-100">
                     <div className="relative aspect-square p-2">
                       <Image
                         src={product.image}
@@ -174,10 +175,12 @@ export function CategoriesPourVous() {
                       />
                     </div>
                     <div className="p-1.5">
-                      <h3 className="text-[10px] font-medium text-white/90 truncate">
+                      {/* Titre en noir */}
+                      <h3 className="text-[10px] font-medium text-gray-800 truncate">
                         {product.name}
                       </h3>
-                      <p className="text-[9px] font-semibold text-red-400 mt-0.5">
+                      {/* Prix en rouge */}
+                      <p className="text-[9px] font-semibold text-red-500 mt-0.5">
                         {formatPrice(product.price)}
                       </p>
                     </div>
