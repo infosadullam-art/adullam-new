@@ -319,20 +319,20 @@ export function ModeSection() {
         </div>
       )}
 
-      <div className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500">
-        <div className="flex items-center justify-between gap-2">
+      <div className="px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Percent className="w-4 h-4 text-white" />
+            <Percent className="w-5 h-5 text-white" />
             <div>
-              <p className="text-[8px] text-white/80 uppercase tracking-wider">Première commande</p>
-              <p className="text-xs font-bold text-white">-10%</p>
+              <p className="text-[9px] text-white/80 uppercase tracking-wider">Première commande</p>
+              <p className="text-sm font-bold text-white">-10% de réduction</p>
             </div>
           </div>
-          <div className="bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1.5">
-            <code className="text-[10px] font-bold text-white tracking-wider">BIENVENUE10</code>
+          <div className="bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-2">
+            <code className="text-xs font-bold text-white tracking-wider">BIENVENUE10</code>
             <button 
               onClick={copyCouponCode}
-              className="bg-white text-amber-600 px-1.5 py-0.5 rounded text-[8px] font-bold hover:bg-gray-100 transition-colors"
+              className="bg-white text-amber-600 px-2 py-0.5 rounded text-[10px] font-bold hover:bg-gray-100 transition-colors"
             >
               Copier
             </button>
