@@ -6,7 +6,6 @@ import Link from "next/link"
 import { ChevronRight, Sparkles, Clock, Zap, Tag, Truck, Percent, Shirt, Footprints, Baby } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
-// Types
 interface Product {
   id: string
   name: string
@@ -43,7 +42,6 @@ export function ModeSection() {
   const [isLoading, setIsLoading] = useState(true)
   const [timeLeft, setTimeLeft] = useState(13461)
 
-  // Timer pour les offres flash
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0))
@@ -51,21 +49,17 @@ export function ModeSection() {
     return () => clearInterval(timer)
   }, [])
 
-  // Chargement des vrais produits depuis l'API - MÊME APPEL QUE CategoriesMode
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true)
         
-        // === MÊME API que CategoriesMode ===
         const res = await fetch('/api/categories/mode')
         const data = await res.json()
         
-        // Récupérer les produits en promotion pour les flash
         const flashRes = await fetch('/api/products?limit=8&sort=discount')
         const flashData = await flashRes.json()
 
-        // Traitement des produits flash
         let flashList: any[] = []
         if (flashData.data && Array.isArray(flashData.data)) {
           flashList = flashData.data
@@ -73,7 +67,6 @@ export function ModeSection() {
           flashList = flashData.products
         }
 
-        // Formater les produits flash
         const formattedFlashProducts = flashList.slice(0, 4).map((p: any) => ({
           id: p.id,
           name: p.title || p.name || "Produit",
@@ -86,11 +79,9 @@ export function ModeSection() {
 
         setFlashProducts(formattedFlashProducts)
 
-        // === DONNÉES DE LA MÊME API que CategoriesMode ===
         if (data.success && data.data) {
           const modeData = data.data as ModeData
           
-          // Construire les catégories avec les produits reçus
           const categoriesData = [
             {
               id: "men",
@@ -145,6 +136,11 @@ export function ModeSection() {
   const seconds = timeLeft % 60
   const formatTime = (num: number) => String(num).padStart(2, "0")
 
+  const copyCouponCode = () => {
+    navigator.clipboard.writeText("BIENVENUE10")
+    alert("Code promo copié ! -10% sur votre première commande")
+  }
+
   if (isLoading) {
     return (
       <section className="w-full bg-white py-12">
@@ -159,7 +155,6 @@ export function ModeSection() {
 
   return (
     <section className="w-full bg-white">
-      {/* BANNIÈRE FLASH */}
       <div className="relative overflow-hidden">
         <div className="bg-gradient-to-r from-purple-900 via-pink-800 to-amber-800 px-4 py-4">
           <div className="flex items-center justify-between">
@@ -173,7 +168,6 @@ export function ModeSection() {
               </div>
             </div>
             
-            {/* TIMER */}
             <div className="bg-black/30 backdrop-blur-sm rounded-lg px-3 py-1.5 border border-white/20">
               <div className="flex items-center gap-1">
                 <Clock className="w-3 h-3 text-white/70" />
@@ -191,7 +185,6 @@ export function ModeSection() {
           </div>
         </div>
 
-        {/* FILTRES RAPIDES */}
         <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide">
             <button className="bg-gray-900 text-white text-xs px-4 py-2 rounded-full whitespace-nowrap font-medium">
@@ -212,7 +205,6 @@ export function ModeSection() {
           </div>
         </div>
 
-        {/* FLASH PRODUITS */}
         {flashProducts.length > 0 && (
           <div className="px-4 py-4">
             <div className="flex items-center justify-between mb-3">
@@ -260,7 +252,6 @@ export function ModeSection() {
         )}
       </div>
 
-      {/* 3 BLOCS MODE - AVEC LES PRODUITS DE L'API /api/categories/mode */}
       {categories.length > 0 && (
         <div className="px-4 py-6 bg-gray-50">
           <div className="flex items-center justify-between mb-4">
@@ -278,7 +269,6 @@ export function ModeSection() {
             {categories.map((category) => (
               <div key={category.id} className={`${category.bgColor} rounded-xl p-3`}>
                 
-                {/* EN-TÊTE CATÉGORIE */}
                 <Link href={category.href} className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <div className="bg-white p-1.5 rounded-lg shadow-sm">
@@ -292,7 +282,6 @@ export function ModeSection() {
                   <ChevronRight className="w-4 h-4 text-gray-400" />
                 </Link>
 
-                {/* 2 PRODUITS */}
                 <div className="grid grid-cols-2 gap-2">
                   {category.products.map((product) => (
                     <Link
@@ -330,15 +319,23 @@ export function ModeSection() {
         </div>
       )}
 
-      {/* BANDEAU PROMO */}
       <div className="px-4 py-4 bg-gradient-to-r from-amber-500 to-orange-500">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[10px] text-white/80 uppercase tracking-wider">Livraison offerte</p>
-            <p className="text-sm font-bold text-white">Dès 50€ d'achat</p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Percent className="w-5 h-5 text-white" />
+            <div>
+              <p className="text-[10px] text-white/80 uppercase tracking-wider">Première commande</p>
+              <p className="text-sm font-bold text-white">-10% de réduction</p>
+            </div>
           </div>
-          <div className="bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
-            <p className="text-xs font-medium text-white">CODE: MODE24</p>
+          <div className="bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-2">
+            <code className="text-xs font-bold text-white tracking-wider">BIENVENUE10</code>
+            <button 
+              onClick={copyCouponCode}
+              className="bg-white text-amber-600 px-2 py-0.5 rounded text-[10px] font-bold hover:bg-gray-100 transition-colors"
+            >
+              Copier
+            </button>
           </div>
         </div>
       </div>
