@@ -120,14 +120,13 @@ export function HeroSection() {
     </div>
   )
 
-  // ========== VERSION DESKTOP - SEULE LA HAUTEUR EST RÉDUITE ==========
+  // ========== VERSION DESKTOP - IMAGE RÉDUITE EN HAUTEUR ==========
   const DesktopHero = () => (
     <div className="hidden lg:block relative bg-gradient-to-b from-gray-900 to-gray-800 text-white overflow-hidden font-poppins">
       <div className="absolute inset-0 bg-[url('/hero-pattern.svg')] opacity-10" />
       
-      {/* UNIQUEMENT réduction des padding verticaux : py-16 → py-6 */}
       <div className="relative max-w-7xl mx-auto px-8 py-6">
-        <div className="grid grid-cols-2 gap-16 items-center">
+        <div className="grid grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20 w-fit">
               <MapPin className="w-4 h-4 text-amber-400" />
@@ -157,25 +156,26 @@ export function HeroSection() {
             </div>
           </div>
 
+          {/* Image avec hauteur réduite : aspect-square → h-64 */}
           <div className="relative">
-            <div className="relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 border border-white/10">
+            <div className="relative h-64 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 border border-white/10">
               <Image
                 src="/hero-image.jpg"
                 alt="Adulam"
                 width={600}
-                height={600}
+                height={256}
                 className="object-cover w-full h-full"
                 priority
               />
-              <div className="absolute bottom-6 right-6 bg-amber-400 rounded-lg px-5 py-4">
-                <p className="text-gray-900 font-bold text-xl">-30%</p>
-                <p className="text-gray-800 text-xs">Première commande</p>
+              <div className="absolute bottom-4 right-4 bg-amber-400 rounded-lg px-4 py-2">
+                <p className="text-gray-900 font-bold text-lg">-30%</p>
+                <p className="text-gray-800 text-[10px]">Première commande</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-6 mt-16 pt-8 border-t border-white/10">
+        <div className="grid grid-cols-4 gap-6 mt-12 pt-6 border-t border-white/10">
           <div className="flex items-center gap-3">
             <div className="bg-amber-400/20 p-2 rounded-lg">
               <Truck className="w-5 h-5 text-amber-400" />
