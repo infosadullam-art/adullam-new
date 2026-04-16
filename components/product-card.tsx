@@ -3,7 +3,6 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
-import { useEffect, useState } from "react" // ✅ AJOUT POUR DEBUG
 
 interface ProductCardProps {
   product: {
@@ -21,22 +20,12 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const { formatPrice, getCurrencySymbol } = useCurrencyFormatter()
   
-  // ✅ DEBUG - VOIR CE QUI ARRIVE
-  console.log("🎯 ProductCard reçu:", {
-    id: product.id,
-    name: product.name,
-    priceUSD: product.priceUSD,
-    type: typeof product.priceUSD
-  })
-
   // ✅ Protection si priceUSD est undefined ou null
   const price = typeof product.priceUSD === 'number' && !isNaN(product.priceUSD) 
     ? product.priceUSD 
     : 0
 
-  // ✅ DEBUG - VOIR CE QUE RENVOIE formatPrice
   const formattedPrice = formatPrice(price)
-  console.log("💰 Prix formaté:", formattedPrice)
 
   return (
     <Link href={`/products/${product.id}`} className="block group">
@@ -100,14 +89,10 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
 
-          {/* PRIX */}
+          {/* PRIX EN ROUGE */}
           <div className="mt-2">
-            <p className="text-sm lg:text-base font-bold text-gray-900">
+            <p className="text-sm lg:text-base font-bold text-red-500">
               {formattedPrice}
-            </p>
-            {/* ✅ DEBUG VISUEL - À SUPPRIMER PLUS TARD */}
-            <p className="text-[8px] text-gray-300">
-              USD: ${price.toFixed(2)}
             </p>
           </div>
         </div>
