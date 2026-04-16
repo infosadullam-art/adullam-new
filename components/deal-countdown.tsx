@@ -215,7 +215,7 @@ export function DealCountdown() {
       {/* Header */}
       <div className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-4">
-          {/* Mobile - inchangé */}
+          {/* Mobile */}
           <div className="lg:hidden">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -260,7 +260,7 @@ export function DealCountdown() {
             </div>
           </div>
 
-          {/* Desktop - inchangé */}
+          {/* Desktop */}
           <div className="hidden lg:flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="p-2.5 rounded-xl" style={{ background: brandLight }}>
@@ -309,8 +309,8 @@ export function DealCountdown() {
 
       {/* Produits */}
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-6">
-        {/* Mobile: 2 colonnes, Desktop: 2 blocs côte à côte */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-6">
+        {/* Mobile: 2 blocs côte à côte (grid-cols-2), Desktop: 2 blocs côte à côte */}
+        <div className="grid grid-cols-2 gap-3 lg:gap-6">
           
           {/* Bloc 1 - Sélection du moment */}
           <div className="rounded-xl p-3 lg:p-4 transition-all hover:shadow-md" style={{ background: brandLight }}>
@@ -321,7 +321,7 @@ export function DealCountdown() {
               <p className="text-xs text-gray-400 text-center py-4 font-poppins">Aucun produit disponible</p>
             ) : (
               <>
-                {/* Mobile: 2 colonnes (garder l'original) */}
+                {/* Mobile: 2 colonnes (4 produits) */}
                 <div className="grid grid-cols-2 gap-2 lg:hidden">
                   {featuredProducts.slice(0, 4).map((product) => (
                     <ProductCard key={product.id} product={product} />
@@ -346,7 +346,7 @@ export function DealCountdown() {
               <p className="text-xs text-gray-400 text-center py-4 font-poppins">Aucun produit disponible</p>
             ) : (
               <>
-                {/* Mobile: 2 colonnes (garder l'original) */}
+                {/* Mobile: 2 colonnes (4 produits) */}
                 <div className="grid grid-cols-2 gap-2 lg:hidden">
                   {bestSellers.slice(0, 4).map((product) => (
                     <ProductCard key={product.id} product={product} />
