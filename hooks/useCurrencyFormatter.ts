@@ -53,8 +53,8 @@ const EXCHANGE_RATES: Record<string, number> = {
 // 💰 SYMBOLES DES DEVISES
 // ============================================
 const CURRENCY_SYMBOLS: Record<string, string> = {
-  // Franc CFA
-  XOF: "CFA", XAF: "CFA",
+  // ✅ CORRECTION : CFA → FCFA
+  XOF: "FCFA", XAF: "FCFA",
   
   // Afrique Centrale
   CDF: "FC",
@@ -126,13 +126,18 @@ export const useCurrencyFormatter = () => {
         maximumFractionDigits: fractionDigits
       }).format(convertedValue)
     } catch (e) {
-      // Fallback si la locale n'est pas supportée
-      return `${CURRENCY_SYMBOLS[safeCurrency] || safeCurrency} ${convertedValue.toFixed(fractionDigits)}`
+      // ✅ CORRECTION : Utiliser FCFA au lieu de CFA
+      const symbol = safeCurrency === 'XOF' || safeCurrency === 'XAF' ? 'FCFA' : (CURRENCY_SYMBOLS[safeCurrency] || safeCurrency)
+      return `${symbol} ${convertedValue.toFixed(fractionDigits)}`
     }
   }
 
   // Obtenir le symbole de la devise
   const getCurrencySymbol = () => {
+    // ✅ CORRECTION : Retourner FCFA au lieu de CFA
+    if (safeCurrency === 'XOF' || safeCurrency === 'XAF') {
+      return 'FCFA'
+    }
     return CURRENCY_SYMBOLS[safeCurrency] || safeCurrency
   }
 
@@ -161,7 +166,7 @@ export const useCurrencyFormatter = () => {
     }
   }
 
-  // Formater avec le symbole après (ex: "5000 CFA")
+  // Formater avec le symbole après (ex: "5000 FCFA")
   const formatPriceWithSymbolAfter = (usdAmount: any) => {
     const formatted = formatPriceWithoutSymbol(usdAmount)
     const symbol = getCurrencySymbol()
