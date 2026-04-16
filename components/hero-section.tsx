@@ -120,43 +120,43 @@ export function HeroSection() {
     </div>
   )
 
-  // ========== VERSION DESKTOP - IMAGE RÉDUITE EN HAUTEUR ==========
+  // ========== VERSION DESKTOP - FOND MODIFIÉ + TEXTE BLANC ==========
   const DesktopHero = () => (
-    <div className="hidden lg:block relative bg-gradient-to-b from-gray-900 to-gray-800 text-white overflow-hidden font-poppins">
-      <div className="absolute inset-0 bg-[url('/hero-pattern.svg')] opacity-10" />
+    <div className="hidden lg:block relative bg-gradient-to-b from-gray-800 to-gray-900 text-white overflow-hidden font-poppins">
+      <div className="absolute inset-0 bg-[url('/hero-pattern.svg')] opacity-5" />
       
       <div className="relative max-w-7xl mx-auto px-8 py-6">
         <div className="grid grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20 w-fit">
               <MapPin className="w-4 h-4 text-amber-400" />
-              <span className="text-sm font-medium">
+              <span className="text-sm font-medium text-white">
                 Livraison vers {paysActuel.nom} {paysActuel.drapeau}
               </span>
             </div>
 
-            <h1 className="text-5xl font-bold tracking-tight">
+            <h1 className="text-5xl font-bold tracking-tight text-white">
               Achetez direct
               <br />
               <span className="text-amber-400">des usines du monde entier</span>
             </h1>
 
-            <p className="text-lg text-gray-300 max-w-lg">
+            {/* Texte en blanc pur */}
+            <p className="text-lg text-white max-w-lg">
               Adulam connecte les acheteurs africains aux meilleurs fournisseurs de Chine, 
               Dubaï, Turquie, USA et Europe.
             </p>
 
             <div className="flex flex-wrap gap-3">
-              <span className="text-sm text-gray-400">Fournisseurs :</span>
-              <span className="text-sm bg-white/10 px-3 py-1.5 rounded-full">🇨🇳 Chine</span>
-              <span className="text-sm bg-white/10 px-3 py-1.5 rounded-full">🇦🇪 Dubaï</span>
-              <span className="text-sm bg-white/10 px-3 py-1.5 rounded-full">🇹🇷 Turquie</span>
-              <span className="text-sm bg-white/10 px-3 py-1.5 rounded-full">🇺🇸 USA</span>
-              <span className="text-sm bg-white/10 px-3 py-1.5 rounded-full">🇪🇺 Europe</span>
+              <span className="text-sm text-white/70">Fournisseurs :</span>
+              <span className="text-sm bg-white/10 px-3 py-1.5 rounded-full text-white">🇨🇳 Chine</span>
+              <span className="text-sm bg-white/10 px-3 py-1.5 rounded-full text-white">🇦🇪 Dubaï</span>
+              <span className="text-sm bg-white/10 px-3 py-1.5 rounded-full text-white">🇹🇷 Turquie</span>
+              <span className="text-sm bg-white/10 px-3 py-1.5 rounded-full text-white">🇺🇸 USA</span>
+              <span className="text-sm bg-white/10 px-3 py-1.5 rounded-full text-white">🇪🇺 Europe</span>
             </div>
           </div>
 
-          {/* Image avec hauteur réduite : aspect-square → h-64 */}
           <div className="relative">
             <div className="relative h-64 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 border border-white/10">
               <Image
@@ -181,8 +181,8 @@ export function HeroSection() {
               <Truck className="w-5 h-5 text-amber-400" />
             </div>
             <div>
-              <p className="font-medium">Livraison porte-à-porte</p>
-              <p className="text-sm text-gray-400">50j • 15j • 7j</p>
+              <p className="font-medium text-white">Livraison porte-à-porte</p>
+              <p className="text-sm text-gray-300">50j • 15j • 7j</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -190,8 +190,8 @@ export function HeroSection() {
               <Shield className="w-5 h-5 text-amber-400" />
             </div>
             <div>
-              <p className="font-medium">Paiement à la livraison</p>
-              <p className="text-sm text-gray-400">Mobile Money, Carte</p>
+              <p className="font-medium text-white">Paiement sécurisé</p>
+              <p className="text-sm text-gray-300">Mobile Money, Carte</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -199,8 +199,8 @@ export function HeroSection() {
               <Clock className="w-5 h-5 text-amber-400" />
             </div>
             <div>
-              <p className="font-medium">Suivi en temps réel</p>
-              <p className="text-sm text-gray-400">De l'usine à votre porte</p>
+              <p className="font-medium text-white">Suivi en temps réel</p>
+              <p className="text-sm text-gray-300">De l'usine à votre porte</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -208,8 +208,8 @@ export function HeroSection() {
               <span className="text-amber-400 font-bold text-lg">-50%</span>
             </div>
             <div>
-              <p className="font-medium">Jusqu'à -50%</p>
-              <p className="text-sm text-gray-400">Offres flash</p>
+              <p className="font-medium text-white">Jusqu'à -50%</p>
+              <p className="text-sm text-gray-300">Offres flash</p>
             </div>
           </div>
         </div>
