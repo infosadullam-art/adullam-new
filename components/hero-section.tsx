@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { MapPin, ChevronRight, Truck, Shield, Clock } from "lucide-react" // ✅ TOUS LES IMPORTS
+import { MapPin, ChevronRight, Truck, Shield, Clock } from "lucide-react"
 import { useLocale } from "@/context/LocaleProvider"
 import { useState, useEffect } from "react"
 
@@ -54,10 +54,9 @@ export function HeroSection() {
     return () => clearInterval(timer)
   }, [])
 
-  // ========== VERSION MOBILE - SLIDER 1/3 HAUTEUR, ÉPURÉ ==========
+  // ========== VERSION MOBILE - AVEC POLICE POPPINS ==========
   const MobileHero = () => (
-    <div className="lg:hidden bg-white">
-      {/* SLIDER - 1/3 DE LA HAUTEUR */}
+    <div className="lg:hidden bg-white font-poppins">
       <div className="relative h-[160px] overflow-hidden">
         {heroSlides.map((slide, index) => (
           <div
@@ -66,7 +65,6 @@ export function HeroSection() {
               index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
             }`}
           >
-            {/* IMAGE DE FOND - SIMPLE OVERLAY LÉGER */}
             <div className="absolute inset-0">
               <Image
                 src={slide.image}
@@ -78,10 +76,8 @@ export function HeroSection() {
               <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
             </div>
 
-            {/* CONTENU SLIDE - COMPACT */}
             <div className="relative z-20 h-full flex items-center px-6">
               <div className="space-y-1.5">
-                {/* BADGE PAYS - TRÈS DISCRET */}
                 <div className="inline-flex items-center gap-1 bg-black/30 backdrop-blur-sm px-2 py-1 rounded-full border border-white/20 w-fit">
                   <MapPin className="w-3 h-3 text-white" />
                   <span className="text-[10px] font-medium text-white">
@@ -89,17 +85,14 @@ export function HeroSection() {
                   </span>
                 </div>
 
-                {/* TITRE COMPACT */}
                 <h1 className="text-lg font-bold text-white">
                   {slide.title}
                 </h1>
                 
-                {/* SOUS-TITRE */}
                 <p className="text-xs text-white/80">
                   {slide.subtitle}
                 </p>
 
-                {/* CTA LÉGER */}
                 <Link
                   href={`/categorie/${slide.id}`}
                   className="inline-flex items-center gap-1 bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full border border-white/30"
@@ -112,16 +105,13 @@ export function HeroSection() {
           </div>
         ))}
 
-        {/* INDICATEURS SLIDER - MINIMALISTES */}
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 flex gap-1.5">
           {heroSlides.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
               className={`h-1 rounded-full transition-all ${
-                index === currentSlide
-                  ? "w-6 bg-white"
-                  : "w-1.5 bg-white/50"
+                index === currentSlide ? "w-6 bg-white" : "w-1.5 bg-white/50"
               }`}
             />
           ))}
@@ -130,14 +120,13 @@ export function HeroSection() {
     </div>
   )
 
-  // ========== VERSION DESKTOP - INCHANGÉE ==========
+  // ========== VERSION DESKTOP - AVEC POLICE POPPINS ==========
   const DesktopHero = () => (
-    <div className="hidden lg:block relative bg-gradient-to-b from-gray-900 to-gray-800 text-white overflow-hidden">
+    <div className="hidden lg:block relative bg-gradient-to-b from-gray-900 to-gray-800 text-white overflow-hidden font-poppins">
       <div className="absolute inset-0 bg-[url('/hero-pattern.svg')] opacity-10" />
       
       <div className="relative max-w-7xl mx-auto px-8 py-16">
         <div className="grid grid-cols-2 gap-16 items-center">
-          {/* COLONNE GAUCHE */}
           <div className="space-y-8">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20 w-fit">
               <MapPin className="w-4 h-4 text-amber-400" />
@@ -167,7 +156,6 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* COLONNE DROITE - IMAGE */}
           <div className="relative">
             <div className="relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 border border-white/10">
               <Image
@@ -186,7 +174,6 @@ export function HeroSection() {
           </div>
         </div>
 
-        {/* AVANTAGES DESKTOP */}
         <div className="grid grid-cols-4 gap-6 mt-16 pt-8 border-t border-white/10">
           <div className="flex items-center gap-3">
             <div className="bg-amber-400/20 p-2 rounded-lg">
