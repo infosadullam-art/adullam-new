@@ -50,8 +50,6 @@ export function CategoriesPourVous() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // Tu peux changer "cuisine" par n'importe quelle catégorie
-        // Exemples: "sport", "beauté", "electronique", "mode"
         const res = await fetch('/api/trending/cuisine?limit=4')
         const data = await res.json()
         
@@ -113,10 +111,10 @@ export function CategoriesPourVous() {
   // Loading
   if (isLoading) {
     return (
-      <div className="w-full bg-white">
+      <div className="w-full bg-gradient-to-br from-gray-900 to-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
           <div className="flex justify-center items-center h-32">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-600" />
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-500" />
           </div>
         </div>
       </div>
@@ -129,7 +127,7 @@ export function CategoriesPourVous() {
   }
 
   return (
-    <section className="w-full bg-white">
+    <section className="w-full bg-gradient-to-br from-gray-900 via-gray-800 to-indigo-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         
         {/* TITRE */}
@@ -137,17 +135,17 @@ export function CategoriesPourVous() {
           <div className="flex items-center gap-2">
             <div className="w-1 h-5 bg-amber-500 rounded-full"></div>
             <div>
-              <h2 className="text-sm font-medium text-gray-800">
+              <h2 className="text-sm font-medium text-white">
                 Tendances Cuisine 🔥
               </h2>
-              <p className="text-[9px] text-gray-400 mt-0.5">
+              <p className="text-[9px] text-white/60 mt-0.5">
                 Les produits les plus populaires
               </p>
             </div>
           </div>
           <Link
             href="/categories/cuisine"
-            className="text-[10px] text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-0.5"
+            className="text-[10px] text-white/50 hover:text-white transition-colors flex items-center gap-0.5"
           >
             Voir tout
             <ChevronRight className="w-3 h-3" />
@@ -166,7 +164,7 @@ export function CategoriesPourVous() {
                   href={`/products/${product.id}`}
                   className="group block"
                 >
-                  <div className="bg-gray-50 rounded-lg overflow-hidden hover:shadow-sm transition-all border border-gray-100">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden hover:shadow-lg transition-all border border-white/20 hover:border-white/40">
                     <div className="relative aspect-square p-2">
                       <Image
                         src={product.image}
@@ -176,10 +174,10 @@ export function CategoriesPourVous() {
                       />
                     </div>
                     <div className="p-1.5">
-                      <h3 className="text-[10px] font-medium text-gray-700 truncate">
+                      <h3 className="text-[10px] font-medium text-white/90 truncate">
                         {product.name}
                       </h3>
-                      <p className="text-[9px] font-semibold text-amber-600 mt-0.5">
+                      <p className="text-[9px] font-semibold text-red-400 mt-0.5">
                         {formatPrice(product.price)}
                       </p>
                     </div>
@@ -193,7 +191,7 @@ export function CategoriesPourVous() {
           <div className="col-span-2">
             <div 
               ref={slideContainerRef}
-              className="relative bg-gray-50 rounded-lg overflow-hidden border border-gray-100 w-full"
+              className="relative rounded-lg overflow-hidden w-full"
               style={{ height: slideHeight ? `${slideHeight}px` : 'auto' }}
             >
               {slides.map((slide, index) => (
@@ -210,7 +208,7 @@ export function CategoriesPourVous() {
                     fill
                     className="object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                   <div className="absolute bottom-2 left-2 right-2">
                     <h3 className="text-xs font-medium text-white line-clamp-1">{slide.title}</h3>
                     <span className="text-[8px] text-white/80 flex items-center gap-0.5 mt-0.5">
@@ -228,7 +226,7 @@ export function CategoriesPourVous() {
                     key={index}
                     onClick={() => setCurrentSlide(index)}
                     className={`w-1 h-1 rounded-full transition-all ${
-                      index === currentSlide ? "w-2 bg-white" : "bg-white/40"
+                      index === currentSlide ? "w-2 bg-amber-400" : "bg-white/40"
                     }`}
                   />
                 ))}
