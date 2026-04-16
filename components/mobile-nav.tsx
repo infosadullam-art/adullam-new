@@ -67,7 +67,7 @@ export default function MobileNav() {
   return (
     <div className="lg:hidden">
       <nav
-        className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50"
+        className="fixed bottom-0 left-0 right-0 bg-[#1a1a1a] border-t border-[#2a2a2a] z-50"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="grid grid-cols-5 h-14">
@@ -85,7 +85,7 @@ export default function MobileNav() {
                 <div className="relative">
                   <Icon 
                     className={`w-5 h-5 transition-colors duration-75 ${
-                      isActive ? "text-[#C72C1C]" : "text-gray-500"
+                      isActive ? "text-[#C72C1C]" : "text-[#6b6b6b]"
                     }`} 
                   />
                   {showBadge && (
@@ -96,7 +96,7 @@ export default function MobileNav() {
                 </div>
                 <span 
                   className={`text-[10px] font-medium transition-colors duration-75 ${
-                    isActive ? "text-[#C72C1C]" : "text-gray-500"
+                    isActive ? "text-[#C72C1C]" : "text-[#6b6b6b]"
                   }`}
                 >
                   {item.label}
