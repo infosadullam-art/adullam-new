@@ -16,9 +16,9 @@ const pays = {
 }
 
 const heroSlides = [
-  { id: 1, image: "/hero-fashion.jpg", title: "Mode", subtitle: "Collections tendances", badge: "-30%", color: "from-pink-500" },
-  { id: 2, image: "/hero-electronics.jpg", title: "Électronique", subtitle: "Smartphones & accessoires", badge: "-25%", color: "from-blue-500" },
-  { id: 3, image: "/hero-home.jpg", title: "Maison", subtitle: "Équipez votre intérieur", badge: "-40%", color: "from-emerald-500" },
+  { id: 1, title: "Mode Africaine", subtitle: "Collections tendances", badge: "-30%", color: "from-pink-500 to-rose-600", icon: "👗" },
+  { id: 2, title: "Électronique", subtitle: "Smartphones & accessoires", badge: "-25%", color: "from-blue-500 to-indigo-600", icon: "📱" },
+  { id: 3, title: "Maison & Cuisine", subtitle: "Équipez votre intérieur", badge: "-40%", color: "from-emerald-500 to-teal-600", icon: "🏠" },
 ]
 
 export function HeroSection() {
@@ -43,7 +43,13 @@ export function HeroSection() {
             }`}
           >
             <div className="absolute inset-0">
-              <Image src={slide.image} alt={slide.title} fill className="object-cover" priority={index === 0} />
+              <Image
+                src={`/hero-${slide.id === 1 ? "fashion" : slide.id === 2 ? "electronics" : "home"}.jpg`}
+                alt={slide.title}
+                fill
+                className="object-cover"
+                priority={index === 0}
+              />
               <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
             </div>
             <div className="relative z-20 h-full flex items-center px-6">
@@ -70,7 +76,7 @@ export function HeroSection() {
     </div>
   )
 
-  // ========== DESKTOP - NOUVEAU DESIGN COMPACT ==========
+  // ========== DESKTOP - SANS IMAGES (FONDS COLORÉS) ==========
   const DesktopHero = () => (
     <div className="hidden lg:block bg-white">
       {/* Bandeau promo */}
@@ -80,18 +86,19 @@ export function HeroSection() {
 
       <div className="max-w-7xl mx-auto px-6 py-5">
         <div className="flex gap-6">
-          {/* SLIDER - GAUCHE */}
+          {/* SLIDER - GAUCHE (sans image) */}
           <div className="flex-1 relative h-[280px] rounded-xl overflow-hidden shadow-lg">
             {heroSlides.map((slide, index) => (
               <div
                 key={slide.id}
                 className={`absolute inset-0 transition-opacity duration-500 ${index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"}`}
               >
-                <Image src={slide.image} alt={slide.title} fill className="object-cover" priority={index === 0} />
-                <div className={`absolute inset-0 bg-gradient-to-r ${slide.color} to-black/50`} />
+                <div className={`absolute inset-0 bg-gradient-to-br ${slide.color}`} />
+                <div className="absolute inset-0 bg-black/20" />
                 
                 <div className="relative z-20 h-full flex flex-col justify-center px-10">
-                  <span className="inline-block bg-white text-gray-900 text-sm font-extrabold px-3 py-1 rounded-full w-fit mb-3 shadow-lg">
+                  <span className="text-7xl mb-3">{slide.icon}</span>
+                  <span className="inline-block bg-white/20 backdrop-blur-sm text-white text-sm font-extrabold px-3 py-1 rounded-full w-fit mb-3">
                     {slide.badge}
                   </span>
                   <h2 className="text-4xl font-black text-white drop-shadow-lg">{slide.title}</h2>
@@ -167,14 +174,14 @@ export function HeroSection() {
         {/* Catégories rapides */}
         <div className="flex justify-between gap-4 mt-6 pt-4 border-t border-gray-100">
           {[
-            { name: "Mode", icon: <TrendingUp className="w-4 h-4" />, color: "text-pink-500" },
-            { name: "Électronique", icon: <Zap className="w-4 h-4" />, color: "text-blue-500" },
-            { name: "Maison", icon: <Star className="w-4 h-4" />, color: "text-emerald-500" },
-            { name: "Beauté", icon: <Star className="w-4 h-4" />, color: "text-purple-500" },
-            { name: "Sport", icon: <TrendingUp className="w-4 h-4" />, color: "text-orange-500" },
+            { name: "Mode", icon: "👗", color: "text-pink-500" },
+            { name: "Électronique", icon: "📱", color: "text-blue-500" },
+            { name: "Maison", icon: "🏠", color: "text-emerald-500" },
+            { name: "Beauté", icon: "💄", color: "text-purple-500" },
+            { name: "Sport", icon: "⚽", color: "text-orange-500" },
           ].map((cat) => (
             <button key={cat.name} className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-orange-500 transition">
-              {cat.icon} {cat.name}
+              <span className="text-lg">{cat.icon}</span> {cat.name}
             </button>
           ))}
         </div>
