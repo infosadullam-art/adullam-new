@@ -64,7 +64,7 @@ export function DealCountdown() {
         
         console.log('🔄 Chargement des données...')
         
-        // Appels parallèles aux 3 APIs
+        // Appels parallèles aux 3 APIs (6 produits pour desktop)
         const [featuredRes, bestSellersRes, flashSaleRes] = await Promise.all([
           fetch('/api/deals/featured?limit=6'),
           fetch('/api/deals/best-sellers?limit=6'),
@@ -153,7 +153,7 @@ export function DealCountdown() {
 
   const formatNumber = (num: number) => num.toString().padStart(2, "0")
 
-  // ✅ ProductCard avec typo Poppins et prix en orange/rouge
+  // ✅ ProductCard
   const ProductCard = ({ product }: { product: Product }) => (
     <Link href={`/products/${product.id}`} className="group block">
       <div className="bg-white rounded-lg overflow-hidden hover:shadow-md transition-all duration-300 hover:shadow-lg border border-gray-100">
@@ -309,6 +309,7 @@ export function DealCountdown() {
 
       {/* Produits */}
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-6">
+        {/* Mobile: 2 colonnes, Desktop: 2 blocs côte à côte */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-6">
           
           {/* Bloc 1 - Sélection du moment */}
@@ -319,11 +320,20 @@ export function DealCountdown() {
             {featuredProducts.length === 0 ? (
               <p className="text-xs text-gray-400 text-center py-4 font-poppins">Aucun produit disponible</p>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
-                {featuredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
+              <>
+                {/* Mobile: 2 colonnes (garder l'original) */}
+                <div className="grid grid-cols-2 gap-2 lg:hidden">
+                  {featuredProducts.slice(0, 4).map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+                {/* Desktop: 3 colonnes (6 produits) */}
+                <div className="hidden lg:grid lg:grid-cols-3 gap-3">
+                  {featuredProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              </>
             )}
           </div>
 
@@ -335,11 +345,20 @@ export function DealCountdown() {
             {bestSellers.length === 0 ? (
               <p className="text-xs text-gray-400 text-center py-4 font-poppins">Aucun produit disponible</p>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
-                {bestSellers.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
+              <>
+                {/* Mobile: 2 colonnes (garder l'original) */}
+                <div className="grid grid-cols-2 gap-2 lg:hidden">
+                  {bestSellers.slice(0, 4).map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+                {/* Desktop: 3 colonnes (6 produits) */}
+                <div className="hidden lg:grid lg:grid-cols-3 gap-3">
+                  {bestSellers.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              </>
             )}
           </div>
 
