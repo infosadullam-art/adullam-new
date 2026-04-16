@@ -153,7 +153,7 @@ export function DealCountdown() {
 
   const formatNumber = (num: number) => num.toString().padStart(2, "0")
 
-  // ✅ ProductCard avec URL corrigée et couleurs dynamiques
+  // ✅ ProductCard avec typo Poppins et prix en orange/rouge
   const ProductCard = ({ product }: { product: Product }) => (
     <Link href={`/products/${product.id}`} className="group block">
       <div className="bg-white rounded-lg overflow-hidden hover:shadow-md transition-all duration-300 hover:shadow-lg border border-gray-100">
@@ -175,10 +175,11 @@ export function DealCountdown() {
           )}
         </div>
         <div className="p-2 lg:p-3 text-center">
-          <h3 className="text-xs lg:text-sm font-medium text-gray-900 truncate mb-1 group-hover:text-[#2B4F3C] transition-colors">
+          <h3 className="text-xs lg:text-sm font-medium text-gray-800 truncate mb-1 group-hover:text-[#2B4F3C] transition-colors font-poppins">
             {product.name || "Produit"}
           </h3>
-          <span className="text-sm lg:text-base font-bold" style={{ color: brandColor }}>
+          {/* Prix en orange/rouge plus visible */}
+          <span className="text-sm lg:text-base font-bold text-orange-600 font-poppins">
             {formatPrice(product.price)}
           </span>
         </div>
@@ -211,7 +212,7 @@ export function DealCountdown() {
   }
 
   return (
-    <div className="w-full bg-white">
+    <div className="w-full bg-white font-poppins">
       {/* Header */}
       <div className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-4">
@@ -223,35 +224,35 @@ export function DealCountdown() {
                   <Zap className="w-3.5 h-3.5" style={{ color: brandColor }} />
                 </div>
                 <div>
-                  <h3 className="text-xs font-semibold text-gray-900">Offres éclair</h3>
-                  <p className="text-[10px] text-gray-500">Jusqu'à -50%</p>
+                  <h3 className="text-xs font-semibold text-gray-900 font-poppins">Offres éclair</h3>
+                  <p className="text-[10px] text-gray-500 font-poppins">Jusqu'à -50%</p>
                 </div>
               </div>
               <div className="flex items-center gap-1 px-2 py-1 rounded-lg" style={{ background: brandLight }}>
                 <Clock className="w-3 h-3" style={{ color: brandColor }} />
-                <span className="text-[10px] text-gray-600">Fin dans</span>
+                <span className="text-[10px] text-gray-600 font-poppins">Fin dans</span>
               </div>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <div className="px-2 py-1 rounded-md min-w-[45px] text-center" style={{ background: brandLight }}>
-                  <span className="text-sm font-bold" style={{ color: brandColor }}>{formatNumber(timeLeft.hours)}</span>
-                  <span className="text-[8px] text-gray-500 ml-0.5">h</span>
+                  <span className="text-sm font-bold font-poppins" style={{ color: brandColor }}>{formatNumber(timeLeft.hours)}</span>
+                  <span className="text-[8px] text-gray-500 ml-0.5 font-poppins">h</span>
                 </div>
                 <span className="text-gray-300 text-sm">:</span>
                 <div className="px-2 py-1 rounded-md min-w-[45px] text-center" style={{ background: brandLight }}>
-                  <span className="text-sm font-bold" style={{ color: brandColor }}>{formatNumber(timeLeft.minutes)}</span>
-                  <span className="text-[8px] text-gray-500 ml-0.5">m</span>
+                  <span className="text-sm font-bold font-poppins" style={{ color: brandColor }}>{formatNumber(timeLeft.minutes)}</span>
+                  <span className="text-[8px] text-gray-500 ml-0.5 font-poppins">m</span>
                 </div>
                 <span className="text-gray-300 text-sm">:</span>
                 <div className="px-2 py-1 rounded-md min-w-[45px] text-center" style={{ background: brandLight }}>
-                  <span className="text-sm font-bold" style={{ color: brandColor }}>{formatNumber(timeLeft.seconds)}</span>
-                  <span className="text-[8px] text-gray-500 ml-0.5">s</span>
+                  <span className="text-sm font-bold font-poppins" style={{ color: brandColor }}>{formatNumber(timeLeft.seconds)}</span>
+                  <span className="text-[8px] text-gray-500 ml-0.5 font-poppins">s</span>
                 </div>
               </div>
               <Link 
                 href="/deals-du-jour" 
-                className="flex items-center gap-1 text-xs font-medium transition-colors hover:opacity-80"
+                className="flex items-center gap-1 text-xs font-medium transition-colors hover:opacity-80 font-poppins"
                 style={{ color: brandColor }}
               >
                 <span>Voir tout</span>
@@ -267,36 +268,36 @@ export function DealCountdown() {
                 <Zap className="w-5 h-5" style={{ color: brandColor }} />
               </div>
               <div>
-                <h2 className="text-base font-semibold text-gray-900">Offres éclair</h2>
-                <p className="text-sm text-gray-500">Jusqu'à -50% · Renouvellement quotidien</p>
+                <h2 className="text-base font-semibold text-gray-900 font-poppins">Offres éclair</h2>
+                <p className="text-sm text-gray-500 font-poppins">Jusqu'à -50% · Renouvellement quotidien</p>
               </div>
             </div>
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2 text-gray-500">
                   <Clock className="w-4 h-4" />
-                  <span className="text-sm">Fin dans</span>
+                  <span className="text-sm font-poppins">Fin dans</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="px-3 py-2 rounded-lg min-w-[70px] text-center" style={{ background: brandLight }}>
-                    <span className="text-xl font-bold" style={{ color: brandColor }}>{formatNumber(timeLeft.hours)}</span>
-                    <span className="text-xs text-gray-500 ml-1">h</span>
+                    <span className="text-xl font-bold font-poppins" style={{ color: brandColor }}>{formatNumber(timeLeft.hours)}</span>
+                    <span className="text-xs text-gray-500 ml-1 font-poppins">h</span>
                   </div>
                   <span className="text-gray-300 text-xl">:</span>
                   <div className="px-3 py-2 rounded-lg min-w-[70px] text-center" style={{ background: brandLight }}>
-                    <span className="text-xl font-bold" style={{ color: brandColor }}>{formatNumber(timeLeft.minutes)}</span>
-                    <span className="text-xs text-gray-500 ml-1">m</span>
+                    <span className="text-xl font-bold font-poppins" style={{ color: brandColor }}>{formatNumber(timeLeft.minutes)}</span>
+                    <span className="text-xs text-gray-500 ml-1 font-poppins">m</span>
                   </div>
                   <span className="text-gray-300 text-xl">:</span>
                   <div className="px-3 py-2 rounded-lg min-w-[70px] text-center" style={{ background: brandLight }}>
-                    <span className="text-xl font-bold" style={{ color: brandColor }}>{formatNumber(timeLeft.seconds)}</span>
-                    <span className="text-xs text-gray-500 ml-1">s</span>
+                    <span className="text-xl font-bold font-poppins" style={{ color: brandColor }}>{formatNumber(timeLeft.seconds)}</span>
+                    <span className="text-xs text-gray-500 ml-1 font-poppins">s</span>
                   </div>
                 </div>
               </div>
               <Link 
                 href="/deals-du-jour" 
-                className="flex items-center gap-2 px-4 py-2 text-white rounded-lg text-sm font-medium transition-all hover:shadow-lg"
+                className="flex items-center gap-2 px-4 py-2 text-white rounded-lg text-sm font-medium transition-all hover:shadow-lg font-poppins"
                 style={{ background: brandGradient }}
               >
                 Voir toutes les offres
@@ -313,11 +314,11 @@ export function DealCountdown() {
           
           {/* Bloc 1 - Sélection du moment */}
           <div className="rounded-xl p-3 lg:p-4 transition-all hover:shadow-md" style={{ background: brandLight }}>
-            <h3 className="text-[10px] lg:text-xs font-medium uppercase tracking-wider mb-3 lg:mb-4" style={{ color: brandColor }}>
+            <h3 className="text-[10px] lg:text-xs font-medium uppercase tracking-wider mb-3 lg:mb-4 font-poppins" style={{ color: brandColor }}>
               Sélection du moment
             </h3>
             {featuredProducts.length === 0 ? (
-              <p className="text-xs text-gray-400 text-center py-4">Aucun produit disponible</p>
+              <p className="text-xs text-gray-400 text-center py-4 font-poppins">Aucun produit disponible</p>
             ) : (
               <div className="grid grid-cols-2 gap-2 lg:gap-3">
                 {featuredProducts.map((product) => (
@@ -329,11 +330,11 @@ export function DealCountdown() {
 
           {/* Bloc 2 - Meilleures ventes */}
           <div className="rounded-xl p-3 lg:p-4 transition-all hover:shadow-md" style={{ background: brandLight }}>
-            <h3 className="text-[10px] lg:text-xs font-medium uppercase tracking-wider mb-3 lg:mb-4" style={{ color: brandColor }}>
+            <h3 className="text-[10px] lg:text-xs font-medium uppercase tracking-wider mb-3 lg:mb-4 font-poppins" style={{ color: brandColor }}>
               Meilleures ventes
             </h3>
             {bestSellers.length === 0 ? (
-              <p className="text-xs text-gray-400 text-center py-4">Aucun produit disponible</p>
+              <p className="text-xs text-gray-400 text-center py-4 font-poppins">Aucun produit disponible</p>
             ) : (
               <div className="grid grid-cols-2 gap-2 lg:gap-3">
                 {bestSellers.map((product) => (
