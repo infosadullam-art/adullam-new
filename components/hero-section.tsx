@@ -120,21 +120,9 @@ export function HeroSection() {
     </div>
   )
 
-  // ========== VERSION DESKTOP - FOND BLEU DÉGRADÉ ANIMÉ ==========
+  // ========== VERSION DESKTOP - BLEU SOMBRE ORIGINAL (SANS ANIMATION) ==========
   const DesktopHero = () => (
-    <div className="hidden lg:block relative bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 text-white overflow-hidden font-poppins animate-gradient">
-      <style jsx>{`
-        .animate-gradient {
-          background-size: 200% 200%;
-          animation: gradientShift 8s ease infinite;
-        }
-        @keyframes gradientShift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-      `}</style>
-      
+    <div className="hidden lg:block relative bg-gradient-to-b from-gray-900 to-gray-800 text-white overflow-hidden font-poppins">
       <div className="absolute inset-0 bg-[url('/hero-pattern.svg')] opacity-10" />
       
       <div className="relative max-w-7xl mx-auto px-8 py-6">
