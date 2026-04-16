@@ -66,8 +66,8 @@ export function DealCountdown() {
         
         // Appels parallèles aux 3 APIs
         const [featuredRes, bestSellersRes, flashSaleRes] = await Promise.all([
-          fetch('/api/deals/featured?limit=4'),
-          fetch('/api/deals/best-sellers?limit=4'),
+          fetch('/api/deals/featured?limit=6'),
+          fetch('/api/deals/best-sellers?limit=6'),
           fetch('/api/deals/flash-sales/current')
         ])
         
@@ -178,7 +178,6 @@ export function DealCountdown() {
           <h3 className="text-xs lg:text-sm font-medium text-gray-800 truncate mb-1 group-hover:text-[#2B4F3C] transition-colors font-poppins">
             {product.name || "Produit"}
           </h3>
-          {/* Prix en orange/rouge plus visible */}
           <span className="text-sm lg:text-base font-bold text-orange-600 font-poppins">
             {formatPrice(product.price)}
           </span>
@@ -216,7 +215,7 @@ export function DealCountdown() {
       {/* Header */}
       <div className="border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-4">
-          {/* Mobile */}
+          {/* Mobile - inchangé */}
           <div className="lg:hidden">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -261,7 +260,7 @@ export function DealCountdown() {
             </div>
           </div>
 
-          {/* Desktop */}
+          {/* Desktop - inchangé */}
           <div className="hidden lg:flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="p-2.5 rounded-xl" style={{ background: brandLight }}>
@@ -310,7 +309,7 @@ export function DealCountdown() {
 
       {/* Produits */}
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-6">
-        <div className="grid grid-cols-2 gap-3 lg:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-6">
           
           {/* Bloc 1 - Sélection du moment */}
           <div className="rounded-xl p-3 lg:p-4 transition-all hover:shadow-md" style={{ background: brandLight }}>
@@ -320,7 +319,7 @@ export function DealCountdown() {
             {featuredProducts.length === 0 ? (
               <p className="text-xs text-gray-400 text-center py-4 font-poppins">Aucun produit disponible</p>
             ) : (
-              <div className="grid grid-cols-2 gap-2 lg:gap-3">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
                 {featuredProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
@@ -336,7 +335,7 @@ export function DealCountdown() {
             {bestSellers.length === 0 ? (
               <p className="text-xs text-gray-400 text-center py-4 font-poppins">Aucun produit disponible</p>
             ) : (
-              <div className="grid grid-cols-2 gap-2 lg:gap-3">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
                 {bestSellers.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
