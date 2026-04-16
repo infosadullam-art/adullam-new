@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronRight, Sparkles, Shirt, Footprints, Baby, Gift, Percent } from "lucide-react"
+import { ChevronRight, Sparkles, Shirt, Footprints, Baby } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
 // Types
@@ -34,7 +34,6 @@ export function CategoriesMode() {
   const { formatPrice } = useCurrencyFormatter()
   const [categories, setCategories] = useState<Category[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [showCoupon, setShowCoupon] = useState(true)
 
   // Chargement des produits
   useEffect(() => {
@@ -63,7 +62,7 @@ export function CategoriesMode() {
               slug: "mode-hommes",
               image: "/categories/men-fashion.jpg",
               icon: Shirt,
-              bgColor: "bg-blue-50",
+              bgColor: "bg-blue-50", // Bleu très pâle
               hoverColor: "hover:bg-blue-100",
               textColor: "text-gray-900",
               description: "Vêtements, chaussures, accessoires",
@@ -83,7 +82,7 @@ export function CategoriesMode() {
               slug: "mode-femmes",
               image: "/categories/women-fashion.jpg",
               icon: Footprints,
-              bgColor: "bg-pink-50",
+              bgColor: "bg-pink-50", // Rose très pâle
               hoverColor: "hover:bg-pink-100",
               textColor: "text-gray-900",
               description: "Robes, sacs, chaussures",
@@ -103,7 +102,7 @@ export function CategoriesMode() {
               slug: "mode-enfants",
               image: "/categories/kids-fashion.jpg",
               icon: Baby,
-              bgColor: "bg-green-50",
+              bgColor: "bg-green-50", // Vert très pâle
               hoverColor: "hover:bg-green-100",
               textColor: "text-gray-900",
               description: "Vêtements, chaussures, accessoires",
@@ -129,12 +128,6 @@ export function CategoriesMode() {
     fetchProducts()
   }, [])
 
-  // Copier le code promo
-  const copyCouponCode = () => {
-    navigator.clipboard.writeText("BIENVENUE10")
-    alert("Code promo copié ! Utilisez-le lors de votre première commande.")
-  }
-
   // Loading
   if (isLoading) {
     return (
@@ -156,58 +149,6 @@ export function CategoriesMode() {
   return (
     <section className="w-full bg-white py-8 lg:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* BANNIÈRE COUPON -10% PREMIER ACHAT */}
-        {showCoupon && (
-          <div className="mb-8 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-2xl shadow-lg overflow-hidden">
-            <div className="relative p-4 md:p-6">
-              {/* Pattern décoratif */}
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full -mr-16 -mt-16"></div>
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full -ml-12 -mb-12"></div>
-              </div>
-              
-              <div className="relative flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full">
-                    <Gift className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <Percent className="w-5 h-5 text-white" />
-                      <h3 className="text-white font-semibold text-lg">
-                        -10% sur votre première commande
-                      </h3>
-                    </div>
-                    <p className="text-white/90 text-sm mt-1">
-                      Utilisez le code promo ci-dessous lors de votre premier achat
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <div className="bg-white rounded-lg px-4 py-2 shadow-md">
-                    <code className="text-amber-600 font-bold text-sm md:text-base tracking-wider">
-                      BIENVENUE10
-                    </code>
-                  </div>
-                  <button
-                    onClick={copyCouponCode}
-                    className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105"
-                  >
-                    Copier
-                  </button>
-                  <button
-                    onClick={() => setShowCoupon(false)}
-                    className="text-white/70 hover:text-white transition-colors ml-2"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
         
         {/* TITRE */}
         <div className="flex items-center justify-between mb-8">
@@ -333,13 +274,6 @@ export function CategoriesMode() {
               </div>
             )
           })}
-        </div>
-
-        {/* BADGE CODE PROMO EN BAS (optionnel) */}
-        <div className="mt-8 text-center">
-          <p className="text-xs text-gray-400">
-            🎁 Code promo premier achat : <span className="font-mono font-bold text-amber-600">BIENVENUE10</span> (-10%)
-          </p>
         </div>
       </div>
     </section>
