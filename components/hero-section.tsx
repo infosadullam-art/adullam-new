@@ -120,40 +120,40 @@ export function HeroSection() {
     </div>
   )
 
-  // ========== VERSION DESKTOP - HAUTEUR RÉDUITE ==========
+  // ========== VERSION DESKTOP - SEULE LA HAUTEUR EST RÉDUITE ==========
   const DesktopHero = () => (
     <div className="hidden lg:block relative bg-gradient-to-b from-gray-900 to-gray-800 text-white overflow-hidden font-poppins">
       <div className="absolute inset-0 bg-[url('/hero-pattern.svg')] opacity-10" />
       
-      {/* Hauteur réduite : suppression des espaces verticaux inutiles */}
+      {/* UNIQUEMENT réduction des padding verticaux : py-16 → py-6 */}
       <div className="relative max-w-7xl mx-auto px-8 py-6">
-        <div className="grid grid-cols-2 gap-10 items-center">
-          <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20 w-fit">
-              <MapPin className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-xs font-medium text-white">
+        <div className="grid grid-cols-2 gap-16 items-center">
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20 w-fit">
+              <MapPin className="w-4 h-4 text-amber-400" />
+              <span className="text-sm font-medium">
                 Livraison vers {paysActuel.nom} {paysActuel.drapeau}
               </span>
             </div>
 
-            <h1 className="text-4xl font-bold tracking-tight leading-tight">
+            <h1 className="text-5xl font-bold tracking-tight">
               Achetez direct
               <br />
               <span className="text-amber-400">des usines du monde entier</span>
             </h1>
 
-            <p className="text-sm text-gray-300 max-w-lg">
+            <p className="text-lg text-gray-300 max-w-lg">
               Adulam connecte les acheteurs africains aux meilleurs fournisseurs de Chine, 
               Dubaï, Turquie, USA et Europe.
             </p>
 
-            <div className="flex flex-wrap gap-2">
-              <span className="text-xs text-gray-400">Fournisseurs :</span>
-              <span className="text-xs bg-white/10 px-2.5 py-0.5 rounded-full">🇨🇳 Chine</span>
-              <span className="text-xs bg-white/10 px-2.5 py-0.5 rounded-full">🇦🇪 Dubaï</span>
-              <span className="text-xs bg-white/10 px-2.5 py-0.5 rounded-full">🇹🇷 Turquie</span>
-              <span className="text-xs bg-white/10 px-2.5 py-0.5 rounded-full">🇺🇸 USA</span>
-              <span className="text-xs bg-white/10 px-2.5 py-0.5 rounded-full">🇪🇺 Europe</span>
+            <div className="flex flex-wrap gap-3">
+              <span className="text-sm text-gray-400">Fournisseurs :</span>
+              <span className="text-sm bg-white/10 px-3 py-1.5 rounded-full">🇨🇳 Chine</span>
+              <span className="text-sm bg-white/10 px-3 py-1.5 rounded-full">🇦🇪 Dubaï</span>
+              <span className="text-sm bg-white/10 px-3 py-1.5 rounded-full">🇹🇷 Turquie</span>
+              <span className="text-sm bg-white/10 px-3 py-1.5 rounded-full">🇺🇸 USA</span>
+              <span className="text-sm bg-white/10 px-3 py-1.5 rounded-full">🇪🇺 Europe</span>
             </div>
           </div>
 
@@ -162,55 +162,54 @@ export function HeroSection() {
               <Image
                 src="/hero-image.jpg"
                 alt="Adulam"
-                width={450}
-                height={450}
+                width={600}
+                height={600}
                 className="object-cover w-full h-full"
                 priority
               />
-              <div className="absolute bottom-4 right-4 bg-amber-400 rounded-lg px-3 py-2">
-                <p className="text-gray-900 font-bold text-lg">-30%</p>
-                <p className="text-gray-800 text-[9px]">Première commande</p>
+              <div className="absolute bottom-6 right-6 bg-amber-400 rounded-lg px-5 py-4">
+                <p className="text-gray-900 font-bold text-xl">-30%</p>
+                <p className="text-gray-800 text-xs">Première commande</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Avantages - compacts */}
-        <div className="grid grid-cols-4 gap-4 mt-6 pt-4 border-t border-white/10">
-          <div className="flex items-center gap-2">
-            <div className="bg-amber-400/20 p-1.5 rounded-lg">
-              <Truck className="w-4 h-4 text-amber-400" />
+        <div className="grid grid-cols-4 gap-6 mt-16 pt-8 border-t border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="bg-amber-400/20 p-2 rounded-lg">
+              <Truck className="w-5 h-5 text-amber-400" />
             </div>
             <div>
-              <p className="text-xs font-medium">Livraison porte-à-porte</p>
-              <p className="text-[10px] text-gray-400">50j • 15j • 7j</p>
+              <p className="font-medium">Livraison porte-à-porte</p>
+              <p className="text-sm text-gray-400">50j • 15j • 7j</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="bg-amber-400/20 p-1.5 rounded-lg">
-              <Shield className="w-4 h-4 text-amber-400" />
+          <div className="flex items-center gap-3">
+            <div className="bg-amber-400/20 p-2 rounded-lg">
+              <Shield className="w-5 h-5 text-amber-400" />
             </div>
             <div>
-              <p className="text-xs font-medium">Paiement sécurisé</p>
-              <p className="text-[10px] text-gray-400">Mobile Money, Carte</p>
+              <p className="font-medium">Paiement à la livraison</p>
+              <p className="text-sm text-gray-400">Mobile Money, Carte</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="bg-amber-400/20 p-1.5 rounded-lg">
-              <Clock className="w-4 h-4 text-amber-400" />
+          <div className="flex items-center gap-3">
+            <div className="bg-amber-400/20 p-2 rounded-lg">
+              <Clock className="w-5 h-5 text-amber-400" />
             </div>
             <div>
-              <p className="text-xs font-medium">Suivi en temps réel</p>
-              <p className="text-[10px] text-gray-400">De l'usine à votre porte</p>
+              <p className="font-medium">Suivi en temps réel</p>
+              <p className="text-sm text-gray-400">De l'usine à votre porte</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="bg-amber-400/20 p-1.5 rounded-lg">
-              <span className="text-amber-400 font-bold text-sm">-50%</span>
+          <div className="flex items-center gap-3">
+            <div className="bg-amber-400/20 p-2 rounded-lg">
+              <span className="text-amber-400 font-bold text-lg">-50%</span>
             </div>
             <div>
-              <p className="text-xs font-medium">Jusqu'à -50%</p>
-              <p className="text-[10px] text-gray-400">Offres flash</p>
+              <p className="font-medium">Jusqu'à -50%</p>
+              <p className="text-sm text-gray-400">Offres flash</p>
             </div>
           </div>
         </div>
