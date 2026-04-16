@@ -120,41 +120,40 @@ export function HeroSection() {
     </div>
   )
 
-  // ========== VERSION DESKTOP - HAUTEUR RÉDUITE (2/3) ==========
+  // ========== VERSION DESKTOP - HAUTEUR RÉDUITE ==========
   const DesktopHero = () => (
     <div className="hidden lg:block relative bg-gradient-to-b from-gray-900 to-gray-800 text-white overflow-hidden font-poppins">
       <div className="absolute inset-0 bg-[url('/hero-pattern.svg')] opacity-10" />
       
-      {/* Hauteur réduite : py-16 → py-10 */}
-      <div className="relative max-w-7xl mx-auto px-8 py-10">
-        <div className="grid grid-cols-2 gap-12 items-center">
-          <div className="space-y-5">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/20 w-fit">
+      {/* Hauteur réduite : suppression des espaces verticaux inutiles */}
+      <div className="relative max-w-7xl mx-auto px-8 py-6">
+        <div className="grid grid-cols-2 gap-10 items-center">
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20 w-fit">
               <MapPin className="w-3.5 h-3.5 text-amber-400" />
               <span className="text-xs font-medium text-white">
                 Livraison vers {paysActuel.nom} {paysActuel.drapeau}
               </span>
             </div>
 
-            <h1 className="text-4xl font-bold tracking-tight">
+            <h1 className="text-4xl font-bold tracking-tight leading-tight">
               Achetez direct
               <br />
               <span className="text-amber-400">des usines du monde entier</span>
             </h1>
 
-            {/* Texte en blanc pur */}
-            <p className="text-base text-white max-w-lg">
+            <p className="text-sm text-gray-300 max-w-lg">
               Adulam connecte les acheteurs africains aux meilleurs fournisseurs de Chine, 
               Dubaï, Turquie, USA et Europe.
             </p>
 
             <div className="flex flex-wrap gap-2">
-              <span className="text-xs text-gray-300">Fournisseurs :</span>
-              <span className="text-xs bg-white/10 px-2.5 py-1 rounded-full">🇨🇳 Chine</span>
-              <span className="text-xs bg-white/10 px-2.5 py-1 rounded-full">🇦🇪 Dubaï</span>
-              <span className="text-xs bg-white/10 px-2.5 py-1 rounded-full">🇹🇷 Turquie</span>
-              <span className="text-xs bg-white/10 px-2.5 py-1 rounded-full">🇺🇸 USA</span>
-              <span className="text-xs bg-white/10 px-2.5 py-1 rounded-full">🇪🇺 Europe</span>
+              <span className="text-xs text-gray-400">Fournisseurs :</span>
+              <span className="text-xs bg-white/10 px-2.5 py-0.5 rounded-full">🇨🇳 Chine</span>
+              <span className="text-xs bg-white/10 px-2.5 py-0.5 rounded-full">🇦🇪 Dubaï</span>
+              <span className="text-xs bg-white/10 px-2.5 py-0.5 rounded-full">🇹🇷 Turquie</span>
+              <span className="text-xs bg-white/10 px-2.5 py-0.5 rounded-full">🇺🇸 USA</span>
+              <span className="text-xs bg-white/10 px-2.5 py-0.5 rounded-full">🇪🇺 Europe</span>
             </div>
           </div>
 
@@ -163,20 +162,21 @@ export function HeroSection() {
               <Image
                 src="/hero-image.jpg"
                 alt="Adulam"
-                width={500}
-                height={500}
+                width={450}
+                height={450}
                 className="object-cover w-full h-full"
                 priority
               />
-              <div className="absolute bottom-5 right-5 bg-amber-400 rounded-lg px-4 py-3">
+              <div className="absolute bottom-4 right-4 bg-amber-400 rounded-lg px-3 py-2">
                 <p className="text-gray-900 font-bold text-lg">-30%</p>
-                <p className="text-gray-800 text-[10px]">Première commande</p>
+                <p className="text-gray-800 text-[9px]">Première commande</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-5 mt-10 pt-5 border-t border-white/10">
+        {/* Avantages - compacts */}
+        <div className="grid grid-cols-4 gap-4 mt-6 pt-4 border-t border-white/10">
           <div className="flex items-center gap-2">
             <div className="bg-amber-400/20 p-1.5 rounded-lg">
               <Truck className="w-4 h-4 text-amber-400" />
