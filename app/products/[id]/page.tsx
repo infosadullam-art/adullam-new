@@ -37,6 +37,7 @@ import { CurrencyIndicator } from "@/components/currency-indicator"
 import { toast } from "react-hot-toast"
 import { wishlistApi } from "@/lib/admin/api-client"
 import { useAuth } from "@/lib/admin/auth-context"
+import { Loader } from "@/components/Loader"
 
 // ============================================================
 // INTERFACE POUR LES DONNÉES DE L'API LOGISTIQUE
@@ -890,17 +891,10 @@ export default function ProductPage() {
   const selectedPortePorteCost = getPortePorteCost(selectedShipping)
 
   // ============================================================
-  // RENDU CONDITIONNEL
+  // RENDU CONDITIONNEL - AVEC LE LOADER CORRIGÉ
   // ============================================================
   if (!product) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse space-y-4">
-          <div className="w-10 h-10 border-3 border-gray-200 border-t-[#2B4F3C] rounded-full animate-spin"></div>
-          <p className="text-sm text-gray-400">Chargement...</p>
-        </div>
-      </div>
-    )
+    return <Loader />
   }
 
   const safeImages = images.length > 0 ? images : ["/placeholder.svg"]
