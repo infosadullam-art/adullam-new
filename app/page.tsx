@@ -3,7 +3,6 @@
 import { Header } from "@/components/header"
 import { MobileHeader } from "@/components/mobile-header"
 import { HeroSection } from "@/components/hero-section"
-import { ProduitsPopulairesSection } from "@/components/produits-populaires-section"
 import { ForYouSection } from "@/components/for-you-section"
 import { TendanceParPays } from "@/components/tendances-section"
 import { ModeSection } from "@/components/mode-section"
@@ -24,7 +23,7 @@ export default function Home() {
           <MobileHeader />
         </div>
 
-        <main className="overflow-hidden pb-16"> {/* ← ESPACE POUR LE MOBILE NAV */}
+        <main className="overflow-hidden pb-16">
           <HeroSection />
           <div className="h-2.5" />
           
@@ -107,8 +106,7 @@ export default function Home() {
               </div>
             </div>
             <div className="w-full px-4 sm:px-6 lg:px-8">
-              <div className="max-w-7xl mx-auto space-y-6">
-                <ProduitsPopulairesSection />
+              <div className="max-w-7xl mx-auto">
                 <ForYouSection />
               </div>
             </div>
