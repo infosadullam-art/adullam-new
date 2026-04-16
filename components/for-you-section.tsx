@@ -45,6 +45,8 @@ export function ForYouSection() {
     { main: "Sélections", sub: "pour votre style" },
   ]
 
+  const brandGradient = "linear-gradient(135deg, #2B4F3C 0%, #3A6B4E 100%)"
+
   useEffect(() => {
     const interval = setInterval(() => {
       setTitleIndex((prev) => (prev + 1) % titles.length)
@@ -313,51 +315,9 @@ export function ForYouSection() {
                         data-product-id={product.id}
                         onClick={() => handleProductClick(product.id)}
                       >
-                        {/* BADGE SESSION GRAPH - redesigné */}
-                        {(product.source === 'session_graph' || product.source === 'session') && (
-                          <div className="absolute -top-2 -right-2 z-10 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white text-[9px] font-semibold px-2 py-0.5 rounded-full shadow-md">
-                            Pour vous
-                          </div>
-                        )}
-                        
-                        {/* BADGE ALS - redesigné */}
-                        {product.source === 'als' && (
-                          <div className="absolute -top-2 -right-2 z-10 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[9px] font-semibold px-2 py-0.5 rounded-full shadow-md">
-                            {Math.round((product.forYouScore || 0.5) * 100)}% match
-                          </div>
-                        )}
-                        
-                        {/* BADGE TREND - redesigné */}
-                        {product.source === 'trend' && (
-                          <div className="absolute -top-2 -right-2 z-10 bg-gradient-to-r from-red-500 to-pink-500 text-white text-[9px] font-semibold px-2 py-0.5 rounded-full shadow-md">
-                            🔥 Tendance
-                          </div>
-                        )}
-                        
-                        {/* BADGE NEW - redesigné */}
-                        {product.source === 'new' && (
-                          <div className="absolute -top-2 -right-2 z-10 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[9px] font-semibold px-2 py-0.5 rounded-full shadow-md">
-                            Nouveau
-                          </div>
-                        )}
-                        
-                        {/* BADGE RANDOM - redesigné */}
-                        {product.source === 'random' && (
-                          <div className="absolute -top-2 -right-2 z-10 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[9px] font-semibold px-2 py-0.5 rounded-full shadow-md">
-                            Découverte
-                          </div>
-                        )}
-                        
-                        {/* BADGE POPULAR - redesigné */}
-                        {product.source === 'popular' && (
-                          <div className="absolute -top-2 -right-2 z-10 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[9px] font-semibold px-2 py-0.5 rounded-full shadow-md">
-                            Populaire
-                          </div>
-                        )}
-                        
-                        {/* RAISON */}
+                        {/* Badge style DealCountdown */}
                         {product.reason && (
-                          <div className="absolute bottom-2 left-2 z-10 bg-black/50 backdrop-blur-sm text-white text-[8px] font-medium px-1.5 py-0.5 rounded-full">
+                          <div className="absolute top-2 left-2 z-10 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[9px] font-semibold px-2 py-0.5 rounded-full shadow-md">
                             {product.reason}
                           </div>
                         )}
