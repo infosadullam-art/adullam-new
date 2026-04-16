@@ -34,12 +34,10 @@ export function HeroSection() {
   // ========== MOBILE - STYLE JUMIA ==========
   const MobileHero = () => (
     <div className="lg:hidden bg-[#f5f5f5]">
-      {/* BANDEAU PROMO */}
       <div className="bg-[#ff6b00] text-white text-center py-1.5 text-[10px] font-medium">
         🔥 Livraison gratuite dès 50 000 FCFA • Paiement sécurisé
       </div>
 
-      {/* SLIDER */}
       <div className="relative h-[160px] mx-2 mt-2 rounded-xl overflow-hidden shadow-md">
         {heroSlides.map((slide, index) => (
           <div
@@ -79,7 +77,6 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* BOUTONS CATÉGORIES RAPIDES */}
       <div className="grid grid-cols-4 gap-2 px-2 py-3 bg-white border-b border-gray-100">
         <button className="flex flex-col items-center gap-1 py-1">
           <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
@@ -109,10 +106,9 @@ export function HeroSection() {
     </div>
   )
 
-  // ========== DESKTOP - STYLE JUMIA ==========
+  // ========== DESKTOP - STYLE JUMIA AVEC CARTE LATÉRALE FIXE ==========
   const DesktopHero = () => (
     <div className="hidden lg:block bg-[#f5f5f5]">
-      {/* BANDEAU PROMO */}
       <div className="bg-[#ff6b00] text-white text-center py-2 text-xs font-medium">
         🔥 LIVRAISON GRATUITE À PARTIR DE 50 000 FCFA • PAIEMENT À LA LIVRAISON • SATISFAIT OU REMBOURSÉ
       </div>
@@ -157,7 +153,7 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* CARTE LATÉRALE - 1/3 */}
+          {/* CARTE LATÉRALE - 1/3 (FIXE, PAS DE FONDU) */}
           <div className="bg-white rounded-xl shadow-md overflow-hidden">
             <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-3">
               <span className="text-sm font-bold">🇨🇮 {paysActuel.nom}</span>
@@ -198,7 +194,6 @@ export function HeroSection() {
           </div>
         </div>
 
-        {/* BOUTONS CATÉGORIES RAPIDES */}
         <div className="grid grid-cols-6 gap-3 mt-6">
           {["Mode", "Électronique", "Maison", "Beauté", "Sport", "Jouets"].map((cat) => (
             <button key={cat} className="bg-white rounded-lg py-2 text-center text-sm font-medium text-gray-700 hover:shadow-md transition shadow-sm border border-gray-100">
