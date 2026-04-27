@@ -860,8 +860,7 @@ export default function ProductPage() {
     const fetchFallbackRecommendations = async () => {
       try {
         // Appel à l'API fallback (rapide, pas de timeout)
-        const res = await fetch(`/api/recommendations/fallback?limit=8&exclude=${product?.id || ''}`)
-        const data = await res.json()
+const res = await fetch(`/api/graph/recommendations/fallback?limit=8&exclude=${product?.id || ''}`)        const data = await res.json()
         if (data.success && data.data.length > 0) {
           setRelatedProducts(data.data)
         }
