@@ -850,28 +850,32 @@ export default function ProductPage() {
     }
   }
 
-  // ✅ REMPLACEMENT : Vrais produits recommandés (plus de mock)
+  // ============================================================
+  // ✅ API FALLBACK - RECOMMANDATIONS RAPIDES
+  // ============================================================
   const [relatedProducts, setRelatedProducts] = useState<any[]>([])
   const [isLoadingRelated, setIsLoadingRelated] = useState(true)
 
   useEffect(() => {
-    const fetchRelated = async () => {
+    const fetchFallbackRecommendations = async () => {
       try {
-        const res = await fetch(`/api/foryou?limit=8&page=1`)
+        // Appel à l'API fallback (rapide, pas de timeout)
+        const res = await fetch(`/api/recommendations/fallback?limit=8&exclude=${product?.id || ''}`)
         const data = await res.json()
-        if (data.success) {
+        if (data.success && data.data.length > 0) {
           setRelatedProducts(data.data)
-        } else {
-          console.error('Erreur API foryou:', data)
         }
       } catch (error) {
-        console.error('Erreur chargement recommandations:', error)
+        console.error('Erreur chargement fallback:', error)
       } finally {
         setIsLoadingRelated(false)
       }
     }
-    fetchRelated()
-  }, [])
+    
+    if (product?.id) {
+      fetchFallbackRecommendations()
+    }
+  }, [product?.id])
 
   // ============================================================
   // FONCTIONS POUR AFFICHER LES DONNÉES LOGISTIQUES
@@ -2256,7 +2260,7 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* RELATED PRODUCTS - REMPLACÉ PAR LES VRAIS PRODUITS */}
+            {/* RELATED PRODUCTS - AVEC API FALLBACK */}
             <div className="mt-8 lg:mt-12">
               <div className="flex items-center justify-between mb-4 lg:mb-6">
                 <h2 className="text-base lg:text-lg font-medium">Vous aimerez aussi</h2>
