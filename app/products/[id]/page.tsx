@@ -850,16 +850,28 @@ export default function ProductPage() {
     }
   }
 
-  const relatedProducts = [
-    { id: 1, name: "Câble USB-C Premium", priceUSD: 4.08, image: "/usb-c-cable-premium.jpg", orders: 1523, rating: 4.8 },
-    { id: 2, name: "Chargeur Rapide 20W", priceUSD: 8.00, image: "/fast-charger-20w.jpg", orders: 2341, rating: 4.7 },
-    { id: 3, name: "Étui de Protection", priceUSD: 2.94, image: "/protective-case-earbuds.jpg", orders: 892, rating: 4.5 },
-    { id: 4, name: "Support Téléphone Bureau", priceUSD: 5.22, image: "/phone-desk-stand.jpg", orders: 1678, rating: 4.6 },
-    { id: 5, name: "Adaptateur Secteur USB", priceUSD: 3.50, image: "/usb-adapter.jpg", orders: 3456, rating: 4.9 },
-    { id: 6, name: "Câble Lightning", priceUSD: 4.50, image: "/lightning-cable.jpg", orders: 2789, rating: 4.7 },
-    { id: 7, name: "Batterie Externe 10000mAh", priceUSD: 12.99, image: "/powerbank.jpg", orders: 1234, rating: 4.6 },
-    { id: 8, name: "Support Voiture Téléphone", priceUSD: 3.99, image: "/car-holder.jpg", orders: 3456, rating: 4.5 }
-  ]
+  // ✅ REMPLACEMENT : Vrais produits recommandés (plus de mock)
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([])
+  const [isLoadingRelated, setIsLoadingRelated] = useState(true)
+
+  useEffect(() => {
+    const fetchRelated = async () => {
+      try {
+        const res = await fetch(`/api/foryou?limit=8&page=1`)
+        const data = await res.json()
+        if (data.success) {
+          setRelatedProducts(data.data)
+        } else {
+          console.error('Erreur API foryou:', data)
+        }
+      } catch (error) {
+        console.error('Erreur chargement recommandations:', error)
+      } finally {
+        setIsLoadingRelated(false)
+      }
+    }
+    fetchRelated()
+  }, [])
 
   // ============================================================
   // FONCTIONS POUR AFFICHER LES DONNÉES LOGISTIQUES
@@ -2244,107 +2256,117 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* RELATED PRODUCTS - inchangé */}
+            {/* RELATED PRODUCTS - REMPLACÉ PAR LES VRAIS PRODUITS */}
             <div className="mt-8 lg:mt-12">
               <div className="flex items-center justify-between mb-4 lg:mb-6">
                 <h2 className="text-base lg:text-lg font-medium">Vous aimerez aussi</h2>
               </div>
               
-              {/* Mobile carousel */}
-              <div className="lg:hidden">
-                <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 shadow-sm">
-                  <div className="relative">
-                    <div className="overflow-x-auto overflow-y-hidden hide-scrollbar">
-                      <div className="flex gap-3 w-max">
+              {isLoadingRelated ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600" />
+                </div>
+              ) : relatedProducts.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 text-sm">
+                  Aucune recommandation pour le moment
+                </div>
+              ) : (
+                <>
+                  {/* Mobile carousel */}
+                  <div className="lg:hidden">
+                    <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 shadow-sm">
+                      <div className="relative">
+                        <div className="overflow-x-auto overflow-y-hidden hide-scrollbar">
+                          <div className="flex gap-3 w-max">
+                            {relatedProducts.map((p) => (
+                              <a 
+                                key={p.id} 
+                                href={`/products/${p.id}`} 
+                                className="group w-[calc((100vw-4rem)/3-0.5rem)] min-w-[calc((100vw-4rem)/3-0.5rem)]"
+                              >
+                                <div className="bg-white rounded-lg aspect-square mb-2 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
+                                  <Image
+                                    src={p.image || "/placeholder.svg"}
+                                    alt={p.name}
+                                    width={150}
+                                    height={150}
+                                    className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform"
+                                  />
+                                </div>
+                                <h3 className="font-medium text-xs mb-0.5 line-clamp-2 text-gray-800">{p.name}</h3>
+                                <div className="flex items-center gap-1 mb-0.5">
+                                  <div className="flex">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                      <Star key={star} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
+                                    ))}
+                                  </div>
+                                  <span className="text-[9px] text-gray-500">{p.rating || 4.5}</span>
+                                </div>
+                                <p className="text-sm font-bold" style={{ background: brandGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                                  {formatPrice(p.priceUSD)}
+                                </p>
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Desktop carousel */}
+                  <div className="hidden lg:block relative">
+                    <div 
+                      ref={relatedCarouselRef}
+                      className="overflow-x-auto overflow-y-hidden hide-scrollbar pb-4 scroll-smooth"
+                    >
+                      <div className="flex gap-4 w-max">
                         {relatedProducts.map((p) => (
                           <a 
                             key={p.id} 
                             href={`/products/${p.id}`} 
-                            className="group w-[calc((100vw-4rem)/3-0.5rem)] min-w-[calc((100vw-4rem)/3-0.5rem)]"
+                            className="group w-[calc((1440px-4rem)/6-1rem)] min-w-[180px]"
                           >
-                            <div className="bg-white rounded-lg aspect-square mb-2 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
+                            <div className="bg-white rounded-xl aspect-square mb-3 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
                               <Image
                                 src={p.image || "/placeholder.svg"}
                                 alt={p.name}
-                                width={150}
-                                height={150}
-                                className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform"
+                                width={200}
+                                height={200}
+                                className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform"
                               />
                             </div>
-                            <h3 className="font-medium text-xs mb-0.5 line-clamp-2 text-gray-800">{p.name}</h3>
-                            <div className="flex items-center gap-1 mb-0.5">
+                            <h3 className="font-medium text-sm mb-1 line-clamp-2 text-gray-800">{p.name}</h3>
+                            <div className="flex items-center gap-1 mb-1">
                               <div className="flex">
                                 {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star key={star} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
+                                  <Star key={star} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
                                 ))}
                               </div>
-                              <span className="text-[9px] text-gray-500">{p.rating}</span>
+                              <span className="text-xs text-gray-500">{p.rating || 4.5}</span>
                             </div>
-                            <p className="text-sm font-bold" style={{ background: brandGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                            <p className="text-base font-bold" style={{ background: brandGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                               {formatPrice(p.priceUSD)}
                             </p>
-                            <p className="text-[9px] text-gray-400 mt-0.5">{p.orders}+ commandes</p>
                           </a>
                         ))}
                       </div>
                     </div>
+                    
+                    <button 
+                      onClick={() => scrollRelated("left")}
+                      className="absolute left-0 top-1/3 -translate-y-1/2 -ml-4 w-8 h-8 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+                    >
+                      <ChevronLeft className="w-4 h-4 text-gray-600" />
+                    </button>
+                    <button 
+                      onClick={() => scrollRelated("right")}
+                      className="absolute right-0 top-1/3 -translate-y-1/2 -mr-4 w-8 h-8 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+                    >
+                      <ChevronRight className="w-4 h-4 text-gray-600" />
+                    </button>
                   </div>
-                </div>
-              </div>
-
-              {/* Desktop carousel */}
-              <div className="hidden lg:block relative">
-                <div 
-                  ref={relatedCarouselRef}
-                  className="overflow-x-auto overflow-y-hidden hide-scrollbar pb-4 scroll-smooth"
-                >
-                  <div className="flex gap-4 w-max">
-                    {relatedProducts.map((p) => (
-                      <a 
-                        key={p.id} 
-                        href={`/products/${p.id}`} 
-                        className="group w-[calc((1440px-4rem)/6-1rem)] min-w-[180px]"
-                      >
-                        <div className="bg-white rounded-xl aspect-square mb-3 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
-                          <Image
-                            src={p.image || "/placeholder.svg"}
-                            alt={p.name}
-                            width={200}
-                            height={200}
-                            className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform"
-                          />
-                        </div>
-                        <h3 className="font-medium text-sm mb-1 line-clamp-2 text-gray-800">{p.name}</h3>
-                        <div className="flex items-center gap-1 mb-1">
-                          <div className="flex">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star key={star} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                            ))}
-                          </div>
-                          <span className="text-xs text-gray-500">{p.rating}</span>
-                        </div>
-                        <p className="text-base font-bold" style={{ background: brandGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                          {formatPrice(p.priceUSD)}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-1">{p.orders}+ commandes</p>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-                
-                <button 
-                  onClick={() => scrollRelated("left")}
-                  className="absolute left-0 top-1/3 -translate-y-1/2 -ml-4 w-8 h-8 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
-                >
-                  <ChevronLeft className="w-4 h-4 text-gray-600" />
-                </button>
-                <button 
-                  onClick={() => scrollRelated("right")}
-                  className="absolute right-0 top-1/3 -translate-y-1/2 -mr-4 w-8 h-8 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
-                >
-                  <ChevronRight className="w-4 h-4 text-gray-600" />
-                </button>
-              </div>
+                </>
+              )}
             </div>
           </div>
         </div>
