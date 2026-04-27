@@ -5,7 +5,7 @@ import { Header } from "@/components/header"
 import { MobileHeader } from "@/components/mobile-header"
 import MobileNav from "@/components/mobile-nav"
 import { Footer } from "@/components/footer"
-import { TrendingUp, Star } from "lucide-react"
+import { TrendingUp, Star, ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
@@ -13,22 +13,19 @@ export default function MeilleuresVentesPage() {
   const { formatPrice } = useCurrencyFormatter()
   const [products, setProducts] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const itemsPerPage = 24 // 8x3 lignes sur desktop
 
   useEffect(() => {
     const fetchBestSellers = async () => {
       setIsLoading(true)
       try {
-        const res = await fetch(`/api/best-sellers?page=${page}&limit=24`)
+        const res = await fetch(`/api/best-sellers?page=${currentPage}&limit=${itemsPerPage}`)
         const data = await res.json()
         if (data.success) {
-          if (page === 1) {
-            setProducts(data.data)
-          } else {
-            setProducts(prev => [...prev, ...data.data])
-          }
-          setHasMore(data.meta.hasMore)
+          setProducts(data.data)
+          setTotalPages(data.meta.totalPages || 1)
         }
       } catch (error) {
         console.error('Erreur:', error)
@@ -37,7 +34,14 @@ export default function MeilleuresVentesPage() {
       }
     }
     fetchBestSellers()
-  }, [page])
+  }, [currentPage])
+
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
 
   return (
     <div className="min-h-screen bg-neutral-light">
@@ -59,17 +63,25 @@ export default function MeilleuresVentesPage() {
         </div>
 
         <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-8">
-          <h2 className="text-2xl font-bold mb-2">Top 100 des ventes</h2>
-          <p className="text-muted-foreground mb-6">Mis à jour chaque heure</p>
+          <div className="flex justify-between items-end mb-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Top 100 des ventes</h2>
+              <p className="text-muted-foreground">Mis à jour chaque heure</p>
+            </div>
+            <div className="text-sm text-gray-500">
+              Page {currentPage} / {totalPages}
+            </div>
+          </div>
           
-          {isLoading && page === 1 ? (
+          {isLoading ? (
             <div className="flex justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600" />
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {products.map((product) => (
+              {/* Grid: 2 colonnes mobile, 8 colonnes desktop */}
+              <div className="grid grid-cols-2 lg:grid-cols-8 gap-3 lg:gap-4">
+                {products.map((product, idx) => (
                   <a
                     key={product.id}
                     href={`/products/${product.id}`}
@@ -80,36 +92,77 @@ export default function MeilleuresVentesPage() {
                         src={product.image}
                         alt={product.name}
                         fill
-                        className="object-contain group-hover:scale-105 transition-transform"
+                        className="object-contain p-2 group-hover:scale-105 transition-transform"
                       />
+                      {/* Badge rang pour top 3 */}
                       {product.rank <= 3 && (
-                        <div className="absolute top-2 left-2 w-8 h-8 bg-brand text-white rounded-full flex items-center justify-center font-bold text-sm">
-                          #{product.rank}
+                        <div className="absolute top-1 left-1 w-6 h-6 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold text-xs shadow-md">
+                          {product.rank === 1 && "🥇"}
+                          {product.rank === 2 && "🥈"}
+                          {product.rank === 3 && "🥉"}
                         </div>
                       )}
                     </div>
-                    <div className="p-3">
-                      <h3 className="font-medium text-sm mb-1 line-clamp-2">{product.name}</h3>
-                      <div className="flex items-center gap-1 mb-2">
+                    <div className="p-2 lg:p-3">
+                      <h3 className="font-medium text-xs lg:text-sm mb-1 line-clamp-2 text-gray-800">{product.name}</h3>
+                      <div className="flex items-center gap-0.5 mb-1">
                         {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                          <Star key={i} className="w-2.5 h-2.5 lg:w-3 lg:h-3 fill-yellow-400 text-yellow-400" />
                         ))}
-                        <span className="text-xs text-muted-foreground ml-1">({product.reviews})</span>
+                        <span className="text-[10px] lg:text-xs text-gray-400 ml-1">({product.reviews})</span>
                       </div>
-                      <span className="text-brand font-bold">{formatPrice(product.price)}</span>
+                      <span className="text-brand font-bold text-xs lg:text-sm">{formatPrice(product.price)}</span>
                     </div>
                   </a>
                 ))}
               </div>
 
-              {hasMore && (
-                <div className="flex justify-center mt-8">
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-8 lg:mt-12">
                   <button
-                    onClick={() => setPage(p => p + 1)}
-                    disabled={isLoading}
-                    className="px-6 py-2 bg-brand text-white rounded-lg hover:bg-brand-dark transition-colors disabled:opacity-50"
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="w-8 h-8 lg:w-10 lg:h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    {isLoading ? 'Chargement...' : 'Voir plus'}
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  
+                  <div className="flex gap-1 lg:gap-2">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum
+                      if (totalPages <= 5) {
+                        pageNum = i + 1
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i
+                      } else {
+                        pageNum = currentPage - 2 + i
+                      }
+                      
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => goToPage(pageNum)}
+                          className={`min-w-[32px] h-8 lg:min-w-[40px] lg:h-10 rounded-lg text-sm font-medium transition-colors ${
+                            currentPage === pageNum
+                              ? 'bg-brand text-white'
+                              : 'hover:bg-gray-100 text-gray-600'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  
+                  <button
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="w-8 h-8 lg:w-10 lg:h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
               )}
