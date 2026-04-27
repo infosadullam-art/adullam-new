@@ -49,12 +49,12 @@ export default function OffresSpecialesPage() {
     return () => clearInterval(timer)
   }, [])
 
-  // Charger les produits flash sales
+  // Charger les produits flash sales - CORRIGÉ
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true)
       try {
-        const res = await fetch('/api/flash-sales?limit=48')
+        const res = await fetch('/api/deals/flash-sales?limit=48')
         const data = await res.json()
         if (data.success) {
           setProducts(data.data)
@@ -80,14 +80,12 @@ export default function OffresSpecialesPage() {
       </div>
 
       <main className="pb-20 lg:pb-8">
-        {/* Hero avec timer dynamique */}
         <div className="bg-gradient-to-r from-orange-600 to-red-600 text-white">
           <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-12 lg:py-16">
             <Zap className="w-10 h-10 mb-4" />
             <h1 className="text-4xl lg:text-5xl font-bold mb-4">Offres Spéciales</h1>
             <p className="text-lg text-white/90 max-w-2xl mb-6">Prix imbattables et quantités limitées</p>
             
-            {/* Timer dynamique */}
             <div className="flex items-center gap-3 bg-white/20 rounded-xl px-6 py-3 w-fit backdrop-blur-sm">
               <Timer className="w-5 h-5" />
               <span className="font-medium">Se termine dans :</span>
@@ -129,61 +127,50 @@ export default function OffresSpecialesPage() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600" />
             </div>
           ) : (
-            <>
-              {/* Grid: 2 colonnes mobile, 6 colonnes desktop */}
-              <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 lg:gap-5">
-                {products.map((product) => (
-                  <a
-                    key={product.id}
-                    href={`/products/${product.id}`}
-                    className="group"
-                  >
-                    <div className="bg-gray-50 rounded-xl overflow-hidden aspect-square relative mb-3 group-hover:shadow-md transition-shadow">
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
-                      />
-                      {product.discount > 0 && (
-                        <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-                          -{product.discount}%
-                        </div>
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 lg:gap-5">
+              {products.map((product) => (
+                <a key={product.id} href={`/products/${product.id}`} className="group">
+                  <div className="bg-gray-50 rounded-xl overflow-hidden aspect-square relative mb-3 group-hover:shadow-md transition-shadow">
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      fill
+                      className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                    />
+                    {product.discount > 0 && (
+                      <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                        -{product.discount}%
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="font-medium text-sm line-clamp-2 text-gray-800 group-hover:text-gray-900">
+                      {product.name}
+                    </h3>
+                    <div className="flex items-center gap-1">
+                      <div className="flex">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star key={star} className="w-3 h-3 fill-amber-400 text-amber-400" />
+                        ))}
+                      </div>
+                      <span className="text-xs text-gray-400">({product.reviews})</span>
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <p className="text-sm font-semibold text-gray-900">{formatPrice(product.price)}</p>
+                      {product.oldPrice && (
+                        <p className="text-xs text-gray-400 line-through">{formatPrice(product.oldPrice)}</p>
                       )}
                     </div>
-                    <div className="space-y-1">
-                      <h3 className="font-medium text-sm line-clamp-2 text-gray-800 group-hover:text-gray-900">
-                        {product.name}
-                      </h3>
-                      <div className="flex items-center gap-1">
-                        <div className="flex">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star key={star} className="w-3 h-3 fill-amber-400 text-amber-400" />
-                          ))}
-                        </div>
-                        <span className="text-xs text-gray-400">({product.reviews})</span>
-                      </div>
-                      <div className="flex items-baseline gap-1">
-                        <p className="text-sm font-semibold text-gray-900">
-                          {formatPrice(product.price)}
-                        </p>
-                        {product.oldPrice && (
-                          <p className="text-xs text-gray-400 line-through">
-                            {formatPrice(product.oldPrice)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </a>
-                ))}
-              </div>
-
-              {products.length === 0 && !isLoading && (
-                <div className="text-center py-20 text-gray-500">
-                  Aucune offre spéciale pour le moment
-                </div>
-              )}
-            </>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
+          
+          {products.length === 0 && !isLoading && (
+            <div className="text-center py-20 text-gray-500">
+              Aucune offre spéciale pour le moment
+            </div>
           )}
         </div>
       </main>
