@@ -15,7 +15,7 @@ export default function MeilleuresVentesPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const itemsPerPage = 24 // 8x3 lignes sur desktop
+  const itemsPerPage = 48 // 48 produits par page
 
   useEffect(() => {
     const fetchBestSellers = async () => {
@@ -44,7 +44,7 @@ export default function MeilleuresVentesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-light">
+    <div className="min-h-screen bg-white">
       <div className="hidden lg:block">
         <Header />
       </div>
@@ -53,82 +53,83 @@ export default function MeilleuresVentesPage() {
       </div>
 
       <main className="pb-20 lg:pb-8">
-        {/* Hero */}
-        <div className="bg-gradient-to-r from-amber-600 to-orange-600 text-white">
+        {/* Hero épuré */}
+        <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white">
           <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-12 lg:py-16">
-            <TrendingUp className="w-10 h-10 mb-4" />
+            <TrendingUp className="w-10 h-10 mb-4 opacity-90" />
             <h1 className="text-4xl lg:text-5xl font-bold mb-4">Meilleures Ventes</h1>
-            <p className="text-xl mb-6 max-w-2xl">Les produits les plus populaires choisis par nos clients</p>
+            <p className="text-lg text-gray-300 max-w-2xl">Découvrez les produits les plus commandés par nos clients</p>
           </div>
         </div>
 
         <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-8">
-          <div className="flex justify-between items-end mb-6">
+          {/* Header avec pagination info */}
+          <div className="flex justify-between items-center mb-6">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Top 100 des ventes</h2>
-              <p className="text-muted-foreground">Mis à jour chaque heure</p>
+              <h2 className="text-xl font-semibold text-gray-900">Top 100 des ventes</h2>
+              <p className="text-sm text-gray-500">Mis à jour quotidiennement</p>
             </div>
-            <div className="text-sm text-gray-500">
-              Page {currentPage} / {totalPages}
-            </div>
+            {totalPages > 1 && (
+              <div className="text-sm text-gray-500">
+                Page {currentPage} / {totalPages}
+              </div>
+            )}
           </div>
           
           {isLoading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600" />
+            <div className="flex justify-center py-20">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
             </div>
           ) : (
             <>
-              {/* Grid: 2 colonnes mobile, 8 colonnes desktop */}
-              <div className="grid grid-cols-2 lg:grid-cols-8 gap-3 lg:gap-4">
-                {products.map((product, idx) => (
+              {/* Grid: 2 colonnes mobile, 6 colonnes desktop */}
+              <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 lg:gap-5">
+                {products.map((product) => (
                   <a
                     key={product.id}
                     href={`/products/${product.id}`}
-                    className="bg-white rounded-lg overflow-hidden group hover:shadow-lg transition-shadow"
+                    className="group"
                   >
-                    <div className="aspect-square bg-neutral-light relative">
+                    <div className="bg-gray-50 rounded-xl overflow-hidden aspect-square relative mb-3 group-hover:shadow-md transition-shadow">
                       <Image
                         src={product.image}
                         alt={product.name}
                         fill
-                        className="object-contain p-2 group-hover:scale-105 transition-transform"
+                        className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                       />
-                      {/* Badge rang pour top 3 */}
-                      {product.rank <= 3 && (
-                        <div className="absolute top-1 left-1 w-6 h-6 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold text-xs shadow-md">
-                          {product.rank === 1 && "🥇"}
-                          {product.rank === 2 && "🥈"}
-                          {product.rank === 3 && "🥉"}
-                        </div>
-                      )}
                     </div>
-                    <div className="p-2 lg:p-3">
-                      <h3 className="font-medium text-xs lg:text-sm mb-1 line-clamp-2 text-gray-800">{product.name}</h3>
-                      <div className="flex items-center gap-0.5 mb-1">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} className="w-2.5 h-2.5 lg:w-3 lg:h-3 fill-yellow-400 text-yellow-400" />
-                        ))}
-                        <span className="text-[10px] lg:text-xs text-gray-400 ml-1">({product.reviews})</span>
+                    <div className="space-y-1">
+                      <h3 className="font-medium text-sm line-clamp-2 text-gray-800 group-hover:text-gray-900">
+                        {product.name}
+                      </h3>
+                      <div className="flex items-center gap-1">
+                        <div className="flex">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star key={star} className="w-3 h-3 fill-amber-400 text-amber-400" />
+                          ))}
+                        </div>
+                        <span className="text-xs text-gray-400">({product.reviews})</span>
                       </div>
-                      <span className="text-brand font-bold text-xs lg:text-sm">{formatPrice(product.price)}</span>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {formatPrice(product.price)}
+                      </p>
                     </div>
                   </a>
                 ))}
               </div>
 
-              {/* Pagination */}
+              {/* Pagination centrée */}
               {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-8 lg:mt-12">
+                <div className="flex justify-center items-center gap-2 mt-10 pt-4 border-t border-gray-100">
                   <button
                     onClick={() => goToPage(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="w-8 h-8 lg:w-10 lg:h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="w-9 h-9 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
-                    <ChevronLeft className="w-4 h-4" />
+                    <ChevronLeft className="w-4 h-4 text-gray-600" />
                   </button>
                   
-                  <div className="flex gap-1 lg:gap-2">
+                  <div className="flex gap-1">
                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                       let pageNum
                       if (totalPages <= 5) {
@@ -145,9 +146,9 @@ export default function MeilleuresVentesPage() {
                         <button
                           key={pageNum}
                           onClick={() => goToPage(pageNum)}
-                          className={`min-w-[32px] h-8 lg:min-w-[40px] lg:h-10 rounded-lg text-sm font-medium transition-colors ${
+                          className={`min-w-[36px] h-9 rounded-lg text-sm font-medium transition-colors ${
                             currentPage === pageNum
-                              ? 'bg-brand text-white'
+                              ? 'bg-gray-900 text-white'
                               : 'hover:bg-gray-100 text-gray-600'
                           }`}
                         >
@@ -160,9 +161,9 @@ export default function MeilleuresVentesPage() {
                   <button
                     onClick={() => goToPage(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="w-8 h-8 lg:w-10 lg:h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="w-9 h-9 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="w-4 h-4 text-gray-600" />
                   </button>
                 </div>
               )}
