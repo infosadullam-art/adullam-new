@@ -40,6 +40,19 @@ import { useAuth } from "@/lib/admin/auth-context"
 import { Loader } from "@/components/Loader"
 
 // ============================================================
+// INTERFACE POUR LES AVIS CLIENTS
+// ============================================================
+interface CustomerReview {
+  id: string
+  authorName: string
+  rating: number
+  comment: string
+  createdAt: string
+  verifiedPurchase: boolean
+  helpfulCount: number
+}
+
+// ============================================================
 // INTERFACE POUR LES DONNÉES DE L'API LOGISTIQUE
 // ============================================================
 interface ShippingOption {
@@ -110,6 +123,17 @@ export default function ProductPage() {
   const [selectedShipping, setSelectedShipping] = useState<"bateau" | "avion" | "express">("bateau")
   const [isImageModalOpen, setIsImageModalOpen] = useState(false)
   const [isProtectionModalOpen, setIsProtectionModalOpen] = useState(false)
+
+  // ============================================================
+  // ÉTATS POUR LES AVIS CLIENTS
+  // ============================================================
+  const [reviews, setReviews] = useState<CustomerReview[]>([])
+  const [isLoadingReviews, setIsLoadingReviews] = useState(true)
+  const [reviewsStats, setReviewsStats] = useState({
+    averageRating: 0,
+    totalReviews: 0,
+    ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+  })
 
   // ============================================================
   // ÉTATS POUR LES DONNÉES LOGISTIQUES
@@ -186,27 +210,85 @@ export default function ProductPage() {
   }, [id])
 
   // ============================================================
+  // CHARGEMENT DES AVIS CLIENTS
+  // ============================================================
+  useEffect(() => {
+    if (!product?.id) return
+
+    const fetchReviews = async () => {
+      setIsLoadingReviews(true)
+      try {
+        const response = await fetch(`/api/products/${product.id}/reviews`)
+        const data = await response.json()
+        
+        if (data.success) {
+          const allReviews = data.reviews || []
+          setReviews(allReviews)
+          
+          // Calculer les statistiques
+          const total = allReviews.length
+          if (total > 0) {
+            const avg = allReviews.reduce((sum: number, r: CustomerReview) => sum + r.rating, 0) / total
+            const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+            allReviews.forEach((r: CustomerReview) => {
+              if (r.rating >= 1 && r.rating <= 5) {
+                distribution[r.rating as keyof typeof distribution]++
+              }
+            })
+            
+            setReviewsStats({
+              averageRating: Math.round(avg * 10) / 10,
+              totalReviews: total,
+              ratingDistribution: distribution
+            })
+          } else {
+            setReviewsStats({
+              averageRating: 0,
+              totalReviews: 0,
+              ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+            })
+          }
+        }
+      } catch (error) {
+        console.error("Erreur chargement avis:", error)
+      } finally {
+        setIsLoadingReviews(false)
+      }
+    }
+    
+    fetchReviews()
+  }, [product?.id])
+
+  // ============================================================
+  // FONCTION POUR FORMATER LA DATE
+  // ============================================================
+  const formatReviewDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    })
+  }
+
+  // ============================================================
   // VÉRIFICATION SI LE PRODUIT EST DANS LA WISHLIST
   // ============================================================
   useEffect(() => {
     const checkWishlist = async () => {
       if (!user || !product) return
       
-      console.log("🔍 [WISHLIST] Vérification si produit en favoris:", product.id)
-      
       try {
         const response = await wishlistApi.list()
-        console.log("🔍 [WISHLIST] Réponse list:", response)
         
         if (response.success && response.data) {
           const exists = response.data.some((item: any) => 
             item.productId === product.id || item.product?.id === product.id
           )
-          console.log("🔍 [WISHLIST] Produit en favoris:", exists)
           setIsWishlisted(exists)
         }
       } catch (error) {
-        console.error("❌ Erreur vérification wishlist:", error)
+        console.error("Erreur vérification wishlist:", error)
       }
     }
     
@@ -217,56 +299,35 @@ export default function ProductPage() {
   // FONCTION POUR AJOUTER/RETIRER DES FAVORIS
   // ============================================================
   const handleToggleWishlist = async () => {
-    console.log("🔴 [DEBUG] ========== CLIC SUR FAVORIS ==========")
-    console.log("🔴 [DEBUG] handleToggleWishlist appelé")
-    console.log("🔴 [DEBUG] user:", user?.email || "non connecté")
-    console.log("🔴 [DEBUG] productId:", product?.id)
-    console.log("🔴 [DEBUG] isWishlisted actuel:", isWishlisted)
-    
     if (!user) {
-      console.log("🔴 [DEBUG] Pas d'utilisateur, redirection vers login")
       router.push("/account?mode=login")
       return
     }
     
     try {
       if (isWishlisted) {
-        console.log("🔴 [DEBUG] Tentative de RETRAIT du produit des favoris...")
-        console.log("🔴 [DEBUG] Appel wishlistApi.remove avec productId:", product.id)
-        
         const response = await wishlistApi.remove(product.id)
-        console.log("🔴 [DEBUG] Réponse retrait:", response)
         
         if (response.success) {
-          console.log("✅ [DEBUG] Retrait réussi!")
           setIsWishlisted(false)
           toast.success("Produit retiré des favoris")
         } else {
-          console.log("❌ [DEBUG] Retrait échoué:", response.error)
           toast.error(response.error || "Erreur lors du retrait des favoris")
         }
       } else {
-        console.log("🔴 [DEBUG] Tentative d'AJOUT du produit aux favoris...")
-        console.log("🔴 [DEBUG] Appel wishlistApi.add avec productId:", product.id)
-        
         const response = await wishlistApi.add(product.id)
-        console.log("🔴 [DEBUG] Réponse ajout:", response)
         
         if (response.success) {
-          console.log("✅ [DEBUG] Ajout réussi!")
           setIsWishlisted(true)
           toast.success("Produit ajouté aux favoris")
         } else {
-          console.log("❌ [DEBUG] Ajout échoué:", response.error)
           toast.error(response.error || "Erreur lors de l'ajout aux favoris")
         }
       }
     } catch (error) {
-      console.error("❌ [DEBUG] Erreur wishlist:", error)
+      console.error("Erreur wishlist:", error)
       toast.error("Une erreur est survenue")
     }
-    
-    console.log("🔴 [DEBUG] ========== FIN CLIC ==========")
   }
 
   // ============================================================
@@ -296,18 +357,10 @@ export default function ProductPage() {
           country: country
         })
         
-        console.log("🔍 [LOGISTICS] Quantité envoyée:", totalQuantity)
-        
         const response = await fetch(`/api/logistics/estimate?${params}`)
         const data = await response.json()
         
         if (data.success) {
-          console.log("📦 FRAIS REÇUS DE L'API:", {
-            bateau: data.data.shipping?.bateau?.cost,
-            avion: data.data.shipping?.avion?.cost,
-            express: data.data.shipping?.express?.cost
-          })
-          
           setLogisticsData(data.data)
           
           if (data.data.shipping) {
@@ -322,7 +375,7 @@ export default function ProductPage() {
           setLogisticsError(data.error || "Erreur lors du calcul des frais de livraison")
         }
       } catch (error) {
-        console.error("❌ Erreur API logistique:", error)
+        console.error("Erreur API logistique:", error)
         setLogisticsError("Impossible de calculer les frais de livraison")
       } finally {
         setIsLoadingLogistics(false)
@@ -710,7 +763,7 @@ export default function ProductPage() {
   }, [simpleVariantQuantities, complexSelections, simpleQuantity, product, minQuantity])
 
   // ============================================================
-  // FONCTIONS D'ACHAT - CORRIGÉES AVEC VARIANTKEY
+  // FONCTIONS D'ACHAT
   // ============================================================
   const handleAddToCart = () => {
     const grandTotal = getGrandTotal()
@@ -851,7 +904,7 @@ export default function ProductPage() {
   }
 
   // ============================================================
-  // ✅ API FALLBACK - RECOMMANDATIONS RAPIDES
+  // API FALLBACK - RECOMMANDATIONS RAPIDES
   // ============================================================
   const [relatedProducts, setRelatedProducts] = useState<any[]>([])
   const [isLoadingRelated, setIsLoadingRelated] = useState(true)
@@ -859,9 +912,8 @@ export default function ProductPage() {
   useEffect(() => {
     const fetchFallbackRecommendations = async () => {
       try {
-        // Appel à l'API fallback (rapide, pas de timeout)
-const res = await fetch(`/api/graph/recommendations/fallback?limit=8&exclude=${product?.id || ''}`)
-const data = await res.json()
+        const res = await fetch(`/api/graph/recommendations/fallback?limit=8&exclude=${product?.id || ''}`)
+        const data = await res.json()
         if (data.success && data.data.length > 0) {
           setRelatedProducts(data.data)
         }
@@ -882,9 +934,7 @@ const data = await res.json()
   // ============================================================
   const getShippingCost = (mode: "bateau" | "avion" | "express"): number => {
     if (!logisticsData?.shipping || !logisticsData.shipping[mode]) return 0
-    const cost = logisticsData.shipping[mode]?.cost || 0
-    console.log(`💰 ${mode} affiché:`, cost)
-    return cost
+    return logisticsData.shipping[mode]?.cost || 0
   }
 
   const getPortePorteCost = (mode: "bateau" | "avion" | "express"): number => {
@@ -907,7 +957,7 @@ const data = await res.json()
   const selectedPortePorteCost = getPortePorteCost(selectedShipping)
 
   // ============================================================
-  // RENDU CONDITIONNEL - AVEC LE LOADER CORRIGÉ
+  // RENDU CONDITIONNEL
   // ============================================================
   if (!product) {
     return <Loader />
@@ -915,12 +965,6 @@ const data = await res.json()
 
   const safeImages = images.length > 0 ? images : ["/placeholder.svg"]
   const productName = product.title || product.name || "Produit"
-
-  const displayedShippingCosts = {
-    bateau: getShippingCost("bateau"),
-    avion: getShippingCost("avion"),
-    express: getShippingCost("express")
-  }
 
   const currentPrice = product.price || 0
   const grandTotal = getGrandTotal()
@@ -977,10 +1021,8 @@ const data = await res.json()
                     />
                   </button>
                   
-                  {/* Points indicateurs - Design épuré avec max 12 points et carrousel */}
                   <div className="absolute bottom-4 left-0 right-0 flex justify-center">
                     <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-white/80 backdrop-blur-sm shadow-md">
-                      {/* Premiers points (max 12) */}
                       <div className="flex gap-1.5">
                         {safeImages.slice(0, 12).map((_, idx) => (
                           <button
@@ -995,7 +1037,6 @@ const data = await res.json()
                         ))}
                       </div>
                       
-                      {/* Carrousel pour les images supplémentaires */}
                       {safeImages.length > 12 && (
                         <div className="flex items-center gap-1 pl-1.5 border-l border-gray-300">
                           <button
@@ -1043,7 +1084,7 @@ const data = await res.json()
                 )}
               </div>
 
-              {/* Mobile Product Info - le reste est identique */}
+              {/* Mobile Product Info */}
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
@@ -1073,10 +1114,10 @@ const data = await res.json()
                         <Star key={star} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
                       ))}
                     </div>
-                    <span className="text-gray-600">4.9</span>
+                    <span className="text-gray-600">{reviewsStats.averageRating || 0}</span>
                   </div>
                   <span className="text-gray-300">|</span>
-                  <span className="text-gray-600">210 avis</span>
+                  <span className="text-gray-600">{reviewsStats.totalReviews} avis</span>
                   <span className="text-gray-300">|</span>
                   <span className="text-gray-600">1.2k ventes</span>
                 </div>
@@ -1091,10 +1132,9 @@ const data = await res.json()
                   <span className="text-xs text-white px-1.5 py-0.5 rounded" style={{ background: brandGradient }}>-20%</span>
                 </div>
 
-                {/* AFFICHAGE DYNAMIQUE DES VARIANTES - VERSION MOBILE AVEC GRANDS BLOCS GRIS */}
+                {/* AFFICHAGE DYNAMIQUE DES VARIANTES */}
                 {hasVariants && (
                   <>
-                    {/* CAS 1: Variantes simples */}
                     {hasSimpleVariants && (
                       <div className="bg-gray-100 p-4 rounded-xl mb-4">
                         <h3 className="text-sm font-medium text-gray-700 mb-3">
@@ -1142,7 +1182,6 @@ const data = await res.json()
                           })}
                         </div>
 
-                        {/* Résumé des sélections */}
                         {Object.entries(simpleVariantQuantities).map(([value, qty]) => {
                           if (qty === 0) return null
                           
@@ -1171,10 +1210,8 @@ const data = await res.json()
                       </div>
                     )}
 
-                    {/* CAS 2: Variantes multiples */}
                     {hasComplexVariants && (
                       <>
-                        {/* Bloc Attribut principal */}
                         <div className="bg-gray-100 p-4 rounded-xl mb-4">
                           <h3 className="text-sm font-medium text-gray-700 mb-3">
                             {primaryAttrName}
@@ -1223,7 +1260,6 @@ const data = await res.json()
                           </div>
                         </div>
 
-                        {/* Bloc Attribut secondaire */}
                         {secondaryAttrName && (
                           <div className="bg-gray-100 p-4 rounded-xl mb-4">
                             <h3 className="text-sm font-medium text-gray-700 mb-3">
@@ -1258,7 +1294,6 @@ const data = await res.json()
                           </div>
                         )}
 
-                        {/* Résumé des sélections */}
                         {Object.entries(complexSelections).map(([primaryValue, secondarySelections]) => {
                           const nonZeroSelections = Object.entries(secondarySelections).filter(([_, qty]) => qty > 0)
                           if (nonZeroSelections.length === 0) return null
@@ -1405,7 +1440,6 @@ const data = await res.json()
                           )
                         })}
                       </div>
-                      {/* Frais porte-à-porte inclus */}
                       <div className="text-center mt-1">
                         <span className="text-[10px] text-gray-400">* Frais de porte-à-porte inclus</span>
                       </div>
@@ -1487,14 +1521,14 @@ const data = await res.json()
                 </div>
               </div>
 
-              {/* Mobile Tabs - VERSION RESPONSIVE CORRIGÉE */}
+              {/* Mobile Tabs */}
               <div className="mt-6 bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 shadow-sm">
                 <div className="overflow-x-auto hide-scrollbar border-b border-gray-200">
                   <div className="flex gap-4 min-w-max px-1">
                     {[
                       { id: "description", label: "Description" },
                       { id: "specifications", label: "Caractéristiques" },
-                      { id: "avis", label: "Avis (210)" }
+                      { id: "avis", label: `Avis (${reviewsStats.totalReviews})` }
                     ].map((tab) => (
                       <button
                         key={tab.id}
@@ -1565,47 +1599,115 @@ const data = await res.json()
                   
                   {activeTab === "avis" && (
                     <div className="space-y-4">
-                      <div className="flex items-center gap-4 pb-3 border-b border-gray-100">
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-[#2B4F3C]">4.9</div>
-                          <div className="flex justify-center mt-1">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star key={star} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                      {isLoadingReviews ? (
+                        <div className="space-y-4">
+                          {[1, 2, 3].map((i) => (
+                            <div key={i} className="animate-pulse">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                <div className="h-3 bg-gray-200 rounded w-20"></div>
+                              </div>
+                              <div className="flex gap-1 mb-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <div key={star} className="w-3 h-3 bg-gray-200 rounded"></div>
+                                ))}
+                              </div>
+                              <div className="h-3 bg-gray-200 rounded w-full mb-1"></div>
+                              <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : reviews.length === 0 ? (
+                        <div className="text-center py-8">
+                          <div className="w-16 h-16 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+                            <Star className="w-8 h-8 text-gray-300" />
+                          </div>
+                          <p className="text-gray-500 text-sm">Aucun avis pour le moment</p>
+                          <p className="text-xs text-gray-400 mt-1">Soyez le premier à donner votre avis</p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-4 pb-3 border-b border-gray-100">
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-[#2B4F3C]">{reviewsStats.averageRating}</div>
+                              <div className="flex justify-center mt-1">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star 
+                                    key={star} 
+                                    className={`w-3 h-3 ${
+                                      star <= Math.round(reviewsStats.averageRating) 
+                                        ? 'fill-yellow-400 text-yellow-400' 
+                                        : 'text-gray-300'
+                                    }`} 
+                                  />
+                                ))}
+                              </div>
+                              <p className="text-[10px] text-gray-400 mt-1">{reviewsStats.totalReviews} avis</p>
+                            </div>
+                            <div className="flex-1 space-y-1">
+                              {[5, 4, 3, 2, 1].map((rating) => {
+                                const count = reviewsStats.ratingDistribution[rating as keyof typeof reviewsStats.ratingDistribution] || 0
+                                const percentage = reviewsStats.totalReviews > 0 ? (count / reviewsStats.totalReviews) * 100 : 0
+                                return (
+                                  <div key={rating} className="flex items-center gap-2 text-[10px]">
+                                    <span className="w-6">{rating} ★</span>
+                                    <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                      <div 
+                                        className="h-full rounded-full bg-[#2B4F3C]" 
+                                        style={{ width: `${percentage}%` }} 
+                                      />
+                                    </div>
+                                    <span className="w-8 text-right text-gray-500">{count}</span>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-4 max-h-[400px] overflow-y-auto">
+                            {reviews.map((review) => (
+                              <div key={review.id} className="border-b border-gray-100 pb-3 last:border-0">
+                                <div className="flex items-center justify-between mb-1">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-6 h-6 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                                      {review.authorName.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="text-xs font-medium text-gray-700">{review.authorName}</span>
+                                    {review.verifiedPurchase && (
+                                      <span className="text-[9px] px-1.5 py-0.5 bg-green-100 text-green-700 rounded-full">
+                                        Vérifié
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-[10px] text-gray-400">{formatReviewDate(review.createdAt)}</span>
+                                </div>
+                                <div className="flex items-center gap-0.5 mb-1 ml-8">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star 
+                                      key={star} 
+                                      className={`w-2.5 h-2.5 ${
+                                        star <= review.rating 
+                                          ? 'fill-yellow-400 text-yellow-400' 
+                                          : 'text-gray-200'
+                                      }`} 
+                                    />
+                                  ))}
+                                </div>
+                                <p className="text-xs text-gray-600 leading-relaxed ml-8">
+                                  {review.comment}
+                                </p>
+                              </div>
                             ))}
                           </div>
-                          <p className="text-[10px] text-gray-400 mt-1">210 avis</p>
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-xs text-gray-500">★★★★★ Excellent</p>
-                          <p className="text-xs text-gray-400 mt-1">Basé sur 210 évaluations</p>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-3">
-                        {[1, 2].map((review) => (
-                          <div key={review} className="border-b border-gray-100 pb-3 last:border-0">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs font-medium text-gray-700">Jean D.</span>
-                              <span className="text-[10px] text-gray-400">15 déc. 2024</span>
-                            </div>
-                            <div className="flex items-center gap-0.5 mb-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star key={star} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
-                              ))}
-                            </div>
-                            <p className="text-xs text-gray-600 leading-relaxed">
-                              Très bonne qualité, je recommande vivement ce produit !
-                            </p>
-                          </div>
-                        ))}
-                      </div>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* SECTION DESKTOP - inchangée */}
+            {/* SECTION DESKTOP */}
             <div className="hidden lg:grid lg:grid-cols-12 gap-6 lg:gap-8 mb-16">
               
               {/* GALLERY DESKTOP */}
@@ -1696,10 +1798,10 @@ const data = await res.json()
                             <Star key={star} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
                           ))}
                         </div>
-                        <span className="text-gray-600 ml-1">4.9</span>
+                        <span className="text-gray-600 ml-1">{reviewsStats.averageRating || 0}</span>
                       </div>
                       <span className="text-gray-300">|</span>
-                      <span className="text-gray-600">210 avis</span>
+                      <span className="text-gray-600">{reviewsStats.totalReviews} avis</span>
                       <span className="text-gray-300">|</span>
                       <span className="text-gray-600">1,234+ commandes</span>
                     </div>
@@ -1724,10 +1826,9 @@ const data = await res.json()
                     <span className="text-xs text-white px-1.5 py-0.5 rounded" style={{ background: brandGradient }}>-20%</span>
                   </div>
                   
-                  {/* VERSION DESKTOP - AVEC DESIGN DYNAMIQUE */}
+                  {/* VERSION DESKTOP - VARIANTES */}
                   {hasVariants && (
                     <>
-                      {/* CAS 1: Variantes simples */}
                       {hasSimpleVariants && (
                         <div className="mb-3">
                           <div className="text-xs text-gray-500 mb-2">{primaryAttrName}</div>
@@ -1772,7 +1873,6 @@ const data = await res.json()
                             })}
                           </div>
 
-                          {/* Résumé des sélections */}
                           {Object.entries(simpleVariantQuantities).map(([value, qty]) => {
                             if (qty === 0) return null
                             
@@ -1801,7 +1901,6 @@ const data = await res.json()
                         </div>
                       )}
 
-                      {/* CAS 2: Variantes multiples */}
                       {hasComplexVariants && (
                         <>
                           <div className="mb-3">
@@ -1849,7 +1948,6 @@ const data = await res.json()
                             </div>
                           </div>
 
-                          {/* Attribut secondaire */}
                           {secondaryAttrName && (
                             <div className="mb-3">
                               <div className="text-xs text-gray-500 mb-2">{secondaryAttrName}</div>
@@ -2104,14 +2202,14 @@ const data = await res.json()
               </div>
             </div>
 
-            {/* Desktop Tabs - inchangé */}
+            {/* Desktop Tabs */}
             <div className="hidden lg:block mt-8 bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 shadow-sm">
               <div className="border-b border-gray-200 mb-6">
                 <div className="flex gap-6">
                   {[
                     { id: "description", label: "Description" },
                     { id: "specifications", label: "Caractéristiques" },
-                    { id: "avis", label: "Avis (210)" }
+                    { id: "avis", label: `Avis (${reviewsStats.totalReviews})` }
                   ].map((tab) => (
                     <button
                       key={tab.id}
@@ -2206,61 +2304,147 @@ const data = await res.json()
                 
                 {activeTab === "avis" && (
                   <div>
-                    <div className="flex items-center gap-6 mb-6">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold" style={{ background: brandGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>4.9</div>
-                        <div className="flex justify-center mt-1">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star key={star} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                          ))}
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">210 avis</p>
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        {[5, 4, 3, 2, 1].map((rating) => (
-                          <div key={rating} className="flex items-center gap-2 text-xs">
-                            <span className="w-8">{rating} étoiles</span>
-                            <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                              <div 
-                                className="h-full rounded-full" 
-                                style={{ width: rating === 5 ? '80%' : rating === 4 ? '15%' : '5%', background: brandGradient }} 
-                              />
+                    {isLoadingReviews ? (
+                      <div className="space-y-6">
+                        <div className="flex items-center gap-6 mb-6 animate-pulse">
+                          <div className="text-center">
+                            <div className="w-16 h-8 bg-gray-200 rounded mb-1"></div>
+                            <div className="flex gap-1 mt-1">
+                              {[1,2,3,4,5].map((i) => (
+                                <div key={i} className="w-4 h-4 bg-gray-200 rounded"></div>
+                              ))}
                             </div>
-                            <span className="text-xs text-gray-500 w-8">
-                              {rating === 5 ? '168' : rating === 4 ? '32' : '10'}
-                            </span>
+                            <div className="w-16 h-3 bg-gray-200 rounded mt-1"></div>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      {[1, 2, 3].map((review) => (
-                        <div key={review} className="border-b border-gray-200 pb-4">
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full"></div>
-                              <span className="text-sm font-medium">Jean D.</span>
-                            </div>
-                            <span className="text-xs text-gray-400">15 déc. 2024</span>
-                          </div>
-                          <div className="flex items-center gap-1 ml-8 mb-1">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star key={star} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                          <div className="flex-1 space-y-2">
+                            {[1,2,3,4,5].map((i) => (
+                              <div key={i} className="flex items-center gap-2">
+                                <div className="w-12 h-3 bg-gray-200 rounded"></div>
+                                <div className="flex-1 h-2 bg-gray-200 rounded"></div>
+                                <div className="w-8 h-3 bg-gray-200 rounded"></div>
+                              </div>
                             ))}
                           </div>
-                          <p className="text-sm text-gray-700 ml-8">
-                            Très bonne qualité sonore, confortable et bonne autonomie. Je recommande !
-                          </p>
                         </div>
-                      ))}
-                    </div>
+                        <div className="space-y-4">
+                          {[1,2,3].map((i) => (
+                            <div key={i} className="border-b border-gray-200 pb-4 animate-pulse">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                                  <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                </div>
+                                <div className="h-3 bg-gray-200 rounded w-20"></div>
+                              </div>
+                              <div className="flex gap-1 ml-10 mb-2">
+                                {[1,2,3,4,5].map((star) => (
+                                  <div key={star} className="w-3 h-3 bg-gray-200 rounded"></div>
+                                ))}
+                              </div>
+                              <div className="ml-10 space-y-1">
+                                <div className="h-3 bg-gray-200 rounded w-full"></div>
+                                <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : reviews.length === 0 ? (
+                      <div className="text-center py-12">
+                        <div className="w-20 h-20 mx-auto mb-4 bg-gray-50 rounded-full flex items-center justify-center">
+                          <Star className="w-10 h-10 text-gray-300" />
+                        </div>
+                        <p className="text-gray-500">Aucun avis pour le moment</p>
+                        <p className="text-sm text-gray-400 mt-1">Soyez le premier à donner votre avis</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-6 mb-6">
+                          <div className="text-center">
+                            <div className="text-2xl font-bold" style={{ background: brandGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                              {reviewsStats.averageRating}
+                            </div>
+                            <div className="flex justify-center mt-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star 
+                                  key={star} 
+                                  className={`w-3.5 h-3.5 ${
+                                    star <= Math.round(reviewsStats.averageRating) 
+                                      ? 'fill-yellow-400 text-yellow-400' 
+                                      : 'text-gray-300'
+                                  }`} 
+                                />
+                              ))}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">{reviewsStats.totalReviews} avis</p>
+                          </div>
+                          <div className="flex-1 space-y-1">
+                            {[5, 4, 3, 2, 1].map((rating) => {
+                              const count = reviewsStats.ratingDistribution[rating as keyof typeof reviewsStats.ratingDistribution] || 0
+                              const percentage = reviewsStats.totalReviews > 0 ? (count / reviewsStats.totalReviews) * 100 : 0
+                              return (
+                                <div key={rating} className="flex items-center gap-3 text-sm">
+                                  <span className="w-12 text-gray-600">{rating} étoiles</span>
+                                  <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                    <div 
+                                      className="h-full rounded-full" 
+                                      style={{ width: `${percentage}%`, background: brandGradient }} 
+                                    />
+                                  </div>
+                                  <span className="w-12 text-right text-gray-500 text-sm">{count}</span>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2">
+                          {reviews.map((review) => (
+                            <div key={review.id} className="border-b border-gray-200 pb-5 last:border-0">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                    {review.authorName.charAt(0).toUpperCase()}
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm font-medium text-gray-800">{review.authorName}</span>
+                                      {review.verifiedPurchase && (
+                                        <span className="text-[10px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+                                          Achat vérifié
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-1 mt-0.5">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star 
+                                          key={star} 
+                                          className={`w-3 h-3 ${
+                                            star <= review.rating 
+                                              ? 'fill-yellow-400 text-yellow-400' 
+                                              : 'text-gray-200'
+                                          }`} 
+                                        />
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                                <span className="text-xs text-gray-400">{formatReviewDate(review.createdAt)}</span>
+                              </div>
+                              <p className="text-sm text-gray-700 ml-11 leading-relaxed">
+                                {review.comment}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
             </div>
 
-            {/* RELATED PRODUCTS - AVEC API FALLBACK */}
+            {/* RELATED PRODUCTS */}
             <div className="mt-8 lg:mt-12">
               <div className="flex items-center justify-between mb-4 lg:mb-6">
                 <h2 className="text-base lg:text-lg font-medium">Vous aimerez aussi</h2>
