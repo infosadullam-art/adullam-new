@@ -136,6 +136,17 @@ export default function ProductPage() {
   })
 
   // ============================================================
+  // ÉTATS POUR LE FORMULAIRE D'AJOUT D'AVIS
+  // ============================================================
+  const [showReviewForm, setShowReviewForm] = useState(false)
+  const [newReview, setNewReview] = useState({
+    rating: 5,
+    comment: '',
+    authorName: ''
+  })
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false)
+
+  // ============================================================
   // ÉTATS POUR LES DONNÉES LOGISTIQUES
   // ============================================================
   const [logisticsData, setLogisticsData] = useState<LogisticsData | null>(null)
@@ -225,7 +236,6 @@ export default function ProductPage() {
           const allReviews = data.reviews || []
           setReviews(allReviews)
           
-          // Calculer les statistiques
           const total = allReviews.length
           if (total > 0) {
             const avg = allReviews.reduce((sum: number, r: CustomerReview) => sum + r.rating, 0) / total
@@ -269,6 +279,78 @@ export default function ProductPage() {
       month: "long",
       year: "numeric"
     })
+  }
+
+  // ============================================================
+  // FONCTION POUR AJOUTER UN AVIS
+  // ============================================================
+  const handleSubmitReview = async () => {
+    if (!newReview.comment.trim()) {
+      toast.error("Veuillez écrire un commentaire")
+      return
+    }
+    
+    if (!newReview.authorName.trim()) {
+      toast.error("Veuillez entrer votre nom")
+      return
+    }
+    
+    setIsSubmittingReview(true)
+    
+    try {
+      const response = await fetch(`/api/products/${product.id}/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rating: newReview.rating,
+          comment: newReview.comment.trim(),
+          authorName: newReview.authorName.trim(),
+          verifiedPurchase: false,
+          createdAt: new Date().toISOString(),
+          helpfulCount: 0
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast.success("Merci pour votre avis !")
+        setShowReviewForm(false)
+        setNewReview({ rating: 5, comment: '', authorName: '' })
+        
+        const refreshResponse = await fetch(`/api/products/${product.id}/reviews`)
+        const refreshData = await refreshResponse.json()
+        
+        if (refreshData.success) {
+          const allReviews = refreshData.reviews || []
+          setReviews(allReviews)
+          
+          const total = allReviews.length
+          if (total > 0) {
+            const avg = allReviews.reduce((sum: number, r: CustomerReview) => sum + r.rating, 0) / total
+            const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+            allReviews.forEach((r: CustomerReview) => {
+              if (r.rating >= 1 && r.rating <= 5) {
+                distribution[r.rating as keyof typeof distribution]++
+              }
+            })
+            
+            setReviewsStats({
+              averageRating: Math.round(avg * 10) / 10,
+              totalReviews: total,
+              ratingDistribution: distribution
+            })
+          }
+        }
+      } else {
+        toast.error(data.error || "Erreur lors de l'envoi")
+      }
+    } catch (error) {
+      console.error("Erreur submission:", error)
+      toast.error("Une erreur est survenue")
+    } finally {
+      setIsSubmittingReview(false)
+    }
   }
 
   // ============================================================
@@ -331,7 +413,7 @@ export default function ProductPage() {
   }
 
   // ============================================================
-  // ✅ MISE À JOUR DE LA QUANTITÉ TOTALE QUAND LES SÉLECTIONS CHANGENT
+  // MISE À JOUR DE LA QUANTITÉ TOTALE
   // ============================================================
   useEffect(() => {
     const newTotal = getGrandTotal()
@@ -339,7 +421,7 @@ export default function ProductPage() {
   }, [simpleQuantity, simpleVariantQuantities, complexSelections])
 
   // ============================================================
-  // ✅ APPEL À L'API LOGISTIQUE - CORRIGÉ AVEC totalQuantity
+  // APPEL À L'API LOGISTIQUE
   // ============================================================
   useEffect(() => {
     if (!product || !country) return
@@ -774,7 +856,6 @@ export default function ProductPage() {
     
     let itemsAdded = 0
     
-    // Produit sans variantes
     if (!product.variants || product.variants.length === 0) {
       addToCart({
         id: product.id,
@@ -788,8 +869,6 @@ export default function ProductPage() {
       })
       itemsAdded = simpleQuantity
     }
-    
-    // Variantes simples (ex: seulement couleur)
     else if (Object.keys(simpleVariantQuantities).length > 0) {
       Object.entries(simpleVariantQuantities).forEach(([value, qty]) => {
         if (qty > 0) {
@@ -808,8 +887,6 @@ export default function ProductPage() {
         }
       })
     }
-    
-    // Variantes multiples (ex: couleur + pointure)
     else if (Object.keys(complexSelections).length > 0) {
       Object.entries(complexSelections).forEach(([primaryValue, secondarySelections]) => {
         Object.entries(secondarySelections).forEach(([secondaryValue, qty]) => {
@@ -953,7 +1030,6 @@ export default function ProductPage() {
     return `${shipping?.minDays || 0}-${shipping?.maxDays || 0}j`
   }
 
-  // Récupérer les frais pour le mode sélectionné
   const selectedPortePorteCost = getPortePorteCost(selectedShipping)
 
   // ============================================================
@@ -972,12 +1048,8 @@ export default function ProductPage() {
   const hasSimpleVariants = Object.keys(simpleVariantQuantities).length > 0
   const hasComplexVariants = Object.keys(complexSelections).length > 0
 
-  // ============================================================
-  // RENDU PRINCIPAL
-  // ============================================================
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
       <div className="hidden lg:block">
         <Header />
       </div>
@@ -1330,7 +1402,6 @@ export default function ProductPage() {
                   </>
                 )}
 
-                {/* SÉLECTEUR DE QUANTITÉ POUR PRODUITS SANS VARIANTES */}
                 {!hasVariants && (
                   <div className="mb-4">
                     <h3 className="text-sm font-medium text-gray-700 mb-2">Quantité</h3>
@@ -1376,7 +1447,6 @@ export default function ProductPage() {
                   </div>
                 </div>
 
-                {/* Mode de livraison */}
                 <div className="space-y-1.5">
                   <h3 className="text-xs font-medium text-gray-500 flex items-center justify-between">
                     <span>Mode de livraison</span>
@@ -1447,7 +1517,6 @@ export default function ProductPage() {
                   )}
                 </div>
 
-                {/* Protection */}
                 <div 
                   onClick={() => setIsProtectionModalOpen(true)}
                   className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg p-3 cursor-pointer hover:shadow-md transition-all"
@@ -1480,7 +1549,6 @@ export default function ProductPage() {
                   </div>
                 )}
 
-                {/* Boutons d'action */}
                 <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-3 lg:relative lg:border-0 lg:p-0 z-50 shadow-lg">
                   <div className="flex gap-2 max-w-[1440px] mx-auto">
                     <button
@@ -1599,6 +1667,88 @@ export default function ProductPage() {
                   
                   {activeTab === "avis" && (
                     <div className="space-y-4">
+                      {!showReviewForm && (
+                        <button
+                          onClick={() => setShowReviewForm(true)}
+                          className="w-full py-3 bg-[#2B4F3C] text-white rounded-xl text-sm font-medium hover:bg-[#3A6B4E] transition-colors shadow-sm"
+                        >
+                          ✍️ Donner mon avis
+                        </button>
+                      )}
+                      
+                      {showReviewForm && (
+                        <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-4 shadow-sm">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-semibold text-gray-900">Votre avis</h4>
+                            <button 
+                              onClick={() => setShowReviewForm(false)}
+                              className="text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                              <X className="w-5 h-5" />
+                            </button>
+                          </div>
+                          
+                          <div>
+                            <label className="text-sm text-gray-600 font-medium">Note</label>
+                            <div className="flex gap-3 mt-2">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                  key={star}
+                                  onClick={() => setNewReview({ ...newReview, rating: star })}
+                                  className="focus:outline-none transition-transform hover:scale-110"
+                                >
+                                  <Star 
+                                    className={`w-8 h-8 ${
+                                      star <= newReview.rating 
+                                        ? 'fill-yellow-400 text-yellow-400' 
+                                        : 'text-gray-300'
+                                    }`} 
+                                  />
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <label className="text-sm text-gray-600 font-medium">Votre nom</label>
+                            <input
+                              type="text"
+                              value={newReview.authorName}
+                              onChange={(e) => setNewReview({ ...newReview, authorName: e.target.value })}
+                              className="w-full mt-1.5 p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#2B4F3C] focus:ring-2 focus:ring-[#2B4F3C]/20 transition-all"
+                              placeholder="Jean Dupont"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="text-sm text-gray-600 font-medium">Votre commentaire</label>
+                            <textarea
+                              value={newReview.comment}
+                              onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                              className="w-full mt-1.5 p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#2B4F3C] focus:ring-2 focus:ring-[#2B4F3C]/20 resize-none"
+                              rows={4}
+                              placeholder="Partagez votre expérience avec ce produit..."
+                            />
+                          </div>
+                          
+                          <div className="flex gap-3 pt-2">
+                            <button
+                              onClick={() => setShowReviewForm(false)}
+                              className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                            >
+                              Annuler
+                            </button>
+                            <button
+                              onClick={handleSubmitReview}
+                              disabled={isSubmittingReview}
+                              className="flex-1 py-3 bg-[#2B4F3C] text-white rounded-xl text-sm font-medium hover:bg-[#3A6B4E] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {isSubmittingReview ? "Envoi..." : "Publier"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      
                       {isLoadingReviews ? (
                         <div className="space-y-4">
                           {[1, 2, 3].map((i) => (
@@ -1710,7 +1860,6 @@ export default function ProductPage() {
             {/* SECTION DESKTOP */}
             <div className="hidden lg:grid lg:grid-cols-12 gap-6 lg:gap-8 mb-16">
               
-              {/* GALLERY DESKTOP */}
               <div className="lg:col-span-5">
                 <div className="bg-white mb-2 aspect-square flex items-center justify-center overflow-hidden border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow">
                   <Image
@@ -1776,7 +1925,6 @@ export default function ProductPage() {
                 )}
               </div>
 
-              {/* INFO PRODUIT DESKTOP */}
               <div className="lg:col-span-7">
                 <div className="flex items-start justify-between mb-3">
                   <div>
@@ -1826,7 +1974,6 @@ export default function ProductPage() {
                     <span className="text-xs text-white px-1.5 py-0.5 rounded" style={{ background: brandGradient }}>-20%</span>
                   </div>
                   
-                  {/* VERSION DESKTOP - VARIANTES */}
                   {hasVariants && (
                     <>
                       {hasSimpleVariants && (
@@ -1987,7 +2134,6 @@ export default function ProductPage() {
                     </>
                   )}
 
-                  {/* SÉLECTEUR DE QUANTITÉ - DESKTOP (sans variantes) */}
                   {!hasVariants && (
                     <div className="mb-3">
                       <div className="text-xs text-gray-500 mb-2">Quantité</div>
@@ -2304,6 +2450,88 @@ export default function ProductPage() {
                 
                 {activeTab === "avis" && (
                   <div>
+                    {!showReviewForm && (
+                      <button
+                        onClick={() => setShowReviewForm(true)}
+                        className="mb-6 px-4 py-2 bg-[#2B4F3C] text-white rounded-lg text-sm font-medium hover:bg-[#3A6B4E] transition-colors"
+                      >
+                        ✍️ Donner mon avis
+                      </button>
+                    )}
+                    
+                    {showReviewForm && (
+                      <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="font-semibold text-gray-900">Donnez votre avis</h3>
+                          <button 
+                            onClick={() => setShowReviewForm(false)}
+                            className="text-gray-400 hover:text-gray-600"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+                        
+                        <div className="mb-4">
+                          <label className="text-sm text-gray-600 font-medium">Note</label>
+                          <div className="flex gap-2 mt-2">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                onClick={() => setNewReview({ ...newReview, rating: star })}
+                                className="focus:outline-none"
+                              >
+                                <Star 
+                                  className={`w-8 h-8 ${
+                                    star <= newReview.rating 
+                                      ? 'fill-yellow-400 text-yellow-400' 
+                                      : 'text-gray-300'
+                                  }`} 
+                                />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div className="mb-4">
+                          <label className="text-sm text-gray-600 font-medium">Votre nom</label>
+                          <input
+                            type="text"
+                            value={newReview.authorName}
+                            onChange={(e) => setNewReview({ ...newReview, authorName: e.target.value })}
+                            className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2B4F3C]"
+                            placeholder="Jean Dupont"
+                          />
+                        </div>
+                        
+                        <div className="mb-4">
+                          <label className="text-sm text-gray-600 font-medium">Votre commentaire</label>
+                          <textarea
+                            value={newReview.comment}
+                            onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                            className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2B4F3C] resize-none"
+                            rows={4}
+                            placeholder="Partagez votre expérience..."
+                          />
+                        </div>
+                        
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => setShowReviewForm(false)}
+                            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50"
+                          >
+                            Annuler
+                          </button>
+                          <button
+                            onClick={handleSubmitReview}
+                            disabled={isSubmittingReview}
+                            className="px-4 py-2 bg-[#2B4F3C] text-white rounded-lg text-sm font-medium hover:bg-[#3A6B4E] disabled:opacity-50"
+                          >
+                            {isSubmittingReview ? "Envoi..." : "Publier mon avis"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    
                     {isLoadingReviews ? (
                       <div className="space-y-6">
                         <div className="flex items-center gap-6 mb-6 animate-pulse">
@@ -2460,7 +2688,6 @@ export default function ProductPage() {
                 </div>
               ) : (
                 <>
-                  {/* Mobile carousel */}
                   <div className="lg:hidden">
                     <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 shadow-sm">
                       <div className="relative">
@@ -2501,7 +2728,6 @@ export default function ProductPage() {
                     </div>
                   </div>
 
-                  {/* Desktop carousel */}
                   <div className="hidden lg:block relative">
                     <div 
                       ref={relatedCarouselRef}
