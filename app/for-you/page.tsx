@@ -4,11 +4,11 @@ import { Header } from "@/components/header"
 import { MobileHeader } from "@/components/mobile-header"
 import MobileNav from "@/components/mobile-nav"
 import { Footer } from "@/components/footer"
-import { Sparkles, Star, TrendingUp, Zap, Compass, Flame } from "lucide-react"
+import { Sparkles, Star } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 
 interface Product {
   id: string | number
@@ -27,9 +27,13 @@ interface Product {
 export default function ForYouPage() {
   const { formatPrice } = useCurrencyFormatter()
   const [products, setProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [isLoading, setIsLoading] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [stats, setStats] = useState({ predictions: 0, diversity: 0, trending: 0 })
+  
+  const loaderRef = useRef<HTMLDivElement | null>(null)
 
   // ✅ Initialiser sessionId
   useEffect(() => {
@@ -42,45 +46,91 @@ export default function ForYouPage() {
     document.cookie = `sessionId=${stored}; path=/; max-age=86400; SameSite=Lax`
   }, [])
 
-  // ✅ Charger les recommandations
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      if (!sessionId) return
+  // ✅ Charger les recommandations avec pagination
+  const fetchRecommendations = useCallback(async (pageToLoad: number) => {
+    if (!sessionId || isLoading || !hasMore) return
+    
+    setIsLoading(true)
+    try {
+      const seenIds = products.map(p => p.id).join(',')
+      let url = `/api/graph/recommendations/for-you?page=${pageToLoad}&limit=24&sessionId=${sessionId}`
+      if (seenIds) url += `&seenIds=${seenIds}`
       
-      setIsLoading(true)
-      try {
-        const res = await fetch(`/api/graph/recommendations/for-you?limit=24&sessionId=${sessionId}`)
-        const data = await res.json()
+      const res = await fetch(url)
+      const data = await res.json()
+      
+      if (data.success && data.data) {
+        const newProducts = data.data.map((p: any) => ({
+          id: p.id,
+          name: p.name || p.title || 'Produit',
+          price: p.priceUSD || p.price || 0,
+          image: p.image || '/placeholder.jpg',
+          source: p.source,
+          forYouScore: p.forYouScore || p.score || 0.5,
+          reason: p.reason,
+          rating: p.rating || 4.5,
+          reviews: p.reviews || 0
+        }))
         
-        if (data.success && data.data) {
+        // Éviter les doublons
+        const existingIds = new Set(products.map(p => p.id))
+        const uniqueNewProducts = newProducts.filter((p: Product) => !existingIds.has(p.id))
+        
+        if (uniqueNewProducts.length === 0) {
+          setHasMore(false)
+        } else {
+          setProducts(prev => [...prev, ...uniqueNewProducts])
+          
+          // Mettre à jour les stats
           const predictions = data.data.filter((p: any) => p.type === 'prediction').length
           const diversity = data.data.filter((p: any) => p.type === 'diversity').length
           const trending = data.data.filter((p: any) => p.type === 'trending').length
-          
-          setStats({ predictions, diversity, trending })
-
-          const formattedProducts = data.data.map((p: any, index: number) => ({
-            id: p.id,
-            name: p.name || p.title || 'Produit',
-            price: p.priceUSD || p.price || 0,
-            image: p.image || '/placeholder.jpg',
-            source: p.source,
-            forYouScore: p.forYouScore || p.score || 0.5,
-            reason: p.reason,
-            rating: p.rating || 4.5,
-            reviews: p.reviews || 0
+          setStats(prev => ({
+            predictions: prev.predictions + predictions,
+            diversity: prev.diversity + diversity,
+            trending: prev.trending + trending
           }))
-          setProducts(formattedProducts)
         }
-      } catch (error) {
-        console.error('❌ Erreur chargement for-you:', error)
-      } finally {
-        setIsLoading(false)
+        
+        setHasMore(data.meta?.hasMore ?? false)
+        if (data.meta?.hasMore) {
+          setPage(pageToLoad + 1)
+        }
       }
+    } catch (error) {
+      console.error('❌ Erreur chargement for-you:', error)
+      setHasMore(false)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [sessionId, isLoading, hasMore, products])
+
+  // ✅ Chargement initial
+  useEffect(() => {
+    if (sessionId && products.length === 0) {
+      fetchRecommendations(1)
+    }
+  }, [sessionId, fetchRecommendations, products.length])
+
+  // ✅ Scroll infini
+  useEffect(() => {
+    if (!hasMore || isLoading) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && !isLoading && hasMore) {
+          fetchRecommendations(page)
+        }
+      },
+      { threshold: 0, rootMargin: "500px" }
+    )
+
+    if (loaderRef.current) {
+      observer.observe(loaderRef.current)
     }
 
-    fetchRecommendations()
-  }, [sessionId])
+    return () => observer.disconnect()
+  }, [page, hasMore, isLoading, fetchRecommendations])
 
   // Badge de score
   const getScoreBadge = (score: number) => {
@@ -90,7 +140,7 @@ export default function ForYouPage() {
     return null
   }
 
-  if (isLoading) {
+  if (!sessionId) {
     return (
       <div className="min-h-screen bg-neutral-light">
         <div className="hidden lg:block"><Header /></div>
@@ -100,7 +150,7 @@ export default function ForYouPage() {
             <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-12 lg:py-16">
               <Sparkles className="w-10 h-10 mb-4 animate-pulse" />
               <h1 className="text-4xl lg:text-5xl font-bold mb-4">For You</h1>
-              <p className="text-xl mb-6 max-w-2xl opacity-90">Recommandations personnalisées basées sur vos préférences</p>
+              <p className="text-xl mb-6 max-w-2xl opacity-90">Recommandations personnalisées</p>
             </div>
           </div>
           <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-8 flex justify-center">
@@ -113,7 +163,7 @@ export default function ForYouPage() {
     )
   }
 
-  if (products.length === 0) {
+  if (products.length === 0 && !isLoading) {
     return (
       <div className="min-h-screen bg-neutral-light">
         <div className="hidden lg:block"><Header /></div>
@@ -152,7 +202,6 @@ export default function ForYouPage() {
             <h1 className="text-4xl lg:text-5xl font-bold mb-4">For You</h1>
             <p className="text-xl mb-6 max-w-2xl opacity-90">Recommandations personnalisées basées sur vos préférences</p>
             
-            {/* Stats */}
             {(stats.predictions + stats.diversity + stats.trending) > 0 && (
               <div className="flex flex-wrap gap-3">
                 {stats.predictions > 0 && (
@@ -212,42 +261,31 @@ export default function ForYouPage() {
                       className="object-contain p-3 group-hover:scale-105 transition-transform"
                     />
                     
-                    {/* Badge ALS */}
                     {product.source === 'als' && scoreBadge && (
                       <div className={`absolute top-2 right-2 ${scoreBadge.color} text-xs font-bold px-1.5 py-0.5 rounded-full`}>
                         {Math.round((product.forYouScore || 0.5) * 100)}%
                       </div>
                     )}
-
-                    {/* Badge Session Graph */}
                     {(product.source === 'session_graph' || product.source === 'session') && (
                       <div className="absolute top-2 right-2 bg-indigo-100 text-indigo-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
                         Pour vous
                       </div>
                     )}
-
-                    {/* Badge Trend */}
                     {product.source === 'trend' && (
                       <div className="absolute top-2 right-2 bg-blue-100 text-blue-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
                         Tendance
                       </div>
                     )}
-
-                    {/* Badge New */}
                     {product.source === 'new' && (
                       <div className="absolute top-2 right-2 bg-purple-100 text-purple-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
                         Nouveau
                       </div>
                     )}
-
-                    {/* Badge Random */}
                     {product.source === 'random' && (
                       <div className="absolute top-2 right-2 bg-green-100 text-green-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
                         Découverte
                       </div>
                     )}
-
-                    {/* Badge Popular */}
                     {product.source === 'popular' && (
                       <div className="absolute top-2 right-2 bg-orange-100 text-orange-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
                         Populaire
@@ -270,6 +308,22 @@ export default function ForYouPage() {
                 </Link>
               )
             })}
+          </div>
+
+          {/* Loader pour scroll infini */}
+          <div ref={loaderRef} className="flex justify-center py-8">
+            {isLoading && (
+              <div className="flex flex-col items-center gap-2">
+                <div className="relative">
+                  <div className="w-8 h-8 border border-gray-200 rounded-full" />
+                  <div className="absolute top-0 left-0 w-8 h-8 border border-purple-400 rounded-full border-t-transparent animate-spin" />
+                </div>
+                <span className="text-sm text-gray-400">Chargement...</span>
+              </div>
+            )}
+            {!hasMore && products.length > 0 && (
+              <p className="text-sm text-gray-400">{products.length} recommandations</p>
+            )}
           </div>
         </div>
       </main>
