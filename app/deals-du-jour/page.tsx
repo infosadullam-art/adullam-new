@@ -29,7 +29,6 @@ export default function DealsDuJourPage() {
   useEffect(() => {
     const fetchDeals = async () => {
       try {
-        // ✅ Utiliser l'API flash-sales existante
         const res = await fetch('/api/deals/flash-sales?limit=24')
         const data = await res.json()
         
@@ -58,19 +57,19 @@ export default function DealsDuJourPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-light">
+      <div className="min-h-screen bg-white">
         <div className="hidden lg:block"><Header /></div>
         <div className="lg:hidden"><MobileHeader /></div>
         <main className="pb-20 lg:pb-8">
-          <div className="bg-gradient-to-r from-amber-600 to-orange-600 text-white">
-            <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-12 lg:py-16">
-              <TrendingUp className="w-10 h-10 mb-4" />
-              <h1 className="text-4xl lg:text-5xl font-bold mb-4">Deals du jour</h1>
-              <p className="text-xl mb-6 max-w-2xl">Profitez des meilleures offres sélectionnées pour vous aujourd'hui</p>
+          <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white">
+            <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-6 lg:py-8">
+              <TrendingUp className="w-8 h-8 mb-2 opacity-90" />
+              <h1 className="text-3xl lg:text-4xl font-bold mb-1">Deals du jour</h1>
+              <p className="text-sm text-gray-300 max-w-2xl">Profitez des meilleures offres sélectionnées pour vous aujourd'hui</p>
             </div>
           </div>
           <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-8 flex justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
           </div>
         </main>
         <Footer />
@@ -81,15 +80,15 @@ export default function DealsDuJourPage() {
 
   if (products.length === 0) {
     return (
-      <div className="min-h-screen bg-neutral-light">
+      <div className="min-h-screen bg-white">
         <div className="hidden lg:block"><Header /></div>
         <div className="lg:hidden"><MobileHeader /></div>
         <main className="pb-20 lg:pb-8">
-          <div className="bg-gradient-to-r from-amber-600 to-orange-600 text-white">
-            <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-12 lg:py-16">
-              <TrendingUp className="w-10 h-10 mb-4" />
-              <h1 className="text-4xl lg:text-5xl font-bold mb-4">Deals du jour</h1>
-              <p className="text-xl mb-6 max-w-2xl">Profitez des meilleures offres sélectionnées pour vous aujourd'hui</p>
+          <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white">
+            <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-6 lg:py-8">
+              <TrendingUp className="w-8 h-8 mb-2 opacity-90" />
+              <h1 className="text-3xl lg:text-4xl font-bold mb-1">Deals du jour</h1>
+              <p className="text-sm text-gray-300 max-w-2xl">Profitez des meilleures offres sélectionnées pour vous aujourd'hui</p>
             </div>
           </div>
           <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-8 text-center">
@@ -103,7 +102,7 @@ export default function DealsDuJourPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-light">
+    <div className="min-h-screen bg-white">
       <div className="hidden lg:block">
         <Header />
       </div>
@@ -112,33 +111,33 @@ export default function DealsDuJourPage() {
       </div>
 
       <main className="pb-20 lg:pb-8">
-        <div className="bg-gradient-to-r from-amber-600 to-orange-600 text-white">
-          <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-12 lg:py-16">
-            <TrendingUp className="w-10 h-10 mb-4" />
-            <h1 className="text-4xl lg:text-5xl font-bold mb-4">Deals du jour</h1>
-            <p className="text-xl mb-6 max-w-2xl">Profitez des meilleures offres sélectionnées pour vous aujourd'hui</p>
+        <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white">
+          <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-6 lg:py-8">
+            <TrendingUp className="w-8 h-8 mb-2 opacity-90" />
+            <h1 className="text-3xl lg:text-4xl font-bold mb-1">Deals du jour</h1>
+            <p className="text-sm text-gray-300 max-w-2xl">Profitez des meilleures offres sélectionnées pour vous aujourd'hui</p>
           </div>
         </div>
 
         <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-8">
-          <h2 className="text-2xl font-bold mb-2">Offres du jour</h2>
-          <p className="text-muted-foreground mb-6">
-            {products.length} produits en promotion
-          </p>
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Offres du jour</h2>
+            <p className="text-sm text-gray-500">{products.length} produits en promotion</p>
+          </div>
           
           <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 lg:gap-5">
-            {products.map((product, index) => (
+            {products.map((product) => (
               <Link
                 key={product.id}
                 href={`/products/${product.id}`}
-                className="bg-white rounded-lg overflow-hidden group hover:shadow-lg transition-shadow"
+                className="group"
               >
-                <div className="aspect-square bg-neutral-light relative">
+                <div className="bg-gray-50 rounded-xl overflow-hidden aspect-square relative mb-3 group-hover:shadow-md transition-shadow">
                   <Image
                     src={product.image || "/placeholder.svg"}
                     alt={product.name}
                     fill
-                    className="object-contain p-3 group-hover:scale-105 transition-transform"
+                    className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                   />
                   {product.badge && (
                     <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
@@ -146,15 +145,21 @@ export default function DealsDuJourPage() {
                     </div>
                   )}
                 </div>
-                <div className="p-3">
-                  <h3 className="font-medium text-sm mb-1 line-clamp-2 text-gray-800">{product.name}</h3>
-                  <div className="flex items-center gap-1 mb-2">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                    ))}
-                    <span className="text-xs text-gray-400 ml-1">({product.reviews})</span>
+                <div className="space-y-1">
+                  <h3 className="font-medium text-sm line-clamp-2 text-gray-800 group-hover:text-gray-900">
+                    {product.name}
+                  </h3>
+                  <div className="flex items-center gap-1">
+                    <div className="flex">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star key={star} className="w-3 h-3 fill-amber-400 text-amber-400" />
+                      ))}
+                    </div>
+                    <span className="text-xs text-gray-400">({product.reviews})</span>
                   </div>
-                  <span className="text-brand font-bold text-sm">{formatPrice(product.price)}</span>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {formatPrice(product.price)}
+                  </p>
                 </div>
               </Link>
             ))}
