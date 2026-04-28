@@ -15,7 +15,7 @@ export default function MeilleuresVentesPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const itemsPerPage = 48 // 48 produits par page
+  const itemsPerPage = 48
 
   useEffect(() => {
     const fetchBestSellers = async () => {
@@ -53,17 +53,15 @@ export default function MeilleuresVentesPage() {
       </div>
 
       <main className="pb-20 lg:pb-8">
-        {/* Hero épuré */}
         <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white">
-          <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-12 lg:py-16">
-            <TrendingUp className="w-10 h-10 mb-4 opacity-90" />
-            <h1 className="text-4xl lg:text-5xl font-bold mb-4">Meilleures Ventes</h1>
-            <p className="text-lg text-gray-300 max-w-2xl">Découvrez les produits les plus commandés par nos clients</p>
+          <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-6 lg:py-8">
+            <TrendingUp className="w-8 h-8 mb-2 opacity-90" />
+            <h1 className="text-3xl lg:text-4xl font-bold mb-1">Meilleures Ventes</h1>
+            <p className="text-sm text-gray-300 max-w-2xl">Découvrez les produits les plus commandés par nos clients</p>
           </div>
         </div>
 
         <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-8">
-          {/* Header avec pagination info */}
           <div className="flex justify-between items-center mb-6">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">Top 100 des ventes</h2>
@@ -82,14 +80,9 @@ export default function MeilleuresVentesPage() {
             </div>
           ) : (
             <>
-              {/* Grid: 2 colonnes mobile, 6 colonnes desktop */}
               <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 lg:gap-5">
                 {products.map((product) => (
-                  <a
-                    key={product.id}
-                    href={`/products/${product.id}`}
-                    className="group"
-                  >
+                  <a key={product.id} href={`/products/${product.id}`} className="group">
                     <div className="bg-gray-50 rounded-xl overflow-hidden aspect-square relative mb-3 group-hover:shadow-md transition-shadow">
                       <Image
                         src={product.image}
@@ -118,7 +111,6 @@ export default function MeilleuresVentesPage() {
                 ))}
               </div>
 
-              {/* Pagination centrée */}
               {totalPages > 1 && (
                 <div className="flex justify-center items-center gap-2 mt-10 pt-4 border-t border-gray-100">
                   <button

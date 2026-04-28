@@ -16,7 +16,6 @@ export default function OffresSpecialesPage() {
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 })
   const [isLoading, setIsLoading] = useState(true)
 
-  // Timer dynamique depuis l'API
   useEffect(() => {
     const fetchFlashSale = async () => {
       try {
@@ -32,7 +31,6 @@ export default function OffresSpecialesPage() {
     }
     fetchFlashSale()
 
-    // Timer qui décompte chaque seconde
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev.seconds > 0) {
@@ -49,7 +47,6 @@ export default function OffresSpecialesPage() {
     return () => clearInterval(timer)
   }, [])
 
-  // Charger les produits flash sales - CORRIGÉ
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true)
@@ -80,29 +77,29 @@ export default function OffresSpecialesPage() {
       </div>
 
       <main className="pb-20 lg:pb-8">
-        <div className="bg-gradient-to-r from-orange-600 to-red-600 text-white">
-          <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-12 lg:py-16">
-            <Zap className="w-10 h-10 mb-4" />
-            <h1 className="text-4xl lg:text-5xl font-bold mb-4">Offres Spéciales</h1>
-            <p className="text-lg text-white/90 max-w-2xl mb-6">Prix imbattables et quantités limitées</p>
+        <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white">
+          <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-6 lg:py-8">
+            <Zap className="w-8 h-8 mb-2 opacity-90" />
+            <h1 className="text-3xl lg:text-4xl font-bold mb-1">Offres Spéciales</h1>
+            <p className="text-sm text-gray-300 max-w-2xl mb-3">Prix imbattables et quantités limitées</p>
             
-            <div className="flex items-center gap-3 bg-white/20 rounded-xl px-6 py-3 w-fit backdrop-blur-sm">
-              <Timer className="w-5 h-5" />
-              <span className="font-medium">Se termine dans :</span>
+            <div className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-2 w-fit backdrop-blur-sm">
+              <Timer className="w-4 h-4" />
+              <span className="font-medium text-sm">Se termine dans :</span>
               <div className="flex gap-1">
-                <div className="bg-black/30 rounded-lg px-2 py-1 text-center min-w-[50px]">
-                  <div className="text-2xl font-bold">{formatNumber(timeLeft.hours)}</div>
-                  <div className="text-[10px]">Heures</div>
+                <div className="bg-black/30 rounded-lg px-2 py-0.5 text-center min-w-[40px]">
+                  <div className="text-xl font-bold">{formatNumber(timeLeft.hours)}</div>
+                  <div className="text-[8px]">Heures</div>
                 </div>
-                <span className="text-2xl font-bold self-center">:</span>
-                <div className="bg-black/30 rounded-lg px-2 py-1 text-center min-w-[50px]">
-                  <div className="text-2xl font-bold">{formatNumber(timeLeft.minutes)}</div>
-                  <div className="text-[10px]">Minutes</div>
+                <span className="text-xl font-bold self-center">:</span>
+                <div className="bg-black/30 rounded-lg px-2 py-0.5 text-center min-w-[40px]">
+                  <div className="text-xl font-bold">{formatNumber(timeLeft.minutes)}</div>
+                  <div className="text-[8px]">Minutes</div>
                 </div>
-                <span className="text-2xl font-bold self-center">:</span>
-                <div className="bg-black/30 rounded-lg px-2 py-1 text-center min-w-[50px]">
-                  <div className="text-2xl font-bold">{formatNumber(timeLeft.seconds)}</div>
-                  <div className="text-[10px]">Secondes</div>
+                <span className="text-xl font-bold self-center">:</span>
+                <div className="bg-black/30 rounded-lg px-2 py-0.5 text-center min-w-[40px]">
+                  <div className="text-xl font-bold">{formatNumber(timeLeft.seconds)}</div>
+                  <div className="text-[8px]">Secondes</div>
                 </div>
               </div>
             </div>
@@ -124,7 +121,7 @@ export default function OffresSpecialesPage() {
           
           {isLoading ? (
             <div className="flex justify-center py-20">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
             </div>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 lg:gap-5">
