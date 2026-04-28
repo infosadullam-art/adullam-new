@@ -4,300 +4,136 @@ import { Header } from "@/components/header"
 import { MobileHeader } from "@/components/mobile-header"
 import MobileNav from "@/components/mobile-nav"
 import { Footer } from "@/components/footer"
-import { Sparkles, Star } from "lucide-react"
+import { Sparkles, Star, TrendingUp, Zap, Compass, Flame } from "lucide-react"
 import Image from "next/image"
-import { useState, useEffect, useRef, useCallback } from "react"
-import { useApi } from "@/hooks/useApi"
+import Link from "next/link"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { useState, useEffect } from "react"
 
 interface Product {
-  id: string
+  id: string | number
   name: string
-  title?: string
-  priceUSD: number
+  price: number
   image: string
-  status: string
+  badge?: string
+  rank?: number | null
   rating?: number
   reviews?: number
+  source?: string
   forYouScore?: number
   reason?: string
-  source?: string
-  type?: 'prediction' | 'diversity' | 'trending'
 }
 
 export default function ForYouPage() {
   const { formatPrice } = useCurrencyFormatter()
-  const { fetchWithAuth } = useApi()
-  
   const [products, setProducts] = useState<Product[]>([])
-  const [page, setPage] = useState(1)
-  const [isLoading, setIsLoading] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
-  const [initialized, setInitialized] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const [sessionId, setSessionId] = useState<string | null>(null)
-  const [stats, setStats] = useState({
-    predictions: 0,
-    diversity: 0,
-    trending: 0
-  })
-  
-  const loaderRef = useRef<HTMLDivElement | null>(null)
-  const abortControllerRef = useRef<AbortController | null>(null)
-  const viewedProducts = useRef<Set<string>>(new Set())
+  const [stats, setStats] = useState({ predictions: 0, diversity: 0, trending: 0 })
 
-  // ✅ Initialiser sessionId uniquement côté client
+  // ✅ Initialiser sessionId
   useEffect(() => {
-    // Récupérer depuis localStorage
     let stored = localStorage.getItem('adullam_session_id')
     if (!stored) {
       stored = crypto.randomUUID()
       localStorage.setItem('adullam_session_id', stored)
-      console.log(`🔍 [SESSION] Nouveau sessionId créé: ${stored}`)
-    } else {
-      console.log(`🔍 [SESSION] SessionId existant depuis localStorage: ${stored}`)
     }
-    
     setSessionId(stored)
-    
-    // Sauvegarder dans un cookie pour le backend
     document.cookie = `sessionId=${stored}; path=/; max-age=86400; SameSite=Lax`
-    console.log(`🍪 [SESSION] SessionId sauvegardé dans cookie: ${stored}`)
   }, [])
 
-  // ✅ CORRECTION : Utiliser fetchWithAuth et envoyer sessionId
-  const trackInteraction = useCallback(async (
-    productId: string, 
-    type: 'VIEW' | 'CLICK',
-    metadata?: any
-  ) => {
-    if (!sessionId) {
-      console.warn('⚠️ [TRACK] SessionId non encore initialisé, attente...')
-      return
-    }
-    
-    try {
-      const product = products.find(p => p.id === productId)
-      
-      console.log(`📊 [TRACK] Envoi interaction: ${type} sur ${productId} - Session: ${sessionId}`)
-      
-      const res = await fetchWithAuth('/api/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productId,
-          type,
-          context: 'FOR_YOU',
-          sessionId: sessionId,
-          metadata: {
-            ...metadata,
-            page,
-            forYouScore: product?.forYouScore,
-            recommendationType: product?.type,
-            source: product?.source,
-            reason: product?.reason
-          }
-        })
-      })
-      
-      if (!res.ok) {
-        console.error(`❌ Erreur tracking ${type}:`, res.status)
-      } else {
-        console.log(`✅ [TRACK] ${type} envoyé pour ${productId}`)
-      }
-      
-    } catch (err) {
-      console.error('❌ Erreur tracking:', err)
-    }
-  }, [page, products, fetchWithAuth, sessionId])
-
-  // ✅ TRACKER LES VUES
+  // ✅ Charger les recommandations
   useEffect(() => {
-    if (!products.length) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const productId = entry.target.getAttribute('data-product-id')
-            if (productId && !viewedProducts.current.has(productId)) {
-              viewedProducts.current.add(productId)
-              trackInteraction(productId, 'VIEW')
-            }
-          }
-        })
-      },
-      { threshold: 0.3, rootMargin: "50px" }
-    )
-
-    document.querySelectorAll('[data-product-id]').forEach(el => {
-      observer.observe(el)
-    })
-
-    return () => observer.disconnect()
-  }, [products, trackInteraction])
-
-  const generateReason = (score: number, source?: string, type?: string): string => {
-    if (source === 'session_graph') return "Similaire à vos vues"
-    if (source === 'session') return "Similaire à vos vues"
-    if (source === 'als') return "Basé sur vos goûts"
-    if (source === 'trend') return "Tendance de la semaine"
-    if (source === 'new') return "Nouveauté"
-    if (source === 'random') return "Pour varier les découvertes"
-    if (source === 'popular') return "Populaire en ce moment"
-    if (type === 'diversity') return "Découverte"
-    if (type === 'trending') return "Tendance"
-    if (score > 0.9) return "Recommandé"
-    if (score > 0.8) return "Pour vous"
-    if (score > 0.7) return "Populaire"
-    if (score > 0.6) return "Similaire"
-    return "Nouveau"
-  }
-
-  // ✅ CHARGER LES RECOMMANDATIONS
-  const fetchForYou = useCallback(async (pageToLoad: number) => {
-    if (isLoading || !hasMore) return
-    if (!sessionId) {
-      console.warn('⚠️ [FOR-YOU] SessionId non encore initialisé, attente...')
-      return
-    }
-    
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort()
-    }
-    abortControllerRef.current = new AbortController()
-    
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const seenIds = products.map(p => p.id).join(',')
+    const fetchRecommendations = async () => {
+      if (!sessionId) return
       
-      // ✅ Ajouter sessionId dans l'URL
-      let url = `/api/graph/recommendations/for-you?page=${pageToLoad}&limit=24&sessionId=${sessionId}`
-      if (seenIds) {
-        url += `&seenIds=${seenIds}`
-      }
-      
-      console.log(`🔍 [FOR-YOU] Fetch page ${pageToLoad}, Session: ${sessionId}, URL: ${url}`)
-      
-      const res = await fetchWithAuth(url, {
-        signal: abortControllerRef.current.signal,
-      })
+      setIsLoading(true)
+      try {
+        const res = await fetch(`/api/graph/recommendations/for-you?limit=24&sessionId=${sessionId}`)
+        const data = await res.json()
+        
+        if (data.success && data.data) {
+          const predictions = data.data.filter((p: any) => p.type === 'prediction').length
+          const diversity = data.data.filter((p: any) => p.type === 'diversity').length
+          const trending = data.data.filter((p: any) => p.type === 'trending').length
+          
+          setStats({ predictions, diversity, trending })
 
-      if (!res.ok) {
-        if (res.status === 401) {
-          setHasMore(false)
-          return
+          const formattedProducts = data.data.map((p: any, index: number) => ({
+            id: p.id,
+            name: p.name || p.title || 'Produit',
+            price: p.priceUSD || p.price || 0,
+            image: p.image || '/placeholder.jpg',
+            source: p.source,
+            forYouScore: p.forYouScore || p.score || 0.5,
+            reason: p.reason,
+            rating: p.rating || 4.5,
+            reviews: p.reviews || 0
+          }))
+          setProducts(formattedProducts)
         }
-        throw new Error(`HTTP ${res.status}`)
-      }
-
-      const json = await res.json()
-
-      if (!json.success || !Array.isArray(json.data)) {
-        setHasMore(false)
-        return
-      }
-
-      const predictionCount = json.data.filter((p: any) => p.type === 'prediction').length
-      const diversityCount = json.data.filter((p: any) => p.type === 'diversity').length
-      const trendingCount = json.data.filter((p: any) => p.type === 'trending').length
-      
-      console.log(`📊 Page ${pageToLoad}: ${predictionCount} prédictions, ${diversityCount} diversité, ${trendingCount} tendances`)
-      
-      setStats(prev => ({
-        predictions: prev.predictions + predictionCount,
-        diversity: prev.diversity + diversityCount,
-        trending: prev.trending + trendingCount
-      }))
-
-      const newProducts = json.data.map((p: any) => ({
-        id: p.id,
-        name: p.name || p.title || 'Produit',
-        title: p.title || p.name || 'Produit',
-        priceUSD: typeof p.priceUSD === 'number' ? p.priceUSD : 0,
-        image: p.image || '/placeholder.svg',
-        status: p.status || 'ACTIVE',
-        rating: p.rating || 4.5,
-        reviews: p.reviews || Math.floor(Math.random() * 200) + 50,
-        forYouScore: p.forYouScore || p.score || 0.5,
-        reason: p.reason || generateReason(p.forYouScore || 0, p.source, p.type),
-        source: p.source,
-        type: p.type || 'prediction'
-      }))
-
-      const existingIds = new Set(products.map(p => p.id))
-      const uniqueNewProducts = newProducts.filter((p: Product) => !existingIds.has(p.id))
-
-      if (uniqueNewProducts.length === 0) {
-        console.log('⚠️ Plus de nouveaux produits')
-        setHasMore(false)
+      } catch (error) {
+        console.error('❌ Erreur chargement for-you:', error)
+      } finally {
         setIsLoading(false)
-        setInitialized(true)
-        abortControllerRef.current = null
-        return
       }
-
-      setProducts(prev => [...prev, ...uniqueNewProducts])
-
-      setHasMore(json.meta?.hasMore ?? false)
-      if (json.meta?.hasMore) {
-        setPage(pageToLoad + 1)
-      }
-
-    } catch (err: any) {
-      if (err?.name === 'AbortError') return
-      console.error("❌ Erreur Graph:", err)
-      setError(err.message)
-      setHasMore(false)
-    } finally {
-      setIsLoading(false)
-      setInitialized(true)
-    }
-  }, [isLoading, hasMore, products, fetchWithAuth, sessionId])
-
-  const handleProductClick = (productId: string) => {
-    trackInteraction(productId, 'CLICK')
-  }
-
-  // ✅ CHARGEMENT INITIAL
-  useEffect(() => {
-    if (sessionId) {
-      fetchForYou(1)
-    }
-  }, [fetchForYou, sessionId])
-
-  // ✅ SCROLL INFINI
-  useEffect(() => {
-    if (!initialized || !hasMore || isLoading) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting && !isLoading && hasMore) {
-          fetchForYou(page)
-        }
-      },
-      { 
-        threshold: 0,
-        rootMargin: "500px"
-      }
-    )
-
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current)
     }
 
-    return () => observer.disconnect()
-  }, [page, initialized, hasMore, isLoading, fetchForYou])
+    fetchRecommendations()
+  }, [sessionId])
 
   // Badge de score
   const getScoreBadge = (score: number) => {
     if (score > 0.9) return { text: 'Match parfait', color: 'bg-green-100 text-green-700' }
     if (score > 0.8) return { text: 'Excellent', color: 'bg-emerald-100 text-emerald-700' }
     if (score > 0.7) return { text: 'Très bon', color: 'bg-blue-100 text-blue-700' }
-    if (score > 0.6) return { text: 'Bon', color: 'bg-indigo-100 text-indigo-700' }
     return null
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-neutral-light">
+        <div className="hidden lg:block"><Header /></div>
+        <div className="lg:hidden"><MobileHeader /></div>
+        <main className="pb-20 lg:pb-8">
+          <div className="bg-gradient-to-r from-purple-600 to-pink-500 text-white">
+            <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-12 lg:py-16">
+              <Sparkles className="w-10 h-10 mb-4 animate-pulse" />
+              <h1 className="text-4xl lg:text-5xl font-bold mb-4">For You</h1>
+              <p className="text-xl mb-6 max-w-2xl opacity-90">Recommandations personnalisées basées sur vos préférences</p>
+            </div>
+          </div>
+          <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-8 flex justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600" />
+          </div>
+        </main>
+        <Footer />
+        <div className="lg:hidden"><MobileNav /></div>
+      </div>
+    )
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="min-h-screen bg-neutral-light">
+        <div className="hidden lg:block"><Header /></div>
+        <div className="lg:hidden"><MobileHeader /></div>
+        <main className="pb-20 lg:pb-8">
+          <div className="bg-gradient-to-r from-purple-600 to-pink-500 text-white">
+            <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-12 lg:py-16">
+              <Sparkles className="w-10 h-10 mb-4" />
+              <h1 className="text-4xl lg:text-5xl font-bold mb-4">For You</h1>
+              <p className="text-xl mb-6 max-w-2xl">Recommandations personnalisées</p>
+            </div>
+          </div>
+          <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-8 text-center">
+            <p className="text-gray-500">Aucune recommandation pour le moment</p>
+          </div>
+        </main>
+        <Footer />
+        <div className="lg:hidden"><MobileNav /></div>
+      </div>
+    )
   }
 
   return (
@@ -310,44 +146,44 @@ export default function ForYouPage() {
       </div>
 
       <main className="pb-20 lg:pb-8">
-        {/* Hero avec stats */}
-        <div className="bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 text-white">
+        <div className="bg-gradient-to-r from-purple-600 to-pink-500 text-white">
           <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-12 lg:py-16">
             <Sparkles className="w-10 h-10 mb-4 animate-pulse" />
             <h1 className="text-4xl lg:text-5xl font-bold mb-4">For You</h1>
-            <p className="text-xl mb-6 max-w-2xl opacity-90">
-              Recommandations personnalisées basées sur vos préférences
-            </p>
+            <p className="text-xl mb-6 max-w-2xl opacity-90">Recommandations personnalisées basées sur vos préférences</p>
             
-            {/* Stats en temps réel */}
-            {stats.predictions + stats.diversity + stats.trending > 0 && (
-              <div className="flex flex-wrap gap-4 text-sm">
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
-                  <span className="font-semibold">{stats.predictions}</span>
-                  <span className="ml-2 text-white/70">prédictions</span>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
-                  <span className="font-semibold">{stats.diversity}</span>
-                  <span className="ml-2 text-white/70">découvertes</span>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
-                  <span className="font-semibold">{stats.trending}</span>
-                  <span className="ml-2 text-white/70">tendances</span>
-                </div>
+            {/* Stats */}
+            {(stats.predictions + stats.diversity + stats.trending) > 0 && (
+              <div className="flex flex-wrap gap-3">
+                {stats.predictions > 0 && (
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-1.5 text-sm">
+                    <span className="font-semibold">{stats.predictions}</span>
+                    <span className="ml-1 text-white/70">prédictions</span>
+                  </div>
+                )}
+                {stats.diversity > 0 && (
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-1.5 text-sm">
+                    <span className="font-semibold">{stats.diversity}</span>
+                    <span className="ml-1 text-white/70">découvertes</span>
+                  </div>
+                )}
+                {stats.trending > 0 && (
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-1.5 text-sm">
+                    <span className="font-semibold">{stats.trending}</span>
+                    <span className="ml-1 text-white/70">tendances</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
         </div>
 
         <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-8">
-          {/* En-tête dynamique */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Recommandé pour vous
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                {products.length} articles • mise à jour en temps réel
+              <h2 className="text-2xl font-bold text-gray-900">Recommandé pour vous</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                {products.length} articles • mise à jour en continu
               </p>
             </div>
             {stats.predictions > 0 && (
@@ -357,141 +193,83 @@ export default function ForYouPage() {
               </div>
             )}
           </div>
-
-          {error && (
-            <div className="text-center py-8 text-red-400 bg-red-50 rounded-lg mb-6">
-              {error}
-            </div>
-          )}
-
-          {/* Grille produits */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          
+          <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 lg:gap-5">
             {products.map((product) => {
               const scoreBadge = getScoreBadge(product.forYouScore || 0)
               
               return (
-                <div
+                <Link
                   key={product.id}
-                  data-product-id={product.id}
-                  onClick={() => handleProductClick(product.id)}
-                  className="bg-white rounded-lg overflow-hidden group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer relative"
+                  href={`/products/${product.id}`}
+                  className="bg-white rounded-lg overflow-hidden group hover:shadow-lg transition-shadow"
                 >
-                  {/* Badge de score */}
-                  {product.forYouScore && product.forYouScore > 0.7 && (
-                    <span className={`absolute top-2 left-2 z-10 text-xs font-medium px-2 py-1 rounded-full ${scoreBadge?.color}`}>
-                      {scoreBadge?.text}
-                    </span>
-                  )}
-
-                  {/* Badge ALS */}
-                  {product.source === 'als' && (
-                    <span className="absolute top-2 right-2 z-10 bg-amber-100 text-amber-700 text-xs font-medium px-2 py-1 rounded-full border border-amber-200">
-                      {Math.round((product.forYouScore || 0.5) * 100)}%
-                    </span>
-                  )}
-
-                  {/* Badge SESSION GRAPH */}
-                  {(product.source === 'session_graph' || product.source === 'session') && (
-                    <span className="absolute top-2 right-2 z-10 bg-indigo-100 text-indigo-700 text-xs font-medium px-2 py-1 rounded-full border border-indigo-200 animate-pulse">
-                      Pour vous
-                    </span>
-                  )}
-
-                  {/* Badge TREND */}
-                  {product.source === 'trend' && (
-                    <span className="absolute top-2 right-2 z-10 bg-blue-100 text-blue-700 text-xs font-medium px-2 py-1 rounded-full border border-blue-200">
-                      Tendance
-                    </span>
-                  )}
-
-                  {/* Badge NEW */}
-                  {product.source === 'new' && (
-                    <span className="absolute top-2 right-2 z-10 bg-purple-100 text-purple-700 text-xs font-medium px-2 py-1 rounded-full border border-purple-200 animate-pulse">
-                      Nouveau
-                    </span>
-                  )}
-
-                  {/* Badge RANDOM */}
-                  {product.source === 'random' && (
-                    <span className="absolute top-2 right-2 z-10 bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded-full border border-green-200">
-                      Découverte
-                    </span>
-                  )}
-
-                  {/* Badge POPULAR */}
-                  {product.source === 'popular' && (
-                    <span className="absolute top-2 right-2 z-10 bg-orange-100 text-orange-700 text-xs font-medium px-2 py-1 rounded-full border border-orange-200">
-                      Populaire
-                    </span>
-                  )}
-
-                  {/* Image */}
-                  <div className="aspect-square bg-neutral-100 relative overflow-hidden">
+                  <div className="aspect-square bg-neutral-light relative">
                     <Image
-                      src={product.image || '/placeholder.svg'}
+                      src={product.image || "/placeholder.svg"}
                       alt={product.name}
-                      width={300}
-                      height={300}
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                      fill
+                      className="object-contain p-3 group-hover:scale-105 transition-transform"
                     />
-                  </div>
-
-                  {/* Contenu */}
-                  <div className="p-3">
-                    <h3 className="font-medium text-sm mb-1 line-clamp-2 text-gray-900">
-                      {product.name}
-                    </h3>
                     
-                    {/* Rating */}
-                    <div className="flex items-center gap-1 mb-2">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-3 h-3 ${
-                            i < Math.floor(product.rating || 0)
-                              ? 'fill-yellow-400 text-yellow-400'
-                              : 'text-gray-300'
-                          }`}
-                        />
-                      ))}
-                      <span className="text-xs text-muted-foreground ml-1">
-                        ({product.reviews || 0})
-                      </span>
-                    </div>
+                    {/* Badge ALS */}
+                    {product.source === 'als' && scoreBadge && (
+                      <div className={`absolute top-2 right-2 ${scoreBadge.color} text-xs font-bold px-1.5 py-0.5 rounded-full`}>
+                        {Math.round((product.forYouScore || 0.5) * 100)}%
+                      </div>
+                    )}
 
-                    {/* Prix */}
-                    <span className="text-brand font-bold">
-                      {formatPrice(product.priceUSD)}
-                    </span>
+                    {/* Badge Session Graph */}
+                    {(product.source === 'session_graph' || product.source === 'session') && (
+                      <div className="absolute top-2 right-2 bg-indigo-100 text-indigo-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
+                        Pour vous
+                      </div>
+                    )}
 
-                    {/* Raison */}
-                    {product.reason && (
-                      <p className="text-[10px] text-gray-400 mt-1 line-clamp-1">
-                        {product.reason}
-                      </p>
+                    {/* Badge Trend */}
+                    {product.source === 'trend' && (
+                      <div className="absolute top-2 right-2 bg-blue-100 text-blue-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
+                        Tendance
+                      </div>
+                    )}
+
+                    {/* Badge New */}
+                    {product.source === 'new' && (
+                      <div className="absolute top-2 right-2 bg-purple-100 text-purple-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
+                        Nouveau
+                      </div>
+                    )}
+
+                    {/* Badge Random */}
+                    {product.source === 'random' && (
+                      <div className="absolute top-2 right-2 bg-green-100 text-green-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
+                        Découverte
+                      </div>
+                    )}
+
+                    {/* Badge Popular */}
+                    {product.source === 'popular' && (
+                      <div className="absolute top-2 right-2 bg-orange-100 text-orange-700 text-xs font-bold px-1.5 py-0.5 rounded-full">
+                        Populaire
+                      </div>
                     )}
                   </div>
-                </div>
+                  <div className="p-3">
+                    <h3 className="font-medium text-sm mb-1 line-clamp-2 text-gray-800">{product.name}</h3>
+                    <div className="flex items-center gap-1 mb-2">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                      ))}
+                      <span className="text-xs text-gray-400 ml-1">({product.reviews})</span>
+                    </div>
+                    <span className="text-brand font-bold text-sm">{formatPrice(product.price)}</span>
+                    {product.reason && (
+                      <p className="text-[10px] text-gray-400 mt-1 line-clamp-1">{product.reason}</p>
+                    )}
+                  </div>
+                </Link>
               )
             })}
-          </div>
-
-          {/* Loader infini */}
-          <div ref={loaderRef} className="flex justify-center py-8">
-            {isLoading && (
-              <div className="flex flex-col items-center gap-2">
-                <div className="relative">
-                  <div className="w-8 h-8 border border-gray-200 rounded-full" />
-                  <div className="absolute top-0 left-0 w-8 h-8 border border-purple-400 rounded-full border-t-transparent animate-spin" />
-                </div>
-                <span className="text-sm text-gray-400">Chargement des recommandations...</span>
-              </div>
-            )}
-            {!hasMore && products.length > 0 && (
-              <p className="text-sm text-gray-300">
-                {products.length} recommandations • fin de la liste
-              </p>
-            )}
           </div>
         </div>
       </main>
