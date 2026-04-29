@@ -108,9 +108,9 @@ interface LogisticsData {
 }
 
 // ============================================================
-// CONFIGURATION BACKEND
+// CONFIGURATION BACKEND - CORRIGÉ
 // ============================================================
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://adullam-backend.up.railway.app"
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL
 
 export default function ProductPage() {
   const { id } = useParams()
