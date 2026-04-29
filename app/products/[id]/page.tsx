@@ -107,6 +107,11 @@ interface LogisticsData {
   }
 }
 
+// ============================================================
+// CONFIGURATION BACKEND
+// ============================================================
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://adullam-backend.up.railway.app"
+
 export default function ProductPage() {
   const { id } = useParams()
   const router = useRouter()
@@ -229,7 +234,7 @@ export default function ProductPage() {
     const fetchReviews = async () => {
       setIsLoadingReviews(true)
       try {
-        const response = await fetch(`/api/products/${product.id}/reviews`)
+        const response = await fetch(`${BACKEND_URL}/api/products/${product.id}/reviews`)
         const data = await response.json()
         
         if (data.success) {
@@ -298,7 +303,7 @@ export default function ProductPage() {
     setIsSubmittingReview(true)
     
     try {
-      const response = await fetch(`/api/products/${product.id}/reviews`, {
+      const response = await fetch(`${BACKEND_URL}/api/products/${product.id}/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -318,7 +323,7 @@ export default function ProductPage() {
         setShowReviewForm(false)
         setNewReview({ rating: 5, comment: '', authorName: '' })
         
-        const refreshResponse = await fetch(`/api/products/${product.id}/reviews`)
+        const refreshResponse = await fetch(`${BACKEND_URL}/api/products/${product.id}/reviews`)
         const refreshData = await refreshResponse.json()
         
         if (refreshData.success) {
