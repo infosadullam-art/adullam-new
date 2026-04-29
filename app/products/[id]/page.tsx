@@ -110,7 +110,7 @@ interface LogisticsData {
 // ============================================================
 // CONFIGURATION BACKEND - CORRIGÉ
 // ============================================================
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL
+const BACKEND_URL = "https://outstanding-enchantment-production-109f.up.railway.app/api"
 export default function ProductPage() {
   const { id } = useParams()
   const router = useRouter()
