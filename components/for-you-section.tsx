@@ -31,10 +31,6 @@ export function ForYouSection() {
   const [titleIndex, setTitleIndex] = useState(0)
   const [sessionId, setSessionId] = useState<string | null>(null)
   
-  // ✅ CACHE LOCAL DES PAGES
-  const [cachedPages, setCachedPages] = useState<Map<number, Product[]>>(new Map())
-  const [isPrefetching, setIsPrefetching] = useState(false)
-  
   const observerRef = useRef<HTMLDivElement | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -58,6 +54,7 @@ export function ForYouSection() {
 
   // ✅ Initialiser sessionId uniquement côté client
   useEffect(() => {
+    // Récupérer depuis localStorage
     let stored = localStorage.getItem('adullam_session_id')
     if (!stored) {
       stored = crypto.randomUUID()
@@ -68,11 +65,13 @@ export function ForYouSection() {
     }
     
     setSessionId(stored)
+    
+    // Sauvegarder dans un cookie pour le backend
     document.cookie = `sessionId=${stored}; path=/; max-age=86400; SameSite=Lax`
     console.log(`🍪 [SESSION] SessionId sauvegardé dans cookie: ${stored}`)
   }, [])
 
-  // ✅ TRACK INTERACTION (sans invalider le cache)
+  // ✅ CORRECTION : Utiliser fetchWithAuth et envoyer sessionId
   const trackInteraction = useCallback(async (
     productId: string, 
     type: 'VIEW' | 'CLICK',
@@ -164,23 +163,10 @@ export function ForYouSection() {
     return "Nouveau"
   }
 
-  // ✅ FETCH AVEC CACHE LOCAL
-  const fetchForYou = useCallback(async (pageToLoad: number, forceRefresh = false) => {
+  const fetchForYou = useCallback(async (pageToLoad: number) => {
     if (isLoading || !hasMore) return
     if (!sessionId) {
       console.warn('⚠️ [FOR-YOU] SessionId non encore initialisé, attente...')
-      return
-    }
-    
-    // ✅ VÉRIFIER LE CACHE LOCAL
-    if (!forceRefresh && cachedPages.has(pageToLoad)) {
-      console.log(`📦 [CACHE] Page ${pageToLoad} chargée depuis cache navigateur`)
-      if (pageToLoad === page) {
-        setProducts(cachedPages.get(pageToLoad)!)
-      } else {
-        setProducts(prev => [...prev, ...cachedPages.get(pageToLoad)!])
-      }
-      setInitialized(true)
       return
     }
     
@@ -195,6 +181,7 @@ export function ForYouSection() {
     try {
       const seenIds = products.map(p => p.id).join(',')
       
+      // ✅ CORRECTION: Ajouter sessionId dans l'URL
       let url = `/api/graph/recommendations/for-you?page=${pageToLoad}&limit=24&sessionId=${sessionId}`
       if (seenIds) {
         url += `&seenIds=${seenIds}`
@@ -253,25 +240,24 @@ export function ForYouSection() {
         type: p.type || 'diversity'
       }))
 
-      // ✅ METTRE EN CACHE LA PAGE
-      setCachedPages(prev => new Map(prev).set(pageToLoad, predictions))
-      
-      if (pageToLoad === page) {
-        setProducts(predictions)
-      } else {
-        setProducts(prev => [...prev, ...predictions])
+      const existingIds = new Set(products.map(p => p.id))
+      const newProducts = predictions.filter((p: Product) => !existingIds.has(p.id))
+
+      console.log(`🔍 Nouveaux produits: ${newProducts.length}`)
+
+      if (newProducts.length === 0) {
+        console.log('⚠️ Plus de nouveaux produits')
+        setHasMore(false)
+        setIsLoading(false)
+        setInitialized(true)
+        return
       }
-      
+
+      setProducts(prev => [...prev, ...newProducts])
       setHasMore(json.meta?.hasMore ?? false)
       
-      if (json.meta?.hasMore && pageToLoad === page) {
+      if (json.meta?.hasMore) {
         setPage(pageToLoad + 1)
-      }
-      
-      // ✅ PRÉCHARGER LA PAGE SUIVANTE EN BACKGROUND
-      if (json.meta?.hasMore && !cachedPages.has(pageToLoad + 1) && !isPrefetching) {
-        setIsPrefetching(true)
-        fetchForYou(pageToLoad + 1, true).finally(() => setIsPrefetching(false))
       }
 
     } catch (err: any) {
@@ -283,10 +269,9 @@ export function ForYouSection() {
       setIsLoading(false)
       setInitialized(true)
     }
-  }, [isLoading, hasMore, products, fetchWithAuth, sessionId, page, cachedPages, isPrefetching])
+  }, [isLoading, hasMore, products, fetchWithAuth, sessionId])
 
   const handleProductClick = (productId: string) => {
-    // ✅ ENVOYER LE CLIC SANS INVALIDER LE CACHE
     trackInteraction(productId, 'CLICK')
   }
 
@@ -325,6 +310,7 @@ export function ForYouSection() {
 
   const bgColors = ["bg-gray-100", "bg-gray-200", "bg-gray-300"]
 
+  // 🔥 AJOUT : Si pas de produits et pas de chargement, afficher un message
   if (!isLoading && products.length === 0 && !error) {
     return (
       <section className="w-full bg-white py-12 lg:py-16">
@@ -382,43 +368,49 @@ export function ForYouSection() {
                         data-product-id={product.id}
                         onClick={() => handleProductClick(product.id)}
                       >
-                        {/* BADGES */}
+                        {/* BADGE SESSION GRAPH */}
                         {(product.source === 'session_graph' || product.source === 'session') && (
                           <span className="absolute -top-2 -right-2 z-10 bg-indigo-100 text-indigo-700 text-[8px] font-medium px-1.5 py-0.5 rounded-full border border-indigo-200 animate-pulse">
                             Pour vous
                           </span>
                         )}
                         
+                        {/* BADGE ALS */}
                         {product.source === 'als' && (
                           <span className="absolute -top-2 -right-2 z-10 bg-amber-100 text-amber-700 text-[8px] font-medium px-1.5 py-0.5 rounded-full border border-amber-200">
                             {Math.round((product.forYouScore || 0.5) * 100)}%
                           </span>
                         )}
                         
+                        {/* BADGE TREND */}
                         {product.source === 'trend' && (
                           <span className="absolute -top-2 -right-2 z-10 bg-blue-100 text-blue-700 text-[8px] font-medium px-1.5 py-0.5 rounded-full border border-blue-200">
                             Tendance
                           </span>
                         )}
                         
+                        {/* BADGE NEW */}
                         {product.source === 'new' && (
                           <span className="absolute -top-2 -right-2 z-10 bg-purple-100 text-purple-700 text-[8px] font-medium px-1.5 py-0.5 rounded-full border border-purple-200 animate-pulse">
                             Nouveau
                           </span>
                         )}
                         
+                        {/* BADGE RANDOM */}
                         {product.source === 'random' && (
                           <span className="absolute -top-2 -right-2 z-10 bg-green-100 text-green-700 text-[8px] font-medium px-1.5 py-0.5 rounded-full border border-green-200">
                             Découverte
                           </span>
                         )}
                         
+                        {/* BADGE POPULAR */}
                         {product.source === 'popular' && (
                           <span className="absolute -top-2 -right-2 z-10 bg-orange-100 text-orange-700 text-[8px] font-medium px-1.5 py-0.5 rounded-full border border-orange-200">
                             Populaire
                           </span>
                         )}
                         
+                        {/* RAISON */}
                         {product.reason && (
                           <span className="absolute top-2 left-2 z-10 bg-white/80 text-gray-600 text-[7px] px-1.5 py-0.5 rounded-full border border-gray-200">
                             {product.reason}
