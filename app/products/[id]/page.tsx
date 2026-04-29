@@ -237,7 +237,7 @@ export default function ProductPage() {
         const data = await response.json()
         
         if (data.success) {
-          const allReviews = data.reviews || []
+          const allReviews = data.data || []
           setReviews(allReviews)
           
           const total = allReviews.length
@@ -322,11 +322,11 @@ export default function ProductPage() {
         setShowReviewForm(false)
         setNewReview({ rating: 5, comment: '', authorName: '' })
         
-        const refreshResponse = await fetch(`${BACKEND_URL}/api/products/${product.id}/reviews`)
+        const refreshResponse = await fetch(`${BACKEND_URL}/products/${product.id}/reviews`)
         const refreshData = await refreshResponse.json()
         
         if (refreshData.success) {
-          const allReviews = refreshData.reviews || []
+          const allReviews = refreshData.data || []
           setReviews(allReviews)
           
           const total = allReviews.length
