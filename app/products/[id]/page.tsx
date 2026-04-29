@@ -233,7 +233,7 @@ export default function ProductPage() {
     const fetchReviews = async () => {
       setIsLoadingReviews(true)
       try {
-        const response = await fetch(`${BACKEND_URL}/api/products/${product.id}/reviews`)
+        const response = await fetch(`${BACKEND_URL}/products/${product.id}/reviews`)
         const data = await response.json()
         
         if (data.success) {
@@ -302,7 +302,7 @@ export default function ProductPage() {
     setIsSubmittingReview(true)
     
     try {
-      const response = await fetch(`${BACKEND_URL}/api/products/${product.id}/reviews`, {
+      const response = await fetch(`${BACKEND_URL}/products/${product.id}/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
