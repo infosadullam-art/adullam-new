@@ -7,17 +7,17 @@ export function Footer() {
             <h3 className="font-bold mb-3 lg:mb-4 text-white">À propos</h3>
             <ul className="space-y-2 text-sm text-white/70">
               <li>
-                <a href="#" className="hover:text-white">
+                <a href="/qui-sommes-nous" className="hover:text-white">
                   Qui sommes-nous
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
+                <a href="/carrieres" className="hover:text-white">
                   Carrières
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
+                <a href="/presse" className="hover:text-white">
                   Presse
                 </a>
               </li>
@@ -28,17 +28,17 @@ export function Footer() {
             <h3 className="font-bold mb-3 lg:mb-4 text-white">Service client</h3>
             <ul className="space-y-2 text-sm text-white/70">
               <li>
-                <a href="#" className="hover:text-white">
+                <a href="/contact" className="hover:text-white">
                   Contact
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
+                <a href="/aide" className="hover:text-white">
                   Aide
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
+                <a href="/retours" className="hover:text-white">
                   Retours
                 </a>
               </li>
@@ -46,21 +46,26 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="font-bold mb-3 lg:mb-4 text-white">Vendez</h3>
+            <h3 className="font-bold mb-3 lg:mb-4 text-white">Informations légales</h3>
             <ul className="space-y-2 text-sm text-white/70">
               <li>
-                <a href="#" className="hover:text-white">
-                  Devenir vendeur
+                <a href="/mentions-legales" className="hover:text-white">
+                  Mentions légales
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
-                  Publier une annonce
+                <a href="/cgv" className="hover:text-white">
+                  CGV
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
-                  Espace vendeur
+                <a href="/confidentialite" className="hover:text-white">
+                  Confidentialité
+                </a>
+              </li>
+              <li>
+                <a href="/cookies" className="hover:text-white">
+                  Cookies
                 </a>
               </li>
             </ul>
@@ -70,17 +75,17 @@ export function Footer() {
             <h3 className="font-bold mb-3 lg:mb-4 text-white">Suivez-nous</h3>
             <ul className="space-y-2 text-sm text-white/70">
               <li>
-                <a href="#" className="hover:text-white">
+                <a href="https://facebook.com/adullam" target="_blank" rel="noopener noreferrer" className="hover:text-white">
                   Facebook
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
+                <a href="https://instagram.com/adullam" target="_blank" rel="noopener noreferrer" className="hover:text-white">
                   Instagram
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white">
+                <a href="https://twitter.com/adullam" target="_blank" rel="noopener noreferrer" className="hover:text-white">
                   Twitter
                 </a>
               </li>
