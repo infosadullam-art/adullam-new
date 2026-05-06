@@ -14,9 +14,9 @@ export default function AidePage() {
         
         <section>
           <h2 className="text-xl font-semibold mb-2">Quels sont les modes de livraison ?</h2>
-          <p><strong>Maritime (bateau)</strong> : 20-35 jours - Economique</p>
-          <p><strong>Aérien (avion)</strong> : 7-15 jours - Rapide</p>
-          <p><strong>Express</strong> : 3-7 jours - Très rapide</p>
+          <p><strong>Maritime (bateau)</strong> : 45-50 jours - Économique</p>
+          <p><strong>Aérien (avion)</strong> : 15-17 jours - Rapide</p>
+          <p><strong>Express</strong> : 7-10 jours - Très rapide</p>
         </section>
         
         <section>
