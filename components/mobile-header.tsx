@@ -6,13 +6,13 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/admin/auth-context"
 
 const categoryItems = [
-  { label: "Électronique", icon: Tv },
-  { label: "Mode", icon: Shirt },
-  { label: "Maison", icon: Package },
-  { label: "Beauté", icon: Heart },
-  { label: "Jouets", icon: Grid3x3 },
-  { label: "Sports", icon: Home },
-  { label: "Alimentation", icon: Package },
+  { label: "Électronique", icon: Tv, slug: "electronique" },
+  { label: "Mode", icon: Shirt, slug: "mode" },
+  { label: "Maison", icon: Package, slug: "maison" },
+  { label: "Beauté", icon: Heart, slug: "beaute" },
+  { label: "Jouets", icon: Grid3x3, slug: "jouets" },
+  { label: "Sports", icon: Home, slug: "sports" },
+  { label: "Alimentation", icon: Package, slug: "alimentation" },
 ]
 
 export function MobileHeader() {
@@ -70,7 +70,7 @@ export function MobileHeader() {
     setShowMenu(false)
   }
 
-  // 🔥 Redirections vers /account (pas vers des sous-pages)
+  // 🔥 Redirections vers /account
   const goToOrders = () => {
     router.push("/account")
     setShowMenu(false)
@@ -162,7 +162,7 @@ export function MobileHeader() {
           showMenu ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* Header du menu - sans bouton X */}
+        {/* Header du menu */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-brand rounded flex items-center justify-center">
@@ -218,7 +218,7 @@ export function MobileHeader() {
             </>
           )}
 
-          {/* Vos commandes - redirige vers /account */}
+          {/* Vos commandes */}
           <button
             className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-light transition-colors"
             onClick={goToOrders}
@@ -227,7 +227,7 @@ export function MobileHeader() {
             <span>Vos commandes</span>
           </button>
 
-          {/* Favoris - redirige vers /account */}
+          {/* Favoris */}
           <button
             className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-light transition-colors"
             onClick={goToFavorites}
@@ -236,7 +236,7 @@ export function MobileHeader() {
             <span>Favoris</span>
           </button>
 
-          {/* Besoin d'aide - redirige vers /account */}
+          {/* Besoin d'aide */}
           <button
             className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-light transition-colors"
             onClick={goToHelp}
@@ -255,7 +255,7 @@ export function MobileHeader() {
                     key={cat.label}
                     className="flex items-center gap-3 text-left px-2 py-2 rounded hover:bg-neutral-light transition-colors"
                     onClick={() => {
-                      router.push(`/category/${cat.label.toLowerCase()}`)
+                      router.push(`/categorie/${cat.slug}`)
                       setShowMenu(false)
                     }}
                   >
