@@ -1,7 +1,7 @@
 "use client"
 
 import { ShoppingCart, User, Menu, Search, X, Home, Grid3x3, Heart, HelpCircle, Tv, Package, Shirt, LogIn, UserPlus, LogOut, ChevronRight } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/admin/auth-context"
 
@@ -23,6 +23,7 @@ export function MobileHeader() {
   const router = useRouter()
   const { user, logout, isLoading } = useAuth()
 
+  // Gestion du scroll
   useEffect(() => {
     if (showMenu) {
       document.body.style.overflow = "hidden"
@@ -34,35 +35,49 @@ export function MobileHeader() {
     }
   }, [showMenu])
 
-  const handleSearch = (e?: React.FormEvent) => {
+  // Recherche
+  const handleSearch = useCallback((e?: React.FormEvent) => {
     e?.preventDefault()
     if (searchQuery.trim() !== "") {
       router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
     }
-  }
+  }, [searchQuery, router])
 
-  const handleCartClick = () => {
+  // Panier
+  const handleCartClick = useCallback(() => {
     setCartClicked(true)
     router.push("/cart")
     setTimeout(() => setCartClicked(false), 500)
-  }
+  }, [router])
 
-  const handleLogout = async () => {
-    await logout()
+  // Fermeture du menu
+  const closeMenu = useCallback(() => {
     setShowMenu(false)
-    router.push("/")
-  }
+  }, [])
 
-  const goToAccount  = () => { router.push("/account"); setShowMenu(false) }
-  const goToLogin    = () => { router.push("/account?mode=login"); setShowMenu(false) }
-  const goToRegister = () => { router.push("/account?mode=register"); setShowMenu(false) }
-  const goToOrders   = () => { router.push("/account"); setShowMenu(false) }
-  const goToFavorites= () => { router.push("/account"); setShowMenu(false) }
-  const goToHelp     = () => { router.push("/account"); setShowMenu(false) }
+  // Déconnexion
+  const handleLogout = useCallback(async () => {
+    await logout()
+    closeMenu()
+    router.push("/")
+  }, [logout, closeMenu, router])
+
+  // Navigation
+  const navigateTo = useCallback((path: string) => {
+    closeMenu()
+    router.push(path)
+  }, [closeMenu, router])
+
+  const goToAccount = useCallback(() => navigateTo("/account"), [navigateTo])
+  const goToLogin = useCallback(() => navigateTo("/account?mode=login"), [navigateTo])
+  const goToRegister = useCallback(() => navigateTo("/account?mode=register"), [navigateTo])
+  const goToOrders = useCallback(() => navigateTo("/account"), [navigateTo])
+  const goToFavorites = useCallback(() => navigateTo("/account"), [navigateTo])
+  const goToHelp = useCallback(() => navigateTo("/account"), [navigateTo])
 
   return (
     <>
-      {/* ── HEADER ─────────────────────────────────────────────── */}
+      {/* HEADER */}
       <header className="bg-white sticky top-0 z-50" style={{ borderBottom: "0.5px solid #ECECEC" }}>
         <div className="px-4 pt-3 pb-2.5 flex flex-col gap-2.5">
 
@@ -72,7 +87,7 @@ export function MobileHeader() {
             {/* Logo */}
             <button
               onClick={() => router.push("/")}
-              className="flex items-center gap-0 focus:outline-none"
+              className="flex items-center gap-0 focus:outline-none active:opacity-70 transition-opacity"
               aria-label="Accueil Adullam"
             >
               <span style={{
@@ -81,7 +96,6 @@ export function MobileHeader() {
                 fontSize: "20px",
                 letterSpacing: "-0.04em",
                 color: "#0A0A0A",
-                lineHeight: 1,
               }}>
                 adul
               </span>
@@ -91,7 +105,6 @@ export function MobileHeader() {
                 fontSize: "20px",
                 letterSpacing: "-0.04em",
                 color: "#D4372B",
-                lineHeight: 1,
               }}>
                 .
               </span>
@@ -101,7 +114,6 @@ export function MobileHeader() {
                 fontSize: "20px",
                 letterSpacing: "-0.04em",
                 color: "#0A0A0A",
-                lineHeight: 1,
               }}>
                 lam
               </span>
@@ -113,7 +125,7 @@ export function MobileHeader() {
               {/* Compte */}
               <button
                 onClick={goToAccount}
-                className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-colors focus:outline-none"
+                className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all active:scale-95 focus:outline-none"
                 style={{ background: "#F4F4F4" }}
                 aria-label="Mon compte"
               >
@@ -129,7 +141,7 @@ export function MobileHeader() {
               {/* Panier */}
               <button
                 onClick={handleCartClick}
-                className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all focus:outline-none"
+                className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all active:scale-95 focus:outline-none"
                 style={{ background: "#D4372B" }}
                 aria-label="Panier"
               >
@@ -144,8 +156,8 @@ export function MobileHeader() {
 
               {/* Burger */}
               <button
-                onClick={() => setShowMenu(!showMenu)}
-                className="flex items-center justify-center w-9 h-9 rounded-xl transition-colors focus:outline-none"
+                onClick={() => setShowMenu(prev => !prev)}
+                className="flex items-center justify-center w-9 h-9 rounded-xl transition-all active:scale-95 focus:outline-none"
                 style={{ background: "#F4F4F4" }}
                 aria-label={showMenu ? "Fermer le menu" : "Ouvrir le menu"}
               >
@@ -185,16 +197,16 @@ export function MobileHeader() {
         </div>
       </header>
 
-      {/* ── OVERLAY ─────────────────────────────────────────────── */}
+      {/* OVERLAY */}
       {showMenu && (
         <div
           className="fixed inset-0 z-40"
           style={{ background: "rgba(0,0,0,0.35)", backdropFilter: "blur(2px)" }}
-          onClick={() => setShowMenu(false)}
+          onClick={closeMenu}
         />
       )}
 
-      {/* ── DRAWER ──────────────────────────────────────────────── */}
+      {/* DRAWER */}
       <div
         className="fixed top-0 left-0 h-full z-50 overflow-y-auto"
         style={{
@@ -220,8 +232,8 @@ export function MobileHeader() {
             adul<span style={{ color: "#D4372B" }}>.</span>lam
           </span>
           <button
-            onClick={() => setShowMenu(false)}
-            className="flex items-center justify-center w-8 h-8 rounded-lg focus:outline-none"
+            onClick={closeMenu}
+            className="flex items-center justify-center w-8 h-8 rounded-lg transition-all active:scale-95 focus:outline-none"
             style={{ background: "#F4F4F4" }}
           >
             <X className="w-4 h-4" style={{ color: "#0A0A0A" }} />
@@ -246,7 +258,7 @@ export function MobileHeader() {
             <div className="px-5 py-4 flex gap-2" style={{ borderBottom: "0.5px solid #F0F0F0" }}>
               <button
                 onClick={goToLogin}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
                 style={{ background: "#0A0A0A", color: "#fff" }}
               >
                 <LogIn className="w-4 h-4" />
@@ -254,8 +266,8 @@ export function MobileHeader() {
               </button>
               <button
                 onClick={goToRegister}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold"
-                style={{ border: "1.5px solid #ECECEC", color: "#0A0A0A" }}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
+                style={{ border: "1.5px solid #ECECEC", color: "#0A0A0A", background: "#fff" }}
               >
                 <UserPlus className="w-4 h-4" />
                 S'inscrire
@@ -274,7 +286,7 @@ export function MobileHeader() {
               <button
                 key={label}
                 onClick={action}
-                className="group flex items-center justify-between px-5 py-3.5 text-sm font-medium text-left transition-colors hover:bg-[#FAFAFA]"
+                className="group flex items-center justify-between px-5 py-3.5 text-sm font-medium text-left transition-all hover:bg-[#FAFAFA] active:bg-[#F5F5F5]"
                 style={{ color: "#0A0A0A" }}
               >
                 <span className="flex items-center gap-3">
@@ -288,7 +300,7 @@ export function MobileHeader() {
             {user && (
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-3 px-5 py-3.5 text-sm font-medium transition-colors hover:bg-[#FFF5F5]"
+                className="flex items-center gap-3 px-5 py-3.5 text-sm font-medium transition-all hover:bg-[#FFF5F5] active:bg-[#FFEEEE]"
                 style={{ color: "#D4372B" }}
               >
                 <LogOut className="w-4 h-4" />
@@ -314,8 +326,11 @@ export function MobileHeader() {
                 return (
                   <button
                     key={cat.label}
-                    onClick={() => { router.push(`/categorie/${cat.slug}`); setShowMenu(false) }}
-                    className="group flex items-center justify-between py-3 text-sm font-medium text-left transition-colors hover:text-[#D4372B]"
+                    onClick={() => {
+                      setShowMenu(false)
+                      router.push(`/categorie/${cat.slug}`)
+                    }}
+                    className="group flex items-center justify-between py-3 text-sm font-medium text-left transition-all hover:text-[#D4372B] active:text-[#D4372B]"
                     style={{ borderBottom: "0.5px solid #F8F8F8", color: "#0A0A0A" }}
                   >
                     <span className="flex items-center gap-3">
