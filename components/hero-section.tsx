@@ -170,7 +170,6 @@ export function HeroSection() {
   )
 
   // ── DESKTOP ─────────────────────────────────────────────────
-  // HAUTEUR RÉDUITE À 2/3 : py-10 est devenu py-6
   const DesktopHero = () => (
     <div className="hidden lg:block" style={{ background: "#0A0A0A" }}>
       <div className="max-w-7xl mx-auto px-8 py-6">
@@ -222,7 +221,7 @@ export function HeroSection() {
             {/* CTA row */}
             <div className="flex items-center gap-3">
               <Link
-                href="/boutique"
+                href="/for-you"
                 style={{
                   background: "#D4372B",
                   color: "#fff",
@@ -240,7 +239,7 @@ export function HeroSection() {
                 <ChevronRight className="w-4 h-4" />
               </Link>
               <Link
-                href="/sourcing"
+                href="/boutique-noel"
                 style={{
                   border: "1.5px solid rgba(255,255,255,0.2)",
                   color: "#fff",
