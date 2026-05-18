@@ -81,12 +81,9 @@ export function HeroSection() {
           style={{ opacity: index === currentSlide ? 1 : 0, zIndex: index === currentSlide ? 10 : 0 }}
         >
           <Image src={slide.image} alt={slide.title} fill className="object-cover" priority={index === 0} />
-          {/* Gradient overlay */}
           <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.2) 70%, transparent 100%)" }} />
 
-          {/* Content */}
           <div className="absolute inset-0 flex flex-col justify-center px-5 z-20">
-            {/* Localisation */}
             <div
               className="flex items-center gap-1.5 w-fit px-2.5 py-1 rounded-full mb-3"
               style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(6px)", border: "0.5px solid rgba(255,255,255,0.3)" }}
@@ -97,7 +94,6 @@ export function HeroSection() {
               </span>
             </div>
 
-            {/* Badge offre */}
             <span
               className="w-fit px-2 py-0.5 rounded-md mb-1.5 text-white"
               style={{ background: "#D4372B", fontSize: "10px", fontWeight: 700, fontFamily: "'Poppins', sans-serif" }}
@@ -105,7 +101,6 @@ export function HeroSection() {
               {slide.badge}
             </span>
 
-            {/* Titre */}
             <h1 style={{ fontSize: "22px", fontWeight: 900, color: "#fff", lineHeight: 1.1, letterSpacing: "-0.03em", fontFamily: "'Poppins', sans-serif", marginBottom: "4px" }}>
               {slide.title}
             </h1>
@@ -113,7 +108,6 @@ export function HeroSection() {
               {slide.subtitle}
             </p>
 
-            {/* CTA */}
             <Link
               href={slide.href}
               className="flex items-center gap-1.5 w-fit"
@@ -134,7 +128,6 @@ export function HeroSection() {
         </div>
       ))}
 
-      {/* Dots */}
       <div className="absolute bottom-3 left-5 z-30 flex gap-1.5">
         {heroSlides.map((_, i) => (
           <button
@@ -154,7 +147,6 @@ export function HeroSection() {
         ))}
       </div>
 
-      {/* Offre badge coin droit */}
       <div
         className="absolute top-4 right-4 z-30 flex flex-col items-center justify-center"
         style={{ background: "#D4372B", borderRadius: "10px", width: "52px", height: "52px" }}
@@ -177,7 +169,6 @@ export function HeroSection() {
 
           {/* Gauche — Texte */}
           <div>
-            {/* Fournisseurs pills */}
             <div className="flex items-center gap-2 flex-wrap mb-6">
               <span style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>Direct depuis :</span>
               {suppliers.map((s) => (
@@ -218,7 +209,6 @@ export function HeroSection() {
               Adullam connecte les acheteurs africains aux meilleurs fournisseurs de Chine, Dubaï, Turquie, USA et Europe.
             </p>
 
-            {/* CTA row */}
             <div className="flex items-center gap-3">
               <Link
                 href="/for-you"
@@ -256,7 +246,7 @@ export function HeroSection() {
           </div>
 
           {/* Droite — Image carrousel */}
-          <div className="relative" style={{ height: "280px" }}>
+          <div className="relative" style={{ height: "240px" }}>
             {heroSlides.map((slide, index) => (
               <div
                 key={slide.id}
@@ -264,25 +254,10 @@ export function HeroSection() {
                 style={{ opacity: index === currentSlide ? 1 : 0, borderRadius: "20px", overflow: "hidden" }}
               >
                 <Image src={slide.image} alt={slide.title} fill className="object-cover" />
-                
-                {/* Overlay pour lisibilité du texte en haut à gauche */}
-                <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)" }} />
+                <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)" }} />
 
-                {/* Badge en haut à gauche */}
+                {/* AJOUT : CTA en haut à gauche */}
                 <div className="absolute top-4 left-4 z-10">
-                  <span
-                    className="px-2 py-0.5 rounded-md text-white"
-                    style={{ background: "#D4372B", fontSize: "11px", fontWeight: 700, fontFamily: "'Poppins', sans-serif" }}
-                  >
-                    {slide.badge}
-                  </span>
-                </div>
-
-                {/* Titre et CTA en haut à gauche */}
-                <div className="absolute top-14 left-4 z-10">
-                  <p style={{ fontSize: "20px", fontWeight: 800, color: "#fff", fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.02em", marginBottom: "8px" }}>
-                    {slide.title}
-                  </p>
                   <Link
                     href={slide.href}
                     className="flex items-center gap-1.5 w-fit"
@@ -301,17 +276,25 @@ export function HeroSection() {
                   </Link>
                 </div>
 
-                {/* Offre badge coin droit (comme sur mobile) */}
-                <div
-                  className="absolute top-4 right-4 z-10 flex flex-col items-center justify-center"
-                  style={{ background: "#D4372B", borderRadius: "10px", width: "52px", height: "52px" }}
-                >
-                  <span style={{ fontSize: "18px", fontWeight: 900, color: "#fff", lineHeight: 1, fontFamily: "'Poppins', sans-serif" }}>
-                    {slide.offre}
-                  </span>
-                  <span style={{ fontSize: "8px", color: "rgba(255,255,255,0.8)", fontFamily: "'Poppins', sans-serif" }}>
-                    aujourd'hui
-                  </span>
+                {/* Info overlay bas (inchangé) */}
+                <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between z-10">
+                  <div>
+                    <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.6)", fontFamily: "'Poppins', sans-serif" }}>{slide.badge}</p>
+                    <p style={{ fontSize: "18px", fontWeight: 800, color: "#fff", fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.02em" }}>{slide.title}</p>
+                  </div>
+                  <div
+                    style={{
+                      background: "#D4372B",
+                      borderRadius: "10px",
+                      padding: "8px 14px",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span style={{ fontSize: "20px", fontWeight: 900, color: "#fff", lineHeight: 1, fontFamily: "'Poppins', sans-serif" }}>{slide.offre}</span>
+                    <span style={{ fontSize: "9px", color: "rgba(255,255,255,0.7)", fontFamily: "'Poppins', sans-serif" }}>aujourd'hui</span>
+                  </div>
                 </div>
               </div>
             ))}
