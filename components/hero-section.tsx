@@ -256,7 +256,7 @@ export function HeroSection() {
           </div>
 
           {/* Droite — Image carrousel */}
-          <div className="relative" style={{ height: "240px" }}>
+          <div className="relative" style={{ height: "280px" }}>
             {heroSlides.map((slide, index) => (
               <div
                 key={slide.id}
@@ -264,27 +264,54 @@ export function HeroSection() {
                 style={{ opacity: index === currentSlide ? 1 : 0, borderRadius: "20px", overflow: "hidden" }}
               >
                 <Image src={slide.image} alt={slide.title} fill className="object-cover" />
-                <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)" }} />
+                
+                {/* Overlay pour lisibilité du texte en haut à gauche */}
+                <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)" }} />
 
-                {/* Info overlay bas */}
-                <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between z-10">
-                  <div>
-                    <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.6)", fontFamily: "'Poppins', sans-serif" }}>{slide.badge}</p>
-                    <p style={{ fontSize: "18px", fontWeight: 800, color: "#fff", fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.02em" }}>{slide.title}</p>
-                  </div>
-                  <div
+                {/* Badge en haut à gauche */}
+                <div className="absolute top-4 left-4 z-10">
+                  <span
+                    className="px-2 py-0.5 rounded-md text-white"
+                    style={{ background: "#D4372B", fontSize: "11px", fontWeight: 700, fontFamily: "'Poppins', sans-serif" }}
+                  >
+                    {slide.badge}
+                  </span>
+                </div>
+
+                {/* Titre et CTA en haut à gauche */}
+                <div className="absolute top-14 left-4 z-10">
+                  <p style={{ fontSize: "20px", fontWeight: 800, color: "#fff", fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.02em", marginBottom: "8px" }}>
+                    {slide.title}
+                  </p>
+                  <Link
+                    href={slide.href}
+                    className="flex items-center gap-1.5 w-fit"
                     style={{
-                      background: "#D4372B",
-                      borderRadius: "10px",
-                      padding: "8px 14px",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
+                      background: "#fff",
+                      color: "#0A0A0A",
+                      borderRadius: "8px",
+                      padding: "6px 12px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      fontFamily: "'Poppins', sans-serif",
                     }}
                   >
-                    <span style={{ fontSize: "20px", fontWeight: 900, color: "#fff", lineHeight: 1, fontFamily: "'Poppins', sans-serif" }}>{slide.offre}</span>
-                    <span style={{ fontSize: "9px", color: "rgba(255,255,255,0.7)", fontFamily: "'Poppins', sans-serif" }}>aujourd'hui</span>
-                  </div>
+                    Découvrir {slide.offre}
+                    <ChevronRight className="w-3 h-3" />
+                  </Link>
+                </div>
+
+                {/* Offre badge coin droit (comme sur mobile) */}
+                <div
+                  className="absolute top-4 right-4 z-10 flex flex-col items-center justify-center"
+                  style={{ background: "#D4372B", borderRadius: "10px", width: "52px", height: "52px" }}
+                >
+                  <span style={{ fontSize: "18px", fontWeight: 900, color: "#fff", lineHeight: 1, fontFamily: "'Poppins', sans-serif" }}>
+                    {slide.offre}
+                  </span>
+                  <span style={{ fontSize: "8px", color: "rgba(255,255,255,0.8)", fontFamily: "'Poppins', sans-serif" }}>
+                    aujourd'hui
+                  </span>
                 </div>
               </div>
             ))}
