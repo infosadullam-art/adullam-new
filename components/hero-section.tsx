@@ -1,11 +1,12 @@
-"use client"
 
+"use client"
+ 
 import Image from "next/image"
 import Link from "next/link"
 import { MapPin, ChevronRight, Truck, Shield, Clock } from "lucide-react"
 import { useLocale } from "@/context/LocaleProvider"
 import { useState, useEffect } from "react"
-
+ 
 const pays = {
   CI: { nom: "Côte d'Ivoire", drapeau: "🇨🇮", code: "CI" },
   SN: { nom: "Sénégal", drapeau: "🇸🇳", code: "SN" },
@@ -14,7 +15,7 @@ const pays = {
   TN: { nom: "Tunisie", drapeau: "🇹🇳", code: "TN" },
   DZ: { nom: "Algérie", drapeau: "🇩🇿", code: "DZ" },
 }
-
+ 
 const heroSlides = [
   {
     id: 1,
@@ -23,6 +24,7 @@ const heroSlides = [
     subtitle: "Collections printemps-été",
     badge: "Nouvelle collection",
     offre: "-30%",
+    href: "/categorie/mode",
   },
   {
     id: 2,
@@ -31,6 +33,7 @@ const heroSlides = [
     subtitle: "Smartphones, accessoires",
     badge: "Livraison 7j",
     offre: "-25%",
+    href: "/categorie/electronique",
   },
   {
     id: 3,
@@ -39,176 +42,301 @@ const heroSlides = [
     subtitle: "Équipez votre intérieur",
     badge: "Meilleures ventes",
     offre: "-40%",
+    href: "/categorie/maison",
   },
 ]
-
+ 
+const trustItems = [
+  { icon: Truck, label: "Livraison porte-à-porte", sub: "50j · 15j · 7j" },
+  { icon: Shield, label: "Paiement sécurisé", sub: "Mobile Money, Carte" },
+  { icon: Clock, label: "Suivi en temps réel", sub: "De l'usine à votre porte" },
+]
+ 
+const suppliers = [
+  { flag: "🇨🇳", label: "Chine" },
+  { flag: "🇦🇪", label: "Dubaï" },
+  { flag: "🇹🇷", label: "Turquie" },
+  { flag: "🇺🇸", label: "USA" },
+  { flag: "🇪🇺", label: "Europe" },
+]
+ 
 export function HeroSection() {
   const { country } = useLocale()
   const paysActuel = pays[country as keyof typeof pays] || pays.CI
   const [currentSlide, setCurrentSlide] = useState(0)
-
+ 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
     }, 5000)
     return () => clearInterval(timer)
   }, [])
-
-  // ========== VERSION MOBILE ==========
+ 
+  // ── MOBILE ─────────────────────────────────────────────────
   const MobileHero = () => (
-    <div className="lg:hidden bg-white font-poppins">
-      <div className="relative h-[160px] overflow-hidden">
-        {heroSlides.map((slide, index) => (
-          <div
-            key={slide.id}
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-              index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
-            }`}
-          >
-            <div className="absolute inset-0">
-              <Image
-                src={slide.image}
-                alt={slide.title}
-                fill
-                className="object-cover"
-                priority={index === 0}
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
+    <div className="lg:hidden relative overflow-hidden" style={{ height: "220px" }}>
+      {heroSlides.map((slide, index) => (
+        <div
+          key={slide.id}
+          className="absolute inset-0 transition-opacity duration-700"
+          style={{ opacity: index === currentSlide ? 1 : 0, zIndex: index === currentSlide ? 10 : 0 }}
+        >
+          <Image src={slide.image} alt={slide.title} fill className="object-cover" priority={index === 0} />
+          {/* Gradient overlay */}
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.2) 70%, transparent 100%)" }} />
+ 
+          {/* Content */}
+          <div className="absolute inset-0 flex flex-col justify-center px-5 z-20">
+            {/* Localisation */}
+            <div
+              className="flex items-center gap-1.5 w-fit px-2.5 py-1 rounded-full mb-3"
+              style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(6px)", border: "0.5px solid rgba(255,255,255,0.3)" }}
+            >
+              <MapPin className="w-3 h-3 text-white" />
+              <span style={{ fontSize: "10px", fontWeight: 500, color: "#fff", fontFamily: "'Poppins', sans-serif" }}>
+                {paysActuel.nom} {paysActuel.drapeau}
+              </span>
             </div>
-
-            <div className="relative z-20 h-full flex items-center px-6">
-              <div className="space-y-1.5">
-                <div className="inline-flex items-center gap-1 bg-black/30 backdrop-blur-sm px-2 py-1 rounded-full border border-white/20 w-fit">
-                  <MapPin className="w-3 h-3 text-white" />
-                  <span className="text-[10px] font-medium text-white">
-                    {paysActuel.nom} {paysActuel.drapeau}
-                  </span>
-                </div>
-
-                <h1 className="text-lg font-bold text-white">
-                  {slide.title}
-                </h1>
-                
-                <p className="text-xs text-white/80">
-                  {slide.subtitle}
-                </p>
-
-                <Link
-                  href={`/categorie/${slide.id}`}
-                  className="inline-flex items-center gap-1 bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full border border-white/30"
+ 
+            {/* Badge offre */}
+            <span
+              className="w-fit px-2 py-0.5 rounded-md mb-1.5 text-white"
+              style={{ background: "#D4372B", fontSize: "10px", fontWeight: 700, fontFamily: "'Poppins', sans-serif" }}
+            >
+              {slide.badge}
+            </span>
+ 
+            {/* Titre */}
+            <h1 style={{ fontSize: "22px", fontWeight: 900, color: "#fff", lineHeight: 1.1, letterSpacing: "-0.03em", fontFamily: "'Poppins', sans-serif", marginBottom: "4px" }}>
+              {slide.title}
+            </h1>
+            <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", fontFamily: "'Poppins', sans-serif", marginBottom: "14px" }}>
+              {slide.subtitle}
+            </p>
+ 
+            {/* CTA */}
+            <Link
+              href={slide.href}
+              className="flex items-center gap-1.5 w-fit"
+              style={{
+                background: "#fff",
+                color: "#0A0A0A",
+                borderRadius: "8px",
+                padding: "7px 14px",
+                fontSize: "12px",
+                fontWeight: 700,
+                fontFamily: "'Poppins', sans-serif",
+              }}
+            >
+              Découvrir {slide.offre}
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      ))}
+ 
+      {/* Dots */}
+      <div className="absolute bottom-3 left-5 z-30 flex gap-1.5">
+        {heroSlides.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrentSlide(i)}
+            style={{
+              height: "3px",
+              width: i === currentSlide ? "24px" : "8px",
+              borderRadius: "2px",
+              background: i === currentSlide ? "#fff" : "rgba(255,255,255,0.4)",
+              transition: "all 0.3s ease",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+            }}
+          />
+        ))}
+      </div>
+ 
+      {/* Offre badge coin droit */}
+      <div
+        className="absolute top-4 right-4 z-30 flex flex-col items-center justify-center"
+        style={{ background: "#D4372B", borderRadius: "10px", width: "52px", height: "52px" }}
+      >
+        <span style={{ fontSize: "15px", fontWeight: 900, color: "#fff", lineHeight: 1, fontFamily: "'Poppins', sans-serif" }}>
+          {heroSlides[currentSlide].offre}
+        </span>
+        <span style={{ fontSize: "8px", color: "rgba(255,255,255,0.8)", fontFamily: "'Poppins', sans-serif" }}>
+          offre
+        </span>
+      </div>
+    </div>
+  )
+ 
+  // ── DESKTOP ─────────────────────────────────────────────────
+  const DesktopHero = () => (
+    <div className="hidden lg:block" style={{ background: "#0A0A0A" }}>
+      <div className="max-w-7xl mx-auto px-8 py-10">
+        <div className="grid grid-cols-2 gap-14 items-center">
+ 
+          {/* Gauche — Texte */}
+          <div>
+            {/* Fournisseurs pills */}
+            <div className="flex items-center gap-2 flex-wrap mb-6">
+              <span style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>Direct depuis :</span>
+              {suppliers.map((s) => (
+                <span
+                  key={s.label}
+                  style={{
+                    background: "rgba(255,255,255,0.07)",
+                    border: "0.5px solid rgba(255,255,255,0.12)",
+                    borderRadius: "100px",
+                    padding: "4px 12px",
+                    fontSize: "12px",
+                    color: "#fff",
+                    fontFamily: "'Poppins', sans-serif",
+                  }}
                 >
-                  <span>Découvrir</span>
-                  <ChevronRight className="w-3 h-3" />
-                </Link>
-              </div>
+                  {s.flag} {s.label}
+                </span>
+              ))}
+            </div>
+ 
+            <h1
+              style={{
+                fontSize: "48px",
+                fontWeight: 900,
+                color: "#fff",
+                lineHeight: 1.05,
+                letterSpacing: "-0.04em",
+                fontFamily: "'Poppins', sans-serif",
+                marginBottom: "16px",
+              }}
+            >
+              Achetez direct
+              <br />
+              <span style={{ color: "#D4372B" }}>des usines du monde</span>
+            </h1>
+ 
+            <p style={{ fontSize: "16px", color: "#AAAAAA", lineHeight: 1.6, fontFamily: "'Poppins', sans-serif", maxWidth: "420px", marginBottom: "32px" }}>
+              Adullam connecte les acheteurs africains aux meilleurs fournisseurs de Chine, Dubaï, Turquie, USA et Europe.
+            </p>
+ 
+            {/* CTA row */}
+            <div className="flex items-center gap-3">
+              <Link
+                href="/boutique"
+                style={{
+                  background: "#D4372B",
+                  color: "#fff",
+                  borderRadius: "12px",
+                  padding: "13px 28px",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  fontFamily: "'Poppins', sans-serif",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                Explorer la boutique
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/sourcing"
+                style={{
+                  border: "1.5px solid rgba(255,255,255,0.2)",
+                  color: "#fff",
+                  borderRadius: "12px",
+                  padding: "12px 24px",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  fontFamily: "'Poppins', sans-serif",
+                }}
+              >
+                Sourcing B2B
+              </Link>
             </div>
           </div>
-        ))}
-
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 flex gap-1.5">
-          {heroSlides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`h-1 rounded-full transition-all ${
-                index === currentSlide ? "w-6 bg-white" : "w-1.5 bg-white/50"
-              }`}
-            />
+ 
+          {/* Droite — Image carrousel */}
+          <div className="relative" style={{ height: "340px" }}>
+            {heroSlides.map((slide, index) => (
+              <div
+                key={slide.id}
+                className="absolute inset-0 transition-opacity duration-700"
+                style={{ opacity: index === currentSlide ? 1 : 0, borderRadius: "20px", overflow: "hidden" }}
+              >
+                <Image src={slide.image} alt={slide.title} fill className="object-cover" />
+                <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)" }} />
+ 
+                {/* Info overlay bas */}
+                <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between z-10">
+                  <div>
+                    <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.6)", fontFamily: "'Poppins', sans-serif" }}>{slide.badge}</p>
+                    <p style={{ fontSize: "18px", fontWeight: 800, color: "#fff", fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.02em" }}>{slide.title}</p>
+                  </div>
+                  <div
+                    style={{
+                      background: "#D4372B",
+                      borderRadius: "10px",
+                      padding: "8px 14px",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span style={{ fontSize: "20px", fontWeight: 900, color: "#fff", lineHeight: 1, fontFamily: "'Poppins', sans-serif" }}>{slide.offre}</span>
+                    <span style={{ fontSize: "9px", color: "rgba(255,255,255,0.7)", fontFamily: "'Poppins', sans-serif" }}>aujourd'hui</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+ 
+            {/* Dots desktop */}
+            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 flex gap-1.5 z-30">
+              {heroSlides.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentSlide(i)}
+                  style={{
+                    height: "3px",
+                    width: i === currentSlide ? "20px" : "6px",
+                    borderRadius: "2px",
+                    background: i === currentSlide ? "#D4372B" : "rgba(255,255,255,0.25)",
+                    transition: "all 0.3s ease",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: 0,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+ 
+        {/* Trust bar */}
+        <div
+          className="grid grid-cols-3 gap-0 mt-12"
+          style={{ borderTop: "0.5px solid rgba(255,255,255,0.08)", paddingTop: "28px" }}
+        >
+          {trustItems.map(({ icon: Icon, label, sub }, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3"
+              style={{ borderRight: i < 2 ? "0.5px solid rgba(255,255,255,0.08)" : "none", paddingRight: i < 2 ? "32px" : "0", paddingLeft: i > 0 ? "32px" : "0" }}
+            >
+              <div style={{ background: "rgba(212,55,43,0.15)", borderRadius: "10px", padding: "10px" }}>
+                <Icon className="w-5 h-5" style={{ color: "#D4372B" }} />
+              </div>
+              <div>
+                <p style={{ fontSize: "13px", fontWeight: 600, color: "#fff", fontFamily: "'Poppins', sans-serif" }}>{label}</p>
+                <p style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>{sub}</p>
+              </div>
+            </div>
           ))}
         </div>
       </div>
     </div>
   )
-
-  // ========== VERSION DESKTOP - BLEU SOMBRE ORIGINAL (SANS ANIMATION) ==========
-  const DesktopHero = () => (
-    <div className="hidden lg:block relative bg-gradient-to-b from-gray-900 to-gray-800 text-white overflow-hidden font-poppins">
-      <div className="absolute inset-0 bg-[url('/hero-pattern.svg')] opacity-10" />
-      
-      <div className="relative max-w-7xl mx-auto px-8 py-6">
-        <div className="grid grid-cols-2 gap-12 items-center">
-          <div className="space-y-8">
-            <h1 className="text-5xl font-bold tracking-tight text-white">
-              Achetez direct
-              <br />
-              <span className="text-amber-400">des usines du monde entier</span>
-            </h1>
-
-            <p className="text-lg text-white/90 max-w-lg">
-              Adulam connecte les acheteurs africains aux meilleurs fournisseurs de Chine, 
-              Dubaï, Turquie, USA et Europe.
-            </p>
-
-            <div className="flex flex-wrap gap-3">
-              <span className="text-sm text-white/70">Fournisseurs :</span>
-              <span className="text-sm bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-white">🇨🇳 Chine</span>
-              <span className="text-sm bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-white">🇦🇪 Dubaï</span>
-              <span className="text-sm bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-white">🇹🇷 Turquie</span>
-              <span className="text-sm bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-white">🇺🇸 USA</span>
-              <span className="text-sm bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-white">🇪🇺 Europe</span>
-            </div>
-          </div>
-
-          <div className="relative">
-            <div className="relative h-64 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 border border-white/20">
-              <Image
-                src="/hero-image.jpg"
-                alt="Adulam"
-                width={600}
-                height={256}
-                className="object-cover w-full h-full"
-                priority
-              />
-              <div className="absolute bottom-4 right-4 bg-amber-500 rounded-lg px-4 py-2">
-                <p className="text-white font-bold text-lg">-30%</p>
-                <p className="text-white/80 text-[10px]">Première commande</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-4 gap-6 mt-12 pt-6 border-t border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="bg-white/10 backdrop-blur-sm p-2 rounded-lg">
-              <Truck className="w-5 h-5 text-amber-400" />
-            </div>
-            <div>
-              <p className="font-medium text-white">Livraison porte-à-porte</p>
-              <p className="text-sm text-white/60">50j • 15j • 7j</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="bg-white/10 backdrop-blur-sm p-2 rounded-lg">
-              <Shield className="w-5 h-5 text-amber-400" />
-            </div>
-            <div>
-              <p className="font-medium text-white">Paiement sécurisé</p>
-              <p className="text-sm text-white/60">Mobile Money, Carte</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="bg-white/10 backdrop-blur-sm p-2 rounded-lg">
-              <Clock className="w-5 h-5 text-amber-400" />
-            </div>
-            <div>
-              <p className="font-medium text-white">Suivi en temps réel</p>
-              <p className="text-sm text-white/60">De l'usine à votre porte</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="bg-white/10 backdrop-blur-sm p-2 rounded-lg">
-              <span className="text-amber-400 font-bold text-lg">-50%</span>
-            </div>
-            <div>
-              <p className="font-medium text-white">Jusqu'à -50%</p>
-              <p className="text-sm text-white/60">Offres flash</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-
+ 
   return (
     <>
       <MobileHero />
@@ -216,3 +344,4 @@ export function HeroSection() {
     </>
   )
 }
+ 

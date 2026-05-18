@@ -14,7 +14,7 @@ interface TrendingProduct {
   image: string
   views: number
   orders: number
-  trend: number // +XX% sur 7 jours
+  trend: number
   badge?: string
   flag?: string
 }
@@ -30,22 +30,50 @@ interface CountryTrend {
 
 const pays = {
   CI: { nom: "Côte d'Ivoire", drapeau: "🇨🇮", code: "CI" },
-  SN: { nom: "Sénégal", drapeau: "🇸🇳", code: "SN" },
-  CM: { nom: "Cameroun", drapeau: "🇨🇲", code: "CM" },
-  MA: { nom: "Maroc", drapeau: "🇲🇦", code: "MA" },
-  TN: { nom: "Tunisie", drapeau: "🇹🇳", code: "TN" },
-  DZ: { nom: "Algérie", drapeau: "🇩🇿", code: "DZ" },
-  BF: { nom: "Burkina Faso", drapeau: "🇧🇫", code: "BF" },
-  ML: { nom: "Mali", drapeau: "🇲🇱", code: "ML" },
-  NE: { nom: "Niger", drapeau: "🇳🇪", code: "NE" },
-  TG: { nom: "Togo", drapeau: "🇹🇬", code: "TG" },
-  BJ: { nom: "Bénin", drapeau: "🇧🇯", code: "BJ" },
-  CG: { nom: "Congo", drapeau: "🇨🇬", code: "CG" },
-  GA: { nom: "Gabon", drapeau: "🇬🇦", code: "GA" },
+  SN: { nom: "Sénégal",       drapeau: "🇸🇳", code: "SN" },
+  CM: { nom: "Cameroun",      drapeau: "🇨🇲", code: "CM" },
+  MA: { nom: "Maroc",         drapeau: "🇲🇦", code: "MA" },
+  TN: { nom: "Tunisie",       drapeau: "🇹🇳", code: "TN" },
+  DZ: { nom: "Algérie",       drapeau: "🇩🇿", code: "DZ" },
+  BF: { nom: "Burkina Faso",  drapeau: "🇧🇫", code: "BF" },
+  ML: { nom: "Mali",          drapeau: "🇲🇱", code: "ML" },
+  NE: { nom: "Niger",         drapeau: "🇳🇪", code: "NE" },
+  TG: { nom: "Togo",          drapeau: "🇹🇬", code: "TG" },
+  BJ: { nom: "Bénin",         drapeau: "🇧🇯", code: "BJ" },
+  CG: { nom: "Congo",         drapeau: "🇨🇬", code: "CG" },
+  GA: { nom: "Gabon",         drapeau: "🇬🇦", code: "GA" },
+}
+
+const fallbackTrends: Record<string, CountryTrend> = {
+  CI: { code: "CI", name: "Côte d'Ivoire", flag: "🇨🇮", trendScore: 94, topCategory: "Électronique",
+    products: [
+      { id: "1", name: "Écouteurs sans fil",  priceUSD: 9.63,  image: "/wireless-earbuds-black.jpg",  views: 1234, orders: 89, trend: 34, flag: "🇨🇳" },
+      { id: "2", name: "Montre connectée",    priceUSD: 24.52, image: "/black-smartwatch.jpg",         views: 987,  orders: 67, trend: 28, flag: "🇨🇳" },
+      { id: "3", name: "Robe africaine",      priceUSD: 22.87, image: "/colorful-african-dress.png",   views: 876,  orders: 54, trend: 45, flag: "🇨🇮" },
+      { id: "4", name: "Mixeur cuisine",      priceUSD: 15.51, image: "/kitchen-blender.png",          views: 654,  orders: 43, trend: 22, flag: "🇨🇳" },
+      { id: "5", name: "Sandales cuir",       priceUSD: 8.16,  image: "/leather-sandals-brown.jpg",    views: 543,  orders: 38, trend: 18, flag: "🇨🇮" },
+      { id: "6", name: "Parfum de luxe",      priceUSD: 32.64, image: "/essential-oils-perfume.jpg",   views: 432,  orders: 29, trend: 52, flag: "🇫🇷" },
+    ]
+  },
+  SN: { code: "SN", name: "Sénégal", flag: "🇸🇳", trendScore: 87, topCategory: "Mode",
+    products: [
+      { id: "1", name: "Boubou sénégalais", priceUSD: 40.80, image: "/senegalese-boubou.jpg",       views: 1567, orders: 112, trend: 67, flag: "🇸🇳" },
+      { id: "2", name: "Montre connectée",  priceUSD: 24.52, image: "/black-smartwatch.jpg",         views: 876,  orders: 54,  trend: 23, flag: "🇨🇳" },
+      { id: "3", name: "Écouteurs sans fil",priceUSD: 9.63,  image: "/wireless-earbuds-black.jpg",  views: 765,  orders: 48,  trend: 31, flag: "🇨🇳" },
+      { id: "4", name: "Cosmétiques bio",   priceUSD: 12.25, image: "/camel-milk-skincare.jpg",      views: 654,  orders: 41,  trend: 44, flag: "🇲🇦" },
+    ]
+  },
+  CM: { code: "CM", name: "Cameroun", flag: "🇨🇲", trendScore: 82, topCategory: "Maison",
+    products: [
+      { id: "1", name: "Ustensiles cuisine", priceUSD: 6.53,  image: "/kitchen-utensils.jpg",        views: 987, orders: 76, trend: 41, flag: "🇨🇳" },
+      { id: "2", name: "Ventilateur",        priceUSD: 32.64, image: "/fan.jpg",                     views: 876, orders: 65, trend: 38, flag: "🇨🇳" },
+      { id: "3", name: "Écouteurs sans fil", priceUSD: 9.63,  image: "/wireless-earbuds-black.jpg",  views: 765, orders: 54, trend: 27, flag: "🇨🇳" },
+    ]
+  },
 }
 
 export function TendanceParPays() {
-  const { country, locale } = useLocale()
+  const { country } = useLocale()
   const { formatPrice } = useCurrencyFormatter()
   const [trends, setTrends] = useState<CountryTrend | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -58,104 +86,50 @@ export function TendanceParPays() {
     const fetchTrends = async () => {
       try {
         setIsLoading(true)
-        // 👇 APPEL GRAPH - Tendances par pays
         const res = await fetch(`/api/graph/trending?country=${selectedCountry}&limit=6`)
         const data = await res.json()
-        
-        if (data.success) {
-          setTrends(data.trend)
-        }
-      } catch (error) {
-        console.error("Erreur chargement tendances", error)
-        // Fallback data
+        if (data.success) setTrends(data.trend)
+        else setTrends(fallbackTrends[selectedCountry as keyof typeof fallbackTrends] || fallbackTrends.CI)
+      } catch {
         setTrends(fallbackTrends[selectedCountry as keyof typeof fallbackTrends] || fallbackTrends.CI)
       } finally {
         setIsLoading(false)
       }
     }
-
     fetchTrends()
   }, [selectedCountry])
 
-  // Fallback data
-  const fallbackTrends: Record<string, CountryTrend> = {
-    CI: {
-      code: "CI",
-      name: "Côte d'Ivoire",
-      flag: "🇨🇮",
-      trendScore: 94,
-      topCategory: "Électronique",
-      products: [
-        { id: "1", name: "Écouteurs sans fil", priceUSD: 9.63, image: "/wireless-earbuds-black.jpg", views: 1234, orders: 89, trend: 34, badge: "Tendance", flag: "🇨🇳" },
-        { id: "2", name: "Montre connectée", priceUSD: 24.52, image: "/black-smartwatch.jpg", views: 987, orders: 67, trend: 28, badge: "Populaire", flag: "🇨🇳" },
-        { id: "3", name: "Robe africaine", priceUSD: 22.87, image: "/colorful-african-dress.png", views: 876, orders: 54, trend: 45, badge: "🔥 +45%", flag: "🇨🇮" },
-        { id: "4", name: "Mixeur cuisine", priceUSD: 15.51, image: "/kitchen-blender.png", views: 654, orders: 43, trend: 22, badge: "Promo", flag: "🇨🇳" },
-        { id: "5", name: "Sandales cuir", priceUSD: 8.16, image: "/leather-sandals-brown.jpg", views: 543, orders: 38, trend: 18, flag: "🇨🇮" },
-        { id: "6", name: "Parfum de luxe", priceUSD: 32.64, image: "/essential-oils-perfume.jpg", views: 432, orders: 29, trend: 52, badge: "🚀 Tendance", flag: "🇫🇷" },
-      ]
-    },
-    SN: {
-      code: "SN",
-      name: "Sénégal",
-      flag: "🇸🇳",
-      trendScore: 87,
-      topCategory: "Mode",
-      products: [
-        { id: "1", name: "Boubou sénégalais", priceUSD: 40.80, image: "/senegalese-boubou.jpg", views: 1567, orders: 112, trend: 67, badge: "⭐ Tendance", flag: "🇸🇳" },
-        { id: "2", name: "Montre connectée", priceUSD: 24.52, image: "/black-smartwatch.jpg", views: 876, orders: 54, trend: 23, flag: "🇨🇳" },
-        { id: "3", name: "Écouteurs sans fil", priceUSD: 9.63, image: "/wireless-earbuds-black.jpg", views: 765, orders: 48, trend: 31, badge: "Populaire", flag: "🇨🇳" },
-        { id: "4", name: "Cosmétiques bio", priceUSD: 12.25, image: "/camel-milk-skincare.jpg", views: 654, orders: 41, trend: 44, badge: "🌿 Naturel", flag: "🇲🇦" },
-      ]
-    },
-    CM: {
-      code: "CM",
-      name: "Cameroun",
-      flag: "🇨🇲",
-      trendScore: 82,
-      topCategory: "Maison",
-      products: [
-        { id: "1", name: "Ustensiles cuisine", priceUSD: 6.53, image: "/kitchen-utensils.jpg", views: 987, orders: 76, trend: 41, badge: "⭐ Tendance", flag: "🇨🇳" },
-        { id: "2", name: "Ventilateur", priceUSD: 32.64, image: "/fan.jpg", views: 876, orders: 65, trend: 38, flag: "🇨🇳" },
-        { id: "3", name: "Écouteurs sans fil", priceUSD: 9.63, image: "/wireless-earbuds-black.jpg", views: 765, orders: 54, trend: 27, flag: "🇨🇳" },
-      ]
-    }
-  }
-
-  // ========== SÉLECTEUR DE PAYS ==========
+  // ── Sélecteur pays ─────────────────────────────────────────
   const CountrySelector = () => (
     <div className="relative">
       <button
         onClick={() => setShowCountrySelector(!showCountrySelector)}
-        className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full text-sm font-medium transition-colors"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
+        style={{ background: "#F4F4F4", color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}
       >
-        <span className="text-base">{paysActuel.drapeau}</span>
-        <span className="text-gray-700">{paysActuel.nom}</span>
-        <ChevronRight className={`w-4 h-4 text-gray-500 transition-transform ${showCountrySelector ? 'rotate-90' : ''}`} />
+        <span>{paysActuel.drapeau}</span>
+        <span>{paysActuel.nom}</span>
+        <ChevronRight className="w-3.5 h-3.5" style={{ color: "#AAAAAA", transform: showCountrySelector ? "rotate(90deg)" : "none", transition: "transform 0.2s" }} />
       </button>
 
       {showCountrySelector && (
         <>
-          <div 
-            className="fixed inset-0 z-40 lg:hidden"
-            onClick={() => setShowCountrySelector(false)}
-          />
-          <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 z-50 py-2 max-h-96 overflow-y-auto">
+          <div className="fixed inset-0 z-40" onClick={() => setShowCountrySelector(false)} />
+          <div className="absolute right-0 mt-2 z-50 overflow-y-auto" style={{ width: "220px", maxHeight: "320px", background: "#fff", borderRadius: "14px", border: "0.5px solid #ECECEC", boxShadow: "0 8px 30px rgba(0,0,0,0.08)", padding: "6px" }}>
             {Object.values(pays).map((p) => (
               <button
                 key={p.code}
-                onClick={() => {
-                  setSelectedCountry(p.code)
-                  setShowCountrySelector(false)
+                onClick={() => { setSelectedCountry(p.code); setShowCountrySelector(false) }}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-left transition-colors"
+                style={{
+                  background: selectedCountry === p.code ? "#FFF0F0" : "transparent",
+                  color: selectedCountry === p.code ? "#D4372B" : "#0A0A0A",
+                  fontFamily: "'Poppins', sans-serif",
                 }}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors ${
-                  selectedCountry === p.code ? 'bg-amber-50 text-amber-600' : 'text-gray-700'
-                }`}
               >
-                <span className="text-lg">{p.drapeau}</span>
-                <span className="flex-1 text-left">{p.nom}</span>
-                {selectedCountry === p.code && (
-                  <span className="text-amber-500">✓</span>
-                )}
+                <span style={{ fontSize: "16px" }}>{p.drapeau}</span>
+                <span className="flex-1">{p.nom}</span>
+                {selectedCountry === p.code && <span style={{ color: "#D4372B", fontSize: "12px" }}>✓</span>}
               </button>
             ))}
           </div>
@@ -164,15 +138,22 @@ export function TendanceParPays() {
     </div>
   )
 
+  // ── Loading ─────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <section className="w-full bg-white py-8 lg:py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="w-full" style={{ background: "#fff" }}>
+        <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="animate-pulse">
-            <div className="h-6 w-64 bg-gray-200 rounded mb-6" />
-            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="aspect-square bg-gray-100 rounded-lg" />
+            <div className="h-5 w-48 rounded mb-6" style={{ background: "#F4F4F4" }} />
+            <div className="flex gap-3 overflow-hidden">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="flex-shrink-0 w-[130px]" style={{ border: "0.5px solid #ECECEC", borderRadius: "12px", overflow: "hidden" }}>
+                  <div className="aspect-square" style={{ background: "#F4F4F4" }} />
+                  <div className="p-2">
+                    <div className="h-2.5 w-full rounded mb-1.5" style={{ background: "#F4F4F4" }} />
+                    <div className="h-3 w-16 rounded" style={{ background: "#F4F4F4" }} />
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -183,19 +164,20 @@ export function TendanceParPays() {
 
   if (!trends) return null
 
-  // ========== VERSION MOBILE ==========
+  // ── MOBILE ─────────────────────────────────────────────────
   const MobileTrend = () => (
-    <div className="lg:hidden space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="bg-orange-100 p-2 rounded-lg">
-            <TrendingUp className="w-4 h-4 text-orange-600" />
+    <div className="lg:hidden px-4 py-4">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: "#FFF0F0" }}>
+            <TrendingUp className="w-4 h-4" style={{ color: "#D4372B" }} />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-gray-900">
+            <p style={{ fontSize: "13px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>
               Tendances {paysActuel.drapeau}
-            </h2>
-            <p className="text-xs text-gray-500 mt-0.5">
+            </p>
+            <p style={{ fontSize: "10px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
               {trends.topCategory} · +{trends.trendScore}% cette semaine
             </p>
           </div>
@@ -203,50 +185,28 @@ export function TendanceParPays() {
         <CountrySelector />
       </div>
 
-      {/* SCROLL HORIZONTAL */}
-      <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+      {/* Scroll */}
+      <div className="overflow-x-auto -mx-4 px-4" style={{ scrollbarWidth: "none" }}>
         <div className="flex gap-3 min-w-max pb-2">
           {trends.products.map((product) => (
-            <Link
-              key={product.id}
-              href={`/products/${product.id}`}
-              className="group block w-[140px]"
-            >
-              <div className="bg-white rounded-xl border border-gray-100 overflow-hidden group-hover:border-gray-200 group-hover:shadow-sm transition-all">
-                {/* IMAGE */}
-                <div className="relative aspect-square bg-gray-50 p-3">
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    width={120}
-                    height={120}
-                    className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
-                  />
-                  {/* BADGE TENDANCE */}
+            <Link key={product.id} href={`/products/${product.id}`} className="group block" style={{ width: "130px" }}>
+              <div style={{ background: "#fff", borderRadius: "12px", border: "0.5px solid #ECECEC", overflow: "hidden" }}>
+                <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
                   {product.trend > 30 && (
-                    <span className="absolute top-2 left-2 bg-orange-500 text-white text-[10px] px-2 py-1 rounded-full">
+                    <span className="absolute top-2 left-2 z-10 text-[9px] font-bold px-1.5 py-0.5 text-white rounded-md" style={{ background: "#D4372B" }}>
                       +{product.trend}%
                     </span>
                   )}
-                  {/* FLAG FOURNISSEUR */}
                   {product.flag && (
-                    <span className="absolute top-2 right-2 text-sm">
-                      {product.flag}
-                    </span>
+                    <span className="absolute top-2 right-2 text-sm z-10">{product.flag}</span>
                   )}
+                  <Image src={product.image} alt={product.name} width={120} height={120} className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300" />
                 </div>
-                {/* INFOS */}
-                <div className="p-2">
-                  <h3 className="text-xs font-medium text-gray-900 line-clamp-1">
-                    {product.name}
-                  </h3>
-                  <div className="flex items-center justify-between mt-1">
-                    <p className="text-sm font-bold text-gray-900">
-                      {formatPrice(product.priceUSD)}
-                    </p>
-                    <span className="text-[10px] text-gray-400">
-                      {product.views} vues
-                    </span>
+                <div className="px-2 py-2">
+                  <p className="truncate mb-0.5" style={{ fontSize: "11px", fontWeight: 500, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>{product.name}</p>
+                  <div className="flex items-center justify-between">
+                    <p style={{ fontSize: "12px", fontWeight: 700, color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>{formatPrice(product.priceUSD)}</p>
+                    <span style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>{product.views} vues</span>
                   </div>
                 </div>
               </div>
@@ -255,121 +215,96 @@ export function TendanceParPays() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-1">
-        <div className="flex items-center gap-2">
-          <div className="h-1.5 w-1.5 rounded-full bg-orange-400" />
-          <span className="text-[10px] text-gray-500">
-            Mise à jour en temps réel
-          </span>
+      {/* Footer */}
+      <div className="flex items-center justify-between pt-2">
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#D4372B" }} />
+          <span style={{ fontSize: "10px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>Mise à jour en temps réel</span>
         </div>
-        <Link 
-          href={`/trending/${selectedCountry}`}
-          className="inline-flex items-center gap-0.5 text-xs text-orange-600 font-medium"
-        >
-          Voir toutes les tendances
-          <ChevronRight className="w-3.5 h-3.5" />
+        <Link href={`/trending/${selectedCountry}`} className="flex items-center gap-0.5 text-xs font-semibold" style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>
+          Voir tout <ChevronRight className="w-3.5 h-3.5" />
         </Link>
       </div>
     </div>
   )
 
-  // ========== VERSION DESKTOP ==========
+  // ── DESKTOP ─────────────────────────────────────────────────
   const DesktopTrend = () => (
-    <div className="hidden lg:block bg-white rounded-2xl border border-gray-100 p-6">
+    <div className="hidden lg:block rounded-2xl p-6" style={{ border: "0.5px solid #ECECEC", background: "#fff" }}>
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="bg-orange-100 p-2.5 rounded-xl">
-            <TrendingUp className="w-5 h-5 text-orange-600" />
+          <div className="flex items-center justify-center w-10 h-10 rounded-xl" style={{ background: "#FFF0F0" }}>
+            <TrendingUp className="w-5 h-5" style={{ color: "#D4372B" }} />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 tracking-tight">
-              Tendances • {paysActuel.nom} {paysActuel.drapeau}
+            <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.02em" }}>
+              Tendances · {paysActuel.nom} {paysActuel.drapeau}
             </h2>
-            <p className="text-sm text-gray-500 mt-1">
+            <p style={{ fontSize: "13px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
               Les produits les plus populaires cette semaine
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 px-4 py-2 rounded-lg">
-            <MapPin className="w-4 h-4 text-gray-400" />
-            <span>{trends.topCategory} en tête</span>
-            <span className="text-orange-600 font-medium ml-1">+{trends.trendScore}%</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}>
+            <MapPin className="w-4 h-4" style={{ color: "#AAAAAA" }} />
+            <span style={{ fontSize: "13px", color: "#555", fontFamily: "'Poppins', sans-serif" }}>{trends.topCategory} en tête</span>
+            <span style={{ fontSize: "13px", fontWeight: 700, color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>+{trends.trendScore}%</span>
           </div>
           <CountrySelector />
         </div>
       </div>
 
-      {/* GRILLE 6 COLONNES */}
-      <div className="grid grid-cols-6 gap-4">
+      {/* Grille 6 colonnes */}
+      <div className="grid grid-cols-6 gap-3">
         {trends.products.slice(0, 6).map((product) => (
-          <Link
-            key={product.id}
-            href={`/products/${product.id}`}
-            className="group block"
-          >
-            <div className="bg-white rounded-xl border border-gray-100 p-3 group-hover:border-gray-200 group-hover:shadow-md transition-all">
-              {/* IMAGE */}
-              <div className="relative aspect-square bg-gray-50 mb-3">
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  width={120}
-                  height={120}
-                  className="w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-300"
-                />
-                {/* BADGE TENDANCE */}
-                <span className="absolute top-2 left-2 bg-orange-500 text-white text-[10px] px-2 py-1 rounded-full">
+          <Link key={product.id} href={`/products/${product.id}`} className="group block">
+            <div style={{ background: "#fff", borderRadius: "12px", border: "0.5px solid #ECECEC", padding: "10px" }} className="transition-all hover:shadow-md">
+              <div className="relative aspect-square mb-3" style={{ background: "#FAFAFA", borderRadius: "8px" }}>
+                <span className="absolute top-2 left-2 z-10 text-[9px] font-bold px-1.5 py-0.5 text-white rounded-md" style={{ background: "#D4372B" }}>
                   +{product.trend}%
                 </span>
-                {/* FLAG FOURNISSEUR */}
                 {product.flag && (
-                  <span className="absolute top-2 right-2 text-sm bg-white/80 backdrop-blur-sm px-1.5 py-0.5 rounded-full">
+                  <span className="absolute top-2 right-2 text-sm z-10 px-1 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.8)", backdropFilter: "blur(4px)" }}>
                     {product.flag}
                   </span>
                 )}
+                <Image src={product.image} alt={product.name} width={120} height={120} className="w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-300" />
               </div>
-              {/* INFOS */}
-              <h3 className="text-sm font-medium text-gray-900 line-clamp-1">
-                {product.name}
-              </h3>
-              <div className="flex items-center justify-between mt-2">
-                <p className="text-base font-bold text-gray-900">
-                  {formatPrice(product.priceUSD)}
-                </p>
-                <span className="text-xs text-gray-400">
-                  {product.orders} commandes
-                </span>
+              <p className="truncate mb-1.5" style={{ fontSize: "12px", fontWeight: 600, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>{product.name}</p>
+              <div className="flex items-center justify-between">
+                <p style={{ fontSize: "14px", fontWeight: 700, color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>{formatPrice(product.priceUSD)}</p>
+                <span style={{ fontSize: "10px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>{product.orders} cmd</span>
               </div>
             </div>
           </Link>
         ))}
       </div>
 
-      {/* FOOTER */}
-      <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
-        <div className="flex items-center gap-4 text-xs text-gray-400">
+      {/* Footer */}
+      <div className="flex items-center justify-between mt-5 pt-4" style={{ borderTop: "0.5px solid #F0F0F0" }}>
+        <div className="flex items-center gap-4" style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
           <span>📊 Basé sur les 7 derniers jours</span>
           <span>•</span>
-          <span>👥 {trends.products.reduce((acc, p) => acc + p.views, 0).toLocaleString()} vues</span>
+          <span>👥 {trends.products.reduce((a, p) => a + p.views, 0).toLocaleString()} vues</span>
         </div>
-        <Link
-          href={`/trending/${selectedCountry}`}
-          className="inline-flex items-center gap-1.5 text-sm text-orange-600 hover:text-orange-700 font-medium"
-        >
-          Voir toutes les tendances
-          <ChevronRight className="w-4 h-4" />
+        <Link href={`/trending/${selectedCountry}`} className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>
+          Voir toutes les tendances <ChevronRight className="w-4 h-4" />
         </Link>
       </div>
     </div>
   )
 
   return (
-    <section className="w-full bg-white py-6 lg:py-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="w-full" style={{ background: "#fff" }}>
+      <div className="max-w-7xl mx-auto">
         <MobileTrend />
-        <DesktopTrend />
+        <div className="hidden lg:block px-4 sm:px-6 lg:px-8 py-8">
+          <DesktopTrend />
+        </div>
       </div>
+      <style jsx>{`div::-webkit-scrollbar { display: none; }`}</style>
     </section>
   )
 }

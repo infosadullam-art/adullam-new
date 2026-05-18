@@ -20,123 +20,142 @@ export function MeilleuresVentesMobile() {
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  // Chargement des vrais produits depuis l'API
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // === APPEL À LA NOUVELLE API ===
-        const res = await fetch('/api/deals/best-sellers/mobile')
+        const res = await fetch("/api/deals/best-sellers/mobile")
         const data = await res.json()
-        
-        if (data.success && data.data) {
-          // Les données sont déjà formatées par l'API
-          setProducts(data.data)
-        }
+        if (data.success && data.data) setProducts(data.data)
       } catch (error) {
         console.error("Erreur chargement produits:", error)
       } finally {
         setIsLoading(false)
       }
     }
-    
     fetchProducts()
   }, [])
 
-  // Animation de scroll au chargement de la section
   useEffect(() => {
     if (!hasAnimated && scrollRef.current && products.length > 0) {
       setHasAnimated(true)
-      
       setTimeout(() => {
-        if (scrollRef.current) {
-          scrollRef.current.scrollBy({ left: 150, behavior: "smooth" })
-          
-          setTimeout(() => {
-            if (scrollRef.current) {
-              scrollRef.current.scrollBy({ left: -150, behavior: "smooth" })
-            }
-          }, 800)
-        }
+        scrollRef.current?.scrollBy({ left: 150, behavior: "smooth" })
+        setTimeout(() => { scrollRef.current?.scrollBy({ left: -150, behavior: "smooth" }) }, 800)
       }, 500)
     }
   }, [hasAnimated, products])
 
+  // ── Skeleton ────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <section className="w-full bg-gray-50 py-[10px] lg:hidden">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-center items-center h-40">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-600" />
+      <section className="w-full lg:hidden" style={{ background: "#fff" }}>
+        <div className="px-4 py-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg animate-pulse" style={{ background: "#F4F4F4" }} />
+              <div>
+                <div className="h-3 w-28 rounded animate-pulse mb-1" style={{ background: "#F4F4F4" }} />
+                <div className="h-2 w-20 rounded animate-pulse" style={{ background: "#F4F4F4" }} />
+              </div>
+            </div>
+            <div className="h-3 w-14 rounded animate-pulse" style={{ background: "#F4F4F4" }} />
+          </div>
+          <div className="flex gap-3 overflow-hidden">
+            {[0,1,2,3].map(i => (
+              <div key={i} className="flex-shrink-0 w-[130px]" style={{ border: "0.5px solid #ECECEC", borderRadius: "12px", overflow: "hidden" }}>
+                <div className="aspect-square animate-pulse" style={{ background: "#F4F4F4" }} />
+                <div className="p-2">
+                  <div className="h-2.5 w-full rounded animate-pulse mb-1.5" style={{ background: "#F4F4F4" }} />
+                  <div className="h-3 w-16 rounded animate-pulse" style={{ background: "#F4F4F4" }} />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
     )
   }
 
-  if (products.length === 0) {
-    return null
-  }
+  if (products.length === 0) return null
 
   return (
-    <section className="w-full bg-gray-50 py-[10px] lg:hidden">
-      <div className="max-w-7xl mx-auto px-4">
-        
-        {/* EN-TÊTE SECTION */}
-        <div className="flex items-center justify-between mb-[10px]">
-          <div className="flex items-center gap-2">
-            <div className="bg-amber-100 p-1.5 rounded-lg">
-              <TrendingUp className="w-4 h-4 text-amber-600" />
+    <section className="w-full lg:hidden" style={{ background: "#fff" }}>
+      <div className="px-4 py-4">
+
+        {/* Header */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2.5">
+            <div
+              className="flex items-center justify-center w-8 h-8 rounded-lg"
+              style={{ background: "#FFF0F0" }}
+            >
+              <TrendingUp className="w-4 h-4" style={{ color: "#D4372B" }} />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-gray-900">
+              <h2 style={{ fontSize: "13px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif", lineHeight: 1.2 }}>
                 Meilleures ventes
               </h2>
-              <p className="text-[10px] text-gray-500 mt-0.5">
-                Glissez pour voir plus →
+              <p style={{ fontSize: "10px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
+                Glissez pour voir plus
               </p>
             </div>
           </div>
           <Link
             href="/meilleures-ventes"
-            className="inline-flex items-center gap-0.5 text-xs text-gray-500 hover:text-gray-900"
+            className="flex items-center gap-0.5 text-xs font-semibold"
+            style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}
           >
-            Voir tout
-            <ChevronRight className="w-3.5 h-3.5" />
+            Voir tout <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        {/* CARROUSEL HORIZONTAL */}
+        {/* Carrousel */}
         <div
           ref={scrollRef}
-          className="flex gap-3 overflow-x-auto scroll-smooth scrollbar-hide pb-[10px]"
+          className="flex gap-3 overflow-x-auto pb-2"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {products.map((product) => (
+          {products.map((product, index) => (
             <Link
               key={product.id}
               href={`/products/${product.id}`}
-              className="group block flex-shrink-0 w-[140px]"
+              className="group block flex-shrink-0"
+              style={{ width: "130px" }}
             >
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden group-hover:border-gray-300 group-hover:shadow-md transition-all">
-                
-                {/* IMAGE */}
-                <div className="relative aspect-square bg-gray-50 p-3">
+              <div
+                className="overflow-hidden transition-all duration-200"
+                style={{ borderRadius: "12px", border: "0.5px solid #ECECEC", background: "#fff" }}
+              >
+                {/* Rang */}
+                <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
+                  {index < 3 && (
+                    <span
+                      className="absolute top-2 left-2 z-10 flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold text-white"
+                      style={{ background: index === 0 ? "#F5A623" : index === 1 ? "#AAAAAA" : "#CD7F32" }}
+                    >
+                      {index + 1}
+                    </span>
+                  )}
                   <Image
                     src={product.image || "/placeholder.svg"}
                     alt={product.name}
-                    width={140}
-                    height={140}
-                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                    width={130}
+                    height={130}
+                    className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
 
-                {/* INFOS */}
-                <div className="p-2">
-                  <h3 className="text-xs font-medium text-gray-900 truncate">
+                {/* Infos */}
+                <div className="px-2 py-2">
+                  <p
+                    className="truncate mb-1"
+                    style={{ fontSize: "11px", fontWeight: 500, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}
+                  >
                     {product.name}
-                  </h3>
-                  
-                  <p className="text-sm font-bold text-gray-900 mt-1">
+                  </p>
+                  <p
+                    style={{ fontSize: "13px", fontWeight: 700, color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}
+                  >
                     {formatPrice(product.priceUSD)}
                   </p>
                 </div>
@@ -145,20 +164,17 @@ export function MeilleuresVentesMobile() {
           ))}
         </div>
 
-        {/* INDICATEURS DE SCROLL */}
-        <div className="flex items-center justify-center gap-1 mt-[10px]">
-          <div className="w-1 h-1 bg-gray-300 rounded-full" />
-          <div className="w-1 h-1 bg-gray-300 rounded-full" />
-          <div className="w-1 h-1 bg-gray-300 rounded-full" />
-          <div className="w-1 h-1 bg-gray-300 rounded-full animate-pulse" />
-          <span className="text-[8px] text-gray-400 ml-1">← glissez</span>
+        {/* Indicateur scroll */}
+        <div className="flex items-center justify-center gap-1 mt-2">
+          {[0,1,2,3].map(i => (
+            <div key={i} className="rounded-full" style={{ width: i === 3 ? "14px" : "4px", height: "3px", background: i === 3 ? "#D4372B" : "#ECECEC", transition: "all 0.3s" }} />
+          ))}
+          <span style={{ fontSize: "9px", color: "#AAAAAA", marginLeft: "4px", fontFamily: "'Poppins', sans-serif" }}>glissez →</span>
         </div>
       </div>
 
       <style jsx>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
+        div::-webkit-scrollbar { display: none; }
       `}</style>
     </section>
   )
