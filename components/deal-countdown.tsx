@@ -44,10 +44,10 @@ export function DealCountdown() {
 
   const { formatPrice } = useCurrencyFormatter()
 
-  // ── Couleurs desktop (inchangées) ──────────────────────────
-  const brandColor    = "#2B4F3C"
-  const brandGradient = "linear-gradient(135deg, #2B4F3C 0%, #3A6B4E 100%)"
-  const brandLight    = "#E8F3E8"
+  // ── Palette Adullam unifiée ─────────────────────────────────
+  const brandColor    = "#0A0A0A"
+  const brandAccent   = "#D4372B"
+  const brandLight    = "#F4F4F4"
 
   // ── Fetch data ──────────────────────────────────────────────
   useEffect(() => {
@@ -216,9 +216,9 @@ export function DealCountdown() {
             ))}
           </div>
         </div>
-        {/* Desktop spinner inchangé */}
+        {/* Desktop skeleton */}
         <div className="hidden lg:flex justify-center items-center h-40 bg-white">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: brandColor }} />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: "#D4372B" }} />
         </div>
       </div>
     )
@@ -320,42 +320,78 @@ export function DealCountdown() {
             </div>
           </div>
 
-          {/* ── DESKTOP header (inchangé) ──────────────────────── */}
+          {/* ── DESKTOP header ─────────────────────────────────── */}
           <div className="hidden lg:flex items-center justify-between">
+            {/* Gauche : icône + titre */}
             <div className="flex items-center gap-4">
-              <div className="p-2.5 rounded-xl" style={{ background: brandLight }}>
-                <Zap className="w-5 h-5" style={{ color: brandColor }} />
+              <div
+                className="flex items-center justify-center w-10 h-10 rounded-xl"
+                style={{ background: brandAccent }}
+              >
+                <Zap className="w-5 h-5 text-white" fill="white" />
               </div>
               <div>
-                <h2 className="text-base font-semibold text-gray-900 font-poppins">Offres éclair</h2>
-                <p className="text-sm text-gray-500 font-poppins">Jusqu'à -50% · Renouvellement quotidien</p>
+                <h2
+                  className="text-base font-bold font-poppins"
+                  style={{ color: brandColor, letterSpacing: "-0.02em" }}
+                >
+                  Vente flash
+                </h2>
+                <p className="text-sm font-poppins" style={{ color: "#AAAAAA" }}>
+                  Jusqu'à -50% · Renouvellement quotidien
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-8">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 text-gray-500">
-                  <span className="text-sm font-poppins">Fin dans</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  {[
-                    { val: timeLeft.hours,   unit: "h" },
-                    { val: timeLeft.minutes, unit: "m" },
-                    { val: timeLeft.seconds, unit: "s" },
-                  ].map(({ val, unit }, i) => (
-                    <div key={unit} className="flex items-center gap-1">
-                      {i > 0 && <span className="text-gray-300 text-xl">:</span>}
-                      <div className="px-3 py-2 rounded-lg min-w-[70px] text-center" style={{ background: brandLight }}>
-                        <span className="text-xl font-bold font-poppins" style={{ color: brandColor }}>{fmt(val)}</span>
-                        <span className="text-xs text-gray-500 ml-1 font-poppins">{unit}</span>
-                      </div>
+
+            {/* Droite : timer + CTA */}
+            <div className="flex items-center gap-6">
+              {/* Label */}
+              <span className="text-sm font-poppins" style={{ color: "#AAAAAA" }}>
+                Se termine dans
+              </span>
+
+              {/* Blocs timer desktop */}
+              <div className="flex items-center gap-1.5">
+                {[
+                  { val: timeLeft.hours,   unit: "h" },
+                  { val: timeLeft.minutes, unit: "m" },
+                  { val: timeLeft.seconds, unit: "s" },
+                ].map(({ val, unit }, i) => (
+                  <div key={unit} className="flex items-center gap-1.5">
+                    {i > 0 && (
+                      <span className="text-lg font-bold" style={{ color: "#ECECEC" }}>:</span>
+                    )}
+                    <div
+                      className="flex flex-col items-center justify-center"
+                      style={{
+                        background: brandColor,
+                        borderRadius: "10px",
+                        minWidth: "56px",
+                        padding: "8px 10px",
+                      }}
+                    >
+                      <span
+                        className="text-xl font-bold leading-none font-poppins"
+                        style={{ color: "#fff", letterSpacing: "-0.02em" }}
+                      >
+                        {fmt(val)}
+                      </span>
+                      <span
+                        className="text-[10px] leading-none mt-1 font-poppins"
+                        style={{ color: "#AAAAAA" }}
+                      >
+                        {unit}
+                      </span>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
+
+              {/* CTA */}
               <Link
                 href="/deals-du-jour"
-                className="flex items-center gap-2 px-4 py-2 text-white rounded-lg text-sm font-medium transition-all hover:shadow-lg font-poppins"
-                style={{ background: brandGradient }}
+                className="flex items-center gap-2 px-5 py-2.5 text-white rounded-xl text-sm font-semibold font-poppins transition-all hover:opacity-90 hover:shadow-lg"
+                style={{ background: brandAccent }}
               >
                 Voir toutes les offres
                 <ArrowRight className="w-4 h-4" />
@@ -390,10 +426,9 @@ export function DealCountdown() {
                 Nouveau
               </span>
             </div>
-            {/* Label section desktop (inchangé) */}
             <h3
-              className="hidden lg:block text-xs font-medium uppercase tracking-wider mb-4 font-poppins"
-              style={{ color: brandColor }}
+              className="hidden lg:block text-xs font-bold uppercase tracking-wider mb-4 font-poppins"
+              style={{ color: brandColor, letterSpacing: "0.08em" }}
             >
               Sélection du moment
             </h3>
@@ -432,10 +467,9 @@ export function DealCountdown() {
                 🔥
               </span>
             </div>
-            {/* Label section desktop (inchangé) */}
             <h3
-              className="hidden lg:block text-xs font-medium uppercase tracking-wider mb-4 font-poppins"
-              style={{ color: brandColor }}
+              className="hidden lg:block text-xs font-bold uppercase tracking-wider mb-4 font-poppins"
+              style={{ color: brandColor, letterSpacing: "0.08em" }}
             >
               Meilleures ventes
             </h3>
