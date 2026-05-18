@@ -59,9 +59,9 @@ export function CategoriesMode() {
               slug: "mode-hommes",
               image: "/categories/men-fashion.jpg",
               icon: Shirt,
-              bgColor: "bg-blue-50",
-              hoverColor: "hover:bg-blue-100",
-              textColor: "text-gray-900",
+              bgColor: "#F4F4F4",
+              hoverColor: "#FAFAFA",
+              textColor: "#0A0A0A",
               description: "Vêtements, chaussures, accessoires",
               productCount: "15k+",
               href: "/categories/mode-hommes",
@@ -79,9 +79,9 @@ export function CategoriesMode() {
               slug: "mode-femmes",
               image: "/categories/women-fashion.jpg",
               icon: Footprints,
-              bgColor: "bg-pink-50",
-              hoverColor: "hover:bg-pink-100",
-              textColor: "text-gray-900",
+              bgColor: "#F4F4F4",
+              hoverColor: "#FAFAFA",
+              textColor: "#0A0A0A",
               description: "Robes, sacs, chaussures",
               productCount: "22k+",
               href: "/categories/mode-femmes",
@@ -99,9 +99,9 @@ export function CategoriesMode() {
               slug: "mode-enfants",
               image: "/categories/kids-fashion.jpg",
               icon: Baby,
-              bgColor: "bg-green-50",
-              hoverColor: "hover:bg-green-100",
-              textColor: "text-gray-900",
+              bgColor: "#F4F4F4",
+              hoverColor: "#FAFAFA",
+              textColor: "#0A0A0A",
               description: "Vêtements, chaussures, accessoires",
               productCount: "8k+",
               href: "/categories/mode-enfants",
@@ -127,10 +127,10 @@ export function CategoriesMode() {
 
   if (isLoading) {
     return (
-      <section className="w-full bg-white py-4 lg:py-6">
+      <section className="w-full py-4 lg:py-6" style={{ background: "#FAFAFA" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-center items-center h-32">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-600" />
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2" style={{ borderColor: "#D4372B" }} />
           </div>
         </div>
       </section>
@@ -142,46 +142,52 @@ export function CategoriesMode() {
   }
 
   return (
-    <section className="w-full bg-white py-4 lg:py-6">
+    <section className="w-full py-4 lg:py-6" style={{ background: "#FAFAFA" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
+        {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className="bg-amber-100 p-1.5 rounded-lg">
-              <Sparkles className="w-4 h-4 text-amber-600" />
+            <div className="p-1.5 rounded-lg" style={{ background: "#FFF0F0" }}>
+              <Sparkles className="w-4 h-4" style={{ color: "#D4372B" }} />
             </div>
             <div>
-              <h2 className="text-base lg:text-xl font-semibold text-gray-900">
+              <h2 className="text-base lg:text-xl font-semibold" style={{ color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>
                 Mode pour toute la famille
               </h2>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs" style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
                 Hommes • Femmes • Enfants
               </p>
             </div>
           </div>
           <Link
             href="/categories/mode"
-            className="text-xs text-gray-500 hover:text-gray-900 inline-flex items-center gap-1"
+            className="text-xs inline-flex items-center gap-1 transition-colors hover:opacity-70"
+            style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}
           >
             Voir toute la mode
             <ChevronRight className="w-3 h-3" />
           </Link>
         </div>
 
+        {/* Grille catégories */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {categories.map((category, index) => {
             const Icon = category.icon
             return (
               <div 
                 key={category.id} 
-                className={`${category.bgColor} ${category.hoverColor} ${category.textColor} rounded-xl p-3 space-y-3 shadow-sm transition-all duration-300 hover:shadow-md`}
+                className="rounded-xl p-3 space-y-3 transition-all duration-300"
+                style={{ background: category.bgColor, border: "0.5px solid #ECECEC" }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "#FAFAFA"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.05)" }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = category.bgColor; e.currentTarget.style.boxShadow = "none" }}
               >
-                <Link
-                  href={category.href}
-                  className="group block"
-                >
-                  <div className="relative bg-white rounded-xl overflow-hidden border border-gray-200 group-hover:border-gray-300 group-hover:shadow-md transition-all duration-300">
-                    
+                {/* Carte catégorie principale */}
+                <Link href={category.href} className="group block">
+                  <div
+                    className="relative bg-white rounded-xl overflow-hidden transition-all duration-300"
+                    style={{ border: "0.5px solid #ECECEC" }}
+                  >
                     <div className="relative aspect-[16/9] overflow-hidden">
                       <Image
                         src={category.image}
@@ -189,24 +195,24 @@ export function CategoriesMode() {
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-700"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                      <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)" }} />
                     </div>
 
                     <div className="absolute inset-0 flex flex-col justify-end p-3">
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        <div className="bg-white/80 backdrop-blur-sm p-1 rounded-lg border border-white/50">
-                          <Icon className="w-3 h-3 text-gray-700" />
+                        <div className="bg-white/90 backdrop-blur-sm p-1 rounded-lg" style={{ border: "0.5px solid rgba(0,0,0,0.08)" }}>
+                          <Icon className="w-3 h-3" style={{ color: "#0A0A0A" }} />
                         </div>
-                        <h3 className="text-sm font-semibold text-white">
+                        <h3 className="text-sm font-semibold text-white" style={{ fontFamily: "'Poppins', sans-serif" }}>
                           {category.name}
                         </h3>
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-white/80">
+                        <span className="text-[10px] text-white/80" style={{ fontFamily: "'Poppins', sans-serif" }}>
                           {category.productCount} produits
                         </span>
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-white group-hover:gap-2 transition-all">
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-white group-hover:gap-2 transition-all" style={{ fontFamily: "'Poppins', sans-serif" }}>
                           Explorer
                           <ChevronRight className="w-3 h-3" />
                         </span>
@@ -214,13 +220,17 @@ export function CategoriesMode() {
                     </div>
 
                     {index === 1 && (
-                      <div className="absolute top-2 right-2 bg-amber-100 text-amber-800 text-[9px] font-medium px-1.5 py-0.5 rounded-full border border-amber-200">
+                      <div
+                        className="absolute top-2 right-2 text-[9px] font-medium px-1.5 py-0.5 rounded-full"
+                        style={{ background: "#FFF0F0", color: "#D4372B", border: "0.5px solid rgba(212,55,43,0.2)", fontFamily: "'Poppins', sans-serif" }}
+                      >
                         Tendance
                       </div>
                     )}
                   </div>
                 </Link>
 
+                {/* Produits associés */}
                 <div className="grid grid-cols-2 gap-2">
                   {category.products.slice(0, 2).map((product) => (
                     <Link
@@ -228,9 +238,11 @@ export function CategoriesMode() {
                       href={`/products/${product.id}`}
                       className="group block"
                     >
-                      <div className="bg-white rounded-lg border border-gray-200 p-2 group-hover:border-gray-300 group-hover:shadow-sm transition-all">
-                        
-                        <div className="relative aspect-square mb-1 bg-gray-50 rounded-lg overflow-hidden">
+                      <div
+                        className="bg-white rounded-lg p-2 transition-all duration-300"
+                        style={{ border: "0.5px solid #ECECEC" }}
+                      >
+                        <div className="relative aspect-square mb-1 rounded-lg overflow-hidden" style={{ background: "#FAFAFA" }}>
                           <Image
                             src={product.image}
                             alt={product.name}
@@ -239,15 +251,15 @@ export function CategoriesMode() {
                           />
                         </div>
 
-                        <h4 className="text-[10px] font-medium text-gray-900 line-clamp-1">
+                        <h4 className="text-[10px] font-medium line-clamp-1" style={{ color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>
                           {product.name}
                         </h4>
                         
-                        <p className="text-xs font-semibold text-gray-900 mt-0.5">
+                        <p className="text-xs font-semibold mt-0.5" style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>
                           {formatPrice(product.priceUSD)}
                         </p>
                         
-                        <p className="text-[8px] text-gray-500">
+                        <p className="text-[8px]" style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
                           MOQ: {product.moq}
                         </p>
                       </div>
