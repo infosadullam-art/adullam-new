@@ -170,9 +170,10 @@ export function HeroSection() {
   )
 
   // ── DESKTOP ─────────────────────────────────────────────────
+  // HAUTEUR RÉDUITE À 2/3 : py-10 est devenu py-6
   const DesktopHero = () => (
     <div className="hidden lg:block" style={{ background: "#0A0A0A" }}>
-      <div className="max-w-7xl mx-auto px-8 py-10">
+      <div className="max-w-7xl mx-auto px-8 py-6">
         <div className="grid grid-cols-2 gap-14 items-center">
 
           {/* Gauche — Texte */}
@@ -256,7 +257,7 @@ export function HeroSection() {
           </div>
 
           {/* Droite — Image carrousel */}
-          <div className="relative" style={{ height: "340px" }}>
+          <div className="relative" style={{ height: "240px" }}>
             {heroSlides.map((slide, index) => (
               <div
                 key={slide.id}
@@ -313,8 +314,8 @@ export function HeroSection() {
 
         {/* Trust bar */}
         <div
-          className="grid grid-cols-3 gap-0 mt-12"
-          style={{ borderTop: "0.5px solid rgba(255,255,255,0.08)", paddingTop: "28px" }}
+          className="grid grid-cols-3 gap-0 mt-8"
+          style={{ borderTop: "0.5px solid rgba(255,255,255,0.08)", paddingTop: "20px" }}
         >
           {trustItems.map(({ icon: Icon, label, sub }, i) => (
             <div
