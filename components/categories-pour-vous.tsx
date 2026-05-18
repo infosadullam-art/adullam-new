@@ -6,7 +6,6 @@ import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
-// Types
 interface Product {
   id: string
   name: string
@@ -15,24 +14,9 @@ interface Product {
 }
 
 const slides = [
-  {
-    id: 1,
-    image: "/slides/Spring-1.jpg",
-    title: "Collection printemps",
-    href: "/collections/printemps",
-  },
-  {
-    id: 2,
-    image: "/slides/Spring-2.jpg",
-    title: "Nouveautés mode",
-    href: "/collections/nouveautes",
-  },
-  {
-    id: 3,
-    image: "/slides/Spring-3.jpg",
-    title: "Tendances 2026",
-    href: "/collections/tendances",
-  },
+  { id: 1, image: "/slides/Spring-1.jpg", title: "Collection printemps", href: "/collections/printemps" },
+  { id: 2, image: "/slides/Spring-2.jpg", title: "Nouveautés mode",      href: "/collections/nouveautes" },
+  { id: 3, image: "/slides/Spring-3.jpg", title: "Tendances 2026",       href: "/collections/tendances" },
 ]
 
 export function CategoriesPourVous() {
@@ -41,146 +25,119 @@ export function CategoriesPourVous() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [slideHeight, setSlideHeight] = useState<number | null>(null)
   const productContainerRef = useRef<HTMLDivElement>(null)
-  const slideContainerRef = useRef<HTMLDivElement>(null)
-
-  // Hook de devise dynamique
   const { formatPrice } = useCurrencyFormatter()
 
-  // ✅ CHARGEMENT DES PRODUITS TENDANCES (exemple: cuisine)
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch('/api/trending/cuisine?limit=4')
+        const res = await fetch("/api/trending/cuisine?limit=4")
         const data = await res.json()
-        
-        console.log("📦 Réponse API trending:", data)
-        
         if (data.success && data.data) {
-          const formattedProducts = data.data.map((p: any) => ({
+          setProducts(data.data.map((p: any) => ({
             id: p.id,
             name: p.name || p.title || "Produit",
             price: p.price || 0,
-            image: p.image || "/placeholder.jpg"
-          }))
-          setProducts(formattedProducts)
-          console.log(`✅ ${formattedProducts.length} produits tendances chargés`)
-        } else {
-          console.log("⚠️ Aucun produit trouvé")
+            image: p.image || "/placeholder.jpg",
+          })))
         }
       } catch (error) {
-        console.error("❌ Erreur chargement produits:", error)
+        console.error("Erreur chargement produits:", error)
       } finally {
         setIsLoading(false)
       }
     }
-    
     fetchProducts()
   }, [])
 
-  // Auto-défilement du slide images
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length)
-    }, 4000)
+    const timer = setInterval(() => setCurrentSlide(p => (p + 1) % slides.length), 4000)
     return () => clearInterval(timer)
   }, [])
 
-  // Ajuster la hauteur du slide à celle des produits
   useEffect(() => {
     if (productContainerRef.current && !slideHeight) {
       setTimeout(() => {
-        if (productContainerRef.current) {
-          setSlideHeight(productContainerRef.current.offsetHeight)
-        }
+        if (productContainerRef.current) setSlideHeight(productContainerRef.current.offsetHeight)
       }, 100)
     }
   }, [products, slideHeight])
 
-  // Recalculer si la fenêtre est redimensionnée
   useEffect(() => {
     const handleResize = () => {
-      if (productContainerRef.current) {
-        setSlideHeight(productContainerRef.current.offsetHeight)
-      }
+      if (productContainerRef.current) setSlideHeight(productContainerRef.current.offsetHeight)
     }
-
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
   }, [])
 
-  // Loading
   if (isLoading) {
     return (
-      <div className="w-full bg-gradient-to-br from-gray-900 to-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+      <div className="w-full" style={{ background: "#0A0A0A" }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-center items-center h-32">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-500" />
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2" style={{ borderColor: "#D4372B" }} />
           </div>
         </div>
       </div>
     )
   }
 
-  // Si pas de produits, on n'affiche rien
-  if (products.length === 0) {
-    return null
-  }
+  if (products.length === 0) return null
 
   return (
-    <section className="w-full bg-gradient-to-br from-gray-900 via-gray-800 to-indigo-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        
-        {/* TITRE */}
+    <section className="w-full" style={{ background: "#0A0A0A" }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+
+        {/* Header */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="w-1 h-5 bg-amber-500 rounded-full"></div>
+            <span style={{ display: "inline-block", width: "3px", height: "18px", background: "#D4372B", borderRadius: "2px" }} />
             <div>
-              <h2 className="text-sm font-medium text-white">
+              <h2 style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'Poppins', sans-serif" }}>
                 Tendances Cuisine 🔥
               </h2>
-              <p className="text-[9px] text-white/60 mt-0.5">
+              <p style={{ fontSize: "10px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
                 Les produits les plus populaires
               </p>
             </div>
           </div>
           <Link
             href="/categories/cuisine"
-            className="text-[10px] text-white/50 hover:text-white transition-colors flex items-center gap-0.5"
+            className="flex items-center gap-0.5 text-xs font-semibold"
+            style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}
           >
-            Voir tout
-            <ChevronRight className="w-3 h-3" />
+            Voir tout <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        {/* GRILLE 4/2 */}
+        {/* Grille 4 produits + slide */}
         <div className="grid grid-cols-6 gap-2">
-          
-          {/* GRILLE PRODUITS TENDANCES */}
+
+          {/* Produits — 4 colonnes */}
           <div className="col-span-4" ref={productContainerRef}>
             <div className="grid grid-cols-4 gap-2">
               {products.slice(0, 4).map((product) => (
-                <Link
-                  key={product.id}
-                  href={`/products/${product.id}`}
-                  className="group block"
-                >
-                  {/* Cadre produit blanc */}
-                  <div className="bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all border border-gray-100">
-                    <div className="relative aspect-square p-2">
+                <Link key={product.id} href={`/products/${product.id}`} className="group block">
+                  <div
+                    className="overflow-hidden transition-all duration-200 group-hover:shadow-md"
+                    style={{ background: "#fff", borderRadius: "12px", border: "0.5px solid rgba(255,255,255,0.08)" }}
+                  >
+                    <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
                       <Image
                         src={product.image}
                         alt={product.name}
                         fill
-                        className="object-contain p-1 group-hover:scale-105 transition-transform duration-300"
+                        className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
-                    <div className="p-1.5">
-                      {/* Titre en noir */}
-                      <h3 className="text-[10px] font-medium text-gray-800 truncate">
+                    <div className="px-2 py-2">
+                      <p
+                        className="truncate mb-0.5"
+                        style={{ fontSize: "10px", fontWeight: 500, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}
+                      >
                         {product.name}
-                      </h3>
-                      {/* Prix en rouge */}
-                      <p className="text-[9px] font-semibold text-red-500 mt-0.5">
+                      </p>
+                      <p style={{ fontSize: "11px", fontWeight: 700, color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>
                         {formatPrice(product.price)}
                       </p>
                     </div>
@@ -190,47 +147,52 @@ export function CategoriesPourVous() {
             </div>
           </div>
 
-          {/* SLIDE IMAGES */}
+          {/* Slide — 2 colonnes */}
           <div className="col-span-2">
-            <div 
-              ref={slideContainerRef}
-              className="relative rounded-lg overflow-hidden w-full"
-              style={{ height: slideHeight ? `${slideHeight}px` : 'auto' }}
+            <div
+              className="relative overflow-hidden"
+              style={{
+                borderRadius: "12px",
+                height: slideHeight ? `${slideHeight}px` : "auto",
+                border: "0.5px solid rgba(255,255,255,0.08)",
+              }}
             >
               {slides.map((slide, index) => (
                 <Link
                   key={slide.id}
                   href={slide.href}
-                  className={`absolute inset-0 transition-opacity duration-700 ${
-                    index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
-                  }`}
+                  className="absolute inset-0 transition-opacity duration-700"
+                  style={{ opacity: index === currentSlide ? 1 : 0, zIndex: index === currentSlide ? 10 : 0 }}
                 >
-                  <Image
-                    src={slide.image}
-                    alt={slide.title}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                  <div className="absolute bottom-2 left-2 right-2">
-                    <h3 className="text-xs font-medium text-white line-clamp-1">{slide.title}</h3>
-                    <span className="text-[8px] text-white/80 flex items-center gap-0.5 mt-0.5">
-                      Découvrir
-                      <ChevronRight className="w-2.5 h-2.5" />
+                  <Image src={slide.image} alt={slide.title} fill className="object-cover" />
+                  <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 60%)" }} />
+                  <div className="absolute bottom-2.5 left-3 right-3 z-10">
+                    <p style={{ fontSize: "12px", fontWeight: 600, color: "#fff", fontFamily: "'Poppins', sans-serif", lineHeight: 1.2 }}>
+                      {slide.title}
+                    </p>
+                    <span className="flex items-center gap-0.5 mt-1" style={{ fontSize: "10px", color: "rgba(255,255,255,0.7)", fontFamily: "'Poppins', sans-serif" }}>
+                      Découvrir <ChevronRight className="w-3 h-3" />
                     </span>
                   </div>
                 </Link>
               ))}
 
-              {/* INDICATEURS */}
-              <div className="absolute bottom-2 right-2 z-20 flex gap-1">
-                {slides.map((_, index) => (
+              {/* Dots */}
+              <div className="absolute bottom-2.5 right-3 z-20 flex gap-1">
+                {slides.map((_, i) => (
                   <button
-                    key={index}
-                    onClick={() => setCurrentSlide(index)}
-                    className={`w-1 h-1 rounded-full transition-all ${
-                      index === currentSlide ? "w-2 bg-amber-400" : "bg-white/40"
-                    }`}
+                    key={i}
+                    onClick={() => setCurrentSlide(i)}
+                    style={{
+                      width: i === currentSlide ? "16px" : "4px",
+                      height: "3px",
+                      borderRadius: "2px",
+                      background: i === currentSlide ? "#D4372B" : "rgba(255,255,255,0.4)",
+                      transition: "all 0.3s ease",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 0,
+                    }}
                   />
                 ))}
               </div>
@@ -238,12 +200,6 @@ export function CategoriesPourVous() {
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
     </section>
   )
 }
