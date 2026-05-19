@@ -33,280 +33,277 @@ export default function CategoryPage() {
 
   // ✅ FONCTION CORRIGÉE : Un produit est en stock SAUF si stock = 0
   const isProductInStock = (product: any): boolean => {
-    // Si stock n'existe pas → En stock
     if (product.stock === undefined || product.stock === null) return true
-    
-    // Si stock est un nombre
-    if (typeof product.stock === 'number') {
-      return product.stock > 0
-    }
-    
-    // Si stock est un string
-    if (typeof product.stock === 'string') {
-      return parseInt(product.stock) > 0
-    }
-    
-    // Si inStock est défini
-    if (product.inStock !== undefined) {
-      return product.inStock === true
-    }
-    
-    // Par défaut → En stock
+    if (typeof product.stock === "number") return product.stock > 0
+    if (typeof product.stock === "string") return parseInt(product.stock) > 0
+    if (product.inStock !== undefined) return product.inStock === true
     return true
   }
 
-  // Fonction pour convertir un titre en slug
-  const titleToSlug = (title: string) => {
-    return title.toLowerCase().replace(/ /g, '-')
-  }
+  const titleToSlug = (title: string) => title.toLowerCase().replace(/ /g, "-")
 
-  // Charger les données
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true)
-        console.log("🔍 Chargement pour slug:", slug)
-        
-        // 1. Récupérer toutes les catégories
         const categoriesRes = await categoriesApi.list()
-        console.log("📦 Catégories reçues:", categoriesRes)
-        
-        if (!categoriesRes.success) {
-          console.log("❌ Erreur chargement catégories")
-          setLoading(false)
-          return
-        }
-        
+        if (!categoriesRes.success) { setLoading(false); return }
+
         const categories = categoriesRes.data as any[]
-        
-        // 2. Trouver la catégorie par slug
-        let foundCategory = categories.find(c => c.slug === slug)
-        console.log("🎯 Recherche par slug exact:", foundCategory?.name)
-        
-        // 3. Si pas trouvé, chercher par correspondance
+        let foundCategory = categories.find((c) => c.slug === slug)
+
         if (!foundCategory) {
-          const decodedSlug = decodeURIComponent(slug).replace(/-/g, ' ').toLowerCase()
-          
-          foundCategory = categories.find(c => {
+          const decodedSlug = decodeURIComponent(slug).replace(/-/g, " ").toLowerCase()
+          foundCategory = categories.find((c) => {
             const catName = c.name.toLowerCase()
             const catSlug = titleToSlug(c.name)
-            
-            return (
-              catName === decodedSlug ||
-              catSlug === slug ||
-              catName.includes(decodedSlug) ||
-              decodedSlug.includes(catName)
-            )
+            return catName === decodedSlug || catSlug === slug || catName.includes(decodedSlug) || decodedSlug.includes(catName)
           })
-          console.log("🎯 Recherche alternative:", foundCategory?.name)
         }
-        
-        if (!foundCategory) {
-          console.log("❌ Aucune catégorie trouvée")
-          setLoading(false)
-          return
+
+        if (foundCategory) {
+          setCategory(foundCategory)
+          const productsRes = await productsApi.list({ categoryId: foundCategory.id, limit: 100 })
+          if (productsRes.success) setProducts(productsRes.data as any[])
         }
-        
-        setCategory(foundCategory)
-        console.log("✅ Catégorie trouvée ID:", foundCategory.id)
-        
-        // 4. Récupérer les produits de cette catégorie
-        console.log("🔍 Appel productsApi avec categoryId:", foundCategory.id)
-        const productsRes = await productsApi.list({ 
-          categoryId: foundCategory.id,
-          limit: 100
-        })
-        
-        console.log("📦 Réponse produits brute:", productsRes)
-        
-        if (productsRes.success) {
-          const productsData = productsRes.data || []
-          console.log(`✅ ${productsData.length} produits trouvés`)
-          setProducts(productsData)
-        } else {
-          console.log("❌ productsRes.success = false")
-          setProducts([])
-        }
-        
       } catch (error) {
-        console.error("❌ Erreur:", error)
+        console.error("Erreur chargement:", error)
       } finally {
         setLoading(false)
       }
     }
-    
-    if (slug) {
-      loadData()
-    }
+    if (slug) loadData()
   }, [slug])
 
+  // ── LOADING ─────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-light">
+      <div className="min-h-screen" style={{ background: "#FAFAFA" }}>
         <div className="hidden lg:block"><Header /></div>
         <div className="lg:hidden"><MobileHeader /></div>
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand"></div>
+        <div className="max-w-[1440px] mx-auto px-4 lg:px-8 py-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="aspect-square rounded-xl mb-2" style={{ background: "#F4F4F4" }} />
+                <div className="h-3 rounded mb-1.5" style={{ background: "#F4F4F4", width: "80%" }} />
+                <div className="h-4 rounded" style={{ background: "#F4F4F4", width: "40%" }} />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     )
   }
 
+  // ── NOT FOUND ────────────────────────────────────────────────
   if (!category) {
     return (
-      <div className="min-h-screen bg-neutral-light">
+      <div className="min-h-screen" style={{ background: "#FAFAFA" }}>
         <div className="hidden lg:block"><Header /></div>
         <div className="lg:hidden"><MobileHeader /></div>
-        <div className="text-center py-12">
-          <h1 className="text-2xl font-bold mb-2">Catégorie non trouvée</h1>
-          <p className="text-muted-foreground mb-4">Le slug recherché : {decodeURIComponent(slug)}</p>
-          <Link href="/" className="text-brand hover:underline">
-            Retour à l'accueil
+        <div className="text-center py-16 px-4">
+          <p className="text-lg font-semibold mb-2" style={{ color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>
+            Catégorie introuvable
+          </p>
+          <p className="text-sm mb-4" style={{ color: "#AAAAAA" }}>
+            Slug : {decodeURIComponent(slug)}
+          </p>
+          <Link
+            href="/"
+            className="text-sm font-semibold"
+            style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}
+          >
+            ← Retour à l'accueil
           </Link>
         </div>
       </div>
     )
   }
 
-  return (
-    <div className="min-h-screen bg-neutral-light">
-      <div className="hidden lg:block">
-        <Header />
-      </div>
-      <div className="lg:hidden">
-        <MobileHeader />
+  // ── FILTER SIDEBAR CONTENT ────────────────────────────────────
+  const FilterContent = () => (
+    <div className="space-y-5">
+      {/* Prix */}
+      <div>
+        <h3
+          className="flex items-center justify-between mb-3"
+          style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif", textTransform: "uppercase", letterSpacing: "0.06em" }}
+        >
+          Prix ({getCurrencySymbol()})
+          <ChevronDown className="w-4 h-4" style={{ color: "#AAAAAA" }} />
+        </h3>
+        <input
+          type="range" min="0" max="50000"
+          value={filters.priceRange[1]}
+          onChange={(e) => setFilters({ ...filters, priceRange: [0, parseInt(e.target.value)] })}
+          className="w-full accent-[#D4372B]"
+        />
+        <div className="flex justify-between mt-1">
+          <span style={{ fontSize: "11px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>{formatPrice(0)}</span>
+          <span style={{ fontSize: "11px", color: "#D4372B", fontWeight: 600, fontFamily: "'Poppins', sans-serif" }}>{formatPrice(filters.priceRange[1])}</span>
+        </div>
       </div>
 
-      {/* Mobile Filter Drawer */}
+      {/* Marques */}
+      <div style={{ borderTop: "0.5px solid #F0F0F0", paddingTop: "16px" }}>
+        <h3
+          className="flex items-center justify-between mb-3"
+          style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif", textTransform: "uppercase", letterSpacing: "0.06em" }}
+        >
+          Marque <ChevronDown className="w-4 h-4" style={{ color: "#AAAAAA" }} />
+        </h3>
+        <div className="space-y-2">
+          {["Samsung", "Apple", "Xiaomi", "Huawei", "Sony"].map((brand) => (
+            <label key={brand} className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" className="rounded accent-[#D4372B]" />
+              <span style={{ fontSize: "13px", color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>{brand}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Note */}
+      <div style={{ borderTop: "0.5px solid #F0F0F0", paddingTop: "16px" }}>
+        <h3
+          className="flex items-center justify-between mb-3"
+          style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif", textTransform: "uppercase", letterSpacing: "0.06em" }}
+        >
+          Note <ChevronDown className="w-4 h-4" style={{ color: "#AAAAAA" }} />
+        </h3>
+        <div className="space-y-2">
+          {[4, 3, 2, 1].map((rating) => (
+            <label key={rating} className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" className="rounded accent-[#D4372B]" />
+              <div className="flex items-center gap-0.5">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} className={`w-3.5 h-3.5 ${i < rating ? "fill-[#F5A623] text-[#F5A623]" : "text-[#ECECEC]"}`} />
+                ))}
+                <span style={{ fontSize: "11px", color: "#AAAAAA", marginLeft: "3px", fontFamily: "'Poppins', sans-serif" }}>& plus</span>
+              </div>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Origine */}
+      <div style={{ borderTop: "0.5px solid #F0F0F0", paddingTop: "16px" }}>
+        <h3
+          className="flex items-center justify-between mb-3"
+          style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif", textTransform: "uppercase", letterSpacing: "0.06em" }}
+        >
+          Origine <ChevronDown className="w-4 h-4" style={{ color: "#AAAAAA" }} />
+        </h3>
+        <div className="space-y-2">
+          {["Import local", "Import Chine", "Import USA", "Import Europe"].map((origin) => (
+            <label key={origin} className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" className="rounded accent-[#D4372B]" />
+              <span style={{ fontSize: "13px", color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>{origin}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <button
+        className="w-full py-2.5 text-sm font-bold text-white rounded-xl transition-colors"
+        style={{ background: "#D4372B", fontFamily: "'Poppins', sans-serif" }}
+      >
+        Appliquer les filtres
+      </button>
+    </div>
+  )
+
+  return (
+    <div className="min-h-screen" style={{ background: "#FAFAFA" }}>
+      <div className="hidden lg:block"><Header /></div>
+      <div className="lg:hidden"><MobileHeader /></div>
+
+      {/* ── DRAWER FILTRES MOBILE ─────────────────────────────── */}
       {showFilters && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setShowFilters(false)}>
-          <div className="absolute right-0 top-0 h-full w-[85%] max-w-[400px] bg-white overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
-              <h2 className="font-bold text-lg">Filtres</h2>
-              <button onClick={() => setShowFilters(false)}>
-                <X className="w-6 h-6" />
+        <div
+          className="lg:hidden fixed inset-0 z-50"
+          style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(2px)" }}
+          onClick={() => setShowFilters(false)}
+        >
+          <div
+            className="absolute right-0 top-0 h-full overflow-y-auto"
+            style={{ width: "85%", maxWidth: "360px", background: "#fff" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header drawer */}
+            <div
+              className="sticky top-0 flex items-center justify-between px-5 py-4"
+              style={{ background: "#fff", borderBottom: "0.5px solid #F0F0F0" }}
+            >
+              <p style={{ fontSize: "15px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>
+                Filtres
+              </p>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="flex items-center justify-center w-8 h-8 rounded-lg focus:outline-none"
+                style={{ background: "#F4F4F4" }}
+              >
+                <X className="w-4 h-4" style={{ color: "#0A0A0A" }} />
               </button>
             </div>
-            <div className="p-4 space-y-6">
-              {/* Price Range */}
-              <div>
-                <h3 className="font-bold mb-4 flex items-center justify-between">
-                  Prix ({getCurrencySymbol()})
-                  <ChevronDown className="w-5 h-5" />
-                </h3>
-                <div className="space-y-3">
-                  <input
-                    type="range"
-                    min="0"
-                    max="50000"
-                    value={filters.priceRange[1]}
-                    onChange={(e) => setFilters({ ...filters, priceRange: [0, Number.parseInt(e.target.value)] })}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-sm">
-                    <span>{formatPrice(0)}</span>
-                    <span>{formatPrice(filters.priceRange[1])}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Brands */}
-              <div className="border-t pt-6">
-                <h3 className="font-bold mb-4 flex items-center justify-between">
-                  Marque
-                  <ChevronDown className="w-5 h-5" />
-                </h3>
-                <div className="space-y-2">
-                  {["Samsung", "Apple", "Xiaomi", "Huawei", "Sony"].map((brand) => (
-                    <label key={brand} className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" className="rounded" />
-                      <span className="text-sm">{brand}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Rating */}
-              <div className="border-t pt-6">
-                <h3 className="font-bold mb-4 flex items-center justify-between">
-                  Note
-                  <ChevronDown className="w-5 h-5" />
-                </h3>
-                <div className="space-y-2">
-                  {[4, 3, 2, 1].map((rating) => (
-                    <label key={rating} className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" className="rounded" />
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-4 h-4 ${i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
-                          />
-                        ))}
-                        <span className="text-sm ml-1">& plus</span>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Origin */}
-              <div className="border-t pt-6">
-                <h3 className="font-bold mb-4 flex items-center justify-between">
-                  Origine
-                  <ChevronDown className="w-5 h-5" />
-                </h3>
-                <div className="space-y-2">
-                  {["Import local", "Import Chine", "Import USA", "Import Europe"].map((origin) => (
-                    <label key={origin} className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" className="rounded" />
-                      <span className="text-sm">{origin}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <button className="w-full px-4 py-2 bg-brand hover:bg-brand-hover text-white font-semibold rounded-lg transition-colors">
-                Appliquer les filtres
-              </button>
+            <div className="px-5 py-5">
+              <FilterContent />
             </div>
           </div>
         </div>
       )}
 
-      <main className="pb-20 lg:pb-8">
-        <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-4 lg:py-6">
-          {/* Breadcrumbs */}
-          <div className="hidden lg:flex items-center gap-2 text-sm mb-4">
-            <Link href="/" className="text-muted-foreground hover:text-brand">
+      <main className="pb-20 lg:pb-10">
+        <div className="max-w-[1440px] mx-auto px-4 lg:px-8 py-4 lg:py-6">
+
+          {/* Breadcrumb desktop */}
+          <div className="hidden lg:flex items-center gap-1.5 text-xs mb-4" style={{ color: "#AAAAAA" }}>
+            <Link href="/" className="hover:text-[#D4372B] transition-colors" style={{ fontFamily: "'Poppins', sans-serif" }}>
               Accueil
             </Link>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            <span className="text-foreground">{category.name}</span>
+            <ChevronRight className="w-3 h-3" />
+            <span style={{ color: "#0A0A0A", fontWeight: 500, fontFamily: "'Poppins', sans-serif" }}>{category.name}</span>
           </div>
 
-          {/* Category Header */}
-          <div className="mb-4 lg:mb-6">
-            <h1 className="text-xl lg:text-3xl font-bold mb-1">{category.name}</h1>
-            <p className="text-sm text-muted-foreground">
+          {/* Category header */}
+          <div className="mb-4 lg:mb-5">
+            <h1
+              style={{
+                fontFamily: "'Poppins', sans-serif",
+                fontWeight: 800,
+                fontSize: "clamp(18px, 3vw, 28px)",
+                color: "#0A0A0A",
+                letterSpacing: "-0.02em",
+              }}
+            >
+              {category.name}
+            </h1>
+            <p style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif", marginTop: "2px" }}>
               {products.length} produit{products.length > 1 ? "s" : ""} disponible{products.length > 1 ? "s" : ""}
             </p>
           </div>
 
-          {/* Mobile Toolbar */}
-          <div className="lg:hidden flex items-center justify-between gap-2 mb-4">
+          {/* Toolbar mobile */}
+          <div className="lg:hidden flex items-center gap-2 mb-4">
             <button
               onClick={() => setShowFilters(true)}
-              className="flex items-center gap-1 px-3 py-2 bg-white rounded-lg border text-sm"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold focus:outline-none"
+              style={{ background: "#fff", border: "0.5px solid #ECECEC", color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}
             >
               <SlidersHorizontal className="w-4 h-4" />
               Filtres
             </button>
-            
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="flex-1 px-3 py-2 border rounded-lg bg-white text-sm"
+              className="flex-1 px-3 py-2 text-sm focus:outline-none"
+              style={{
+                background: "#fff",
+                border: "0.5px solid #ECECEC",
+                borderRadius: "10px",
+                color: "#0A0A0A",
+                fontFamily: "'Poppins', sans-serif",
+              }}
             >
               <option value="popular">Populaire</option>
               <option value="price-asc">Prix ↑</option>
@@ -316,189 +313,153 @@ export default function CategoryPage() {
             </select>
           </div>
 
-          {/* Desktop Toolbar */}
-          <div className="hidden lg:block bg-white rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground">Trier par:</span>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="px-4 py-2 border rounded-lg bg-white"
-                >
-                  <option value="popular">Plus populaire</option>
-                  <option value="price-asc">Prix croissant</option>
-                  <option value="price-desc">Prix décroissant</option>
-                  <option value="newest">Plus récent</option>
-                  <option value="rating">Meilleures notes</option>
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded ${viewMode === "grid" ? "bg-brand text-white" : "hover:bg-neutral-light"}`}
-                >
-                  <Grid3x3 className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`p-2 rounded ${viewMode === "list" ? "bg-brand text-white" : "hover:bg-neutral-light"}`}
-                >
-                  <LayoutGrid className="w-5 h-5" />
-                </button>
-              </div>
+          {/* Toolbar desktop */}
+          <div
+            className="hidden lg:flex items-center justify-between p-4 rounded-xl mb-5"
+            style={{ background: "#fff", border: "0.5px solid #ECECEC" }}
+          >
+            <div className="flex items-center gap-3">
+              <span style={{ fontSize: "13px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>Trier par :</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-3 py-2 text-sm focus:outline-none"
+                style={{
+                  background: "#F4F4F4",
+                  borderRadius: "8px",
+                  border: "none",
+                  color: "#0A0A0A",
+                  fontFamily: "'Poppins', sans-serif",
+                  fontWeight: 500,
+                }}
+              >
+                <option value="popular">Plus populaire</option>
+                <option value="price-asc">Prix croissant</option>
+                <option value="price-desc">Prix décroissant</option>
+                <option value="newest">Nouveautés</option>
+                <option value="rating">Meilleures notes</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setViewMode("grid")}
+                className="p-2 rounded-lg transition-colors focus:outline-none"
+                style={{ background: viewMode === "grid" ? "#D4372B" : "#F4F4F4" }}
+              >
+                <Grid3x3 className="w-4 h-4" style={{ color: viewMode === "grid" ? "#fff" : "#AAAAAA" }} />
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                className="p-2 rounded-lg transition-colors focus:outline-none"
+                style={{ background: viewMode === "list" ? "#D4372B" : "#F4F4F4" }}
+              >
+                <LayoutGrid className="w-4 h-4" style={{ color: viewMode === "list" ? "#fff" : "#AAAAAA" }} />
+              </button>
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-4 gap-6">
-            {/* Desktop Filters Sidebar */}
+          {/* Layout */}
+          <div className="grid lg:grid-cols-4 gap-5">
+
+            {/* ── SIDEBAR FILTRES DESKTOP ───────────────────── */}
             <div className="hidden lg:block lg:col-span-1">
-              <div className="bg-white rounded-lg p-6 space-y-6">
-                {/* Price Range */}
-                <div>
-                  <h3 className="font-bold mb-4 flex items-center justify-between">
-                    Prix ({getCurrencySymbol()})
-                    <ChevronDown className="w-5 h-5" />
-                  </h3>
-                  <div className="space-y-3">
-                    <input
-                      type="range"
-                      min="0"
-                      max="50000"
-                      value={filters.priceRange[1]}
-                      onChange={(e) => setFilters({ ...filters, priceRange: [0, Number.parseInt(e.target.value)] })}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-sm">
-                      <span>{formatPrice(0)}</span>
-                      <span>{formatPrice(filters.priceRange[1])}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Brands */}
-                <div className="border-t pt-6">
-                  <h3 className="font-bold mb-4 flex items-center justify-between">
-                    Marque
-                    <ChevronDown className="w-5 h-5" />
-                  </h3>
-                  <div className="space-y-2">
-                    {["Samsung", "Apple", "Xiaomi", "Huawei", "Sony"].map((brand) => (
-                      <label key={brand} className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" className="rounded" />
-                        <span className="text-sm">{brand}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Rating */}
-                <div className="border-t pt-6">
-                  <h3 className="font-bold mb-4 flex items-center justify-between">
-                    Note
-                    <ChevronDown className="w-5 h-5" />
-                  </h3>
-                  <div className="space-y-2">
-                    {[4, 3, 2, 1].map((rating) => (
-                      <label key={rating} className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" className="rounded" />
-                        <div className="flex items-center gap-1">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-4 h-4 ${i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
-                            />
-                          ))}
-                          <span className="text-sm ml-1">& plus</span>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Origin */}
-                <div className="border-t pt-6">
-                  <h3 className="font-bold mb-4 flex items-center justify-between">
-                    Origine
-                    <ChevronDown className="w-5 h-5" />
-                  </h3>
-                  <div className="space-y-2">
-                    {["Import local", "Import Chine", "Import USA", "Import Europe"].map((origin) => (
-                      <label key={origin} className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" className="rounded" />
-                        <span className="text-sm">{origin}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <button className="w-full px-4 py-2 bg-brand hover:bg-brand-hover text-white font-semibold rounded-lg transition-colors">
-                  Appliquer les filtres
-                </button>
+              <div className="rounded-xl p-5 sticky top-20" style={{ background: "#fff", border: "0.5px solid #ECECEC" }}>
+                <FilterContent />
               </div>
             </div>
 
-            {/* Product Grid - AVEC LA CORRECTION */}
+            {/* ── GRILLE PRODUITS ───────────────────────────── */}
             <div className="lg:col-span-3">
               {products.length === 0 ? (
-                <div className="text-center py-12 bg-white rounded-lg">
-                  <p className="text-muted-foreground">Aucun produit dans cette catégorie pour le moment</p>
+                <div
+                  className="flex flex-col items-center justify-center py-16 rounded-xl"
+                  style={{ background: "#fff", border: "0.5px solid #ECECEC" }}
+                >
+                  <p style={{ fontSize: "14px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
+                    Aucun produit dans cette catégorie
+                  </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-3 xl:grid-cols-4">
                   {products.map((product) => {
-                    // ✅ Utiliser la fonction corrigée
                     const inStock = isProductInStock(product)
-                    
                     return (
                       <Link
                         key={product.id}
-                        href={`/products/${product.id}`}  // ✅ Correction : products au lieu de produit
-                        className={`bg-white rounded-lg overflow-hidden group hover:shadow-lg transition-shadow ${
-                          !inStock ? 'opacity-75' : ''
-                        }`}
+                        href={`/products/${product.id}`}
+                        className="group block"
+                        style={{ opacity: inStock ? 1 : 0.7 }}
                       >
-                        <div className="relative aspect-square bg-neutral-light">
-                          <Image
-                            src={product.images?.[0] || "/placeholder.svg"}
-                            alt={product.title}
-                            width={200}
-                            height={200}
-                            className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform"
-                          />
-                          {product.featured && (
-                            <div className="absolute top-1 left-1 px-1.5 py-0.5 text-[10px] font-semibold rounded bg-green-100 text-green-700">
-                              Nouveauté
-                            </div>
-                          )}
-                          {/* ✅ N'affiche Rupture que si vraiment en rupture */}
-                          {!inStock && (
-                            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                              <span className="bg-white px-2 py-0.5 rounded text-[10px] font-semibold">Rupture</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="p-2">
-                          <h3 className="font-medium text-xs mb-1 line-clamp-2">{product.title}</h3>
-                          <div className="flex items-center gap-1 mb-1">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`w-2.5 h-2.5 ${
-                                  i < Math.floor(product.avgRating || 4.5) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
-                                }`}
-                              />
-                            ))}
-                            <span className="text-[10px] text-muted-foreground ml-0.5">({product.purchaseCount || 0})</span>
-                          </div>
-                          <div className="flex items-baseline gap-1 flex-wrap">
-                            <span className="text-brand font-bold text-xs">{formatPrice(product.price)}</span>
-                            {product.oldPrice && product.oldPrice > product.price && (
-                              <span className="text-[9px] text-muted-foreground line-through">
-                                {formatPrice(product.oldPrice)}
+                        <div
+                          className="overflow-hidden transition-all duration-200 group-hover:shadow-md"
+                          style={{ borderRadius: "12px", border: "0.5px solid #ECECEC", background: "#fff" }}
+                        >
+                          {/* Image */}
+                          <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
+                            <Image
+                              src={product.images?.[0] || "/placeholder.svg"}
+                              alt={product.title}
+                              width={200}
+                              height={200}
+                              className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                            />
+                            {product.featured && (
+                              <span
+                                className="absolute top-2 left-2 text-[9px] font-bold px-1.5 py-0.5 rounded-md text-white"
+                                style={{ background: "#D4372B" }}
+                              >
+                                Nouveauté
                               </span>
                             )}
+                            {!inStock && (
+                              <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.45)" }}>
+                                <span
+                                  className="px-2 py-0.5 rounded text-[10px] font-bold"
+                                  style={{ background: "#fff", color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}
+                                >
+                                  Rupture
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Infos */}
+                          <div className="p-2.5">
+                            <h3
+                              className="line-clamp-2 mb-1"
+                              style={{ fontSize: "11px", fontWeight: 500, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif", lineHeight: 1.4 }}
+                            >
+                              {product.title}
+                            </h3>
+
+                            {/* Étoiles */}
+                            <div className="flex items-center gap-1 mb-1.5">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`w-2.5 h-2.5 ${i < Math.floor(product.avgRating || 4.5) ? "fill-[#F5A623] text-[#F5A623]" : "text-[#ECECEC]"}`}
+                                />
+                              ))}
+                              <span style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
+                                ({product.purchaseCount || 0})
+                              </span>
+                            </div>
+
+                            {/* Prix */}
+                            <div className="flex items-baseline gap-1 flex-wrap">
+                              <span
+                                style={{ fontSize: "13px", fontWeight: 700, color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}
+                              >
+                                {formatPrice(product.price)}
+                              </span>
+                              {product.oldPrice && product.oldPrice > product.price && (
+                                <span
+                                  style={{ fontSize: "10px", color: "#AAAAAA", textDecoration: "line-through", fontFamily: "'Poppins', sans-serif" }}
+                                >
+                                  {formatPrice(product.oldPrice)}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </Link>
@@ -512,9 +473,7 @@ export default function CategoryPage() {
       </main>
 
       <Footer />
-      <div className="lg:hidden">
-        <MobileNav />
-      </div>
+      <div className="lg:hidden"><MobileNav /></div>
     </div>
   )
 }
