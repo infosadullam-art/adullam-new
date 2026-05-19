@@ -34,9 +34,9 @@ import { PaymentButton } from "@/components/PaymentButton";
 import { CouponInput } from "@/components/CouponInput";
 
 // Couleurs dynamiques
-const brandColor = "#2B4F3C";
-const brandGradient = "linear-gradient(135deg, #2B4F3C 0%, #3A6B4E 100%)";
-const softBg = "#F8FAF9";
+const brandColor = "#D4372B";
+const brandGradient = "#D4372B";
+const softBg = "#FAFAFA";
 
 // Liste des pays d'Afrique
 const AFRICAN_COUNTRIES = [
@@ -405,7 +405,7 @@ export default function CheckoutPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: brandColor }} />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#D4372B' }} />
       </div>
     );
   }
@@ -416,15 +416,15 @@ export default function CheckoutPage() {
     const displayRef = lastOrderRef || Math.random().toString(36).substring(2, 8).toUpperCase();
     
     return (
-      <div className="min-h-screen" style={{ backgroundColor: softBg }}>
+      <div className="min-h-screen" style={{ backgroundColor: '#FAFAFA' }}>
         <div className="hidden lg:block"><Header /></div>
         <div className="lg:hidden"><MobileHeader /></div>
         
         <main className="py-8 px-4">
           <div className="max-w-md mx-auto">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: `${brandColor}10` }}>
-                <svg className="w-8 h-8" style={{ color: brandColor }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white rounded-xl shadow-sm border-0 p-6 text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#FFF0F0' }}>
+                <svg className="w-8 h-8" style={{ color: '#D4372B' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
@@ -434,12 +434,12 @@ export default function CheckoutPage() {
                 Merci pour votre commande. Un email de confirmation vous a été envoyé.
               </p>
               
-              <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
+              <div className="rounded-xl p-4 mb-6 text-left" style={{ background: '#FAFAFA', border: '0.5px solid #ECECEC' }}>
                 <p className="text-xs text-gray-500 mb-2">Récapitulatif</p>
                 <p className="text-sm font-medium">#{displayRef}</p>
                 <div className="flex justify-between mt-2 text-sm">
                   <span className="text-gray-500">Total</span>
-                  <span className="font-medium" style={{ color: brandColor }}>
+                  <span className="font-medium" style={{ color: '#D4372B' }}>
                     {formatPrice(displayTotal)}
                   </span>
                 </div>
@@ -447,8 +447,8 @@ export default function CheckoutPage() {
               
               <Link
                 href="/account/orders"
-                className="inline-block w-full px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors"
-                style={{ background: brandGradient }}
+                className="inline-block w-full px-4 py-3 text-sm font-bold text-white rounded-xl transition-colors"
+                style={{ background: '#D4372B' }}
               >
                 Voir mes commandes
               </Link>
@@ -464,7 +464,7 @@ export default function CheckoutPage() {
 
   // ==================== CHECKOUT ====================
   return (
-    <div className="min-h-screen" style={{ backgroundColor: softBg }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#FAFAFA' }}>
       <div className="hidden lg:block"><Header /></div>
       <div className="lg:hidden"><MobileHeader /></div>
 
@@ -504,9 +504,9 @@ export default function CheckoutPage() {
                     className={`w-7 h-7 lg:w-8 lg:h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
                       step >= item.step 
                         ? 'text-white' 
-                        : 'bg-gray-200 text-gray-500'
+                        : 'text-gray-400' style={{ background: '#F4F4F4' }}
                     }`}
-                    style={step >= item.step ? { background: brandGradient } : {}}
+                    style={step >= item.step ? { background: '#D4372B' } : {}}
                   >
                     {step > item.step ? <Check className="w-3 h-3 lg:w-4 lg:h-4" /> : item.step}
                   </div>
@@ -514,7 +514,7 @@ export default function CheckoutPage() {
                 </div>
                 {index < 3 && (
                   <div className={`w-8 lg:w-12 h-0.5 mx-1 lg:mx-2 ${
-                    step > item.step ? 'bg-[#2B4F3C]' : 'bg-gray-200'
+                    step > item.step ? 'bg-[#D4372B]' : 'bg-gray-200'
                   }`} />
                 )}
               </div>
@@ -528,9 +528,9 @@ export default function CheckoutPage() {
               
               {/* ÉTAPE 1 - LIVRAISON Desktop */}
               {step === 1 && (
-                <div className="bg-white rounded-xl border border-gray-100 p-4 lg:p-6">
+                <div className="bg-white rounded-xl border-0 p-4 lg:p-6">
                   <h2 className="text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2">
-                    <MapPin className="w-4 h-4" style={{ color: brandColor }} />
+                    <MapPin className="w-4 h-4" style={{ color: '#D4372B' }} />
                     Adresse de livraison
                   </h2>
 
@@ -540,7 +540,7 @@ export default function CheckoutPage() {
                       <button
                         type="button"
                         onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white flex items-center justify-between text-sm hover:border-gray-300 transition-colors"
+                        className="w-full px-3 py-2.5 flex items-center justify-between text-sm transition-all" style={{ background: '#F4F4F4', borderRadius: '10px', border: '1.5px solid transparent' }}
                       >
                         <div className="flex items-center gap-2 truncate">
                           <span>{selectedCountry.flag}</span>
@@ -551,7 +551,7 @@ export default function CheckoutPage() {
                       </button>
 
                       {isCountryDropdownOpen && (
-                        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        <div className="absolute z-50 w-full mt-1 overflow-y-auto" style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #ECECEC', boxShadow: '0 8px 30px rgba(0,0,0,0.08)', maxHeight: '240px' }}>
                           {AFRICAN_COUNTRIES.map((country) => (
                             <button
                               key={country.code}
@@ -580,14 +580,14 @@ export default function CheckoutPage() {
                             onClick={() => selectAddress(addr)}
                             className={`w-full p-3 border rounded-lg text-left transition-all ${
                               selectedAddressId === addr.id
-                                ? 'border-[#2B4F3C] bg-[#2B4F3C]/5'
+                                ? 'border-[#D4372B] bg-[#D4372B]/5'
                                 : 'border-gray-100 hover:border-gray-200'
                             }`}
                           >
                             <div className="flex items-start gap-2">
                               <div className={`mt-1 w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 ${
                                 selectedAddressId === addr.id
-                                  ? 'border-[#2B4F3C]'
+                                  ? 'border-[#D4372B]'
                                   : 'border-gray-300'
                               }`}>
                                 {selectedAddressId === addr.id && (
@@ -634,7 +634,7 @@ export default function CheckoutPage() {
                             name="firstName"
                             value={showNewAddressForm ? newAddress.firstName : shippingInfo.firstName}
                             onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2B4F3C]/20"
+                            className="w-full px-3 py-2.5 text-sm focus:outline-none transition-all" style={{ background: '#F4F4F4', borderRadius: '10px', border: '1.5px solid transparent' }}
                             placeholder="Jean"
                           />
                         </div>
@@ -645,7 +645,7 @@ export default function CheckoutPage() {
                             name="lastName"
                             value={showNewAddressForm ? newAddress.lastName : shippingInfo.lastName}
                             onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2B4F3C]/20"
+                            className="w-full px-3 py-2.5 text-sm focus:outline-none transition-all" style={{ background: '#F4F4F4', borderRadius: '10px', border: '1.5px solid transparent' }}
                             placeholder="Dupont"
                           />
                         </div>
@@ -659,7 +659,7 @@ export default function CheckoutPage() {
                           value={shippingInfo.email}
                           onChange={handleInputChange}
                           disabled={!showNewAddressForm}
-                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2B4F3C]/20 bg-gray-50"
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4372B]/20 bg-gray-50"
                           placeholder="jean@exemple.com"
                         />
                       </div>
@@ -675,7 +675,7 @@ export default function CheckoutPage() {
                             name="phone"
                             value={showNewAddressForm ? newAddress.phone : shippingInfo.phone}
                             onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                            className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-[#2B4F3C]/20"
+                            className="flex-1 px-3 py-2.5 text-sm focus:outline-none" style={{ background: '#F4F4F4', borderRadius: '0 10px 10px 0', border: '1.5px solid transparent' }}
                             placeholder="01 23 45 67"
                           />
                         </div>
@@ -688,7 +688,7 @@ export default function CheckoutPage() {
                           name="address"
                           value={showNewAddressForm ? newAddress.address : shippingInfo.address}
                           onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2B4F3C]/20"
+                          className="w-full px-3 py-2.5 text-sm focus:outline-none transition-all" style={{ background: '#F4F4F4', borderRadius: '10px', border: '1.5px solid transparent' }}
                           placeholder="Rue, numéro"
                         />
                       </div>
@@ -700,7 +700,7 @@ export default function CheckoutPage() {
                           name="quartier"
                           value={showNewAddressForm ? newAddress.quartier : shippingInfo.quartier}
                           onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2B4F3C]/20"
+                          className="w-full px-3 py-2.5 text-sm focus:outline-none transition-all" style={{ background: '#F4F4F4', borderRadius: '10px', border: '1.5px solid transparent' }}
                           placeholder="Quartier / Zone"
                         />
                       </div>
@@ -713,7 +713,7 @@ export default function CheckoutPage() {
                             name="city"
                             value={showNewAddressForm ? newAddress.city : shippingInfo.city}
                             onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2B4F3C]/20"
+                            className="w-full px-3 py-2.5 text-sm focus:outline-none transition-all" style={{ background: '#F4F4F4', borderRadius: '10px', border: '1.5px solid transparent' }}
                             placeholder="Ville"
                           />
                         </div>
@@ -724,7 +724,7 @@ export default function CheckoutPage() {
                             name="postalCode"
                             value={showNewAddressForm ? newAddress.postalCode : shippingInfo.postalCode}
                             onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2B4F3C]/20"
+                            className="w-full px-3 py-2.5 text-sm focus:outline-none transition-all" style={{ background: '#F4F4F4', borderRadius: '10px', border: '1.5px solid transparent' }}
                             placeholder="BP"
                           />
                         </div>
@@ -747,7 +747,7 @@ export default function CheckoutPage() {
                             <button
                               onClick={handleAddAddress}
                               className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-lg transition-colors"
-                              style={{ background: brandGradient }}
+                              style={{ background: '#D4372B' }}
                             >
                               Enregistrer
                             </button>
@@ -768,7 +768,7 @@ export default function CheckoutPage() {
                       onClick={() => validateStep1() && setStep(2)}
                       disabled={!validateStep1()}
                       className="w-full mt-4 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-all disabled:opacity-50"
-                      style={{ background: brandGradient }}
+                      style={{ background: '#D4372B' }}
                     >
                       Continuer
                     </button>
@@ -778,9 +778,9 @@ export default function CheckoutPage() {
 
               {/* ÉTAPE 2 - EXPÉDITION Desktop */}
               {step === 2 && (
-                <div className="bg-white rounded-xl border border-gray-100 p-4 lg:p-6">
+                <div className="bg-white rounded-xl border-0 p-4 lg:p-6">
                   <h2 className="text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2">
-                    <Truck className="w-4 h-4" style={{ color: brandColor }} />
+                    <Truck className="w-4 h-4" style={{ color: '#D4372B' }} />
                     Mode d'expédition par produit
                   </h2>
                   
@@ -796,7 +796,7 @@ export default function CheckoutPage() {
                       return (
                         <div 
                           key={item.variantKey} 
-                          className={`bg-gray-50 rounded-lg p-3 border border-gray-100 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'}`}
+                          className={`bg-gray-50 rounded-lg p-3 border-0 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'}`}
                         >
                           <div className="flex gap-3">
                             <div className="w-12 h-12 bg-white rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
@@ -820,7 +820,7 @@ export default function CheckoutPage() {
                               <p className="text-xs text-gray-400 mt-1">Quantité: {item.quantity}</p>
                             </div>
                             <div className="text-right flex-shrink-0">
-                              <p className="text-sm font-bold whitespace-nowrap" style={{ color: brandColor }}>
+                              <p className="text-sm font-bold whitespace-nowrap" style={{ color: '#D4372B' }}>
                                 {formatPrice(item.price * item.quantity)}
                               </p>
                             </div>
@@ -833,12 +833,12 @@ export default function CheckoutPage() {
                                 <button
                                   key={method.id}
                                   onClick={() => handleIndividualShippingChange(item.variantKey!, method.id as any)}
-                                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                                     currentMode === method.id
                                       ? 'text-white'
                                       : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
                                   }`}
-                                  style={currentMode === method.id ? { background: brandGradient } : {}}
+                                  style={currentMode === method.id ? { background: '#D4372B' } : {}}
                                 >
                                   {method.label}
                                 </button>
@@ -857,7 +857,7 @@ export default function CheckoutPage() {
                         <button
                           key={method.id}
                           onClick={() => handleGlobalShippingChange(method.id as any)}
-                          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors" style={{ background: '#F4F4F4', color: '#0A0A0A' }}
                         >
                           {method.label}
                         </button>
@@ -868,14 +868,14 @@ export default function CheckoutPage() {
                   <div className="flex gap-2 mt-4">
                     <button
                       onClick={() => setStep(1)}
-                      className="flex-1 px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="flex-1 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors" style={{ border: '1.5px solid #ECECEC', color: '#0A0A0A' }}
                     >
                       Retour
                     </button>
                     <button
                       onClick={() => setStep(3)}
                       className="flex-1 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
-                      style={{ background: brandGradient }}
+                      style={{ background: '#D4372B' }}
                     >
                       Continuer
                     </button>
@@ -885,14 +885,14 @@ export default function CheckoutPage() {
 
               {/* ÉTAPE 3 - PAIEMENT Desktop */}
               {step === 3 && (
-                <div className="bg-white rounded-xl border border-gray-100 p-4 lg:p-6">
+                <div className="bg-white rounded-xl border-0 p-4 lg:p-6">
                   <h2 className="text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2">
-                    <CreditCard className="w-4 h-4" style={{ color: brandColor }} />
+                    <CreditCard className="w-4 h-4" style={{ color: '#D4372B' }} />
                     Mode de paiement
                   </h2>
 
                   {error && (
-                    <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg flex items-center gap-2 text-red-600 text-xs">
+                    <div className="mb-4 p-3 rounded-xl flex items-center gap-2 text-xs" style={{ background: '#FFF0F0', border: '0.5px solid #FECACA', color: '#D4372B' }}>
                       <AlertCircle className="w-4 h-4 flex-shrink-0" />
                       <span>{error}</span>
                     </div>
@@ -910,7 +910,7 @@ export default function CheckoutPage() {
                         onClick={() => setPaymentMethod(method.id as any)}
                         className={`w-full p-3 border rounded-lg flex items-center gap-3 transition-all ${
                           paymentMethod === method.id
-                            ? 'border-[#2B4F3C] bg-[#2B4F3C]/5' 
+                            ? 'border-[#D4372B] bg-[#D4372B]/5' 
                             : 'border-gray-100 hover:border-gray-200'
                         }`}
                       >
@@ -940,7 +940,7 @@ export default function CheckoutPage() {
                   <div className="flex gap-2 mt-4">
                     <button
                       onClick={() => setStep(2)}
-                      className="flex-1 px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="flex-1 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors" style={{ border: '1.5px solid #ECECEC', color: '#0A0A0A' }}
                     >
                       Retour
                     </button>
@@ -948,7 +948,7 @@ export default function CheckoutPage() {
                       onClick={() => paymentMethod && setStep(4)}
                       disabled={!paymentMethod}
                       className="flex-1 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50"
-                      style={{ background: brandGradient }}
+                      style={{ background: '#D4372B' }}
                     >
                       Continuer
                     </button>
@@ -958,11 +958,11 @@ export default function CheckoutPage() {
 
               {/* ÉTAPE 4 - CONFIRMATION Desktop avec PaymentButton */}
               {step === 4 && (
-                <div className="bg-white rounded-xl border border-gray-100 p-4 lg:p-6">
+                <div className="bg-white rounded-xl border-0 p-4 lg:p-6">
                   <h2 className="text-sm lg:text-base font-medium mb-3 lg:mb-4">Confirmation</h2>
 
                   {error && (
-                    <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg flex items-center gap-2 text-red-600 text-xs">
+                    <div className="mb-4 p-3 rounded-xl flex items-center gap-2 text-xs" style={{ background: '#FFF0F0', border: '0.5px solid #FECACA', color: '#D4372B' }}>
                       <AlertCircle className="w-4 h-4 flex-shrink-0" />
                       <span>{error}</span>
                     </div>
@@ -971,7 +971,7 @@ export default function CheckoutPage() {
                   <div className="space-y-3">
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <div className="flex items-center gap-1 mb-2">
-                        <Home className="w-3 h-3" style={{ color: brandColor }} />
+                        <Home className="w-3 h-3" style={{ color: '#D4372B' }} />
                         <span className="text-xs font-medium">Livraison</span>
                       </div>
                       <p className="text-xs text-gray-600 leading-relaxed break-words">
@@ -1005,7 +1005,7 @@ export default function CheckoutPage() {
                         )}
                         <div className="border-t border-gray-200 pt-1.5 mt-1.5 flex justify-between font-medium">
                           <span>Total</span>
-                          <span style={{ color: brandColor }}>{formatPrice(finalTotal)}</span>
+                          <span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span>
                         </div>
                       </div>
                     </div>
@@ -1022,7 +1022,7 @@ export default function CheckoutPage() {
                     <div className="flex gap-2 pt-2">
                       <button
                         onClick={() => setStep(3)}
-                        className="flex-1 px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                        className="flex-1 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors" style={{ border: '1.5px solid #ECECEC', color: '#0A0A0A' }}
                       >
                         Retour
                       </button>
@@ -1045,9 +1045,9 @@ export default function CheckoutPage() {
 
             {/* Desktop: Résumé à droite */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl border border-gray-100 p-4 lg:p-5 sticky lg:top-24">
+              <div className="bg-white rounded-xl border-0 p-4 lg:p-5 sticky lg:top-24">
                 <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
-                  <Truck className="w-4 h-4" style={{ color: brandColor }} />
+                  <Truck className="w-4 h-4" style={{ color: '#D4372B' }} />
                   Commande ({totalItems})
                 </h2>
 
@@ -1060,7 +1060,7 @@ export default function CheckoutPage() {
                     
                     return (
                       <div key={item.variantKey} className="flex gap-2 pb-2 border-b border-gray-100 last:border-0">
-                        <div className="w-12 h-12 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
+                        <div className="w-12 h-12 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 border-0">
                           <Image
                             src={item.image || "/placeholder.svg"}
                             alt={item.name || "Produit"}
@@ -1083,7 +1083,7 @@ export default function CheckoutPage() {
                           </div>
                           <div className="flex justify-between items-center mt-1">
                             <span className="text-[10px] text-gray-400">x{item.quantity}</span>
-                            <span className="text-xs font-medium whitespace-nowrap" style={{ color: brandColor }}>
+                            <span className="text-xs font-medium whitespace-nowrap" style={{ color: '#D4372B' }}>
                               {formatPrice(item.price * item.quantity)}
                             </span>
                           </div>
@@ -1114,7 +1114,7 @@ export default function CheckoutPage() {
                   )}
                   <div className="flex justify-between text-xs font-medium pt-1.5 border-t border-gray-100">
                     <span>Total</span>
-                    <span style={{ color: brandColor }}>{formatPrice(finalTotal)}</span>
+                    <span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span>
                   </div>
                 </div>
 
@@ -1134,9 +1134,9 @@ export default function CheckoutPage() {
               
               {/* ÉTAPE 1 - LIVRAISON Mobile */}
               {step === 1 && (
-                <div className="bg-white rounded-xl border border-gray-100 p-4">
+                <div className="bg-white rounded-xl border-0 p-4">
                   <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
-                    <MapPin className="w-4 h-4" style={{ color: brandColor }} />
+                    <MapPin className="w-4 h-4" style={{ color: '#D4372B' }} />
                     Adresse de livraison
                   </h2>
 
@@ -1183,13 +1183,13 @@ export default function CheckoutPage() {
                               onClick={() => selectAddress(addr)}
                               className={`w-full p-3 border rounded-lg text-left transition-all ${
                                 selectedAddressId === addr.id
-                                  ? 'border-[#2B4F3C] bg-[#2B4F3C]/5'
+                                  ? 'border-[#D4372B] bg-[#D4372B]/5'
                                   : 'border-gray-100'
                               }`}
                             >
                               <div className="flex items-start gap-2">
                                 <div className={`mt-1 w-4 h-4 rounded-full border flex items-center justify-center ${
-                                  selectedAddressId === addr.id ? 'border-[#2B4F3C]' : 'border-gray-300'
+                                  selectedAddressId === addr.id ? 'border-[#D4372B]' : 'border-gray-300'
                                 }`}>
                                   {selectedAddressId === addr.id && (
                                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: brandColor }} />
@@ -1232,7 +1232,7 @@ export default function CheckoutPage() {
                     onClick={() => validateStep1() && setStep(2)}
                     disabled={!validateStep1()}
                     className="w-full mt-4 py-2.5 text-sm font-medium text-white rounded-lg disabled:opacity-50"
-                    style={{ background: brandGradient }}
+                    style={{ background: '#D4372B' }}
                   >
                     Continuer
                   </button>
@@ -1242,9 +1242,9 @@ export default function CheckoutPage() {
               {/* ÉTAPE 2 - EXPÉDITION Mobile */}
               {step === 2 && (
                 <>
-                  <div className="bg-white rounded-xl border border-gray-100 p-4">
+                  <div className="bg-white rounded-xl border-0 p-4">
                     <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
-                      <Truck className="w-4 h-4" style={{ color: brandColor }} />
+                      <Truck className="w-4 h-4" style={{ color: '#D4372B' }} />
                       Mode d'expédition par produit
                     </h2>
                     
@@ -1275,7 +1275,7 @@ export default function CheckoutPage() {
                                 <p className="text-xs text-gray-400 mt-1">Qté: {item.quantity}</p>
                               </div>
                               <div className="text-right flex-shrink-0">
-                                <p className="text-sm font-bold whitespace-nowrap" style={{ color: brandColor }}>
+                                <p className="text-sm font-bold whitespace-nowrap" style={{ color: '#D4372B' }}>
                                   {formatPrice(item.price * item.quantity)}
                                 </p>
                               </div>
@@ -1292,7 +1292,7 @@ export default function CheckoutPage() {
                                         ? 'text-white'
                                         : 'bg-white border border-gray-200 text-gray-600'
                                     }`}
-                                    style={currentMode === method.id ? { background: brandGradient } : {}}
+                                    style={currentMode === method.id ? { background: '#D4372B' } : {}}
                                   >
                                     {method.label}
                                   </button>
@@ -1320,9 +1320,9 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-xl border border-gray-100 p-4">
+                  <div className="bg-white rounded-xl border-0 p-4">
                     <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
-                      <Truck className="w-4 h-4" style={{ color: brandColor }} />
+                      <Truck className="w-4 h-4" style={{ color: '#D4372B' }} />
                       Récapitulatif ({totalItems})
                     </h2>
 
@@ -1343,7 +1343,7 @@ export default function CheckoutPage() {
                                 <span className="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full whitespace-nowrap">
                                   {getShippingLabel(shippingMode)}
                                 </span>
-                                <span className="text-xs font-medium whitespace-nowrap" style={{ color: brandColor }}>
+                                <span className="text-xs font-medium whitespace-nowrap" style={{ color: '#D4372B' }}>
                                   {formatPrice(item.price * item.quantity)}
                                 </span>
                               </div>
@@ -1375,7 +1375,7 @@ export default function CheckoutPage() {
                       )}
                       <div className="flex justify-between text-sm font-bold pt-1.5 border-t border-gray-100">
                         <span>Total</span>
-                        <span style={{ color: brandColor }}>{formatPrice(finalTotal)}</span>
+                        <span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span>
                       </div>
                     </div>
 
@@ -1401,7 +1401,7 @@ export default function CheckoutPage() {
                     <button
                       onClick={() => setStep(3)}
                       className="flex-1 py-2.5 text-sm font-medium text-white rounded-lg transition-colors"
-                      style={{ background: brandGradient }}
+                      style={{ background: '#D4372B' }}
                     >
                       Continuer
                     </button>
@@ -1412,9 +1412,9 @@ export default function CheckoutPage() {
               {/* ÉTAPE 3 - PAIEMENT Mobile */}
               {step === 3 && (
                 <>
-                  <div className="bg-white rounded-xl border border-gray-100 p-4">
+                  <div className="bg-white rounded-xl border-0 p-4">
                     <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
-                      <CreditCard className="w-4 h-4" style={{ color: brandColor }} />
+                      <CreditCard className="w-4 h-4" style={{ color: '#D4372B' }} />
                       Mode de paiement
                     </h2>
 
@@ -1431,23 +1431,23 @@ export default function CheckoutPage() {
                           key={method.id}
                           onClick={() => setPaymentMethod(method.id as any)}
                           className={`w-full p-3 border rounded-lg flex items-center gap-3 ${
-                            paymentMethod === method.id ? 'border-[#2B4F3C] bg-[#2B4F3C]/5' : 'border-gray-100'
+                            paymentMethod === method.id ? 'border-[#D4372B] bg-[#D4372B]/5' : 'border-gray-100'
                           }`}
                         >
                           <span className="text-lg">{method.icon}</span>
                           <span className="flex-1 text-left text-sm">{method.name}</span>
-                          {paymentMethod === method.id && <Check className="w-4 h-4" style={{ color: brandColor }} />}
+                          {paymentMethod === method.id && <Check className="w-4 h-4" style={{ color: '#D4372B' }} />}
                         </button>
                       ))}
                     </div>
 
                     <div className="flex gap-2 mt-4">
                       <button onClick={() => setStep(2)} className="flex-1 py-2 text-sm border rounded-lg">Retour</button>
-                      <button onClick={() => paymentMethod && setStep(4)} disabled={!paymentMethod} className="flex-1 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-50" style={{ background: brandGradient }}>Continuer</button>
+                      <button onClick={() => paymentMethod && setStep(4)} disabled={!paymentMethod} className="flex-1 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-50" style={{ background: '#D4372B' }}>Continuer</button>
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-xl border border-gray-100 p-4">
+                  <div className="bg-white rounded-xl border-0 p-4">
                     <h2 className="text-sm font-medium mb-3">Récapitulatif</h2>
                     <div className="space-y-1.5 text-xs">
                       <div className="flex justify-between"><span>Sous-total</span><span>{formatPrice(totalUSD)}</span></div>
@@ -1459,7 +1459,7 @@ export default function CheckoutPage() {
                           <span>- {formatPrice(discountAmount)}</span>
                         </div>
                       )}
-                      <div className="flex justify-between font-bold pt-1 border-t"><span>Total</span><span style={{ color: brandColor }}>{formatPrice(finalTotal)}</span></div>
+                      <div className="flex justify-between font-bold pt-1 border-t"><span>Total</span><span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span></div>
                     </div>
                   </div>
                 </>
@@ -1467,7 +1467,7 @@ export default function CheckoutPage() {
 
               {/* ÉTAPE 4 - CONFIRMATION Mobile avec PaymentButton */}
               {step === 4 && (
-                <div className="bg-white rounded-xl border border-gray-100 p-4">
+                <div className="bg-white rounded-xl border-0 p-4">
                   <h2 className="text-sm font-medium mb-3">Confirmation</h2>
                   
                   {error && <div className="mb-3 p-2 bg-red-50 rounded-lg text-xs text-red-600">{error}</div>}
@@ -1493,7 +1493,7 @@ export default function CheckoutPage() {
                           <span>- {formatPrice(discountAmount)}</span>
                         </div>
                       )}
-                      <div className="flex justify-between font-bold pt-1 border-t"><span>Total</span><span style={{ color: brandColor }}>{formatPrice(finalTotal)}</span></div>
+                      <div className="flex justify-between font-bold pt-1 border-t"><span>Total</span><span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span></div>
                     </div>
 
                     {/* Input coupon mobile */}
