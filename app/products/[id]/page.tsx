@@ -1523,7 +1523,7 @@ export default function ProductPage() {
 
                 <div 
                   onClick={() => setIsProtectionModalOpen(true)}
-                  className="rounded-xl p-3 cursor-pointer transition-all" cursor-pointer hover:shadow-md transition-all"
+                  className="rounded-xl p-3 cursor-pointer transition-all hover:shadow-md"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
