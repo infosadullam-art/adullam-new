@@ -82,6 +82,14 @@ interface SourcingNeed {
   company?: string | null
 }
 
+// Couleurs de la charte
+const brandColor = "#D4372B"
+const bgGray = "#FAFAFA"
+const surfaceGray = "#F4F4F4"
+const textPrimary = "#0A0A0A"
+const textSecondary = "#AAAAAA"
+const borderColor = "#ECECEC"
+
 export default function SourcingPage() {
   console.log("🚀🚀🚀 [SOURCING PAGE] COMPOSANT CHARGÉ - VERSION DEBUG FINALE 🚀🚀🚀")
   
@@ -220,7 +228,7 @@ export default function SourcingPage() {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery)
     }, 500)
-    return () => clearTimeout(timer)
+    return () => clearInterval(timer)
   }, [searchQuery])
 
   useEffect(() => {
@@ -427,13 +435,13 @@ export default function SourcingPage() {
 
   const getStatusBadge = (status: SourcingStatus) => {
     const styles: Record<string, string> = {
-      BROUILLON: "bg-gray-100 text-gray-600",
-      EN_COURS: "bg-blue-100 text-blue-600",
-      DEVIS_RECUS: "bg-green-100 text-green-600",
-      COMMANDE: "bg-purple-100 text-purple-600",
-      ANNULE: "bg-red-100 text-red-600",
-      PENDING: "bg-yellow-100 text-yellow-600",
-      QUOTED: "bg-green-100 text-green-600"
+      BROUILLON: "bg-[#F4F4F4] text-[#AAAAAA]",
+      EN_COURS: "bg-[#FFF0F0] text-[#D4372B]",
+      DEVIS_RECUS: "bg-[#E8F5E9] text-[#2E7D32]",
+      COMMANDE: "bg-[#F3E5F5] text-[#7B1FA2]",
+      ANNULE: "bg-[#FFEBEE] text-[#D32F2F]",
+      PENDING: "bg-[#FFF8E1] text-[#F5A623]",
+      QUOTED: "bg-[#E8F5E9] text-[#2E7D32]"
     }
     const labels: Record<string, string> = {
       BROUILLON: "Brouillon",
@@ -444,29 +452,29 @@ export default function SourcingPage() {
       PENDING: "En attente",
       QUOTED: "Devis reçu"
     }
-    return { style: styles[status] || "bg-gray-100 text-gray-600", label: labels[status] || status }
+    return { style: styles[status] || styles.BROUILLON, label: labels[status] || status }
   }
 
   const getPriorityBadge = (priority: Priority) => {
     const styles = {
-      BASSE: "bg-gray-100 text-gray-600",
-      MOYENNE: "bg-yellow-100 text-yellow-700",
-      HAUTE: "bg-orange-100 text-orange-700",
-      URGENTE: "bg-red-100 text-red-700"
+      BASSE: "bg-[#F4F4F4] text-[#AAAAAA]",
+      MOYENNE: "bg-[#FFF8E1] text-[#F5A623]",
+      HAUTE: "bg-[#FFF0F0] text-[#D4372B]",
+      URGENTE: "bg-[#FFEBEE] text-[#D32F2F]"
     }
-    return styles[priority]
+    return styles[priority] || styles.MOYENNE
   }
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#C72C1C]"></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: bgGray }}>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: brandColor }}></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ background: bgGray }}>
       <div className="hidden lg:block">
         <Header />
       </div>
@@ -475,20 +483,24 @@ export default function SourcingPage() {
       </div>
 
       <main className="pb-20 lg:pb-8">
-        {/* Hero Section - Responsive */}
-        <div className="bg-gradient-to-r from-[#C72C1C] to-[#E84C3C] text-white">
+        {/* Hero Section - Responsive avec nouvelle charte */}
+        <div style={{ background: textPrimary }}>
           <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-8 lg:py-12">
-            <Package className="w-10 h-10 lg:w-12 lg:h-12 mb-3 lg:mb-4" />
-            <h1 className="text-2xl lg:text-4xl font-bold mb-2 lg:mb-4">
+            <Package className="w-10 h-10 lg:w-12 lg:h-12 mb-3 lg:mb-4" style={{ color: brandColor }} />
+            <h1 
+              className="text-2xl lg:text-4xl font-bold mb-2 lg:mb-4"
+              style={{ color: "#fff", fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.02em" }}
+            >
               Gestion des approvisionnements
             </h1>
-            <p className="text-sm lg:text-base mb-6 lg:mb-8 max-w-2xl">
+            <p className="text-sm lg:text-base mb-6 lg:mb-8 max-w-2xl" style={{ color: textSecondary, fontFamily: "'Poppins', sans-serif" }}>
               Gérez vos besoins d'achat, suivez les devis fournisseurs et commandez pour réapprovisionner votre stock.
             </p>
             
             <button
               onClick={handleOpenForm}
-              className="bg-white text-[#C72C1C] px-4 py-2 lg:px-6 lg:py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors inline-flex items-center gap-2 text-sm lg:text-base w-full sm:w-auto justify-center"
+              className="px-4 py-2 lg:px-6 lg:py-3 rounded-lg font-semibold transition-all hover:opacity-90 inline-flex items-center gap-2 text-sm lg:text-base"
+              style={{ background: brandColor, color: "#fff", fontFamily: "'Poppins', sans-serif" }}
             >
               <Plus className="w-4 h-4 lg:w-5 lg:h-5" />
               Nouveau besoin
@@ -500,49 +512,49 @@ export default function SourcingPage() {
         {user ? (
           <div className="max-w-[1440px] mx-auto px-4 lg:px-6 -mt-6 lg:-mt-8">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-              <div className="bg-white rounded-lg p-4 lg:p-6 shadow-sm">
+              <div className="rounded-lg p-4 lg:p-6 shadow-sm" style={{ background: "#fff", border: `0.5px solid ${borderColor}` }}>
                 <div className="flex items-center justify-between mb-1 lg:mb-2">
-                  <h3 className="text-xs lg:text-sm font-medium text-gray-500">Besoins en cours</h3>
-                  <Clock className="w-4 h-4 lg:w-5 lg:h-5 text-[#C72C1C]" />
+                  <h3 className="text-xs lg:text-sm font-medium" style={{ color: textSecondary }}>Besoins en cours</h3>
+                  <Clock className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: brandColor }} />
                 </div>
-                <p className="text-xl lg:text-2xl font-bold">{stats.besoinsEnCours}</p>
+                <p className="text-xl lg:text-2xl font-bold" style={{ color: textPrimary }}>{stats.besoinsEnCours}</p>
               </div>
               
-              <div className="bg-white rounded-lg p-4 lg:p-6 shadow-sm">
+              <div className="rounded-lg p-4 lg:p-6 shadow-sm" style={{ background: "#fff", border: `0.5px solid ${borderColor}` }}>
                 <div className="flex items-center justify-between mb-1 lg:mb-2">
-                  <h3 className="text-xs lg:text-sm font-medium text-gray-500">Devis à étudier</h3>
-                  <Eye className="w-4 h-4 lg:w-5 lg:h-5 text-yellow-600" />
+                  <h3 className="text-xs lg:text-sm font-medium" style={{ color: textSecondary }}>Devis à étudier</h3>
+                  <Eye className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: "#F5A623" }} />
                 </div>
-                <p className="text-xl lg:text-2xl font-bold">{stats.devisAEtudier}</p>
+                <p className="text-xl lg:text-2xl font-bold" style={{ color: textPrimary }}>{stats.devisAEtudier}</p>
               </div>
               
-              <div className="bg-white rounded-lg p-4 lg:p-6 shadow-sm">
+              <div className="rounded-lg p-4 lg:p-6 shadow-sm" style={{ background: "#fff", border: `0.5px solid ${borderColor}` }}>
                 <div className="flex items-center justify-between mb-1 lg:mb-2">
-                  <h3 className="text-xs lg:text-sm font-medium text-gray-500">Commandes en cours</h3>
-                  <Truck className="w-4 h-4 lg:w-5 lg:h-5 text-blue-600" />
+                  <h3 className="text-xs lg:text-sm font-medium" style={{ color: textSecondary }}>Commandes en cours</h3>
+                  <Truck className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: "#2D9CDB" }} />
                 </div>
-                <p className="text-xl lg:text-2xl font-bold">{stats.commandesEnCours}</p>
+                <p className="text-xl lg:text-2xl font-bold" style={{ color: textPrimary }}>{stats.commandesEnCours}</p>
               </div>
               
-              <div className="bg-white rounded-lg p-4 lg:p-6 shadow-sm">
+              <div className="rounded-lg p-4 lg:p-6 shadow-sm" style={{ background: "#fff", border: `0.5px solid ${borderColor}` }}>
                 <div className="flex items-center justify-between mb-1 lg:mb-2">
-                  <h3 className="text-xs lg:text-sm font-medium text-gray-500">Stock à réappro</h3>
-                  <AlertCircle className="w-4 h-4 lg:w-5 lg:h-5 text-red-600" />
+                  <h3 className="text-xs lg:text-sm font-medium" style={{ color: textSecondary }}>Stock à réappro</h3>
+                  <AlertCircle className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: "#D32F2F" }} />
                 </div>
-                <p className="text-xl lg:text-2xl font-bold">{stats.stockAReappro}</p>
+                <p className="text-xl lg:text-2xl font-bold" style={{ color: textPrimary }}>{stats.stockAReappro}</p>
               </div>
             </div>
           </div>
         ) : (
           <div className="max-w-[1440px] mx-auto px-4 lg:px-6 -mt-6 lg:-mt-8">
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6 lg:p-8 text-center border-2 border-dashed border-[#C72C1C]/30">
-              <Package className="w-12 h-12 lg:w-16 lg:h-16 text-[#C72C1C]/50 mx-auto mb-3 lg:mb-4" />
-              <h2 className="text-xl lg:text-2xl font-bold mb-2">Connectez-vous pour gérer vos approvisionnements</h2>
-              <p className="text-sm lg:text-base text-gray-500 mb-6 max-w-lg mx-auto">
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6 lg:p-8 text-center border-2 border-dashed" style={{ borderColor: `${brandColor}30` }}>
+              <Package className="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-3 lg:mb-4" style={{ color: `${brandColor}80` }} />
+              <h2 className="text-xl lg:text-2xl font-bold mb-2" style={{ color: textPrimary }}>Connectez-vous pour gérer vos approvisionnements</h2>
+              <p className="text-sm lg:text-base mb-6 max-w-lg mx-auto" style={{ color: textSecondary }}>
                 Créez un compte ou connectez-vous pour soumettre vos besoins d'achat et suivre vos commandes.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button asChild size="lg" className="gap-2 bg-[#C72C1C] hover:bg-[#A82315]">
+                <Button asChild size="lg" className="gap-2" style={{ background: brandColor, color: "#fff" }}>
                   <Link href={`/account?mode=login&redirect=${encodeURIComponent('/sourcing')}`}>
                     <LogIn className="w-4 h-4" />
                     Se connecter
@@ -563,13 +575,13 @@ export default function SourcingPage() {
         {user && (
           <>
             <div className="max-w-[1440px] mx-auto px-4 lg:px-6 mt-6 lg:mt-8">
-              <div className="border-b flex">
+              <div className="border-b" style={{ borderColor: borderColor }}>
                 <button
                   onClick={() => setActiveTab("besoins")}
                   className={`px-4 py-2 lg:px-6 lg:py-3 font-medium text-sm border-b-2 transition-colors ${
                     activeTab === "besoins"
-                      ? "border-[#C72C1C] text-[#C72C1C]"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
+                      ? `border-[#D4372B] text-[#D4372B]`
+                      : "border-transparent text-[#AAAAAA] hover:text-[#0A0A0A]"
                   }`}
                 >
                   Besoins d'achat
@@ -580,29 +592,31 @@ export default function SourcingPage() {
               {activeTab === "besoins" && (
                 <div className="mt-4 lg:mt-6">
                   {/* Filtres - Version mobile avec toggle */}
-                  <div className="bg-white rounded-lg p-3 lg:p-4 border mb-4 lg:mb-6">
+                  <div className="rounded-lg p-3 lg:p-4 border mb-4 lg:mb-6" style={{ background: "#fff", borderColor: borderColor }}>
                     {/* Barre de recherche toujours visible */}
                     <div className="relative">
-                      <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: textSecondary }} />
                       <input
                         type="text"
                         placeholder="Rechercher un besoin..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 lg:py-2.5 border rounded-lg text-sm"
+                        className="w-full pl-9 pr-4 py-2 lg:py-2.5 rounded-lg text-sm"
+                        style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
                       />
                     </div>
                     
                     {/* Bouton toggle filtres - mobile */}
                     <button
                       onClick={() => setShowFilters(!showFilters)}
-                      className="lg:hidden flex items-center justify-between w-full mt-3 pt-2 border-t text-gray-600"
+                      className="lg:hidden flex items-center justify-between w-full mt-3 pt-2"
+                      style={{ borderTop: `0.5px solid ${borderColor}`, color: textSecondary }}
                     >
                       <div className="flex items-center gap-2">
                         <Filter className="w-4 h-4" />
                         <span className="text-sm font-medium">Filtres</span>
                         {(statusFilter || priorityFilter) && (
-                          <span className="bg-[#C72C1C] text-white text-xs px-1.5 py-0.5 rounded-full">
+                          <span className="text-white text-xs px-1.5 py-0.5 rounded-full" style={{ background: brandColor }}>
                             {(statusFilter ? 1 : 0) + (priorityFilter ? 1 : 0)}
                           </span>
                         )}
@@ -613,7 +627,8 @@ export default function SourcingPage() {
                     {/* Filtres - responsive */}
                     <div className={`${showFilters ? 'block' : 'hidden'} lg:grid lg:grid-cols-3 gap-4 mt-3 lg:mt-4`}>
                       <select 
-                        className="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                        className="w-full px-3 py-2 rounded-lg text-sm"
+                        style={{ border: `0.5px solid ${borderColor}`, background: "#fff", color: textPrimary }}
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                       >
@@ -624,7 +639,8 @@ export default function SourcingPage() {
                         <option value="COMMANDE">Commandé</option>
                       </select>
                       <select 
-                        className="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                        className="w-full px-3 py-2 rounded-lg text-sm"
+                        style={{ border: `0.5px solid ${borderColor}`, background: "#fff", color: textPrimary }}
                         value={priorityFilter}
                         onChange={(e) => setPriorityFilter(e.target.value)}
                       >
@@ -641,16 +657,17 @@ export default function SourcingPage() {
                               setStatusFilter("")
                               setPriorityFilter("")
                             }}
-                            className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700"
+                            className="px-3 py-2 text-sm hover:opacity-70"
+                            style={{ color: textSecondary }}
                           >
                             Réinitialiser
                           </button>
                         )}
                         <button 
                           onClick={loadNeeds}
-                          className="p-2 hover:bg-gray-100 rounded-lg ml-auto"
+                          className="p-2 rounded-lg transition-colors hover:bg-gray-100 ml-auto"
                         >
-                          <RefreshCw className="w-4 h-4" />
+                          <RefreshCw className="w-4 h-4" style={{ color: textSecondary }} />
                         </button>
                       </div>
                     </div>
@@ -659,18 +676,19 @@ export default function SourcingPage() {
                   {/* Liste - Version mobile optimisée */}
                   {isLoadingNeeds ? (
                     <div className="flex justify-center py-12">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#C72C1C]"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: brandColor }}></div>
                     </div>
                   ) : needs.length === 0 ? (
-                    <div className="bg-white rounded-lg border p-8 lg:p-12 text-center">
-                      <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">Aucun besoin</h3>
-                      <p className="text-gray-500 mb-4">
+                    <div className="rounded-lg border p-8 lg:p-12 text-center" style={{ background: "#fff", borderColor: borderColor }}>
+                      <Package className="w-12 h-12 mx-auto mb-4" style={{ color: textSecondary }} />
+                      <h3 className="text-lg font-semibold mb-2" style={{ color: textPrimary }}>Aucun besoin</h3>
+                      <p className="mb-4" style={{ color: textSecondary }}>
                         Commencez par créer votre premier besoin d'approvisionnement
                       </p>
                       <button
                         onClick={handleOpenForm}
-                        className="bg-[#C72C1C] text-white px-4 py-2 rounded-lg hover:bg-[#A82315] transition-colors inline-flex items-center gap-2"
+                        className="px-4 py-2 rounded-lg transition-all hover:opacity-90 inline-flex items-center gap-2"
+                        style={{ background: brandColor, color: "#fff" }}
                       >
                         <Plus className="w-4 h-4" />
                         Nouveau besoin
@@ -683,13 +701,13 @@ export default function SourcingPage() {
                         const isExpanded = expandedNeedId === need.id
                         
                         return (
-                          <div key={need.id} className="bg-white rounded-lg border overflow-hidden">
+                          <div key={need.id} className="rounded-lg border overflow-hidden" style={{ background: "#fff", borderColor: borderColor }}>
                             {/* Carte compacte - toujours visible */}
                             <div className="p-4 lg:p-6">
                               <div className="flex flex-col gap-3">
                                 {/* En-tête avec référence et statuts */}
                                 <div className="flex flex-wrap items-center gap-2">
-                                  <span className="text-xs font-mono text-gray-400">{need.reference}</span>
+                                  <span className="text-xs font-mono" style={{ color: textSecondary }}>{need.reference}</span>
                                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusStyle}`}>
                                     {statusLabel}
                                   </span>
@@ -699,42 +717,44 @@ export default function SourcingPage() {
                                 </div>
                                 
                                 {/* Titre */}
-                                <h3 className="text-base lg:text-lg font-semibold">{need.title}</h3>
+                                <h3 className="text-base lg:text-lg font-semibold" style={{ color: textPrimary }}>{need.title}</h3>
                                 
                                 {/* Infos clés - version mobile en grille 2x2 */}
                                 <div className="grid grid-cols-2 gap-2 text-sm">
-                                  <div className="flex items-center gap-1.5 text-gray-500">
+                                  <div className="flex items-center gap-1.5" style={{ color: textSecondary }}>
                                     <Package className="w-3.5 h-3.5" />
                                     <span>{need.quantity} {need.quantityUnit}</span>
                                   </div>
-                                  <div className="flex items-center gap-1.5 text-gray-500">
+                                  <div className="flex items-center gap-1.5" style={{ color: textSecondary }}>
                                     <Calendar className="w-3.5 h-3.5" />
                                     <span>{need.deadline ? format(new Date(need.deadline), "dd MMM", { locale: fr }) : "N/A"}</span>
                                   </div>
-                                  <div className="flex items-center gap-1.5 text-gray-500">
+                                  <div className="flex items-center gap-1.5" style={{ color: textSecondary }}>
                                     <DollarSign className="w-3.5 h-3.5" />
                                     <span>
                                       {need.budgetMin ? formatPrice(need.budgetMin) : "?"} - {need.budgetMax ? formatPrice(need.budgetMax) : "?"}
                                     </span>
                                   </div>
-                                  <div className="flex items-center gap-1.5 text-gray-500">
+                                  <div className="flex items-center gap-1.5" style={{ color: textSecondary }}>
                                     <CheckCircle className="w-3.5 h-3.5" />
                                     <span>{need.responsesCount} devis</span>
                                   </div>
                                 </div>
                                 
                                 {/* Boutons d'action */}
-                                <div className="flex items-center justify-between pt-2 border-t">
+                                <div className="flex items-center justify-between pt-2" style={{ borderTop: `0.5px solid ${borderColor}` }}>
                                   <button
                                     onClick={() => setExpandedNeedId(isExpanded ? null : need.id)}
-                                    className="text-sm text-[#C72C1C] flex items-center gap-1"
+                                    className="text-sm flex items-center gap-1"
+                                    style={{ color: brandColor }}
                                   >
                                     {isExpanded ? "Voir moins" : "Voir plus"}
                                     {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                                   </button>
                                   <button
                                     onClick={() => handleDelete(need.id)}
-                                    className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-red-500"
+                                    className="p-1.5 rounded-lg transition-colors hover:bg-red-50"
+                                    style={{ color: "#D32F2F" }}
                                   >
                                     <Trash2 className="w-4 h-4" />
                                   </button>
@@ -744,34 +764,34 @@ export default function SourcingPage() {
                             
                             {/* Détails étendus - visible quand expansé */}
                             {isExpanded && (
-                              <div className="border-t bg-gray-50 p-4 lg:p-6">
+                              <div className="border-t p-4 lg:p-6" style={{ borderColor: borderColor, background: bgGray }}>
                                 <div className="space-y-4">
                                   {/* Description */}
                                   <div>
-                                    <h4 className="text-sm font-semibold mb-2">Description</h4>
-                                    <p className="text-sm text-gray-600">{need.description}</p>
+                                    <h4 className="text-sm font-semibold mb-2" style={{ color: textPrimary }}>Description</h4>
+                                    <p className="text-sm" style={{ color: textSecondary }}>{need.description}</p>
                                   </div>
                                   
                                   {/* Infos client */}
                                   <div>
-                                    <h4 className="text-sm font-semibold mb-2">Contact</h4>
+                                    <h4 className="text-sm font-semibold mb-2" style={{ color: textPrimary }}>Contact</h4>
                                     <div className="space-y-1 text-sm">
-                                      <p className="text-gray-600">{need.fullName}</p>
-                                      <a href={`mailto:${need.email}`} className="text-[#C72C1C] hover:underline block">
+                                      <p style={{ color: textSecondary }}>{need.fullName}</p>
+                                      <a href={`mailto:${need.email}`} className="hover:underline block" style={{ color: brandColor }}>
                                         {need.email}
                                       </a>
                                       {need.phone && (
                                         <div className="flex items-center gap-3">
-                                          <a href={`tel:${need.phone}`} className="text-[#C72C1C] hover:underline">
+                                          <a href={`tel:${need.phone}`} className="hover:underline" style={{ color: brandColor }}>
                                             {need.phone}
                                           </a>
-                                          <a href={`https://wa.me/${need.phone.replace(/\s/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline flex items-center gap-1">
+                                          <a href={`https://wa.me/${need.phone.replace(/\s/g, '')}`} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-1" style={{ color: "#25D366" }}>
                                             <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
                                           </a>
                                         </div>
                                       )}
                                       {need.company && (
-                                        <p className="text-gray-500 text-sm">Société: {need.company}</p>
+                                        <p style={{ color: textSecondary }}>Société: {need.company}</p>
                                       )}
                                     </div>
                                   </div>
@@ -779,10 +799,10 @@ export default function SourcingPage() {
                                   {/* Documents si disponibles */}
                                   {need.documents && need.documents.length > 0 && (
                                     <div>
-                                      <h4 className="text-sm font-semibold mb-2">Documents</h4>
+                                      <h4 className="text-sm font-semibold mb-2" style={{ color: textPrimary }}>Documents</h4>
                                       <div className="space-y-1">
                                         {need.documents.map((doc, idx) => (
-                                          <a key={idx} href={doc.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-[#C72C1C] hover:underline">
+                                          <a key={idx} href={doc.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm hover:underline" style={{ color: brandColor }}>
                                             <FileText className="w-3.5 h-3.5" />
                                             {doc.fileName}
                                           </a>
@@ -802,22 +822,22 @@ export default function SourcingPage() {
               )}
             </div>
 
-            {/* Modal Formulaire - Version responsive */}
+            {/* Modal Formulaire - Version responsive avec nouvelle charte */}
             {showForm && (
               <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                 <div className="bg-white rounded-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-                  <div className="sticky top-0 bg-white border-b p-4 lg:p-6 flex justify-between items-center">
+                  <div className="sticky top-0 bg-white border-b p-4 lg:p-6 flex justify-between items-center" style={{ borderColor: borderColor }}>
                     <div>
-                      <h3 className="text-lg lg:text-xl font-bold">Nouveau besoin</h3>
-                      <p className="text-xs lg:text-sm text-gray-500 mt-0.5 lg:mt-1">
+                      <h3 className="text-lg lg:text-xl font-bold" style={{ color: textPrimary }}>Nouveau besoin</h3>
+                      <p className="text-xs lg:text-sm mt-0.5 lg:mt-1" style={{ color: textSecondary }}>
                         Décrivez ce que vous devez acheter
                       </p>
                     </div>
                     <button
                       onClick={() => setShowForm(false)}
-                      className="p-2 hover:bg-gray-100 rounded-lg"
+                      className="p-2 rounded-lg transition-colors hover:bg-gray-100"
                     >
-                      <X className="w-5 h-5" />
+                      <X className="w-5 h-5" style={{ color: textSecondary }} />
                     </button>
                   </div>
                   
@@ -836,8 +856,8 @@ export default function SourcingPage() {
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div 
-                            className="bg-[#C72C1C] h-2 rounded-full transition-all duration-300" 
-                            style={{ width: `${uploadProgress}%` }}
+                            className="h-2 rounded-full transition-all duration-300" 
+                            style={{ width: `${uploadProgress}%`, background: brandColor }}
                           />
                         </div>
                       </div>
@@ -845,7 +865,7 @@ export default function SourcingPage() {
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium mb-1.5">Titre du besoin *</label>
+                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Titre du besoin *</label>
                         <input
                           type="text"
                           name="title"
@@ -854,11 +874,12 @@ export default function SourcingPage() {
                           placeholder="ex: T-shirts premium coton bio"
                           required
                           disabled={isSubmitting}
-                          className="w-full p-2.5 lg:p-3 border rounded-lg text-sm focus:ring-2 focus:ring-[#C72C1C]/20 focus:border-[#C72C1C]"
+                          className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
+                          style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1.5">Type de produit *</label>
+                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Type de produit *</label>
                         <input
                           type="text"
                           name="productType"
@@ -867,13 +888,14 @@ export default function SourcingPage() {
                           placeholder="ex: Textile"
                           required
                           disabled={isSubmitting}
-                          className="w-full p-2.5 lg:p-3 border rounded-lg text-sm focus:ring-2 focus:ring-[#C72C1C]/20 focus:border-[#C72C1C]"
+                          className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
+                          style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1.5">Description détaillée *</label>
+                      <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Description détaillée *</label>
                       <textarea
                         name="description"
                         rows={4}
@@ -882,13 +904,14 @@ export default function SourcingPage() {
                         placeholder="Spécifications techniques, matériaux, finitions, etc."
                         required
                         disabled={isSubmitting}
-                        className="w-full p-2.5 lg:p-3 border rounded-lg text-sm focus:ring-2 focus:ring-[#C72C1C]/20 focus:border-[#C72C1C]"
+                        className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
+                        style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
                       />
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium mb-1.5">Quantité *</label>
+                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Quantité *</label>
                         <input
                           type="number"
                           name="quantity"
@@ -898,17 +921,19 @@ export default function SourcingPage() {
                           required
                           min="1"
                           disabled={isSubmitting}
-                          className="w-full p-2.5 lg:p-3 border rounded-lg text-sm focus:ring-2 focus:ring-[#C72C1C]/20 focus:border-[#C72C1C]"
+                          className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
+                          style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1.5">Unité *</label>
+                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Unité *</label>
                         <select
                           name="quantityUnit"
                           value={formData.quantityUnit}
                           onChange={handleInputChange}
                           disabled={isSubmitting}
-                          className="w-full p-2.5 lg:p-3 border rounded-lg text-sm"
+                          className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
+                          style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
                         >
                           <option>pièces</option>
                           <option>kg</option>
@@ -920,7 +945,7 @@ export default function SourcingPage() {
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium mb-1.5">
+                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>
                           Budget min ({getCurrencySymbol()})
                         </label>
                         <input
@@ -932,11 +957,12 @@ export default function SourcingPage() {
                           min="0"
                           step="0.01"
                           disabled={isSubmitting}
-                          className="w-full p-2.5 lg:p-3 border rounded-lg text-sm"
+                          className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
+                          style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1.5">
+                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>
                           Budget max ({getCurrencySymbol()})
                         </label>
                         <input
@@ -948,14 +974,15 @@ export default function SourcingPage() {
                           min="0"
                           step="0.01"
                           disabled={isSubmitting}
-                          className="w-full p-2.5 lg:p-3 border rounded-lg text-sm"
+                          className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
+                          style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium mb-1.5">Date limite *</label>
+                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Date limite *</label>
                         <input
                           type="date"
                           name="deadline"
@@ -963,17 +990,19 @@ export default function SourcingPage() {
                           onChange={handleInputChange}
                           required
                           disabled={isSubmitting}
-                          className="w-full p-2.5 lg:p-3 border rounded-lg text-sm"
+                          className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
+                          style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1.5">Priorité *</label>
+                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Priorité *</label>
                         <select
                           name="priority"
                           value={formData.priority}
                           onChange={handleInputChange}
                           disabled={isSubmitting}
-                          className="w-full p-2.5 lg:p-3 border rounded-lg text-sm"
+                          className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
+                          style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
                         >
                           <option value="BASSE">Basse</option>
                           <option value="MOYENNE">Moyenne</option>
@@ -984,14 +1013,14 @@ export default function SourcingPage() {
                     </div>
 
                     {/* Section client */}
-                    <div className="border-t pt-4">
-                      <h4 className="font-semibold mb-3 flex items-center gap-2 text-sm lg:text-base">
-                        <Phone className="w-4 h-4 lg:w-5 lg:h-5" />
+                    <div className="pt-4" style={{ borderTop: `0.5px solid ${borderColor}` }}>
+                      <h4 className="font-semibold mb-3 flex items-center gap-2 text-sm lg:text-base" style={{ color: textPrimary }}>
+                        <Phone className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: brandColor }} />
                         Vos coordonnées
                       </h4>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium mb-1.5">Nom complet *</label>
+                          <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Nom complet *</label>
                           <input
                             type="text"
                             name="fullName"
@@ -999,11 +1028,12 @@ export default function SourcingPage() {
                             onChange={handleInputChange}
                             required
                             disabled={isSubmitting}
-                            className="w-full p-2.5 lg:p-3 border rounded-lg text-sm"
+                            className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
+                            style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-1.5">Email *</label>
+                          <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Email *</label>
                           <input
                             type="email"
                             name="email"
@@ -1011,11 +1041,12 @@ export default function SourcingPage() {
                             onChange={handleInputChange}
                             required
                             disabled={isSubmitting}
-                            className="w-full p-2.5 lg:p-3 border rounded-lg text-sm"
+                            className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
+                            style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-1.5">Téléphone / WhatsApp</label>
+                          <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Téléphone / WhatsApp</label>
                           <input
                             type="tel"
                             name="phone"
@@ -1023,11 +1054,12 @@ export default function SourcingPage() {
                             onChange={handleInputChange}
                             placeholder="+225 07 00 00 00"
                             disabled={isSubmitting}
-                            className="w-full p-2.5 lg:p-3 border rounded-lg text-sm"
+                            className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
+                            style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-1.5">Société</label>
+                          <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Société</label>
                           <input
                             type="text"
                             name="company"
@@ -1035,7 +1067,8 @@ export default function SourcingPage() {
                             onChange={handleInputChange}
                             placeholder="Nom de votre entreprise"
                             disabled={isSubmitting}
-                            className="w-full p-2.5 lg:p-3 border rounded-lg text-sm"
+                            className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
+                            style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
                           />
                         </div>
                       </div>
@@ -1043,10 +1076,10 @@ export default function SourcingPage() {
 
                     {/* Upload fichiers */}
                     <div>
-                      <label className="block text-sm font-medium mb-1.5">
+                      <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>
                         Documents (max 10 Mo par fichier)
                       </label>
-                      <div className="border-2 border-dashed rounded-lg p-4 lg:p-6 text-center">
+                      <div className="border-2 border-dashed rounded-lg p-4 lg:p-6 text-center" style={{ borderColor: `${borderColor}` }}>
                         <input
                           type="file"
                           multiple
@@ -1060,11 +1093,11 @@ export default function SourcingPage() {
                         {files.length > 0 ? (
                           <div className="space-y-2">
                             {files.map((file, index) => (
-                              <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded text-sm">
+                              <div key={index} className="flex items-center justify-between p-2 rounded text-sm" style={{ background: surfaceGray }}>
                                 <div className="flex items-center gap-2">
-                                  <FileText className="w-4 h-4 text-gray-400" />
-                                  <span className="text-sm truncate max-w-[150px] lg:max-w-xs">{file.name}</span>
-                                  <span className="text-xs text-gray-400">
+                                  <FileText className="w-4 h-4" style={{ color: textSecondary }} />
+                                  <span className="text-sm truncate max-w-[150px] lg:max-w-xs" style={{ color: textPrimary }}>{file.name}</span>
+                                  <span className="text-xs" style={{ color: textSecondary }}>
                                     ({(file.size / 1024).toFixed(0)} Ko)
                                   </span>
                                 </div>
@@ -1080,19 +1113,20 @@ export default function SourcingPage() {
                             ))}
                             <label
                               htmlFor="file-upload"
-                              className="inline-block mt-2 text-sm text-[#C72C1C] hover:underline cursor-pointer"
+                              className="inline-block mt-2 text-sm hover:underline cursor-pointer"
+                              style={{ color: brandColor }}
                             >
-                              <Upload className="w-4 h-4 inline mr-1" />
+                              <Upload className="w-4 h-4 inline mr-1" style={{ color: brandColor }} />
                               Ajouter d'autres fichiers
                             </label>
                           </div>
                         ) : (
                           <label htmlFor="file-upload" className="cursor-pointer block">
-                            <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                            <p className="text-sm text-gray-500">
+                            <Upload className="w-8 h-8 mx-auto mb-2" style={{ color: textSecondary }} />
+                            <p className="text-sm" style={{ color: textSecondary }}>
                               Cliquez pour uploader vos fichiers
                             </p>
-                            <p className="text-xs text-gray-400 mt-1">
+                            <p className="text-xs mt-1" style={{ color: textSecondary }}>
                               PDF, images (max 10 Mo)
                             </p>
                           </label>
@@ -1100,19 +1134,21 @@ export default function SourcingPage() {
                       </div>
                     </div>
 
-                    <div className="border-t pt-4 flex flex-col-reverse lg:flex-row justify-end gap-3">
+                    <div className="pt-4 flex flex-col-reverse lg:flex-row justify-end gap-3" style={{ borderTop: `0.5px solid ${borderColor}` }}>
                       <button
                         type="button"
                         onClick={() => setShowForm(false)}
                         disabled={isSubmitting}
-                        className="px-4 py-2 lg:px-6 lg:py-2 border rounded-lg hover:bg-gray-100 transition-colors text-sm"
+                        className="px-4 py-2 lg:px-6 lg:py-2 rounded-lg hover:bg-gray-100 transition-colors text-sm"
+                        style={{ border: `0.5px solid ${borderColor}`, color: textPrimary }}
                       >
                         Annuler
                       </button>
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="px-4 py-2 lg:px-6 lg:py-2 bg-[#C72C1C] text-white rounded-lg hover:bg-[#A82315] transition-colors inline-flex items-center justify-center gap-2 text-sm"
+                        className="px-4 py-2 lg:px-6 lg:py-2 text-white rounded-lg hover:opacity-90 transition-colors inline-flex items-center justify-center gap-2 text-sm"
+                        style={{ background: brandColor }}
                       >
                         {isSubmitting ? (
                           <>
@@ -1138,16 +1174,16 @@ export default function SourcingPage() {
         <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-center text-lg">Connexion requise</DialogTitle>
+              <DialogTitle className="text-center text-lg" style={{ color: textPrimary }}>Connexion requise</DialogTitle>
             </DialogHeader>
             <div className="text-center py-4 lg:py-6">
-              <Package className="w-12 h-12 lg:w-16 lg:h-16 text-[#C72C1C]/50 mx-auto mb-4" />
-              <p className="text-base lg:text-lg font-medium mb-2">Vous devez être connecté</p>
-              <p className="text-sm text-gray-500 mb-6">
+              <Package className="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-4" style={{ color: `${brandColor}80` }} />
+              <p className="text-base lg:text-lg font-medium mb-2" style={{ color: textPrimary }}>Vous devez être connecté</p>
+              <p className="text-sm mb-6" style={{ color: textSecondary }}>
                 Pour créer un besoin d'approvisionnement, veuillez vous connecter ou créer un compte.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button asChild className="gap-2 bg-[#C72C1C] hover:bg-[#A82315]" onClick={() => setShowAuthModal(false)}>
+                <Button asChild className="gap-2" style={{ background: brandColor, color: "#fff" }} onClick={() => setShowAuthModal(false)}>
                   <Link href={`/account?mode=login&redirect=${encodeURIComponent('/sourcing')}`}>
                     <LogIn className="w-4 h-4" />
                     Se connecter
