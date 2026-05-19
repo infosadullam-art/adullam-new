@@ -1,291 +1,345 @@
 // components/cart/CartDrawer.tsx
 
-import { X, Minus, Plus, Ship, Sparkles, Zap, Truck } from 'lucide-react'
-import Image from 'next/image'
-import { useCart } from '@/context/CartContext'
-import { useCurrencyFormatter } from '@/hooks/useCurrencyFormatter'
-import { useLocale } from '@/context/LocaleProvider'
-import { useState } from 'react'
+import { X, Minus, Plus, Ship, Sparkles, Zap, ShoppingCart } from "lucide-react"
+import Image from "next/image"
+import { useCart } from "@/context/CartContext"
+import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { useLocale } from "@/context/LocaleProvider"
+import { useState } from "react"
 
 interface CartDrawerProps {
   isOpen: boolean
   onClose: () => void
 }
 
+const poppins = { fontFamily: "'Poppins', sans-serif" }
+
+const shippingModes = [
+  { id: "bateau",  icon: Ship,     label: "Mer",    title: "Maritime (35-50j)" },
+  { id: "avion",   icon: Sparkles, label: "Air",    title: "Aérien (15-20j)" },
+  { id: "express", icon: Zap,      label: "Express",title: "Express (7-10j)" },
+] as const
+
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  const { 
-    cart, 
-    removeFromCart, 
-    updateQuantity, 
-    updateShippingMode,
-    totalUSD, 
-    totalItems,
-    totalShippingUSD,
-    totalPortePorteUSD,
-    grandTotalUSD,
-    shippingMode: defaultShippingMode,
-    setShippingMode: setDefaultShippingMode
+  const {
+    cart, removeFromCart, updateQuantity, updateShippingMode,
+    totalUSD, totalItems, totalShippingUSD, totalPortePorteUSD,
+    grandTotalUSD, shippingMode: defaultShippingMode,
   } = useCart()
-  
+
   const { formatPrice, getCurrencySymbol } = useCurrencyFormatter()
-  const { currency } = useLocale()
   const [updatingId, setUpdatingId] = useState<string | null>(null)
 
   if (!isOpen) return null
 
-  const shippingIcons = {
-    bateau: Ship,
-    avion: Sparkles,
-    express: Zap
-  }
-
-  const shippingLabels = {
-    bateau: 'Maritime',
-    avion: 'Aérien',
-    express: 'Express'
-  }
-
-  const handleShippingModeChange = async (variantKey: string, mode: 'bateau' | 'avion' | 'express') => {
+  const handleShippingModeChange = async (variantKey: string, mode: "bateau" | "avion" | "express") => {
     setUpdatingId(variantKey)
     updateShippingMode(variantKey, mode)
     setTimeout(() => setUpdatingId(null), 300)
   }
 
+  const totalWeight = cart.reduce((sum, item) => sum + (item.totalWeight || 0), 0)
+
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
-      <div 
-        className="absolute inset-0 bg-black/50 transition-opacity"
+      {/* Overlay */}
+      <div
+        className="absolute inset-0 transition-opacity"
+        style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(2px)" }}
         onClick={onClose}
       />
-      
-      <div className="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-xl flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 bg-white">
-          <div className="flex items-center gap-2">
-            <Truck className="w-5 h-5 text-gray-600" />
-            <h2 className="text-lg font-medium">
-              Panier <span className="text-sm text-gray-500">({totalItems} article{totalItems > 1 ? 's' : ''})</span>
-            </h2>
+
+      {/* Drawer */}
+      <div
+        className="absolute right-0 top-0 h-full flex flex-col"
+        style={{
+          width: "100%",
+          maxWidth: "420px",
+          background: "#fff",
+          boxShadow: "-8px 0 40px rgba(0,0,0,0.12)",
+        }}
+      >
+        {/* ── HEADER ──────────────────────────────────────────── */}
+        <div
+          className="flex items-center justify-between px-5 py-4 flex-shrink-0"
+          style={{ borderBottom: "0.5px solid #ECECEC" }}
+        >
+          <div className="flex items-center gap-2.5">
+            <div
+              className="flex items-center justify-center w-8 h-8 rounded-lg"
+              style={{ background: "#D4372B" }}
+            >
+              <ShoppingCart className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <span style={{ fontSize: "15px", fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.02em", ...poppins }}>
+                Panier
+              </span>
+              <span style={{ fontSize: "12px", color: "#AAAAAA", marginLeft: "6px", ...poppins }}>
+                {totalItems} article{totalItems > 1 ? "s" : ""}
+              </span>
+            </div>
           </div>
-          <button 
-            onClick={onClose} 
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors focus:outline-none"
+            style={{ background: "#F4F4F4" }}
           >
-            <X className="w-5 h-5 text-gray-400" />
+            <X className="w-4 h-4" style={{ color: "#0A0A0A" }} />
           </button>
         </div>
 
-        {/* Liste des articles */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* ── ARTICLES ────────────────────────────────────────── */}
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
           {cart.length === 0 ? (
-            <div className="text-center py-12">
-              <Truck className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">Votre panier est vide</p>
+            <div className="flex flex-col items-center justify-center py-20">
+              <div
+                className="flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
+                style={{ background: "#FFF0F0" }}
+              >
+                <ShoppingCart className="w-7 h-7" style={{ color: "#D4372B" }} />
+              </div>
+              <p style={{ fontSize: "14px", fontWeight: 600, color: "#0A0A0A", marginBottom: "4px", ...poppins }}>
+                Votre panier est vide
+              </p>
+              <p style={{ fontSize: "12px", color: "#AAAAAA", marginBottom: "20px", ...poppins }}>
+                Ajoutez des produits pour commencer
+              </p>
               <button
                 onClick={onClose}
-                className="mt-4 text-sm text-[#2B4F3C] hover:underline"
+                className="text-sm font-semibold transition-opacity hover:opacity-70"
+                style={{ color: "#D4372B", ...poppins }}
               >
-                Continuer mes achats
+                Continuer mes achats →
               </button>
             </div>
           ) : (
             cart.map((item) => {
               const isUpdating = updatingId === item.variantKey
-              
-              // ✅ Tous les calculs en USD, conversion à l'affichage
               const productSubtotalUSD = item.price * item.quantity
               const itemTotalUSD = productSubtotalUSD + (item.shippingCostUSD || 0) + (item.portePorteCostUSD || 0)
-              
+              const currentMode = item.shippingMode || defaultShippingMode
+
               return (
-                <div 
-                  key={item.variantKey} 
-                  className={`
-                    flex gap-3 border-b border-gray-100 pb-4 transition-opacity
-                    ${isUpdating ? 'opacity-50' : 'opacity-100'}
-                  `}
+                <div
+                  key={item.variantKey}
+                  className="rounded-xl p-3 transition-opacity"
+                  style={{
+                    background: "#fff",
+                    border: "0.5px solid #ECECEC",
+                    opacity: isUpdating ? 0.5 : 1,
+                  }}
                 >
-                  <div className="w-20 h-20 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
-                    <Image
-                      src={item.image}
-                      alt={item.name || "Produit"}
-                      width={80}
-                      height={80}
-                      className="w-full h-full object-contain p-1"
-                    />
+                  <div className="flex gap-3">
+                    {/* Image */}
+                    <div
+                      className="flex-shrink-0 rounded-xl overflow-hidden"
+                      style={{ width: "68px", height: "68px", background: "#FAFAFA", border: "0.5px solid #ECECEC" }}
+                    >
+                      <Image
+                        src={item.image || "/placeholder.svg"}
+                        alt={item.name || "Produit"}
+                        width={68}
+                        height={68}
+                        className="w-full h-full object-contain p-1"
+                      />
+                    </div>
+
+                    {/* Infos */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start gap-1">
+                        <h3
+                          className="truncate"
+                          style={{ fontSize: "12px", fontWeight: 600, color: "#0A0A0A", ...poppins }}
+                        >
+                          {item.name || "Produit"}
+                        </h3>
+                        <button
+                          onClick={() => removeFromCart(item.variantKey!)}
+                          className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-lg focus:outline-none transition-colors"
+                          style={{ background: "#F4F4F4" }}
+                        >
+                          <X className="w-3 h-3" style={{ color: "#AAAAAA" }} />
+                        </button>
+                      </div>
+
+                      {/* Variantes */}
+                      {(item.color || item.eurSize) && (
+                        <div className="flex gap-1 mt-1 flex-wrap">
+                          {item.color && (
+                            <span
+                              className="px-1.5 py-0.5 rounded-full"
+                              style={{ fontSize: "9px", background: "#F4F4F4", color: "#555", ...poppins }}
+                            >
+                              {item.color}
+                            </span>
+                          )}
+                          {item.eurSize && (
+                            <span
+                              className="px-1.5 py-0.5 rounded-full"
+                              style={{ fontSize: "9px", background: "#F4F4F4", color: "#555", ...poppins }}
+                            >
+                              Pt. {item.eurSize}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Prix unitaire */}
+                      <p style={{ fontSize: "13px", fontWeight: 700, color: "#D4372B", marginTop: "4px", ...poppins }}>
+                        {formatPrice(item.price)}
+                        <span style={{ fontSize: "10px", fontWeight: 400, color: "#AAAAAA", marginLeft: "4px" }}>
+                          × {item.quantity}
+                        </span>
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium truncate">{item.name || "Produit"}</h3>
-                    
-                    {(item.color || item.eurSize) && (
-                      <div className="mt-1 space-y-0.5">
-                        {item.color && (
-                          <p className="text-xs text-gray-500">
-                            Couleur: <span className="font-medium text-gray-700">{item.color}</span>
-                          </p>
-                        )}
-                        {item.eurSize && (
-                          <p className="text-xs text-gray-500">
-                            Pointure: <span className="font-medium text-gray-700">{item.eurSize}</span>
-                          </p>
-                        )}
-                      </div>
-                    )}
+                  {/* Modes livraison */}
+                  <div className="flex items-center gap-1.5 mt-3">
+                    <span style={{ fontSize: "9px", color: "#AAAAAA", ...poppins }}>Livraison :</span>
+                    {shippingModes.map(({ id, icon: Icon, label, title }) => {
+                      const active = currentMode === id
+                      return (
+                        <button
+                          key={id}
+                          onClick={() => handleShippingModeChange(item.variantKey!, id)}
+                          title={title}
+                          className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold transition-all focus:outline-none"
+                          style={{
+                            background: active ? "#D4372B" : "#F4F4F4",
+                            color: active ? "#fff" : "#555",
+                            ...poppins,
+                          }}
+                        >
+                          <Icon className="w-3 h-3" />
+                          {label}
+                        </button>
+                      )
+                    })}
+                  </div>
 
-                    <div className="mt-2 flex items-center gap-1">
+                  {/* Quantité + sous-total */}
+                  <div className="flex items-center justify-between mt-3">
+                    {/* Stepper */}
+                    <div
+                      className="flex items-center rounded-xl overflow-hidden"
+                      style={{ border: "0.5px solid #ECECEC" }}
+                    >
                       <button
-                        onClick={() => handleShippingModeChange(item.variantKey!, 'bateau')}
-                        className={`p-1.5 rounded text-xs flex items-center gap-1 ${
-                          item.shippingMode === 'bateau' 
-                            ? 'bg-[#2B4F3C] text-white' 
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
+                        onClick={() => updateQuantity(item.variantKey!, item.quantity - 1)}
+                        disabled={item.quantity <= 1}
+                        className="flex items-center justify-center w-7 h-7 transition-colors focus:outline-none disabled:opacity-40"
+                        style={{ background: "#F4F4F4" }}
                       >
-                        <Ship className="w-3 h-3" />
-                        <span>Mer</span>
+                        <Minus className="w-3 h-3" style={{ color: "#0A0A0A" }} />
                       </button>
-                      <button
-                        onClick={() => handleShippingModeChange(item.variantKey!, 'avion')}
-                        className={`p-1.5 rounded text-xs flex items-center gap-1 ${
-                          item.shippingMode === 'avion' 
-                            ? 'bg-[#2B4F3C] text-white' 
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
+                      <span
+                        className="w-8 text-center"
+                        style={{ fontSize: "12px", fontWeight: 600, color: "#0A0A0A", ...poppins }}
                       >
-                        <Sparkles className="w-3 h-3" />
-                        <span>Air</span>
-                      </button>
+                        {item.quantity}
+                      </span>
                       <button
-                        onClick={() => handleShippingModeChange(item.variantKey!, 'express')}
-                        className={`p-1.5 rounded text-xs flex items-center gap-1 ${
-                          item.shippingMode === 'express' 
-                            ? 'bg-[#2B4F3C] text-white' 
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
+                        onClick={() => updateQuantity(item.variantKey!, item.quantity + 1)}
+                        className="flex items-center justify-center w-7 h-7 transition-colors focus:outline-none"
+                        style={{ background: "#F4F4F4" }}
                       >
-                        <Zap className="w-3 h-3" />
-                        <span>Express</span>
+                        <Plus className="w-3 h-3" style={{ color: "#0A0A0A" }} />
                       </button>
                     </div>
 
-                    <div className="mt-3 flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-bold text-[#2B4F3C]">
-                          {formatPrice(item.price)} <span className="text-xs font-normal text-gray-500">× {item.quantity}</span>
-                        </p>
-                      </div>
-                      
-                      <div className="flex items-center gap-1 border rounded-lg">
-                        <button
-                          onClick={() => updateQuantity(item.variantKey!, item.quantity - 1)}
-                          className="p-1.5 hover:bg-gray-50 transition-colors disabled:opacity-30"
-                          disabled={item.quantity <= 1}
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="w-8 text-center text-xs font-medium">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity(item.variantKey!, item.quantity + 1)}
-                          className="p-1.5 hover:bg-gray-50 transition-colors"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
+                    {/* Total ligne */}
+                    <span style={{ fontSize: "13px", fontWeight: 700, color: "#0A0A0A", ...poppins }}>
+                      {formatPrice(itemTotalUSD)}
+                    </span>
+                  </div>
 
-                    <div className="mt-2 text-xs bg-gray-50 p-2 rounded space-y-1">
+                  {/* Détail coûts */}
+                  {(item.shippingCostUSD || item.portePorteCostUSD) ? (
+                    <div
+                      className="mt-2 rounded-lg px-2.5 py-2 space-y-1"
+                      style={{ background: "#FAFAFA", border: "0.5px solid #F0F0F0" }}
+                    >
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Sous-total:</span>
-                        <span className="font-medium text-gray-700">{formatPrice(productSubtotalUSD)}</span>
+                        <span style={{ fontSize: "10px", color: "#AAAAAA", ...poppins }}>Sous-total</span>
+                        <span style={{ fontSize: "10px", fontWeight: 500, color: "#0A0A0A", ...poppins }}>{formatPrice(productSubtotalUSD)}</span>
                       </div>
-                      
                       {item.shippingCostUSD ? (
                         <div className="flex justify-between">
-                          <span className="text-gray-500">Frais livraison:</span>
-                          <div className="text-right">
-                            <span className="font-medium text-gray-700">{formatPrice(item.shippingCostUSD)}</span>
-                            <span className="text-[10px] text-gray-400 block">(pour {item.quantity} art.)</span>
-                          </div>
+                          <span style={{ fontSize: "10px", color: "#AAAAAA", ...poppins }}>Livraison</span>
+                          <span style={{ fontSize: "10px", fontWeight: 500, color: "#0A0A0A", ...poppins }}>{formatPrice(item.shippingCostUSD)}</span>
                         </div>
                       ) : null}
-                      
                       {item.portePorteCostUSD ? (
                         <div className="flex justify-between">
-                          <span className="text-gray-500">Frais porte-à-porte:</span>
-                          <div className="text-right">
-                            <span className="font-medium text-gray-700">{formatPrice(item.portePorteCostUSD)}</span>
-                            <span className="text-[10px] text-gray-400 block">(pour {item.quantity} art.)</span>
-                          </div>
+                          <span style={{ fontSize: "10px", color: "#AAAAAA", ...poppins }}>Porte-à-porte</span>
+                          <span style={{ fontSize: "10px", fontWeight: 500, color: "#0A0A0A", ...poppins }}>{formatPrice(item.portePorteCostUSD)}</span>
                         </div>
                       ) : null}
-                      
-                      <div className="border-t border-gray-200 pt-1 mt-1 flex justify-between font-medium text-[#2B4F3C]">
-                        <span>Total:</span>
-                        <span>{formatPrice(itemTotalUSD)}</span>
-                      </div>
                     </div>
+                  ) : null}
 
-                    {item.totalWeight && (
-                      <p className="text-[10px] text-gray-400 mt-1 text-right">
-                        Poids: {item.totalWeight.toFixed(2)} kg
-                      </p>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={() => removeFromCart(item.variantKey!)}
-                    className="text-gray-400 hover:text-red-500 transition-colors self-start p-1"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+                  {item.totalWeight ? (
+                    <p
+                      className="text-right mt-1"
+                      style={{ fontSize: "9px", color: "#AAAAAA", ...poppins }}
+                    >
+                      {item.totalWeight.toFixed(2)} kg
+                    </p>
+                  ) : null}
                 </div>
               )
             })
           )}
         </div>
 
-        {/* Footer - Section "Mode par défaut" supprimée */}
+        {/* ── FOOTER RÉSUMÉ ───────────────────────────────────── */}
         {cart.length > 0 && (
-          <div className="border-t border-gray-200 p-4 bg-gray-50">
-            <div className="space-y-1.5 text-sm">
+          <div
+            className="flex-shrink-0 px-5 pt-4 pb-5"
+            style={{ borderTop: "0.5px solid #ECECEC", background: "#fff" }}
+          >
+            {/* Lignes coûts */}
+            <div className="space-y-2 mb-3">
+              {[
+                { label: "Sous-total",    value: totalUSD },
+                { label: "Livraison",     value: totalShippingUSD },
+                { label: "Porte-à-porte", value: totalPortePorteUSD },
+              ].map(({ label, value }) => (
+                <div key={label} className="flex justify-between">
+                  <span style={{ fontSize: "12px", color: "#AAAAAA", ...poppins }}>{label}</span>
+                  <span style={{ fontSize: "12px", fontWeight: 500, color: "#0A0A0A", ...poppins }}>{formatPrice(value)}</span>
+                </div>
+              ))}
               <div className="flex justify-between">
-                <span className="text-gray-600">Sous-total</span>
-                <span className="font-medium">{formatPrice(totalUSD)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Livraison</span>
-                <span className="font-medium">{formatPrice(totalShippingUSD)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Porte-à-porte</span>
-                <span className="font-medium">{formatPrice(totalPortePorteUSD)}</span>
-              </div>
-              
-              <div className="flex justify-between text-xs text-gray-400">
-                <span>Poids total</span>
-                <span>{cart.reduce((sum, item) => sum + (item.totalWeight || 0), 0).toFixed(2)} kg</span>
-              </div>
-
-              <div className="border-t border-gray-200 pt-2 mt-2 flex justify-between font-bold text-base">
-                <span>Total</span>
-                <span className="text-[#2B4F3C]">{formatPrice(grandTotalUSD)}</span>
+                <span style={{ fontSize: "11px", color: "#AAAAAA", ...poppins }}>Poids total</span>
+                <span style={{ fontSize: "11px", color: "#AAAAAA", ...poppins }}>{totalWeight.toFixed(2)} kg</span>
               </div>
             </div>
 
-            <button
-              onClick={() => {
-                onClose()
-                window.location.href = '/checkout'
-              }}
-              className="w-full mt-3 py-3 rounded-lg text-sm font-medium text-white bg-[#2B4F3C] hover:bg-[#1a3a2a] transition-colors"
+            {/* Total */}
+            <div
+              className="flex justify-between py-3"
+              style={{ borderTop: "0.5px solid #F0F0F0", marginBottom: "14px" }}
             >
-              Commander ({formatPrice(grandTotalUSD)})
+              <span style={{ fontSize: "15px", fontWeight: 800, color: "#0A0A0A", ...poppins }}>Total</span>
+              <span style={{ fontSize: "16px", fontWeight: 800, color: "#D4372B", ...poppins }}>
+                {formatPrice(grandTotalUSD)}
+              </span>
+            </div>
+
+            {/* CTA */}
+            <button
+              onClick={() => { onClose(); window.location.href = "/checkout" }}
+              className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90 focus:outline-none"
+              style={{ background: "#D4372B", ...poppins }}
+            >
+              Commander · {formatPrice(grandTotalUSD)}
             </button>
 
-            <p className="text-[10px] text-gray-400 text-center mt-2">
-              Tous les prix sont en {getCurrencySymbol()}
+            <p className="text-center mt-2.5" style={{ fontSize: "10px", color: "#AAAAAA", ...poppins }}>
+              Tous les prix en {getCurrencySymbol()}
             </p>
           </div>
         )}
