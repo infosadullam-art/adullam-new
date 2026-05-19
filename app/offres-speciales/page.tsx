@@ -5,9 +5,17 @@ import { Header } from "@/components/header"
 import { MobileHeader } from "@/components/mobile-header"
 import MobileNav from "@/components/mobile-nav"
 import { Footer } from "@/components/footer"
-import { Zap, Timer, Star } from "lucide-react"
+import { Zap, Timer, Star, Sparkles } from "lucide-react"
 import Image from "next/image"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+
+// Couleurs de la charte
+const brandColor = "#D4372B"
+const bgGray = "#FAFAFA"
+const surfaceGray = "#F4F4F4"
+const textPrimary = "#0A0A0A"
+const textSecondary = "#AAAAAA"
+const borderColor = "#ECECEC"
 
 export default function OffresSpecialesPage() {
   const { formatPrice } = useCurrencyFormatter()
@@ -68,7 +76,7 @@ export default function OffresSpecialesPage() {
   const formatNumber = (num: number) => String(num).padStart(2, '0')
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ background: bgGray }}>
       <div className="hidden lg:block">
         <Header />
       </div>
@@ -77,96 +85,204 @@ export default function OffresSpecialesPage() {
       </div>
 
       <main className="pb-20 lg:pb-8">
-        <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white">
-          <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-6 lg:py-8">
-            <Zap className="w-8 h-8 mb-2 opacity-90" />
-            <h1 className="text-3xl lg:text-4xl font-bold mb-1">Offres Spéciales</h1>
-            <p className="text-sm text-gray-300 max-w-2xl mb-3">Prix imbattables et quantités limitées</p>
-            
-            <div className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-2 w-fit backdrop-blur-sm">
-              <Timer className="w-4 h-4" />
-              <span className="font-medium text-sm">Se termine dans :</span>
+        {/* Hero Banner */}
+        <div style={{ background: textPrimary }}>
+          <div className="max-w-[1440px] mx-auto px-4 lg:px-8 py-6 lg:py-10">
+            <div className="flex items-center gap-3 mb-3">
+              <div
+                className="flex items-center justify-center w-10 h-10 rounded-xl"
+                style={{ background: brandColor }}
+              >
+                <Zap className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1
+                  style={{
+                    fontFamily: "'Poppins', sans-serif",
+                    fontWeight: 900,
+                    fontSize: "clamp(22px, 4vw, 36px)",
+                    color: "#fff",
+                    letterSpacing: "-0.03em",
+                    lineHeight: 1.1,
+                  }}
+                >
+                  Offres Spéciales
+                </h1>
+                <p style={{ fontSize: "13px", color: textSecondary, fontFamily: "'Poppins', sans-serif" }}>
+                  Prix imbattables et quantités limitées
+                </p>
+              </div>
+            </div>
+
+            {/* Timer */}
+            <div className="flex items-center gap-3 mt-4 px-4 py-2 rounded-xl w-fit" style={{ background: "rgba(255,255,255,0.07)", border: "0.5px solid rgba(255,255,255,0.12)" }}>
+              <Timer className="w-4 h-4" style={{ color: textSecondary }} />
+              <span className="text-sm font-medium" style={{ color: "#fff" }}>Se termine dans :</span>
               <div className="flex gap-1">
-                <div className="bg-black/30 rounded-lg px-2 py-0.5 text-center min-w-[40px]">
-                  <div className="text-xl font-bold">{formatNumber(timeLeft.hours)}</div>
-                  <div className="text-[8px]">Heures</div>
+                <div className="rounded-lg px-2 py-0.5 text-center min-w-[40px]" style={{ background: "rgba(0,0,0,0.3)" }}>
+                  <div className="text-xl font-bold text-white">{formatNumber(timeLeft.hours)}</div>
+                  <div className="text-[8px]" style={{ color: textSecondary }}>Heures</div>
                 </div>
-                <span className="text-xl font-bold self-center">:</span>
-                <div className="bg-black/30 rounded-lg px-2 py-0.5 text-center min-w-[40px]">
-                  <div className="text-xl font-bold">{formatNumber(timeLeft.minutes)}</div>
-                  <div className="text-[8px]">Minutes</div>
+                <span className="text-xl font-bold text-white self-center">:</span>
+                <div className="rounded-lg px-2 py-0.5 text-center min-w-[40px]" style={{ background: "rgba(0,0,0,0.3)" }}>
+                  <div className="text-xl font-bold text-white">{formatNumber(timeLeft.minutes)}</div>
+                  <div className="text-[8px]" style={{ color: textSecondary }}>Minutes</div>
                 </div>
-                <span className="text-xl font-bold self-center">:</span>
-                <div className="bg-black/30 rounded-lg px-2 py-0.5 text-center min-w-[40px]">
-                  <div className="text-xl font-bold">{formatNumber(timeLeft.seconds)}</div>
-                  <div className="text-[8px]">Secondes</div>
+                <span className="text-xl font-bold text-white self-center">:</span>
+                <div className="rounded-lg px-2 py-0.5 text-center min-w-[40px]" style={{ background: "rgba(0,0,0,0.3)" }}>
+                  <div className="text-xl font-bold text-white">{formatNumber(timeLeft.seconds)}</div>
+                  <div className="text-[8px]" style={{ color: textSecondary }}>Secondes</div>
                 </div>
               </div>
+            </div>
+
+            {/* Stats pills */}
+            <div className="flex items-center gap-2 mt-4 flex-wrap">
+              {[
+                { label: "Économies garanties", dot: "#22C55E" },
+                { label: "Stock limité", dot: brandColor },
+                { label: "Meilleurs prix", dot: "#F5A623" },
+              ].map(({ label, dot }) => (
+                <span
+                  key={label}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
+                  style={{
+                    background: "rgba(255,255,255,0.07)",
+                    border: "0.5px solid rgba(255,255,255,0.12)",
+                    color: "#fff",
+                    fontFamily: "'Poppins', sans-serif",
+                  }}
+                >
+                  <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: dot, display: "inline-block", flexShrink: 0 }} />
+                  {label}
+                </span>
+              ))}
             </div>
           </div>
         </div>
 
-        <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-8">
-          <div className="flex justify-between items-center mb-6">
+        {/* Contenu principal */}
+        <div className="max-w-[1440px] mx-auto px-4 lg:px-8 py-6 lg:py-8">
+          
+          {/* Header section */}
+          <div className="flex justify-between items-center mb-5">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Ventes Flash</h2>
-              <p className="text-sm text-gray-500">Profitez des réductions avant la fin du timer</p>
+              <h2
+                style={{
+                  fontFamily: "'Poppins', sans-serif",
+                  fontWeight: 800,
+                  fontSize: "16px",
+                  color: textPrimary,
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                Ventes Flash
+              </h2>
+              <p style={{ fontSize: "12px", color: textSecondary, fontFamily: "'Poppins', sans-serif" }}>
+                Profitez des réductions avant la fin du timer
+              </p>
             </div>
             {flashSale && (
-              <div className="text-sm text-gray-500">
+              <span
+                className="px-3 py-1 rounded-full text-xs font-semibold"
+                style={{ background: surfaceGray, color: textPrimary }}
+              >
                 Jusqu'à -{flashSale.discount}%
-              </div>
+              </span>
             )}
           </div>
-          
+
+          {/* Loading */}
           {isLoading ? (
             <div className="flex justify-center py-20">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: brandColor }} />
+            </div>
+          ) : products.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-sm" style={{ color: textSecondary }}>Aucune offre spéciale pour le moment</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 lg:gap-5">
+            /* Grille produits */
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 lg:gap-4">
               {products.map((product) => (
-                <a key={product.id} href={`/products/${product.id}`} className="group">
-                  <div className="bg-gray-50 rounded-xl overflow-hidden aspect-square relative mb-3 group-hover:shadow-md transition-shadow">
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      fill
-                      className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
-                    />
+                <a
+                  key={product.id}
+                  href={`/products/${product.id}`}
+                  className="group block"
+                >
+                  {/* Image */}
+                  <div
+                    className="relative aspect-square overflow-hidden mb-2.5 transition-all duration-200 group-hover:shadow-md"
+                    style={{ borderRadius: "12px", background: "#fff", border: `0.5px solid ${borderColor}` }}
+                  >
+                    {/* Badge offre */}
                     {product.discount > 0 && (
-                      <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                      <div
+                        className="absolute top-2 right-2 z-10 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                        style={{ background: brandColor, color: "#fff" }}
+                      >
                         -{product.discount}%
                       </div>
                     )}
+                    <Image
+                      src={product.image || "/placeholder.svg"}
+                      alt={product.name}
+                      fill
+                      className="object-contain p-3 group-hover:scale-105 transition-transform duration-300"
+                    />
                   </div>
+
+                  {/* Infos */}
                   <div className="space-y-1">
-                    <h3 className="font-medium text-sm line-clamp-2 text-gray-800 group-hover:text-gray-900">
+                    <h3
+                      className="line-clamp-2"
+                      style={{
+                        fontSize: "12px",
+                        fontWeight: 500,
+                        color: textPrimary,
+                        fontFamily: "'Poppins', sans-serif",
+                        lineHeight: 1.4,
+                      }}
+                    >
                       {product.name}
                     </h3>
+
+                    {/* Étoiles */}
                     <div className="flex items-center gap-1">
                       <div className="flex">
                         {[1, 2, 3, 4, 5].map((star) => (
-                          <Star key={star} className="w-3 h-3 fill-amber-400 text-amber-400" />
+                          <Star key={star} className="w-3 h-3 fill-[#F5A623] text-[#F5A623]" />
                         ))}
                       </div>
-                      <span className="text-xs text-gray-400">({product.reviews})</span>
+                      <span style={{ fontSize: "10px", color: textSecondary }}>
+                        ({product.reviews || 0})
+                      </span>
                     </div>
-                    <div className="flex items-baseline gap-1">
-                      <p className="text-sm font-semibold text-gray-900">{formatPrice(product.price)}</p>
+
+                    {/* Prix */}
+                    <div className="flex items-baseline gap-1 flex-wrap">
+                      <p
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: 700,
+                          color: brandColor,
+                          fontFamily: "'Poppins', sans-serif",
+                        }}
+                      >
+                        {formatPrice(product.price)}
+                      </p>
                       {product.oldPrice && (
-                        <p className="text-xs text-gray-400 line-through">{formatPrice(product.oldPrice)}</p>
+                        <p
+                          className="text-xs line-through"
+                          style={{ color: textSecondary }}
+                        >
+                          {formatPrice(product.oldPrice)}
+                        </p>
                       )}
                     </div>
                   </div>
                 </a>
               ))}
-            </div>
-          )}
-          
-          {products.length === 0 && !isLoading && (
-            <div className="text-center py-20 text-gray-500">
-              Aucune offre spéciale pour le moment
             </div>
           )}
         </div>
