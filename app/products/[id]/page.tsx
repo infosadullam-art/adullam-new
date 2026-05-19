@@ -201,10 +201,10 @@ export default function ProductPage() {
   const [product, setProduct] = useState<any>(null)
 
   // Couleurs dynamiques
-  const brandColor = "#2B4F3C"
-  const brandGradient = "linear-gradient(135deg, #2B4F3C 0%, #3A6B4E 100%)"
-  const accentColor = "#F59E0B"
-  const softBg = "#F3F4F6"
+  const brandColor = "#D4372B"
+  const brandGradient = "#D4372B"
+  const accentColor = "#F5A623"
+  const softBg = "#F4F4F4"
 
   // ============================================================
   // GESTION DES IMAGES
@@ -1106,7 +1106,7 @@ export default function ProductPage() {
                             onClick={() => setSelectedImage(idx)}
                             className={`transition-all duration-200 rounded-full ${
                               selectedImage === idx 
-                                ? 'w-2 h-2 bg-[#2B4F3C]' 
+                                ? 'w-3 h-1 bg-[#D4372B] rounded-full' 
                                 : 'w-1.5 h-1.5 bg-gray-400'
                             }`}
                           />
@@ -1144,7 +1144,7 @@ export default function ProductPage() {
                         onClick={() => setSelectedImage(idx)}
                         className="flex-shrink-0 w-16 h-16 bg-white rounded-lg overflow-hidden border"
                         style={{
-                          borderColor: selectedImage === idx ? brandColor : '#f0f0f0'
+                          borderColor: selectedImage === idx ? '#D4372B' : '#ECECEC'
                         }}
                       >
                         <Image
@@ -1167,7 +1167,7 @@ export default function ProductPage() {
                     <div className="flex items-center gap-2 mb-1.5">
                       <span 
                         className="text-xs font-medium px-2 py-0.5 rounded-full"
-                        style={{ background: brandGradient, color: 'white' }}
+                        style={{ background: '#D4372B', color: '#fff', fontFamily: "'Poppins', sans-serif" }}
                       >
                         Top vente
                       </span>
@@ -1199,20 +1199,20 @@ export default function ProductPage() {
                 </div>
 
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold" style={{ background: brandGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  <span className="text-2xl font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
                     {formatPrice(currentPrice)} x {grandTotal || 1}
                   </span>
                   <span className="text-xs text-gray-400 line-through">
                     {formatPrice(currentPrice * 1.2 * (grandTotal || 1))}
                   </span>
-                  <span className="text-xs text-white px-1.5 py-0.5 rounded" style={{ background: brandGradient }}>-20%</span>
+                  <span className="text-xs text-white px-1.5 py-0.5 rounded" style={{ background: "#D4372B" }}>-20%</span>
                 </div>
 
                 {/* AFFICHAGE DYNAMIQUE DES VARIANTES */}
                 {hasVariants && (
                   <>
                     {hasSimpleVariants && (
-                      <div className="bg-gray-100 p-4 rounded-xl mb-4">
+                      <div className="p-4 rounded-xl mb-4" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
                         <h3 className="text-sm font-medium text-gray-700 mb-3">
                           {primaryAttrName}
                         </h3>
@@ -1227,7 +1227,7 @@ export default function ProductPage() {
                                 className={`
                                   px-3 py-1.5 text-xs rounded-md transition-all relative
                                   ${qty > 0 
-                                    ? 'bg-[#2B4F3C] text-white font-medium' 
+                                    ? 'bg-[#D4372B] text-white font-semibold shadow-sm' 
                                     : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
                                   }
                                 `}
@@ -1249,7 +1249,7 @@ export default function ProductPage() {
                                   value
                                 )}
                                 {qty > 0 && (
-                                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#2B4F3C] text-white text-[8px] rounded-full flex items-center justify-center shadow-lg">
+                                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4372B] text-white text-[8px] rounded-full flex items-center justify-center font-bold">
                                     {qty}
                                   </span>
                                 )}
@@ -1288,7 +1288,7 @@ export default function ProductPage() {
 
                     {hasComplexVariants && (
                       <>
-                        <div className="bg-gray-100 p-4 rounded-xl mb-4">
+                        <div className="p-4 rounded-xl mb-4" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
                           <h3 className="text-sm font-medium text-gray-700 mb-3">
                             {primaryAttrName}
                           </h3>
@@ -1304,7 +1304,7 @@ export default function ProductPage() {
                                   className={`
                                     px-3 py-1.5 text-xs rounded-md transition-all relative
                                     ${total > 0 
-                                      ? 'bg-[#2B4F3C] text-white font-medium' 
+                                      ? 'bg-[#D4372B] text-white font-semibold shadow-sm' 
                                       : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
                                     }
                                   `}
@@ -1326,7 +1326,7 @@ export default function ProductPage() {
                                     primaryValue
                                   )}
                                   {total > 0 && (
-                                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#2B4F3C] text-white text-[8px] rounded-full flex items-center justify-center shadow-lg">
+                                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4372B] text-white text-[8px] rounded-full flex items-center justify-center font-bold">
                                       {total}
                                     </span>
                                   )}
@@ -1337,7 +1337,7 @@ export default function ProductPage() {
                         </div>
 
                         {secondaryAttrName && (
-                          <div className="bg-gray-100 p-4 rounded-xl mb-4">
+                          <div className="p-4 rounded-xl mb-4" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
                             <h3 className="text-sm font-medium text-gray-700 mb-3">
                               {secondaryAttrName}
                             </h3>
@@ -1352,14 +1352,14 @@ export default function ProductPage() {
                                     className={`
                                       px-3 py-1.5 text-xs rounded-md transition-all relative
                                       ${total > 0 
-                                        ? 'bg-[#2B4F3C] text-white font-medium' 
+                                        ? 'bg-[#D4372B] text-white font-semibold shadow-sm' 
                                         : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
                                       }
                                     `}
                                   >
                                     {secondaryValue}
                                     {total > 0 && (
-                                      <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#2B4F3C] text-white text-[8px] rounded-full flex items-center justify-center shadow-lg">
+                                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4372B] text-white text-[8px] rounded-full flex items-center justify-center font-bold">
                                         {total}
                                       </span>
                                     )}
@@ -1394,7 +1394,7 @@ export default function ProductPage() {
                                 {nonZeroSelections.map(([secondaryValue, qty]) => (
                                   <div key={secondaryValue} className="bg-gray-50 px-2 py-1 rounded border border-gray-200 text-xs">
                                     <span className="font-medium">{secondaryValue}</span>
-                                    <span className="ml-1 text-[#2B4F3C] font-bold">x{qty}</span>
+                                    <span className="ml-1 text-[#D4372B] font-bold">x{qty}</span>
                                   </div>
                                 ))}
                               </div>
@@ -1409,10 +1409,10 @@ export default function ProductPage() {
                 {!hasVariants && (
                   <div className="mb-4">
                     <h3 className="text-sm font-medium text-gray-700 mb-2">Quantité</h3>
-                    <div className="flex items-center border rounded-lg w-fit shadow-sm">
+                    <div className="flex items-center rounded-xl overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
                       <button
                         onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))}
-                        className="p-2 hover:bg-gray-50 transition-colors"
+                        className="p-2.5 transition-colors" style={{ background: "#F4F4F4" }}
                         disabled={simpleQuantity <= 1}
                       >
                         <Minus className="w-4 h-4" />
@@ -1420,7 +1420,7 @@ export default function ProductPage() {
                       <span className="w-12 text-center text-sm font-medium">{simpleQuantity}</span>
                       <button
                         onClick={() => setSimpleQuantity(simpleQuantity + 1)}
-                        className="p-2 hover:bg-gray-50 transition-colors"
+                        className="p-2.5 transition-colors" style={{ background: "#F4F4F4" }}
                       >
                         <Plus className="w-4 h-4" />
                       </button>
@@ -1430,7 +1430,7 @@ export default function ProductPage() {
 
                 <div className="flex items-center gap-3 text-xs text-gray-600">
                   <div className="flex items-center gap-1">
-                    <Package className="w-3.5 h-3.5" style={{ color: brandColor }} />
+                    <Package className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
                     <span>MOQ: {minQuantity}</span>
                   </div>
                   <div className="flex items-center gap-1">
@@ -1440,7 +1440,7 @@ export default function ProductPage() {
                   <div className="flex items-center gap-1">
                     {isLoadingLogistics ? (
                       <span className="inline-flex items-center text-gray-400">
-                        <span className="w-3 h-3 border-2 border-gray-300 border-t-[#2B4F3C] rounded-full animate-spin mr-1"></span>
+                        <span className="w-3 h-3 border-2 border-gray-300 border-t-[#D4372B] rounded-full animate-spin mr-1"></span>
                         Calcul...
                       </span>
                     ) : (
@@ -1456,7 +1456,7 @@ export default function ProductPage() {
                     <span>Mode de livraison</span>
                     {selectedPortePorteCost > 0 && (
                       <span className="text-xs font-medium text-gray-700">
-                        Frais porte-à-porte: <span className="font-bold" style={{ color: brandColor }}>{formatPrice(selectedPortePorteCost)}</span>
+                        Frais porte-à-porte: <span className="font-bold" style={{ color: '#D4372B' }}>{formatPrice(selectedPortePorteCost)}</span>
                       </span>
                     )}
                   </h3>
@@ -1497,7 +1497,7 @@ export default function ProductPage() {
                               className="flex flex-col items-center p-2 rounded-lg border transition-all hover:shadow-md"
                               style={{
                                 borderColor: selectedShipping === shippingMode ? brandColor : '#e5e7eb',
-                                background: selectedShipping === shippingMode ? brandGradient : 'white'
+                                background: selectedShipping === shippingMode ? '#D4372B' : '#fff'
                               }}
                             >
                               <item.icon className="w-4 h-4 mb-1" style={{ color: selectedShipping === shippingMode ? 'white' : '#9ca3af' }} />
@@ -1507,7 +1507,7 @@ export default function ProductPage() {
                               <span className="text-[10px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#6b7280' }}>
                                 {days}
                               </span>
-                              <span className="text-xs font-semibold mt-0.5" style={{ color: selectedShipping === shippingMode ? 'white' : brandColor }}>
+                              <span className="text-xs font-semibold mt-0.5" style={{ color: selectedShipping === shippingMode ? 'white' : '#D4372B' }}>
                                 {formatPrice(cost)}
                               </span>
                             </button>
@@ -1523,11 +1523,11 @@ export default function ProductPage() {
 
                 <div 
                   onClick={() => setIsProtectionModalOpen(true)}
-                  className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg p-3 cursor-pointer hover:shadow-md transition-all"
+                  className="rounded-xl p-3 cursor-pointer transition-all" cursor-pointer hover:shadow-md transition-all"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <Shield className="w-4 h-4" style={{ color: brandColor }} />
+                      <Shield className="w-4 h-4" style={{ color: '#D4372B' }} />
                       <span className="text-xs font-medium text-gray-900">Protection Adullam</span>
                     </div>
                     <Info className="w-3.5 h-3.5 text-gray-400" />
@@ -1583,11 +1583,11 @@ export default function ProductPage() {
 
                 <div className="grid grid-cols-2 gap-2 py-3 text-xs border-y border-gray-100 my-2">
                   <div className="flex items-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5" style={{ color: brandColor }} />
+                    <Shield className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
                     <span>Garantie 12 mois</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <RotateCcw className="w-3.5 h-3.5" style={{ color: brandColor }} />
+                    <RotateCcw className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
                     <span>Retour 15 jours</span>
                   </div>
                 </div>
@@ -1630,7 +1630,7 @@ export default function ProductPage() {
                           <ul className="space-y-2">
                             {product.features.map((feature: string, i: number) => (
                               <li key={i} className="flex items-start gap-2 text-sm">
-                                <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-[#2B4F3C]" />
+                                <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-[#D4372B]" />
                                 <span className="text-gray-600 break-words">{feature}</span>
                               </li>
                             ))}
@@ -1674,14 +1674,15 @@ export default function ProductPage() {
                       {!showReviewForm && (
                         <button
                           onClick={() => setShowReviewForm(true)}
-                          className="w-full py-3 bg-[#2B4F3C] text-white rounded-xl text-sm font-medium hover:bg-[#3A6B4E] transition-colors shadow-sm"
+                          className="w-full py-3 bg-[#D4372B] text-white rounded-xl text-sm font-medium hover:bg-[#B5271C] transition-colors shadow-sm"
                         >
                           ✍️ Donner mon avis
                         </button>
                       )}
                       
                       {showReviewForm && (
-                        <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-4 shadow-sm">
+                        <div className="rounded-xl" style={{ background: "#fff", border: "0.5px solid #ECECEC" }}
+                    className=" p-4 space-y-4 shadow-sm">
                           <div className="flex items-center justify-between">
                             <h4 className="font-semibold text-gray-900">Votre avis</h4>
                             <button 
@@ -1719,7 +1720,7 @@ export default function ProductPage() {
                               type="text"
                               value={newReview.authorName}
                               onChange={(e) => setNewReview({ ...newReview, authorName: e.target.value })}
-                              className="w-full mt-1.5 p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#2B4F3C] focus:ring-2 focus:ring-[#2B4F3C]/20 transition-all"
+                              className="w-full mt-1.5 p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#D4372B] transition-all"
                               placeholder="Jean Dupont"
                             />
                           </div>
@@ -1729,7 +1730,7 @@ export default function ProductPage() {
                             <textarea
                               value={newReview.comment}
                               onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                              className="w-full mt-1.5 p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#2B4F3C] focus:ring-2 focus:ring-[#2B4F3C]/20 resize-none"
+                              className="w-full mt-1.5 p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#D4372B] resize-none"
                               rows={4}
                               placeholder="Partagez votre expérience avec ce produit..."
                             />
@@ -1745,7 +1746,7 @@ export default function ProductPage() {
                             <button
                               onClick={handleSubmitReview}
                               disabled={isSubmittingReview}
-                              className="flex-1 py-3 bg-[#2B4F3C] text-white rounded-xl text-sm font-medium hover:bg-[#3A6B4E] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="flex-1 py-3 bg-[#D4372B] text-white rounded-xl text-sm font-medium hover:bg-[#B5271C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {isSubmittingReview ? "Envoi..." : "Publier"}
                             </button>
@@ -1783,7 +1784,7 @@ export default function ProductPage() {
                         <>
                           <div className="flex items-center gap-4 pb-3 border-b border-gray-100">
                             <div className="text-center">
-                              <div className="text-2xl font-bold text-[#2B4F3C]">{reviewsStats.averageRating}</div>
+                              <div className="text-3xl font-black" style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.03em" }}>{reviewsStats.averageRating}</div>
                               <div className="flex justify-center mt-1">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                   <Star 
@@ -1807,7 +1808,7 @@ export default function ProductPage() {
                                     <span className="w-6">{rating} ★</span>
                                     <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                                       <div 
-                                        className="h-full rounded-full bg-[#2B4F3C]" 
+                                        className="h-full rounded-full bg-[#D4372B]" 
                                         style={{ width: `${percentage}%` }} 
                                       />
                                     </div>
@@ -1935,7 +1936,7 @@ export default function ProductPage() {
                     <div className="flex items-center gap-2 mb-1">
                       <span 
                         className="text-xs font-medium px-2 py-0.5 rounded-full"
-                        style={{ background: brandGradient, color: 'white' }}
+                        style={{ background: '#D4372B', color: '#fff', fontFamily: "'Poppins', sans-serif" }}
                       >
                         Top vente
                       </span>
@@ -1969,13 +1970,13 @@ export default function ProductPage() {
 
                 <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg p-4 mb-4 shadow-sm">
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl font-bold" style={{ background: brandGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                    <span className="text-2xl font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
                       {formatPrice(currentPrice)} x {grandTotal || 1}
                     </span>
                     <span className="text-xs text-gray-400 line-through">
                       {formatPrice(currentPrice * 1.2 * (grandTotal || 1))}
                     </span>
-                    <span className="text-xs text-white px-1.5 py-0.5 rounded" style={{ background: brandGradient }}>-20%</span>
+                    <span className="text-xs text-white px-1.5 py-0.5 rounded" style={{ background: "#D4372B" }}>-20%</span>
                   </div>
                   
                   {hasVariants && (
@@ -1994,12 +1995,12 @@ export default function ProductPage() {
                                   className={`
                                     px-3 py-1.5 text-xs border rounded-lg transition-all flex items-center gap-2 hover:shadow-md
                                     ${qty > 0 
-                                      ? 'border-[#2B4F3C] text-[#2B4F3C] font-medium shadow-sm' 
+                                      ? 'border-[#D4372B] text-[#D4372B] font-medium shadow-sm' 
                                       : 'border-gray-200 text-gray-600 hover:border-gray-300'
                                     }
                                   `}
                                   style={{
-                                    background: qty > 0 ? 'linear-gradient(135deg, #2B4F3C10 0%, #3A6B4E10 100%)' : 'white'
+                                    background: qty > 0 ? '#FFF0F0' : '#fff'
                                   }}
                                 >
                                   {hasImage && (
@@ -2015,7 +2016,7 @@ export default function ProductPage() {
                                   )}
                                   {value}
                                   {qty > 0 && (
-                                    <span className="ml-1 text-xs bg-white px-1.5 py-0.5 rounded-full shadow-sm border border-[#2B4F3C]">
+                                    <span className="ml-1 text-xs bg-white px-1.5 py-0.5 rounded-full shadow-sm border border-[#D4372B]">
                                       {qty}
                                     </span>
                                   )}
@@ -2044,7 +2045,7 @@ export default function ProductPage() {
                                     )}
                                     <span className="text-sm font-medium text-gray-700">{value}</span>
                                   </div>
-                                  <span className="text-sm font-bold" style={{ color: brandColor }}>x{qty}</span>
+                                  <span className="text-sm font-bold" style={{ color: '#D4372B' }}>x{qty}</span>
                                 </div>
                               </div>
                             )
@@ -2068,12 +2069,12 @@ export default function ProductPage() {
                                     className={`
                                       px-3 py-1.5 text-xs border rounded-lg transition-all flex items-center gap-2 hover:shadow-md
                                       ${total > 0 
-                                        ? 'border-[#2B4F3C] text-[#2B4F3C] font-medium shadow-sm' 
+                                        ? 'border-[#D4372B] text-[#D4372B] font-medium shadow-sm' 
                                         : 'border-gray-200 text-gray-600 hover:border-gray-300'
                                       }
                                     `}
                                     style={{
-                                      background: total > 0 ? 'linear-gradient(135deg, #2B4F3C10 0%, #3A6B4E10 100%)' : 'white'
+                                      background: total > 0 ? '#FFF0F0' : '#fff'
                                     }}
                                   >
                                     {hasImage && (
@@ -2089,7 +2090,7 @@ export default function ProductPage() {
                                     )}
                                     {primaryValue}
                                     {total > 0 && (
-                                      <span className="ml-1 text-xs bg-white px-1.5 py-0.5 rounded-full shadow-sm border border-[#2B4F3C]">
+                                      <span className="ml-1 text-xs bg-white px-1.5 py-0.5 rounded-full shadow-sm border border-[#D4372B]">
                                         {total}
                                       </span>
                                     )}
@@ -2113,17 +2114,17 @@ export default function ProductPage() {
                                       className={`
                                         px-3 py-1.5 text-xs border rounded-lg transition-all relative hover:shadow-md
                                         ${total > 0 
-                                          ? 'border-[#2B4F3C] text-[#2B4F3C] font-medium shadow-sm' 
+                                          ? 'border-[#D4372B] text-[#D4372B] font-medium shadow-sm' 
                                           : 'border-gray-200 text-gray-600 hover:border-gray-300'
                                         }
                                       `}
                                       style={{
-                                        background: total > 0 ? 'linear-gradient(135deg, #2B4F3C10 0%, #3A6B4E10 100%)' : 'white'
+                                        background: total > 0 ? '#FFF0F0' : '#fff'
                                       }}
                                     >
                                       {secondaryValue}
                                       {total > 0 && (
-                                        <span className="absolute -top-2 -right-2 w-4 h-4 bg-[#2B4F3C] text-white text-[8px] rounded-full flex items-center justify-center shadow-lg">
+                                        <span className="absolute -top-2 -right-2 w-4 h-4 bg-[#D4372B] text-white text-[8px] rounded-full flex items-center justify-center shadow-lg">
                                           {total}
                                         </span>
                                       )}
@@ -2141,7 +2142,7 @@ export default function ProductPage() {
                   {!hasVariants && (
                     <div className="mb-3">
                       <div className="text-xs text-gray-500 mb-2">Quantité</div>
-                      <div className="flex items-center border rounded-lg w-fit shadow-sm">
+                      <div className="flex items-center rounded-xl overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
                         <button
                           onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))}
                           className="p-1.5 hover:bg-gray-50 transition-colors"
@@ -2161,23 +2162,23 @@ export default function ProductPage() {
                   )}
                   
                   <div className="flex items-center gap-2 text-xs mb-2">
-                    <span className="px-2 py-0.5 rounded-full text-white" style={{ background: brandGradient }}>Prix direct usine</span>
+                    <span className="px-2 py-0.5 rounded-full text-white" style={{ background: "#D4372B" }}>Prix direct usine</span>
                     <span className="text-gray-500">Prix en {getCurrencySymbol()} (USD ${Number(product.price).toFixed(2)})</span>
                   </div>
 
                   <div className="flex items-center gap-4 text-xs">
                     <div className="flex items-center gap-1 text-gray-600">
-                      <Package className="w-3.5 h-3.5" style={{ color: brandColor }} />
+                      <Package className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
                       <span>MOQ: {minQuantity}</span>
                     </div>
                     <div className="flex items-center gap-1 text-gray-600">
-                      <Clock className="w-3.5 h-3.5" style={{ color: brandColor }} />
+                      <Clock className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
                       <span>Délai: {logisticsData?.recommended.days || '15-20'} jours</span>
                     </div>
                     <div className="flex items-center gap-1 text-gray-600">
                       {isLoadingLogistics ? (
                         <span className="inline-flex items-center text-gray-500">
-                          <span className="w-3 h-3 border-2 border-gray-300 border-t-[#2B4F3C] rounded-full animate-spin mr-1"></span>
+                          <span className="w-3 h-3 border-2 border-gray-300 border-t-[#D4372B] rounded-full animate-spin mr-1"></span>
                           Calcul...
                         </span>
                       ) : (
@@ -2195,7 +2196,7 @@ export default function ProductPage() {
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <Shield className="w-5 h-5" style={{ color: brandColor }} />
+                      <Shield className="w-5 h-5" style={{ color: '#D4372B' }} />
                       <span className="text-sm font-medium text-gray-900">Protection des achats Adullam</span>
                     </div>
                     <Info className="w-4 h-4 text-gray-400" />
@@ -2220,7 +2221,7 @@ export default function ProductPage() {
                     <span>Mode de livraison</span>
                     {selectedPortePorteCost > 0 && (
                       <span className="text-xs font-medium text-gray-700">
-                        Frais porte-à-porte: <span className="font-bold" style={{ color: brandColor }}>{formatPrice(selectedPortePorteCost)}</span>
+                        Frais porte-à-porte: <span className="font-bold" style={{ color: '#D4372B' }}>{formatPrice(selectedPortePorteCost)}</span>
                       </span>
                     )}
                   </h3>
@@ -2268,7 +2269,7 @@ export default function ProductPage() {
                             className="flex items-center justify-between p-2 rounded-lg border transition-all text-xs hover:shadow-md"
                             style={{
                               borderColor: selectedShipping === shippingMode ? brandColor : '#e5e7eb',
-                              background: selectedShipping === shippingMode ? brandGradient : 'white'
+                              background: selectedShipping === shippingMode ? '#D4372B' : '#fff'
                             }}
                           >
                             <div className="flex items-center gap-1.5">
@@ -2283,7 +2284,7 @@ export default function ProductPage() {
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="font-semibold text-xs" style={{ color: selectedShipping === shippingMode ? 'white' : brandColor }}>
+                              <p className="font-semibold text-xs" style={{ color: selectedShipping === shippingMode ? 'white' : '#D4372B' }}>
                                 {formatPrice(cost)}
                               </p>
                               <p className="text-[9px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#9ca3af' }}>
@@ -2333,19 +2334,19 @@ export default function ProductPage() {
 
                 <div className="grid grid-cols-4 gap-2 p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg text-xs shadow-sm">
                   <div className="flex items-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5" style={{ color: brandColor }} />
+                    <Shield className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
                     <span>Garantie 12 mois</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <RotateCcw className="w-3.5 h-3.5" style={{ color: brandColor }} />
+                    <RotateCcw className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
                     <span>Retour 15j</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5" style={{ color: brandColor }} />
+                    <Check className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
                     <span>Certifié</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Truck className="w-3.5 h-3.5" style={{ color: brandColor }} />
+                    <Truck className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
                     <span>Suivi</span>
                   </div>
                 </div>
@@ -2389,7 +2390,7 @@ export default function ProductPage() {
                         <ul className="space-y-2 text-gray-700">
                           {product.features.map((feature: string, i: number) => (
                             <li key={i} className="flex items-start gap-2">
-                              <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: brandColor }} />
+                              <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#D4372B' }} />
                               <span>{feature}</span>
                             </li>
                           ))}
@@ -2457,7 +2458,7 @@ export default function ProductPage() {
                     {!showReviewForm && (
                       <button
                         onClick={() => setShowReviewForm(true)}
-                        className="mb-6 px-4 py-2 bg-[#2B4F3C] text-white rounded-lg text-sm font-medium hover:bg-[#3A6B4E] transition-colors"
+                        className="mb-6 px-4 py-2 bg-[#D4372B] text-white rounded-lg text-sm font-medium hover:bg-[#B5271C] transition-colors"
                       >
                         ✍️ Donner mon avis
                       </button>
@@ -2502,7 +2503,7 @@ export default function ProductPage() {
                             type="text"
                             value={newReview.authorName}
                             onChange={(e) => setNewReview({ ...newReview, authorName: e.target.value })}
-                            className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2B4F3C]"
+                            className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#D4372B]"
                             placeholder="Jean Dupont"
                           />
                         </div>
@@ -2512,7 +2513,7 @@ export default function ProductPage() {
                           <textarea
                             value={newReview.comment}
                             onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                            className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2B4F3C] resize-none"
+                            className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#D4372B] resize-none"
                             rows={4}
                             placeholder="Partagez votre expérience..."
                           />
@@ -2528,7 +2529,7 @@ export default function ProductPage() {
                           <button
                             onClick={handleSubmitReview}
                             disabled={isSubmittingReview}
-                            className="px-4 py-2 bg-[#2B4F3C] text-white rounded-lg text-sm font-medium hover:bg-[#3A6B4E] disabled:opacity-50"
+                            className="px-4 py-2 bg-[#D4372B] text-white rounded-lg text-sm font-medium hover:bg-[#B5271C] disabled:opacity-50"
                           >
                             {isSubmittingReview ? "Envoi..." : "Publier mon avis"}
                           </button>
@@ -2593,7 +2594,7 @@ export default function ProductPage() {
                       <>
                         <div className="flex items-center gap-6 mb-6">
                           <div className="text-center">
-                            <div className="text-2xl font-bold" style={{ background: brandGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                            <div className="text-2xl font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
                               {reviewsStats.averageRating}
                             </div>
                             <div className="flex justify-center mt-1">
@@ -2721,7 +2722,7 @@ export default function ProductPage() {
                                   </div>
                                   <span className="text-[9px] text-gray-500">{p.rating || 4.5}</span>
                                 </div>
-                                <p className="text-sm font-bold" style={{ background: brandGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                                <p className="text-sm font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
                                   {formatPrice(p.priceUSD)}
                                 </p>
                               </a>
@@ -2762,7 +2763,7 @@ export default function ProductPage() {
                               </div>
                               <span className="text-xs text-gray-500">{p.rating || 4.5}</span>
                             </div>
-                            <p className="text-base font-bold" style={{ background: brandGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                            <p className="text-base font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
                               {formatPrice(p.priceUSD)}
                             </p>
                           </a>
@@ -2835,7 +2836,7 @@ export default function ProductPage() {
                   >
                     <Minus className="w-4 h-4" />
                   </button>
-                  <span className="w-12 text-center text-lg font-bold" style={{ color: brandColor }}>
+                  <span className="w-12 text-center text-lg font-bold" style={{ color: '#D4372B' }}>
                     {simpleModalQuantity}
                   </span>
                   <button
@@ -2847,7 +2848,7 @@ export default function ProductPage() {
                 </div>
               </div>
 
-              <div className="mt-4 p-3 rounded-lg" style={{ background: brandGradient }}>
+              <div className="mt-4 p-3 rounded-xl" style={{ background: '#0A0A0A' }}>
                 <div className="flex justify-between text-sm font-medium text-white">
                   <span>Total sélectionné:</span>
                   <span>{simpleModalQuantity} article(s)</span>
@@ -2864,7 +2865,7 @@ export default function ProductPage() {
                 <button
                   onClick={confirmSimpleVariantSelection}
                   className="flex-1 py-3 rounded-lg text-sm font-medium text-white hover:shadow-lg transition-all"
-                  style={{ background: brandGradient }}
+                  style={{ background: "#D4372B" }}
                 >
                   Confirmer
                 </button>
@@ -2934,7 +2935,7 @@ export default function ProductPage() {
                 </div>
               ))}
 
-              <div className="mt-4 p-3 rounded-lg" style={{ background: brandGradient }}>
+              <div className="mt-4 p-3 rounded-xl" style={{ background: '#0A0A0A' }}>
                 <div className="flex justify-between text-sm font-medium text-white">
                   <span>Total sélectionné:</span>
                   <span>
@@ -2953,7 +2954,7 @@ export default function ProductPage() {
                 <button
                   onClick={confirmModalSelection}
                   className="flex-1 py-3 rounded-lg text-sm font-medium text-white hover:shadow-lg transition-all"
-                  style={{ background: brandGradient }}
+                  style={{ background: "#D4372B" }}
                 >
                   Confirmer
                 </button>
@@ -2969,7 +2970,7 @@ export default function ProductPage() {
           <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5" style={{ color: brandColor }} />
+                <Shield className="w-5 h-5" style={{ color: '#D4372B' }} />
                 <h3 className="text-base font-semibold text-gray-900">Protection des achats Adullam</h3>
               </div>
               <button 
