@@ -501,13 +501,11 @@ export default function CheckoutPage() {
               <div key={item.step} className="flex items-center">
                 <div className="flex flex-col items-center">
                   <div 
-                    className={`w-7 h-7 lg:w-8 lg:h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
-                      step >= item.step 
-                        ? 'text-white' 
-                        : 'text-gray-400' style={{ background: '#F4F4F4' }}
-                    }`}
-                    style={step >= item.step ? { background: '#D4372B' } : {}}
-                  >
+  className={`w-7 h-7 lg:w-8 lg:h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
+    step >= item.step ? 'text-white' : 'text-gray-400'
+  }`}
+  style={{ background: step >= item.step ? '#D4372B' : '#F4F4F4' }}
+>
                     {step > item.step ? <Check className="w-3 h-3 lg:w-4 lg:h-4" /> : item.step}
                   </div>
                   <span className="text-[10px] lg:text-xs mt-1 text-gray-500">{item.label}</span>
