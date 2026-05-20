@@ -113,8 +113,14 @@ const suppliers = [
 
 export function HeroSection() {
   const { country } = useLocale()
-  const paysActuel = pays[country as keyof typeof pays] || pays.CI
   const [currentSlide, setCurrentSlide] = useState(0)
+  
+  // ✅ CORRECTION : Utiliser un état pour le pays qui se met à jour
+  const [paysActuel, setPaysActuel] = useState(() => {
+    // Valeur par défaut avant hydratation
+    if (typeof window === 'undefined') return pays.CI
+    return pays[country as keyof typeof pays] || pays.CI
+  })
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -122,6 +128,11 @@ export function HeroSection() {
     }, 5000)
     return () => clearInterval(timer)
   }, [])
+
+  // ✅ CORRECTION : Mettre à jour le pays quand country change
+  useEffect(() => {
+    setPaysActuel(pays[country as keyof typeof pays] || pays.CI)
+  }, [country])
 
   // ── MOBILE ─────────────────────────────────────────────────
   const MobileHero = () => (
