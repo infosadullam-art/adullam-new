@@ -73,9 +73,9 @@ export function ModeSection() {
         if (modeData.success && modeData.data) {
           const md = modeData.data as ModeData
           setCategories([
-            { id: "men",   name: "Hommes",  slug: "mode-hommes",  image: "/categories/men-fashion.jpg",   icon: Shirt,      productCount: md.men.length   > 0 ? md.men.length   * 100 : 15000, href: "/categories/mode-hommes",  products: md.men.slice(0, 2)   },
-            { id: "women", name: "Femmes",  slug: "mode-femmes",  image: "/categories/women-fashion.jpg", icon: Footprints, productCount: md.women.length > 0 ? md.women.length * 100 : 22000, href: "/categories/mode-femmes",  products: md.women.slice(0, 2) },
-            { id: "kids",  name: "Enfants", slug: "mode-enfants", image: "/categories/kids-fashion.jpg",  icon: Baby,       productCount: md.kids.length  > 0 ? md.kids.length  * 100 : 8000,  href: "/categories/mode-enfants", products: md.kids.slice(0, 2)  },
+            { id: "men",   name: "Hommes",  slug: "mode-hommes",  image: "/categories/men-fashion.jpg",   icon: Shirt,      productCount: md.men.length   > 0 ? md.men.length   * 100 : 15000, href: "/categorie/mode-hommes",  products: md.men.slice(0, 2)   },
+            { id: "women", name: "Femmes",  slug: "mode-femmes",  image: "/categories/women-fashion.jpg", icon: Footprints, productCount: md.women.length > 0 ? md.women.length * 100 : 22000, href: "/categorie/mode-femmes",  products: md.women.slice(0, 2) },
+            { id: "kids",  name: "Enfants", slug: "mode-enfants", image: "/categories/kids-fashion.jpg",  icon: Baby,       productCount: md.kids.length  > 0 ? md.kids.length  * 100 : 8000,  href: "/categorie/mode-enfants", products: md.kids.slice(0, 2)  },
           ])
         }
       } catch (error) {
