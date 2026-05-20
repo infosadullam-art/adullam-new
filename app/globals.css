@@ -220,13 +220,3 @@
 
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* ── FIX GOOGLE TRANSLATE + REACT ─────────────────────────── 
-   Google Translate enveloppe les nœuds texte dans <font>.
-   React ne retrouve plus ses nœuds → crash au clic.
-   display: contents rend ces <font> invisibles au layout :
-   la traduction s'affiche, React ne crashe plus.
-   ─────────────────────────────────────────────────────────── */
-font {
-  display: contents !important;
-}
