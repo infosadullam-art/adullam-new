@@ -14,9 +14,9 @@ interface Product {
 }
 
 const slides = [
-  { id: 1, image: "/slides/Spring-1.jpg", title: "Collection printemps", href: "/collections/printemps" },
-  { id: 2, image: "/slides/Spring-2.jpg", title: "Nouveautés mode",      href: "/collections/nouveautes" },
-  { id: 3, image: "/slides/Spring-3.jpg", title: "Tendances 2026",       href: "/collections/tendances" },
+  { id: 1, image: "/slides/Spring-1.jpg", title: "Collection printemps", href: "/categorie/robe" },
+  { id: 2, image: "/slides/Spring-2.jpg", title: "Nouveautés mode",      href: "/categorie/montres" },
+  { id: 3, image: "/slides/Spring-3.jpg", title: "Tendances 2026",       href: "/categorie/cuisine" },
 ]
 
 export function CategoriesPourVous() {
@@ -102,7 +102,7 @@ export function CategoriesPourVous() {
             </div>
           </div>
           <Link
-            href="/categories/cuisine"
+            href="/categorie/cuisine"
             className="flex items-center gap-0.5 text-xs font-semibold"
             style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}
           >
