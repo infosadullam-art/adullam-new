@@ -172,7 +172,7 @@ export function ModeSection() {
             <p style={{ fontSize: "13px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>
               ⚡ Ventes éclair mode
             </p>
-            <Link href="//categorie/sacs-et-maroquinerie" className="flex items-center gap-0.5 text-xs font-semibold" style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>
+            <Link href="/categorie/sacs-et-maroquinerie" className="flex items-center gap-0.5 text-xs font-semibold" style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>
               Voir tout <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
