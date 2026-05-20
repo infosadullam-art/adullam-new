@@ -73,8 +73,8 @@ export function ModeSection() {
         if (modeData.success && modeData.data) {
           const md = modeData.data as ModeData
           setCategories([
-            { id: "men",   name: "Hommes",  slug: "mode-hommes",  image: "/categories/men-fashion.jpg",   icon: Shirt,      productCount: md.men.length   > 0 ? md.men.length   * 100 : 15000, href: "/categorie/mode-hommes",  products: md.men.slice(0, 2)   },
-            { id: "women", name: "Femmes",  slug: "mode-femmes",  image: "/categories/women-fashion.jpg", icon: Footprints, productCount: md.women.length > 0 ? md.women.length * 100 : 22000, href: "/categorie/mode-femmes",  products: md.women.slice(0, 2) },
+            { id: "men",   name: "Hommes",  slug: "mode-hommes",  image: "/categories/men-fashion.jpg",   icon: Shirt,      productCount: md.men.length   > 0 ? md.men.length   * 100 : 15000, href: "/categorie/t-shirts-homme",  products: md.men.slice(0, 2)   },
+            { id: "women", name: "Femmes",  slug: "mode-femmes",  image: "/categories/women-fashion.jpg", icon: Footprints, productCount: md.women.length > 0 ? md.women.length * 100 : 22000, href: "/categorie/robes",  products: md.women.slice(0, 2) },
             { id: "kids",  name: "Enfants", slug: "mode-enfants", image: "/categories/kids-fashion.jpg",  icon: Baby,       productCount: md.kids.length  > 0 ? md.kids.length  * 100 : 8000,  href: "/categorie/mode-enfants", products: md.kids.slice(0, 2)  },
           ])
         }
@@ -172,7 +172,7 @@ export function ModeSection() {
             <p style={{ fontSize: "13px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>
               ⚡ Ventes éclair mode
             </p>
-            <Link href="/flash-mode" className="flex items-center gap-0.5 text-xs font-semibold" style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>
+            <Link href="//categorie/sacs-et-maroquinerie" className="flex items-center gap-0.5 text-xs font-semibold" style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>
               Voir tout <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -208,7 +208,7 @@ export function ModeSection() {
         <div className="px-4 pb-4" style={{ background: "#FAFAFA" }}>
           <div className="flex items-center justify-between py-3 mb-2">
             <p style={{ fontSize: "13px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>Mode tendance</p>
-            <Link href="/mode" className="flex items-center gap-0.5 text-xs font-semibold" style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>
+            <Link href="/categorie/montres" className="flex items-center gap-0.5 text-xs font-semibold" style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>
               Voir tout <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
