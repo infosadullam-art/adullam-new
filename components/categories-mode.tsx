@@ -161,7 +161,7 @@ export function CategoriesMode() {
             </div>
           </div>
           <Link
-            href="/categorie/mode"
+            href="/categorie/t-shirts-homme"
             className="text-xs inline-flex items-center gap-1 transition-colors hover:opacity-70"
             style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}
           >
