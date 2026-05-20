@@ -64,7 +64,7 @@ export function CategoriesMode() {
               textColor: "#0A0A0A",
               description: "Vêtements, chaussures, accessoires",
               productCount: "15k+",
-              href: "/categories/mode-hommes",
+              href: "/categorie/mode-hommes",
               products: menProducts.map((p: any) => ({
                 id: p.id,
                 name: p.title || p.name,
@@ -84,7 +84,7 @@ export function CategoriesMode() {
               textColor: "#0A0A0A",
               description: "Robes, sacs, chaussures",
               productCount: "22k+",
-              href: "/categories/mode-femmes",
+              href: "/categorie/mode-femmes",
               products: womenProducts.map((p: any) => ({
                 id: p.id,
                 name: p.title || p.name,
@@ -104,7 +104,7 @@ export function CategoriesMode() {
               textColor: "#0A0A0A",
               description: "Vêtements, chaussures, accessoires",
               productCount: "8k+",
-              href: "/categories/mode-enfants",
+              href: "/categorie/mode-enfants",
               products: kidsProducts.map((p: any) => ({
                 id: p.id,
                 name: p.title || p.name,
@@ -161,7 +161,7 @@ export function CategoriesMode() {
             </div>
           </div>
           <Link
-            href="/categories/mode"
+            href="/categorie/mode"
             className="text-xs inline-flex items-center gap-1 transition-colors hover:opacity-70"
             style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}
           >
