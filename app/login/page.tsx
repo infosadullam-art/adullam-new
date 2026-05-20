@@ -12,203 +12,326 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Loader2, ShoppingBag, Mail, Phone, Lock, Key, Shield,
-  AlertCircle, CheckCircle, MailCheck, Eye, EyeOff, ArrowLeft,
-  Smartphone
-} from "lucide-react"
+import { Loader2, ShoppingBag, Mail, Phone, Lock, Key, Shield, AlertCircle, CheckCircle, MailCheck, Eye, EyeOff, ArrowLeft } from "lucide-react"
 import { useAuth } from "@/lib/admin/auth-context"
 
-const poppins = { fontFamily: "'Poppins', sans-serif" }
-
-// ── UTILS ──────────────────────────────────────────────────────
-function generateCSRFToken(): string {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-}
-
-// ── COMPOSANT PRINCIPAL ────────────────────────────────────────
+// ============================================================
+// COMPOSANT INTERNE QUI UTILISE useSearchParams
+// ============================================================
 function UserLoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirect = searchParams.get("redirect") || "/account"
-
+  const redirect = searchParams.get('redirect') || '/account'
+  
   const { login, register, user, isLoading: authLoading } = useAuth()
 
+  // États du formulaire
   const [step, setStep] = useState<"login" | "register" | "verify">("login")
   const [loginMethod, setLoginMethod] = useState<"email" | "phone">("email")
   const [formData, setFormData] = useState({
-    name: "", email: "", phone: "", password: "",
-    confirmPassword: "", verificationCode: ""
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+    verificationCode: ""
   })
-
+  
+  // UI
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [countdown, setCountdown] = useState(0)
+  
+  // Sécurité
   const [attempts, setAttempts] = useState(0)
   const [blockedUntil, setBlockedUntil] = useState<Date | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const csrfToken = useRef(generateCSRFToken())
 
+  // Redirection si déjà connecté
   useEffect(() => {
-    if (!authLoading && user) router.replace(redirect)
+    if (!authLoading && user) {
+      router.replace(redirect)
+    }
   }, [user, authLoading, router, redirect])
 
-  useEffect(() => {
-    if (countdown <= 0) return
-    const timer = setTimeout(() => setCountdown(p => p - 1), 1000)
-    return () => clearTimeout(timer)
-  }, [countdown])
+  // Vérification des tentatives
+  const checkRateLimit = (): boolean => {
+    if (blockedUntil && new Date() < blockedUntil) {
+      const minutes = Math.ceil((blockedUntil.getTime() - Date.now()) / 60000)
+      setError(`Trop de tentatives. Réessayez dans ${minutes} minute(s)`)
+      return false
+    }
+    
+    if (attempts >= 3) {
+      const blockTime = new Date(Date.now() + 15 * 60000)
+      setBlockedUntil(blockTime)
+      setError("Trop de tentatives. Compte bloqué 15 minutes.")
+      return false
+    }
+    
+    return true
+  }
+
+  // Validation du mot de passe
+  const validatePassword = (password: string): { valid: boolean; message: string } => {
+    if (password.length < 8) return { valid: false, message: "Minimum 8 caractères" }
+    if (!/[A-Z]/.test(password)) return { valid: false, message: "Au moins une majuscule" }
+    if (!/[0-9]/.test(password)) return { valid: false, message: "Au moins un chiffre" }
+    if (!/[^A-Za-z0-9]/.test(password)) return { valid: false, message: "Au moins un caractère spécial" }
+    return { valid: true, message: "Mot de passe valide" }
+  }
+
+  const sanitizeInput = (input: string): string => {
+    return input.replace(/[<>]/g, '')
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-    if (error) setError("")
+    setFormData(prev => ({ ...prev, [name]: sanitizeInput(value) }))
+    setError("")
   }
 
-  const validatePassword = (password: string) => {
-    if (password.length < 8) return { valid: false, message: "Mot de passe trop court (8 caractères min)" }
-    if (!/[A-Z]/.test(password)) return { valid: false, message: "Au moins une majuscule requise" }
-    if (!/[0-9]/.test(password)) return { valid: false, message: "Au moins un chiffre requis" }
-    return { valid: true, message: "" }
-  }
-
+  // Envoi du code de vérification
   const handleSendCode = async () => {
-    const identifier = loginMethod === "email" ? formData.email.toLowerCase().trim() : formData.phone.replace(/\s/g, "")
-    const res = await fetch("/api/auth/send-code", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ identifier, type: loginMethod })
-    })
-    const data = await res.json()
-    if (data.success) { setStep("verify"); setCountdown(60) }
-    else setError(data.error || "Impossible d'envoyer le code")
-  }
+    if (!checkRateLimit()) return
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (blockedUntil && new Date() < blockedUntil) {
-      const remaining = Math.ceil((blockedUntil.getTime() - Date.now()) / 1000)
-      setError(`Trop de tentatives. Réessayez dans ${remaining}s`)
-      return
-    }
     setIsSubmitting(true)
     setError("")
+    
+    try {
+      let identifier = loginMethod === "email" ? formData.email : formData.phone
+      
+      if (!identifier) {
+        setError(`${loginMethod === "email" ? "Email" : "Téléphone"} requis`)
+        setIsSubmitting(false)
+        return
+      }
+
+      if (loginMethod === "email") {
+        identifier = identifier.toLowerCase().trim()
+      } else {
+        identifier = identifier.replace(/\s/g, '')
+      }
+
+      const res = await fetch("/api/auth/send-code", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier, method: loginMethod })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setSuccess(`Code envoyé à ${identifier}`)
+        setStep("verify")
+        setAttempts(0)
+        
+        setCountdown(60)
+        const timer = setInterval(() => {
+          setCountdown(prev => {
+            if (prev <= 1) {
+              clearInterval(timer)
+              return 0
+            }
+            return prev - 1
+          })
+        }, 1000)
+      } else {
+        setError(data.error || "Erreur lors de l'envoi")
+        setAttempts(prev => prev + 1)
+      }
+    } catch (err) {
+      setError("Erreur de connexion")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // Soumission du formulaire
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!checkRateLimit()) return
+    
+    const formCsrf = (e.target as any).csrf?.value
+    if (formCsrf !== csrfToken.current) {
+      setError("Erreur de sécurité. Rafraîchissez la page.")
+      setIsSubmitting(false)
+      return
+    }
+
+    setIsSubmitting(true)
+    setError("")
+    setSuccess("")
+
     try {
       if (step === "login") {
-        const identifier = loginMethod === "email" ? formData.email.toLowerCase().trim() : formData.phone.replace(/\s/g, "")
+        let identifier = loginMethod === "email" ? formData.email : formData.phone
+        
+        if (!identifier || !formData.password) {
+          setError("Tous les champs sont requis")
+          setIsSubmitting(false)
+          return
+        }
+
+        if (loginMethod === "email") {
+          identifier = identifier.toLowerCase().trim()
+        } else {
+          identifier = identifier.replace(/\s/g, '')
+        }
+
         await login(identifier, formData.password)
-        router.push(redirect)
+        setAttempts(0)
+        
       } else if (step === "register") {
-        if (!formData.name.trim()) { setError("Nom requis"); return }
-        if (formData.password !== formData.confirmPassword) { setError("Mots de passe différents"); return }
-        const pwdCheck = validatePassword(formData.password)
-        if (!pwdCheck.valid) { setError(pwdCheck.message); return }
+        if (!formData.name || !formData.password || !formData.confirmPassword) {
+          setError("Tous les champs sont requis")
+          setIsSubmitting(false)
+          return
+        }
+
+        if (formData.password !== formData.confirmPassword) {
+          setError("Les mots de passe ne correspondent pas")
+          setIsSubmitting(false)
+          return
+        }
+
+        const passwordValidation = validatePassword(formData.password)
+        if (!passwordValidation.valid) {
+          setError(passwordValidation.message)
+          setIsSubmitting(false)
+          return
+        }
+
         await handleSendCode()
+        
       } else if (step === "verify") {
         if (!formData.verificationCode || formData.verificationCode.length !== 6) {
-          setError("Code à 6 chiffres requis"); return
+          setError("Code à 6 chiffres requis")
+          setIsSubmitting(false)
+          return
         }
-        const identifier = loginMethod === "email" ? formData.email.toLowerCase().trim() : formData.phone.replace(/\s/g, "")
+
+        let identifier = loginMethod === "email" ? formData.email : formData.phone
+        
+        if (loginMethod === "email") {
+          identifier = identifier.toLowerCase().trim()
+        } else {
+          identifier = identifier.replace(/\s/g, '')
+        }
+
         const res = await fetch("/api/auth/verify-code", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ identifier, code: formData.verificationCode })
         })
+
         const data = await res.json()
+
         if (data.success) {
           await register(formData.name, identifier, formData.password)
           setSuccess("Compte créé avec succès !")
           setTimeout(() => router.push(redirect), 2000)
         } else {
           setError(data.error || "Code invalide")
-          setAttempts(p => p + 1)
-          if (attempts >= 4) setBlockedUntil(new Date(Date.now() + 5 * 60 * 1000))
+          setAttempts(prev => prev + 1)
         }
       }
-    } catch (err: any) {
-      setError(err.message || "Une erreur est survenue")
-      setAttempts(p => p + 1)
+    } catch (error: any) {
+      console.error("❌ Erreur:", error)
+      setError(error.message || "Une erreur est survenue")
+      setAttempts(prev => prev + 1)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const stepTitle = step === "login" ? "Connexion" : step === "register" ? "Créer un compte" : "Vérification"
-  const stepSub = step === "login" ? "Accédez à votre espace client" : step === "register" ? "Créez votre compte en quelques secondes" : "Entrez le code reçu"
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#D4372B]">
-            <ShoppingBag className="h-6 w-6 text-white" />
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
+            <ShoppingBag className="h-6 w-6 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl" style={poppins}>
-            Adullam
+          <CardTitle className="text-2xl">
+            {step === "login" && "Connexion client"}
+            {step === "register" && "Créer un compte"}
+            {step === "verify" && "Vérification"}
           </CardTitle>
-          <CardDescription style={poppins}>
-            {stepTitle} • {stepSub}
+          <CardDescription>
+            {step === "login" && "Connectez-vous pour accéder à votre espace client"}
+            {step === "register" && "Créez votre compte en quelques secondes"}
+            {step === "verify" && "Entrez le code reçu"}
           </CardDescription>
         </CardHeader>
 
         <CardContent>
-          {/* Retour */}
           {step !== "login" && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => { setStep("login"); setError(""); setSuccess("") }}
-              className="mb-4 -ml-2 text-muted-foreground"
+            <button
+              onClick={() => {
+                setStep("login")
+                setError("")
+                setSuccess("")
+              }}
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
             >
-              <ArrowLeft className="mr-1 h-4 w-4" />
-              Retour
-            </Button>
+              <ArrowLeft className="w-4 h-4" />
+              Retour à la connexion
+            </button>
           )}
 
-          {/* Erreur */}
           {error && (
-            <div className="rounded-md bg-red-50 p-3 mb-4 flex items-start gap-2 border border-red-200">
-              <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
-              <span className="text-sm text-red-600">{error}</span>
+            <div className="mb-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <span>{error}</span>
             </div>
           )}
 
-          {/* Succès */}
           {success && (
-            <div className="rounded-md bg-green-50 p-3 mb-4 flex items-start gap-2 border border-green-200">
-              <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-              <span className="text-sm text-green-600">{success}</span>
+            <div className="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-700 flex items-start gap-2 border border-green-200">
+              <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <span>{success}</span>
             </div>
           )}
 
-          {/* Toggle email / téléphone */}
           {step !== "verify" && (
-            <Tabs defaultValue="email" className="mb-5" onValueChange={(v) => setLoginMethod(v as "email" | "phone")}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="email" className="gap-2">
-                  <Mail className="h-4 w-4" />
-                  Email
-                </TabsTrigger>
-                <TabsTrigger value="phone" className="gap-2">
-                  <Phone className="h-4 w-4" />
-                  Téléphone
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <div className="flex gap-2 mb-6">
+              <button
+                type="button"
+                onClick={() => setLoginMethod("email")}
+                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                  loginMethod === "email"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                }`}
+              >
+                <Mail className="w-4 h-4 inline mr-2" />
+                Email
+              </button>
+              <button
+                type="button"
+                onClick={() => setLoginMethod("phone")}
+                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                  loginMethod === "phone"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                }`}
+              >
+                <Phone className="w-4 h-4 inline mr-2" />
+                Téléphone
+              </button>
+            </div>
           )}
 
-          {/* Formulaire */}
           <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
             <input type="hidden" name="csrf" value={csrfToken.current} />
 
             {step !== "verify" && (
               <>
-                {/* Nom */}
                 {step === "register" && (
                   <div className="space-y-2">
                     <Label htmlFor="name">Nom complet</Label>
@@ -220,12 +343,11 @@ function UserLoginContent() {
                       value={formData.name}
                       onChange={handleInputChange}
                       disabled={isSubmitting}
-                      required
+                      required={step === "register"}
                     />
                   </div>
                 )}
 
-                {/* Email / téléphone */}
                 {loginMethod === "email" ? (
                   <div className="space-y-2">
                     <Label htmlFor="email">Adresse email</Label>
@@ -244,7 +366,7 @@ function UserLoginContent() {
                   <div className="space-y-2">
                     <Label htmlFor="phone">Numéro de téléphone</Label>
                     <div className="flex">
-                      <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 bg-muted text-muted-foreground text-sm">
+                      <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-muted-foreground text-sm">
                         +225
                       </span>
                       <Input
@@ -254,15 +376,14 @@ function UserLoginContent() {
                         placeholder="01 23 45 67 89"
                         value={formData.phone}
                         onChange={handleInputChange}
+                        className="rounded-l-none"
                         disabled={isSubmitting}
                         required
-                        className="rounded-l-none"
                       />
                     </div>
                   </div>
                 )}
 
-                {/* Mot de passe */}
                 <div className="space-y-2">
                   <Label htmlFor="password">Mot de passe</Label>
                   <div className="relative">
@@ -275,21 +396,17 @@ function UserLoginContent() {
                       onChange={handleInputChange}
                       disabled={isSubmitting}
                       required
-                      className="pr-10"
                     />
-                    <Button
+                    <button
                       type="button"
-                      variant="ghost"
-                      size="sm"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-0 top-0 h-full px-3 text-muted-foreground"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </Button>
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
 
-                {/* Confirmer MDP */}
                 {step === "register" && (
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
@@ -303,27 +420,19 @@ function UserLoginContent() {
                         onChange={handleInputChange}
                         disabled={isSubmitting}
                         required
-                        className="pr-10"
                       />
-                      <Button
+                      <button
                         type="button"
-                        variant="ghost"
-                        size="sm"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-0 top-0 h-full px-3 text-muted-foreground"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       >
-                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
+                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
                     </div>
                   </div>
                 )}
 
-                {/* Submit */}
-                <Button
-                  type="submit"
-                  className="w-full bg-[#D4372B] hover:bg-[#B92E23]"
-                  disabled={isSubmitting}
-                >
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -336,15 +445,14 @@ function UserLoginContent() {
               </>
             )}
 
-            {/* Step Verify */}
             {step === "verify" && (
               <>
                 <div className="text-center mb-4">
-                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                    <MailCheck className="h-6 w-6 text-green-600" />
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <MailCheck className="w-6 h-6 text-green-600" />
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Code envoyé à
+                    Nous avons envoyé un code à 6 chiffres à
                   </p>
                   <p className="text-sm font-medium mt-1">
                     {loginMethod === "email" ? formData.email : formData.phone}
@@ -360,36 +468,31 @@ function UserLoginContent() {
                     placeholder="000000"
                     value={formData.verificationCode}
                     onChange={(e) => {
-                      const val = e.target.value.replace(/[^0-9]/g, "").slice(0, 6)
-                      setFormData(p => ({ ...p, verificationCode: val }))
+                      const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6)
+                      setFormData(prev => ({ ...prev, verificationCode: value }))
                     }}
+                    className="text-center text-2xl tracking-[0.5em] font-mono"
                     maxLength={6}
                     disabled={isSubmitting}
                     required
-                    className="text-center text-2xl tracking-[0.5em] font-mono"
                   />
                 </div>
 
                 {countdown > 0 ? (
-                  <p className="text-center text-sm text-muted-foreground">
-                    Renvoyer dans {countdown}s
+                  <p className="text-sm text-muted-foreground text-center">
+                    Renvoyer le code dans {countdown} secondes
                   </p>
                 ) : (
-                  <Button
+                  <button
                     type="button"
-                    variant="link"
                     onClick={handleSendCode}
-                    className="w-full"
+                    className="w-full text-sm text-primary hover:underline"
                   >
                     Renvoyer le code
-                  </Button>
+                  </button>
                 )}
 
-                <Button
-                  type="submit"
-                  className="w-full bg-[#D4372B] hover:bg-[#B92E23]"
-                  disabled={isSubmitting || formData.verificationCode.length !== 6}
-                >
+                <Button type="submit" className="w-full" disabled={isSubmitting || formData.verificationCode.length !== 6}>
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -403,40 +506,38 @@ function UserLoginContent() {
             )}
           </form>
 
-          {/* Toggle login / register */}
           {step !== "verify" && (
             <div className="mt-6 text-center text-sm">
               <span className="text-muted-foreground">
                 {step === "login" ? "Pas encore de compte ?" : "Déjà inscrit ?"}
               </span>{" "}
-              <Button
-                variant="link"
-                className="p-0 h-auto font-semibold text-[#D4372B]"
+              <button
+                type="button"
                 onClick={() => {
                   setStep(step === "login" ? "register" : "login")
                   setError("")
                   setSuccess("")
-                  setFormData(p => ({ ...p, verificationCode: "", password: "", confirmPassword: "" }))
+                  setFormData(prev => ({ ...prev, verificationCode: "", password: "", confirmPassword: "" }))
                 }}
+                className="text-primary hover:underline"
               >
                 {step === "login" ? "Inscrivez-vous" : "Connectez-vous"}
-              </Button>
+              </button>
             </div>
           )}
 
-          {/* Trust badges */}
-          <div className="flex items-center justify-center gap-4 mt-6 pt-4 border-t">
+          <div className="mt-4 text-center text-xs text-muted-foreground flex items-center justify-center gap-3">
             <div className="flex items-center gap-1">
-              <Lock className="h-3 w-3 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Chiffré 256-bit</span>
+              <Lock className="w-3 h-3" />
+              <span>Chiffré 256-bit</span>
             </div>
             <div className="flex items-center gap-1">
-              <Shield className="h-3 w-3 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Protégé</span>
+              <Shield className="w-3 h-3" />
+              <span>Protégé</span>
             </div>
             <div className="flex items-center gap-1">
-              <Key className="h-3 w-3 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">2FA</span>
+              <Key className="w-3 h-3" />
+              <span>2FA disponible</span>
             </div>
           </div>
         </CardContent>
@@ -445,31 +546,42 @@ function UserLoginContent() {
   )
 }
 
-// ── LOADING FALLBACK ───────────────────────────────────────────
+// ============================================================
+// LOADING FALLBACK PENDANT LE SUSPENSE
+// ============================================================
 function LoginLoadingFallback() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#D4372B]">
-            <ShoppingBag className="h-6 w-6 text-white" />
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
+            <ShoppingBag className="h-6 w-6 text-primary-foreground" />
           </div>
           <CardTitle className="text-2xl">Adullam</CardTitle>
           <CardDescription>Chargement...</CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-[#D4372B]" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </CardContent>
       </Card>
     </div>
   )
 }
 
-// ── PAGE PRINCIPALE ────────────────────────────────────────────
+// ============================================================
+// PAGE PRINCIPALE AVEC SUSPENSE BOUNDARY
+// ============================================================
 export default function UserLoginPage() {
   return (
     <Suspense fallback={<LoginLoadingFallback />}>
       <UserLoginContent />
     </Suspense>
   )
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function generateCSRFToken(): string {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
 }
