@@ -39,9 +39,9 @@ export default function AccountPage() {
   })
 
   // Couleurs de la marque
-  const brandColor = "#D4372B"
-  const brandGradient = "#D4372B"
-  const brandLight = "#FFF0F0"
+  const brandColor = "#2B4F3C"
+  const brandGradient = "linear-gradient(135deg, #2B4F3C 0%, #3A6B4E 100%)"
+  const brandLight = "#E8F3E8"
 
   // ============================================================
   // ÉTATS POUR L'AUTHENTIFICATION SÉCURISÉE
@@ -710,8 +710,7 @@ export default function AccountPage() {
 
                 {step === "verify" && (
                   <>
-                    <div className="text-center mb-6" />
-              <div>
+                    <div className="text-center mb-6">
                       <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <MailCheck className="w-8 h-8 text-green-600" />
                       </div>
@@ -868,8 +867,7 @@ export default function AccountPage() {
   // DASHBOARD UTILISATEUR (après connexion)
   // ============================================================
   return (
-    <div className="min-h-screen" style={{ background: "#FAFAFA" }}
-      className="">
+    <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
