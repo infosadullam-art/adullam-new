@@ -14,16 +14,6 @@ import { FaFacebook, FaApple } from "react-icons/fa"
 import { useRouter } from "next/navigation"
 import { ordersApi, addressesApi, wishlistApi } from "@/lib/admin/api-client"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 
 // ============================================================
 // COMPOSANT PRINCIPAL
@@ -49,9 +39,9 @@ export default function AccountPage() {
   })
 
   // Couleurs de la marque
-  const brandColor = "#2B4F3C"
-  const brandGradient = "linear-gradient(135deg, #2B4F3C 0%, #3A6B4E 100%)"
-  const brandLight = "#E8F3E8"
+  const brandColor = "#D4372B"
+  const brandGradient = "#D4372B"
+  const brandLight = "#FFF0F0"
 
   // ============================================================
   // ÉTATS POUR L'AUTHENTIFICATION SÉCURISÉE
@@ -447,318 +437,428 @@ export default function AccountPage() {
   }
 
   // ============================================================
-  // PAGE DE CONNEXION/INSCRIPTION (STYLE ADMIN - SANS LE A)
+  // PAGE DE CONNEXION/INSCRIPTION SÉCURISÉE
   // ============================================================
   if (!isLogged) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full" style={{ backgroundColor: brandColor }}>
-              <ShoppingBag className="h-6 w-6 text-white" />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          
+          <button
+            onClick={() => router.push("/")}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors group"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span>Retour à l'accueil</span>
+          </button>
+
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
+              <ShoppingBag className="w-8 h-8 text-white" />
             </div>
-            <CardTitle className="text-2xl" style={{ fontFamily: "'Poppins', sans-serif", color: "#1a1a1a" }}>
-              Adullam
-            </CardTitle>
-            <CardDescription style={{ fontFamily: "'Poppins', sans-serif" }}>
-              {step === "login" && "Connectez-vous à votre espace client"}
-              {step === "register" && "Créez votre compte en quelques secondes"}
-              {step === "verify" && "Vérifiez votre identité"}
-            </CardDescription>
-          </CardHeader>
+            <h1 className="text-3xl font-bold text-gray-900">Adullam</h1>
+            <div className="flex items-center justify-center gap-2 mt-2">
+              <Shield className="w-4 h-4 text-green-600" />
+              <p className="text-sm text-gray-600">Connexion sécurisée</p>
+            </div>
+          </div>
 
-          <CardContent>
-            {step !== "login" && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => { setStep("login"); setError(""); setSuccess("") }}
-                className="mb-4 -ml-2"
-              >
-                <ArrowLeft className="mr-1 h-4 w-4" />
-                Retour
-              </Button>
-            )}
-
-            {error && (
-              <div className="rounded-md mb-4 p-3 text-sm" style={{ backgroundColor: brandLight, color: brandColor }}>
-                {error}
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            
+            <div className="p-6 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  {step === "login" && "Connexion"}
+                  {step === "register" && "Inscription"}
+                  {step === "verify" && "Vérification"}
+                </h2>
+                {step !== "login" && (
+                  <button
+                    onClick={() => {
+                      setStep("login")
+                      setError("")
+                      setSuccess("")
+                    }}
+                    className="text-sm text-gray-500 hover:text-gray-700"
+                  >
+                    Retour
+                  </button>
+                )}
               </div>
-            )}
 
-            {success && (
-              <div className="rounded-md mb-4 p-3 text-sm bg-green-50 text-green-600">
-                {success}
+              <div className="flex items-center gap-2 mt-3 text-xs text-gray-500">
+                <Lock className="w-3 h-3" />
+                <span>Connexion 256-bit SSL</span>
+                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                <Key className="w-3 h-3" />
+                <span>2FA disponible</span>
               </div>
-            )}
+            </div>
 
-            {step !== "verify" && (
-              <div className="flex gap-2 mb-5">
-                <button
-                  type="button"
-                  onClick={() => setLoginMethod("email")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    loginMethod === "email"
-                      ? "text-white shadow-sm"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                  style={loginMethod === "email" ? { backgroundColor: brandColor } : {}}
-                >
-                  <Mail className="h-4 w-4" />
-                  Email
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLoginMethod("phone")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    loginMethod === "phone"
-                      ? "text-white shadow-sm"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                  style={loginMethod === "phone" ? { backgroundColor: brandColor } : {}}
-                >
-                  <Phone className="h-4 w-4" />
-                  Téléphone
-                </button>
-              </div>
-            )}
-
-            <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
-              <input type="hidden" name="csrf" value={csrfToken.current} />
-
+            <div className="p-6">
+              
               {step !== "verify" && (
-                <>
-                  {step === "register" && (
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Nom complet</Label>
-                      <Input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        placeholder="Jean Dupont"
-                        maxLength={50}
-                        required
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                  )}
+                <div className="flex gap-2 mb-6">
+                  <button
+                    onClick={() => setLoginMethod("email")}
+                    className={`flex-1 py-3 px-3 rounded-xl text-sm font-medium transition-all ${
+                      loginMethod === "email"
+                        ? "bg-gray-900 text-white shadow-lg"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    <Mail className="w-4 h-4 inline mr-2" />
+                    Email
+                  </button>
+                  <button
+                    onClick={() => setLoginMethod("phone")}
+                    className={`flex-1 py-3 px-3 rounded-xl text-sm font-medium transition-all ${
+                      loginMethod === "phone"
+                        ? "bg-gray-900 text-white shadow-lg"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    <Phone className="w-4 h-4 inline mr-2" />
+                    Téléphone
+                  </button>
+                </div>
+              )}
 
-                  {loginMethod === "email" ? (
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Adresse email</Label>
-                      <Input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        placeholder="vous@exemple.com"
-                        maxLength={100}
-                        required
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Numéro de téléphone</Label>
-                      <div className="flex">
-                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 bg-muted text-muted-foreground text-sm">
-                          +225
-                        </span>
-                        <Input
-                          type="tel"
-                          name="phone"
-                          value={formData.phone}
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-red-800">Erreur</p>
+                    <p className="text-sm text-red-600">{error}</p>
+                  </div>
+                </div>
+              )}
+
+              {success && (
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-green-800">Succès</p>
+                    <p className="text-sm text-green-600">{success}</p>
+                  </div>
+                </div>
+              )}
+
+              <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
+                
+                <input type="hidden" name="csrf" value={csrfToken.current} />
+
+                {step !== "verify" && (
+                  <>
+                    {step === "register" && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                          Nom complet
+                        </label>
+                        <input
+                          type="text"
+                          name="name"
+                          value={formData.name}
                           onChange={handleInputChange}
-                          placeholder="01 23 45 67 89"
-                          maxLength={15}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all"
+                          placeholder="Jean Dupont"
+                          maxLength={50}
                           required
-                          disabled={isSubmitting}
-                          className="rounded-l-none"
                         />
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Mot de passe</Label>
-                    <div className="relative">
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        name="password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        placeholder="••••••••"
-                        minLength={8}
-                        maxLength={50}
-                        required
-                        disabled={isSubmitting}
-                        className="pr-10"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-0 top-0 h-full px-3"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </div>
-
-                  {step === "register" && (
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Confirmer le mot de passe</Label>
-                      <div className="relative">
-                        <Input
-                          type={showConfirmPassword ? "text" : "password"}
-                          name="confirmPassword"
-                          value={formData.confirmPassword}
+                    {loginMethod === "email" ? (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                          Adresse email
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={formData.email}
                           onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all"
+                          placeholder="vous@exemple.com"
+                          maxLength={100}
+                          required
+                        />
+                      </div>
+                    ) : (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                          Numéro de téléphone
+                        </label>
+                        <div className="flex">
+                          <span className="inline-flex items-center px-4 rounded-l-xl border border-r-0 border-gray-200 bg-gray-50 text-gray-500">
+                            +225
+                          </span>
+                          <input
+                            type="tel"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                            className="flex-1 px-4 py-3 border rounded-r-xl border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all"
+                            placeholder="01 23 45 67 89"
+                            maxLength={15}
+                            required
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Mot de passe
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          name="password"
+                          value={formData.password}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all pr-12"
                           placeholder="••••••••"
                           minLength={8}
                           maxLength={50}
                           required
-                          disabled={isSubmitting}
-                          className="pr-10"
                         />
-                        <Button
+                        <button
                           type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-0 top-0 h-full px-3"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         >
-                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </Button>
+                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
                       </div>
-                    </div>
-                  )}
 
-                  {step === "login" && (
-                    <div className="flex justify-end">
-                      <button type="button" className="text-sm text-gray-500 hover:underline">
-                        Mot de passe oublié ?
-                      </button>
+                      {step === "register" && formData.password && (
+                        <div className="mt-2">
+                          {(() => {
+                            const validation = validatePassword(formData.password)
+                            return (
+                              <div className="flex items-center gap-2">
+                                <div className={`text-xs ${validation.valid ? 'text-green-600' : 'text-gray-500'}`}>
+                                  {validation.valid ? '✓ ' : ''}{validation.message}
+                                </div>
+                              </div>
+                            )
+                          })()}
+                        </div>
+                      )}
                     </div>
-                  )}
 
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    style={{ backgroundColor: brandColor }}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Chargement...
-                      </>
-                    ) : (
-                      step === "login" ? "Se connecter" : "Créer mon compte"
+                    {step === "register" && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                          Confirmer le mot de passe
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showConfirmPassword ? "text" : "password"}
+                            name="confirmPassword"
+                            value={formData.confirmPassword}
+                            onChange={handleInputChange}
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all pr-12"
+                            placeholder="••••••••"
+                            minLength={8}
+                            maxLength={50}
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          >
+                            {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                          </button>
+                        </div>
+                      </div>
                     )}
-                  </Button>
-                </>
-              )}
 
-              {step === "verify" && (
-                <>
-                  <div className="text-center mb-4">
-                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full" style={{ backgroundColor: brandLight }}>
-                      <MailCheck className="h-6 w-6" style={{ color: brandColor }} />
-                    </div>
-                    <p className="text-sm text-muted-foreground">Code envoyé à</p>
-                    <p className="text-sm font-medium mt-1">
-                      {loginMethod === "email" ? formData.email : formData.phone}
-                    </p>
-                  </div>
+                    {step === "login" && (
+                      <div className="flex items-center justify-end">
+                        <button
+                          type="button"
+                          onClick={() => {/* TODO: Mot de passe oublié */}}
+                          className="text-sm text-gray-600 hover:text-gray-900 hover:underline"
+                        >
+                          Mot de passe oublié ?
+                        </button>
+                      </div>
+                    )}
 
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Code de vérification</Label>
-                    <Input
-                      type="text"
-                      name="verificationCode"
-                      value={formData.verificationCode}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6)
-                        setFormData(prev => ({ ...prev, verificationCode: value }))
-                      }}
-                      placeholder="000000"
-                      maxLength={6}
-                      required
+                    <button
+                      type="submit"
                       disabled={isSubmitting}
-                      className="text-center text-2xl tracking-[0.5em] font-mono"
-                    />
+                      className="w-full bg-gradient-to-r from-gray-900 to-gray-800 text-white font-medium py-3 px-4 rounded-xl hover:from-gray-800 hover:to-gray-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                    >
+                      {isSubmitting ? (
+                        <span className="flex items-center justify-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Chargement...
+                        </span>
+                      ) : (
+                        step === "login" ? "Se connecter" : "Créer mon compte"
+                      )}
+                    </button>
+                  </>
+                )}
+
+                {step === "verify" && (
+                  <>
+                    <div className="text-center mb-6">
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <MailCheck className="w-8 h-8 text-green-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                        Vérifiez votre {loginMethod === "email" ? "email" : "téléphone"}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Nous avons envoyé un code à 6 chiffres à
+                      </p>
+                      <p className="text-sm font-medium text-gray-900 mt-1">
+                        {loginMethod === "email" ? formData.email : formData.phone}
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Code de vérification
+                      </label>
+                      <input
+                        type="text"
+                        name="verificationCode"
+                        value={formData.verificationCode}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6)
+                          setFormData(prev => ({ ...prev, verificationCode: value }))
+                        }}
+                        className="w-full px-4 py-3 text-center text-2xl tracking-[0.5em] font-mono border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all"
+                        placeholder="000000"
+                        maxLength={6}
+                        required
+                      />
+                    </div>
+
+                    {countdown > 0 ? (
+                      <p className="text-sm text-gray-500 text-center">
+                        Renvoyer le code dans {countdown} secondes
+                      </p>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleSendCode}
+                        className="w-full text-sm text-gray-600 hover:text-gray-900 hover:underline"
+                      >
+                        Renvoyer le code
+                      </button>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || formData.verificationCode.length !== 6}
+                      className="w-full bg-gradient-to-r from-gray-900 to-gray-800 text-white font-medium py-3 px-4 rounded-xl hover:from-gray-800 hover:to-gray-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg mt-4"
+                    >
+                      {isSubmitting ? (
+                        <span className="flex items-center justify-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Vérification...
+                        </span>
+                      ) : (
+                        "Vérifier et créer mon compte"
+                      )}
+                    </button>
+                  </>
+                )}
+              </form>
+
+              {step !== "verify" && (
+                <>
+                  <div className="relative my-6">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-200"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-3 bg-white text-gray-500">Ou continuer avec</span>
+                    </div>
                   </div>
 
-                  {countdown > 0 ? (
-                    <p className="text-center text-sm text-muted-foreground">
-                      Renvoyer dans {countdown} secondes
-                    </p>
-                  ) : (
-                    <Button type="button" variant="link" onClick={handleSendCode} className="w-full">
-                      Renvoyer le code
-                    </Button>
-                  )}
-
-                  <Button
-                    type="submit"
-                    className="w-full mt-4"
-                    style={{ backgroundColor: brandColor }}
-                    disabled={isSubmitting || formData.verificationCode.length !== 6}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Vérification...
-                      </>
-                    ) : (
-                      "Vérifier et créer mon compte"
-                    )}
-                  </Button>
+                  <div className="grid grid-cols-3 gap-3">
+                    <button
+                      onClick={() => alert("Connexion Google bientôt disponible")}
+                      className="flex items-center justify-center py-3 px-3 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed"
+                      disabled
+                      title="Bientôt disponible"
+                    >
+                      <FcGoogle className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => alert("Connexion Facebook bientôt disponible")}
+                      className="flex items-center justify-center py-3 px-3 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed"
+                      disabled
+                      title="Bientôt disponible"
+                    >
+                      <FaFacebook className="w-5 h-5 text-blue-600" />
+                    </button>
+                    <button
+                      onClick={() => alert("Connexion Apple bientôt disponible")}
+                      className="flex items-center justify-center py-3 px-3 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed"
+                      disabled
+                      title="Bientôt disponible"
+                    >
+                      <FaApple className="w-5 h-5" />
+                    </button>
+                  </div>
                 </>
               )}
-            </form>
 
-            {step !== "verify" && (
-              <div className="mt-6 text-center text-sm">
-                <span className="text-muted-foreground">
-                  {step === "login" ? "Pas encore de compte ?" : "Déjà inscrit ?"}
-                </span>{" "}
-                <Button
-                  variant="link"
-                  className="p-0 h-auto font-semibold"
-                  style={{ color: brandColor }}
-                  onClick={() => {
-                    setStep(step === "login" ? "register" : "login")
-                    setError("")
-                    setSuccess("")
-                    setFormData(prev => ({ ...prev, verificationCode: "", password: "", confirmPassword: "" }))
-                  }}
-                >
-                  {step === "login" ? "Inscrivez-vous" : "Connectez-vous"}
-                </Button>
-              </div>
-            )}
+              {step !== "verify" && (
+                <p className="text-sm text-center mt-6 text-gray-600">
+                  {step === "login" ? "Pas encore de compte ?" : "Déjà inscrit ?"}{" "}
+                  <button
+                    onClick={() => {
+                      setStep(step === "login" ? "register" : "login")
+                      setError("")
+                      setSuccess("")
+                    }}
+                    className="text-gray-900 font-medium hover:underline"
+                  >
+                    {step === "login" ? "Inscrivez-vous" : "Connectez-vous"}
+                  </button>
+                </p>
+              )}
+            </div>
 
-            <div className="flex items-center justify-center gap-4 mt-6 pt-4 border-t">
-              <div className="flex items-center gap-1">
-                <Lock className="h-3 w-3 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">Chiffré</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Shield className="h-3 w-3 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">Protégé</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Key className="h-3 w-3 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">2FA</span>
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+              <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
+                <div className="flex items-center gap-1">
+                  <Lock className="w-3 h-3" />
+                  <span>Chiffré</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Shield className="w-3 h-3" />
+                  <span>Protégé</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  <span>Session 24h</span>
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          <p className="text-xs text-center text-gray-400 mt-6">
+            En continuant, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.
+            Vos données sont protégées par le chiffrement 256-bit.
+          </p>
+        </div>
       </div>
     )
   }
@@ -767,7 +867,7 @@ export default function AccountPage() {
   // DASHBOARD UTILISATEUR (après connexion)
   // ============================================================
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ background: "#FAFAFA" }}>
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
@@ -997,6 +1097,7 @@ export default function AccountPage() {
             ) : wishlist.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {wishlist.map((item) => {
+                  // ✅ CORRIGÉ : Utiliser l'ID du produit correctement
                   const productId = item.product?.id || item.productId
                   const productName = item.product?.name || item.productName || "Produit"
                   const productImage = item.product?.images?.[0]
