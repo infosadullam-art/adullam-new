@@ -7,12 +7,64 @@ import { useLocale } from "@/context/LocaleProvider"
 import { useState, useEffect } from "react"
 
 const pays = {
+  // Afrique de l'Ouest
   CI: { nom: "Côte d'Ivoire", drapeau: "🇨🇮", code: "CI" },
   SN: { nom: "Sénégal", drapeau: "🇸🇳", code: "SN" },
   CM: { nom: "Cameroun", drapeau: "🇨🇲", code: "CM" },
   MA: { nom: "Maroc", drapeau: "🇲🇦", code: "MA" },
   TN: { nom: "Tunisie", drapeau: "🇹🇳", code: "TN" },
   DZ: { nom: "Algérie", drapeau: "🇩🇿", code: "DZ" },
+  BF: { nom: "Burkina Faso", drapeau: "🇧🇫", code: "BF" },
+  ML: { nom: "Mali", drapeau: "🇲🇱", code: "ML" },
+  NE: { nom: "Niger", drapeau: "🇳🇪", code: "NE" },
+  TG: { nom: "Togo", drapeau: "🇹🇬", code: "TG" },
+  BJ: { nom: "Bénin", drapeau: "🇧🇯", code: "BJ" },
+  GN: { nom: "Guinée", drapeau: "🇬🇳", code: "GN" },
+  GW: { nom: "Guinée-Bissau", drapeau: "🇬🇼", code: "GW" },
+  LR: { nom: "Libéria", drapeau: "🇱🇷", code: "LR" },
+  SL: { nom: "Sierra Leone", drapeau: "🇸🇱", code: "SL" },
+  GM: { nom: "Gambie", drapeau: "🇬🇲", code: "GM" },
+  GH: { nom: "Ghana", drapeau: "🇬🇭", code: "GH" },
+  // Afrique Centrale
+  CG: { nom: "Congo", drapeau: "🇨🇬", code: "CG" },
+  CD: { nom: "RDC", drapeau: "🇨🇩", code: "CD" },
+  GA: { nom: "Gabon", drapeau: "🇬🇦", code: "GA" },
+  GQ: { nom: "Guinée équatoriale", drapeau: "🇬🇶", code: "GQ" },
+  CF: { nom: "République centrafricaine", drapeau: "🇨🇫", code: "CF" },
+  TD: { nom: "Tchad", drapeau: "🇹🇩", code: "TD" },
+  ST: { nom: "Sao Tomé", drapeau: "🇸🇹", code: "ST" },
+  // Afrique de l'Est
+  KE: { nom: "Kenya", drapeau: "🇰🇪", code: "KE" },
+  TZ: { nom: "Tanzanie", drapeau: "🇹🇿", code: "TZ" },
+  UG: { nom: "Ouganda", drapeau: "🇺🇬", code: "UG" },
+  RW: { nom: "Rwanda", drapeau: "🇷🇼", code: "RW" },
+  BI: { nom: "Burundi", drapeau: "🇧🇮", code: "BI" },
+  ET: { nom: "Éthiopie", drapeau: "🇪🇹", code: "ET" },
+  ER: { nom: "Érythrée", drapeau: "🇪🇷", code: "ER" },
+  SO: { nom: "Somalie", drapeau: "🇸🇴", code: "SO" },
+  DJ: { nom: "Djibouti", drapeau: "🇩🇯", code: "DJ" },
+  SS: { nom: "Soudan du Sud", drapeau: "🇸🇸", code: "SS" },
+  SD: { nom: "Soudan", drapeau: "🇸🇩", code: "SD" },
+  // Afrique Australe
+  ZA: { nom: "Afrique du Sud", drapeau: "🇿🇦", code: "ZA" },
+  ZM: { nom: "Zambie", drapeau: "🇿🇲", code: "ZM" },
+  ZW: { nom: "Zimbabwe", drapeau: "🇿🇼", code: "ZW" },
+  MZ: { nom: "Mozambique", drapeau: "🇲🇿", code: "MZ" },
+  AO: { nom: "Angola", drapeau: "🇦🇴", code: "AO" },
+  NA: { nom: "Namibie", drapeau: "🇳🇦", code: "NA" },
+  BW: { nom: "Botswana", drapeau: "🇧🇼", code: "BW" },
+  MW: { nom: "Malawi", drapeau: "🇲🇼", code: "MW" },
+  MG: { nom: "Madagascar", drapeau: "🇲🇬", code: "MG" },
+  MU: { nom: "Maurice", drapeau: "🇲🇺", code: "MU" },
+  KM: { nom: "Comores", drapeau: "🇰🇲", code: "KM" },
+  SC: { nom: "Seychelles", drapeau: "🇸🇨", code: "SC" },
+  // Afrique du Nord
+  EG: { nom: "Égypte", drapeau: "🇪🇬", code: "EG" },
+  LY: { nom: "Libye", drapeau: "🇱🇾", code: "LY" },
+  MR: { nom: "Mauritanie", drapeau: "🇲🇷", code: "MR" },
+  EH: { nom: "Sahara occidental", drapeau: "🇪🇭", code: "EH" },
+  // Amérique du Nord
+  US: { nom: "États-Unis", drapeau: "🇺🇸", code: "US" },
 }
 
 const heroSlides = [
