@@ -40,16 +40,14 @@ export default function AccountPage() {
 
   // Couleurs de la marque
   const brandColor = "#D4372B"
-  const brandGradient = "#D4372B"
   const brandLight = "#FFF0F0"
 
   // ============================================================
-  // ÉTATS POUR L'AUTHENTIFICATION SÉCURISÉE
+  // ÉTATS POUR L'AUTHENTIFICATION
   // ============================================================
   const [step, setStep] = useState<"login" | "register" | "verify">("login")
   const [loginMethod, setLoginMethod] = useState<"email" | "phone">("email")
   
-  // Formulaire
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -59,7 +57,6 @@ export default function AccountPage() {
     verificationCode: ""
   })
   
-  // UI
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState("")
@@ -67,7 +64,6 @@ export default function AccountPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [countdown, setCountdown] = useState(0)
   
-  // Sécurité
   const [attempts, setAttempts] = useState(0)
   const [blockedUntil, setBlockedUntil] = useState<Date | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
@@ -429,11 +425,11 @@ export default function AccountPage() {
   }
 
   // ============================================================
-  // PAGE DE CONNEXION/INSCRIPTION (VERSION SANS SHADCN)
+  // PAGE DE CONNEXION/INSCRIPTION (avec translate=no)
   // ============================================================
   if (!isLogged) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div translate="no" className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
           
           <div className="text-center pt-8 pb-4">
