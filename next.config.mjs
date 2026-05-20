@@ -10,15 +10,20 @@ const nextConfig = {
   typescript: { ignoreBuildErrors: true },
   
   images: { 
-    unoptimized: false,
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256],
-    formats: ['image/webp'],
+    unoptimized: true,  // ← plus simple et fiable
   },
 
   turbopack: { root: resolve(__dirname) },
 
-  experimental: {},
+  // ✅ REWRITES PROXY - Cache l'URL du backend
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "https://outstanding-enchantment-production-109f.up.railway.app/api/:path*",
+      },
+    ]
+  },
 
   webpack: (config) => {
     config.resolve.fallback = { fs: false, path: false }
