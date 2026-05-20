@@ -74,7 +74,7 @@ export default function AccountPage() {
   const csrfToken = useRef(generateCSRFToken())
 
   // ============================================================
-  // CHARGEMENT DES DONNÉES UTILISATEUR AVEC LES BONNES APIS
+  // CHARGEMENT DES DONNÉES UTILISATEUR
   // ============================================================
   useEffect(() => {
     if (user) {
@@ -86,7 +86,6 @@ export default function AccountPage() {
   }, [user])
 
   const fetchUserData = async () => {
-    // Commandes avec ordersApi
     setLoading(prev => ({ ...prev, orders: true }))
     try {
       const response = await ordersApi.list()
@@ -99,7 +98,6 @@ export default function AccountPage() {
       setLoading(prev => ({ ...prev, orders: false }))
     }
 
-    // Wishlist avec wishlistApi
     setLoading(prev => ({ ...prev, wishlist: true }))
     try {
       const response = await wishlistApi.list()
@@ -112,7 +110,6 @@ export default function AccountPage() {
       setLoading(prev => ({ ...prev, wishlist: false }))
     }
 
-    // Adresses avec addressesApi
     setLoading(prev => ({ ...prev, addresses: true }))
     try {
       const response = await addressesApi.list()
@@ -199,8 +196,6 @@ export default function AccountPage() {
       } else {
         identifier = identifier.replace(/\s/g, '')
       }
-
-      console.log("📤 Envoi code pour identifiant normalisé:", identifier)
 
       const res = await fetch("/api/auth/send-code", {
         method: "POST",
@@ -313,8 +308,6 @@ export default function AccountPage() {
           identifier = identifier.replace(/\s/g, '')
         }
 
-        console.log("🔍 Vérification pour identifiant normalisé:", identifier)
-
         const res = await fetch("/api/auth/verify-code", {
           method: "POST",
           headers: {
@@ -329,7 +322,6 @@ export default function AccountPage() {
         const data = await res.json()
 
         if (data.success) {
-          console.log("✅ Code vérifié, création du compte...")
           await register(formData.name, identifier, formData.password)
           setSuccess("Compte créé avec succès !")
           setTimeout(() => router.push("/account"), 2000)
@@ -437,37 +429,25 @@ export default function AccountPage() {
   }
 
   // ============================================================
-  // PAGE DE CONNEXION/INSCRIPTION SÉCURISÉE
+  // PAGE DE CONNEXION/INSCRIPTION
   // ============================================================
   if (!isLogged) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <div className="max-w-md w-full">
           
-          <button
-            onClick={() => router.push("/")}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors group"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span>Retour à l'accueil</span>
-          </button>
-
-          <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
-              <ShoppingBag className="w-8 h-8 text-white" />
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl mx-auto mb-3 flex items-center justify-center shadow-lg">
+              <ShoppingBag className="w-7 h-7 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">Adullam</h1>
-            <div className="flex items-center justify-center gap-2 mt-2">
-              <Shield className="w-4 h-4 text-green-600" />
-              <p className="text-sm text-gray-600">Connexion sécurisée</p>
-            </div>
+            <h1 className="text-2xl font-bold text-gray-900">Adullam</h1>
           </div>
 
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
             
-            <div className="p-6 border-b border-gray-100">
+            <div className="p-5 border-b border-gray-100">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-gray-900">
+                <h2 className="text-lg font-semibold text-gray-900">
                   {step === "login" && "Connexion"}
                   {step === "register" && "Inscription"}
                   {step === "verify" && "Vérification"}
@@ -485,23 +465,15 @@ export default function AccountPage() {
                   </button>
                 )}
               </div>
-
-              <div className="flex items-center gap-2 mt-3 text-xs text-gray-500">
-                <Lock className="w-3 h-3" />
-                <span>Connexion 256-bit SSL</span>
-                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                <Key className="w-3 h-3" />
-                <span>2FA disponible</span>
-              </div>
             </div>
 
-            <div className="p-6">
+            <div className="p-5">
               
               {step !== "verify" && (
-                <div className="flex gap-2 mb-6">
+                <div className="flex gap-2 mb-5">
                   <button
                     onClick={() => setLoginMethod("email")}
-                    className={`flex-1 py-3 px-3 rounded-xl text-sm font-medium transition-all ${
+                    className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-medium transition-all ${
                       loginMethod === "email"
                         ? "bg-gray-900 text-white shadow-lg"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -512,7 +484,7 @@ export default function AccountPage() {
                   </button>
                   <button
                     onClick={() => setLoginMethod("phone")}
-                    className={`flex-1 py-3 px-3 rounded-xl text-sm font-medium transition-all ${
+                    className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-medium transition-all ${
                       loginMethod === "phone"
                         ? "bg-gray-900 text-white shadow-lg"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -525,20 +497,18 @@ export default function AccountPage() {
               )}
 
               {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-red-800">Erreur</p>
                     <p className="text-sm text-red-600">{error}</p>
                   </div>
                 </div>
               )}
 
               {success && (
-                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                <div className="mb-5 p-3 bg-green-50 border border-green-200 rounded-xl flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-green-800">Succès</p>
                     <p className="text-sm text-green-600">{success}</p>
                   </div>
                 </div>
@@ -560,7 +530,7 @@ export default function AccountPage() {
                           name="name"
                           value={formData.name}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all"
+                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all"
                           placeholder="Jean Dupont"
                           maxLength={50}
                           required
@@ -578,7 +548,7 @@ export default function AccountPage() {
                           name="email"
                           value={formData.email}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all"
+                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all"
                           placeholder="vous@exemple.com"
                           maxLength={100}
                           required
@@ -598,7 +568,7 @@ export default function AccountPage() {
                             name="phone"
                             value={formData.phone}
                             onChange={handleInputChange}
-                            className="flex-1 px-4 py-3 border rounded-r-xl border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all"
+                            className="flex-1 px-4 py-2.5 border rounded-r-xl border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all"
                             placeholder="01 23 45 67 89"
                             maxLength={15}
                             required
@@ -617,7 +587,7 @@ export default function AccountPage() {
                           name="password"
                           value={formData.password}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all pr-12"
+                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all pr-11"
                           placeholder="••••••••"
                           minLength={8}
                           maxLength={50}
@@ -628,24 +598,9 @@ export default function AccountPage() {
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         >
-                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                       </div>
-
-                      {step === "register" && formData.password && (
-                        <div className="mt-2">
-                          {(() => {
-                            const validation = validatePassword(formData.password)
-                            return (
-                              <div className="flex items-center gap-2">
-                                <div className={`text-xs ${validation.valid ? 'text-green-600' : 'text-gray-500'}`}>
-                                  {validation.valid ? '✓ ' : ''}{validation.message}
-                                </div>
-                              </div>
-                            )
-                          })()}
-                        </div>
-                      )}
                     </div>
 
                     {step === "register" && (
@@ -659,7 +614,7 @@ export default function AccountPage() {
                             name="confirmPassword"
                             value={formData.confirmPassword}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all pr-12"
+                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all pr-11"
                             placeholder="••••••••"
                             minLength={8}
                             maxLength={50}
@@ -670,28 +625,16 @@ export default function AccountPage() {
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                             className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                           >
-                            {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
                         </div>
-                      </div>
-                    )}
-
-                    {step === "login" && (
-                      <div className="flex items-center justify-end">
-                        <button
-                          type="button"
-                          onClick={() => {/* TODO: Mot de passe oublié */}}
-                          className="text-sm text-gray-600 hover:text-gray-900 hover:underline"
-                        >
-                          Mot de passe oublié ?
-                        </button>
                       </div>
                     )}
 
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full bg-gradient-to-r from-gray-900 to-gray-800 text-white font-medium py-3 px-4 rounded-xl hover:from-gray-800 hover:to-gray-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                      className="w-full bg-gradient-to-r from-gray-900 to-gray-800 text-white font-medium py-2.5 px-4 rounded-xl hover:from-gray-800 hover:to-gray-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                     >
                       {isSubmitting ? (
                         <span className="flex items-center justify-center">
@@ -710,18 +653,15 @@ export default function AccountPage() {
 
                 {step === "verify" && (
                   <>
-                    <div className="text-center mb-6">
-                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <MailCheck className="w-8 h-8 text-green-600" />
+                    <div className="text-center mb-5">
+                      <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <MailCheck className="w-6 h-6 text-green-600" />
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                        Vérifiez votre {loginMethod === "email" ? "email" : "téléphone"}
+                      <h3 className="text-base font-semibold text-gray-900 mb-1">
+                        Vérification
                       </h3>
-                      <p className="text-sm text-gray-500">
-                        Nous avons envoyé un code à 6 chiffres à
-                      </p>
-                      <p className="text-sm font-medium text-gray-900 mt-1">
-                        {loginMethod === "email" ? formData.email : formData.phone}
+                      <p className="text-xs text-gray-500">
+                        Code envoyé à {loginMethod === "email" ? formData.email : formData.phone}
                       </p>
                     </div>
 
@@ -737,7 +677,7 @@ export default function AccountPage() {
                           const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6)
                           setFormData(prev => ({ ...prev, verificationCode: value }))
                         }}
-                        className="w-full px-4 py-3 text-center text-2xl tracking-[0.5em] font-mono border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all"
+                        className="w-full px-4 py-2.5 text-center text-xl tracking-[0.5em] font-mono border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all"
                         placeholder="000000"
                         maxLength={6}
                         required
@@ -746,7 +686,7 @@ export default function AccountPage() {
 
                     {countdown > 0 ? (
                       <p className="text-sm text-gray-500 text-center">
-                        Renvoyer le code dans {countdown} secondes
+                        Renvoyer dans {countdown}s
                       </p>
                     ) : (
                       <button
@@ -761,7 +701,7 @@ export default function AccountPage() {
                     <button
                       type="submit"
                       disabled={isSubmitting || formData.verificationCode.length !== 6}
-                      className="w-full bg-gradient-to-r from-gray-900 to-gray-800 text-white font-medium py-3 px-4 rounded-xl hover:from-gray-800 hover:to-gray-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg mt-4"
+                      className="w-full bg-gradient-to-r from-gray-900 to-gray-800 text-white font-medium py-2.5 px-4 rounded-xl hover:from-gray-800 hover:to-gray-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg mt-3"
                     >
                       {isSubmitting ? (
                         <span className="flex items-center justify-center">
@@ -781,7 +721,7 @@ export default function AccountPage() {
 
               {step !== "verify" && (
                 <>
-                  <div className="relative my-6">
+                  <div className="relative my-5">
                     <div className="absolute inset-0 flex items-center">
                       <div className="w-full border-t border-gray-200"></div>
                     </div>
@@ -793,7 +733,7 @@ export default function AccountPage() {
                   <div className="grid grid-cols-3 gap-3">
                     <button
                       onClick={() => alert("Connexion Google bientôt disponible")}
-                      className="flex items-center justify-center py-3 px-3 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed"
+                      className="flex items-center justify-center py-2.5 px-3 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed"
                       disabled
                       title="Bientôt disponible"
                     >
@@ -801,7 +741,7 @@ export default function AccountPage() {
                     </button>
                     <button
                       onClick={() => alert("Connexion Facebook bientôt disponible")}
-                      className="flex items-center justify-center py-3 px-3 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed"
+                      className="flex items-center justify-center py-2.5 px-3 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed"
                       disabled
                       title="Bientôt disponible"
                     >
@@ -809,7 +749,7 @@ export default function AccountPage() {
                     </button>
                     <button
                       onClick={() => alert("Connexion Apple bientôt disponible")}
-                      className="flex items-center justify-center py-3 px-3 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed"
+                      className="flex items-center justify-center py-2.5 px-3 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed"
                       disabled
                       title="Bientôt disponible"
                     >
@@ -820,7 +760,7 @@ export default function AccountPage() {
               )}
 
               {step !== "verify" && (
-                <p className="text-sm text-center mt-6 text-gray-600">
+                <p className="text-sm text-center mt-5 text-gray-600">
                   {step === "login" ? "Pas encore de compte ?" : "Déjà inscrit ?"}{" "}
                   <button
                     onClick={() => {
@@ -835,29 +775,7 @@ export default function AccountPage() {
                 </p>
               )}
             </div>
-
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
-              <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
-                <div className="flex items-center gap-1">
-                  <Lock className="w-3 h-3" />
-                  <span>Chiffré</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Shield className="w-3 h-3" />
-                  <span>Protégé</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  <span>Session 24h</span>
-                </div>
-              </div>
-            </div>
           </div>
-
-          <p className="text-xs text-center text-gray-400 mt-6">
-            En continuant, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.
-            Vos données sont protégées par le chiffrement 256-bit.
-          </p>
         </div>
       </div>
     )
@@ -950,12 +868,7 @@ export default function AccountPage() {
                 <h1 className="text-2xl font-bold text-gray-900">
                   Bonjour, {user?.name?.split(' ')[0] || user?.email}!
                 </h1>
-                <p className="text-gray-500 mt-1">Bienvenue dans votre espace personnel sécurisé</p>
-              </div>
-              
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg">
-                <Shield className="w-4 h-4 text-green-600" />
-                <span className="text-xs font-medium text-green-700">Authentification à 2 facteurs active</span>
+                <p className="text-gray-500 mt-1">Bienvenue dans votre espace personnel</p>
               </div>
             </div>
 
@@ -1003,39 +916,6 @@ export default function AccountPage() {
                 </div>
               </div>
             )}
-
-            <div className="mt-6 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-200 p-6">
-              <h3 className="font-medium text-gray-900 mb-3">Recommandations de sécurité</h3>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Shield className="w-4 h-4 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Mot de passe fort</p>
-                    <p className="text-xs text-gray-500">Dernière modification il y a 30 jours</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Smartphone className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">2FA activée</p>
-                    <p className="text-xs text-gray-500">Numéro de téléphone vérifié</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Mail className="w-4 h-4 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Email vérifié</p>
-                    <p className="text-xs text-gray-500">{user?.email}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         )}
 
@@ -1097,7 +977,6 @@ export default function AccountPage() {
             ) : wishlist.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {wishlist.map((item) => {
-                  // ✅ CORRIGÉ : Utiliser l'ID du produit correctement
                   const productId = item.product?.id || item.productId
                   const productName = item.product?.name || item.productName || "Produit"
                   const productImage = item.product?.images?.[0]
