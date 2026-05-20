@@ -14,6 +14,16 @@ import { FaFacebook, FaApple } from "react-icons/fa"
 import { useRouter } from "next/navigation"
 import { ordersApi, addressesApi, wishlistApi } from "@/lib/admin/api-client"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 
 // ============================================================
 // COMPOSANT PRINCIPAL
@@ -40,14 +50,16 @@ export default function AccountPage() {
 
   // Couleurs de la marque
   const brandColor = "#D4372B"
+  const brandGradient = "#D4372B"
   const brandLight = "#FFF0F0"
 
   // ============================================================
-  // ÉTATS POUR L'AUTHENTIFICATION
+  // ÉTATS POUR L'AUTHENTIFICATION SÉCURISÉE
   // ============================================================
   const [step, setStep] = useState<"login" | "register" | "verify">("login")
   const [loginMethod, setLoginMethod] = useState<"email" | "phone">("email")
   
+  // Formulaire
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -57,6 +69,7 @@ export default function AccountPage() {
     verificationCode: ""
   })
   
+  // UI
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState("")
@@ -64,6 +77,7 @@ export default function AccountPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [countdown, setCountdown] = useState(0)
   
+  // Sécurité
   const [attempts, setAttempts] = useState(0)
   const [blockedUntil, setBlockedUntil] = useState<Date | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
@@ -425,44 +439,48 @@ export default function AccountPage() {
   }
 
   // ============================================================
-  // PAGE DE CONNEXION/INSCRIPTION (avec translate=no)
+  // PAGE DE CONNEXION/INSCRIPTION (STYLE ADMIN)
   // ============================================================
   if (!isLogged) {
     return (
-      <div translate="no" className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-          
-          <div className="text-center pt-8 pb-4">
-            <div className="w-12 h-12 mx-auto mb-3 flex items-center justify-center rounded-full" style={{ backgroundColor: brandColor }}>
-              <ShoppingBag className="w-6 h-6 text-white" />
+      <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full" style={{ backgroundColor: brandColor }}>
+              <ShoppingBag className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: "'Poppins', sans-serif" }}>Adullam</h1>
-            <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: "'Poppins', sans-serif" }}>
+            <CardTitle className="text-2xl" style={{ fontFamily: "'Poppins', sans-serif" }}>
+              Adullam
+            </CardTitle>
+            <CardDescription style={{ fontFamily: "'Poppins', sans-serif" }}>
               {step === "login" && "Connectez-vous à votre espace client"}
               {step === "register" && "Créez votre compte en quelques secondes"}
               {step === "verify" && "Vérifiez votre identité"}
-            </p>
-          </div>
+            </CardDescription>
+          </CardHeader>
 
-          <div className="p-6 pt-0">
+          <CardContent>
             {step !== "login" && (
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => { setStep("login"); setError(""); setSuccess("") }}
-                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
+                className="mb-4 -ml-2"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="mr-1 h-4 w-4" />
                 Retour
-              </button>
+              </Button>
             )}
 
             {error && (
-              <div className="mb-4 p-3 rounded-xl text-sm" style={{ backgroundColor: brandLight, color: brandColor }}>
+              <div className="rounded-md mb-4 p-3 text-sm" style={{ backgroundColor: brandLight, color: brandColor }}>
                 {error}
               </div>
             )}
 
             {success && (
-              <div className="mb-4 p-3 rounded-xl text-sm bg-green-50 text-green-600">
+              <div className="rounded-md mb-4 p-3 text-sm bg-green-50 text-green-600">
                 {success}
               </div>
             )}
@@ -470,47 +488,49 @@ export default function AccountPage() {
             {step !== "verify" && (
               <div className="flex gap-2 mb-5">
                 <button
+                  type="button"
                   onClick={() => setLoginMethod("email")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
                     loginMethod === "email"
                       ? "text-white shadow-sm"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                   style={loginMethod === "email" ? { backgroundColor: brandColor } : {}}
                 >
-                  <Mail className="w-4 h-4" />
+                  <Mail className="h-4 w-4" />
                   Email
                 </button>
                 <button
+                  type="button"
                   onClick={() => setLoginMethod("phone")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
                     loginMethod === "phone"
                       ? "text-white shadow-sm"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                   style={loginMethod === "phone" ? { backgroundColor: brandColor } : {}}
                 >
-                  <Phone className="w-4 h-4" />
+                  <Phone className="h-4 w-4" />
                   Téléphone
                 </button>
               </div>
             )}
 
-            <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-4" translate="no">
               <input type="hidden" name="csrf" value={csrfToken.current} />
 
               {step !== "verify" && (
                 <>
                   {step === "register" && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom complet</label>
-                      <input
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Nom complet</Label>
+                      <Input
                         type="text"
                         name="name"
                         value={formData.name}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20"
                         placeholder="Jean Dupont"
+                        maxLength={50}
                         required
                         disabled={isSubmitting}
                       />
@@ -518,117 +538,130 @@ export default function AccountPage() {
                   )}
 
                   {loginMethod === "email" ? (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-                      <input
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Adresse email</Label>
+                      <Input
                         type="email"
                         name="email"
                         value={formData.email}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20"
                         placeholder="vous@exemple.com"
+                        maxLength={100}
                         required
                         disabled={isSubmitting}
                       />
                     </div>
                   ) : (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Téléphone</label>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Numéro de téléphone</Label>
                       <div className="flex">
-                        <span className="inline-flex items-center px-4 rounded-l-xl border border-r-0 border-gray-200 bg-gray-50 text-gray-500">+225</span>
-                        <input
+                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 bg-muted text-muted-foreground text-sm">
+                          +225
+                        </span>
+                        <Input
                           type="tel"
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
-                          className="flex-1 px-4 py-2.5 border rounded-r-xl border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900/20"
                           placeholder="01 23 45 67 89"
+                          maxLength={15}
                           required
                           disabled={isSubmitting}
+                          className="rounded-l-none"
                         />
                       </div>
                     </div>
                   )}
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Mot de passe</label>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Mot de passe</Label>
                     <div className="relative">
-                      <input
+                      <Input
                         type={showPassword ? "text" : "password"}
                         name="password"
                         value={formData.password}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 pr-11"
                         placeholder="••••••••"
+                        minLength={8}
+                        maxLength={50}
                         required
                         disabled={isSubmitting}
+                        className="pr-10"
                       />
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+                        className="absolute right-0 top-0 h-full px-3"
                       >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
                     </div>
                   </div>
 
                   {step === "register" && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirmer le mot de passe</label>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Confirmer le mot de passe</Label>
                       <div className="relative">
-                        <input
+                        <Input
                           type={showConfirmPassword ? "text" : "password"}
                           name="confirmPassword"
                           value={formData.confirmPassword}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 pr-11"
                           placeholder="••••••••"
+                          minLength={8}
+                          maxLength={50}
                           required
                           disabled={isSubmitting}
+                          className="pr-10"
                         />
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="sm"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+                          className="absolute right-0 top-0 h-full px-3"
                         >
-                          {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
+                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
                       </div>
                     </div>
                   )}
 
-                  <button
+                  <Button
                     type="submit"
-                    disabled={isSubmitting}
-                    className="w-full py-2.5 rounded-xl font-medium text-white transition-all disabled:opacity-50"
+                    className="w-full"
                     style={{ backgroundColor: brandColor }}
+                    disabled={isSubmitting}
                   >
                     {isSubmitting ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Chargement...
-                      </span>
+                      </>
                     ) : (
                       step === "login" ? "Se connecter" : "Créer mon compte"
                     )}
-                  </button>
+                  </Button>
                 </>
               )}
 
               {step === "verify" && (
                 <>
                   <div className="text-center mb-4">
-                    <div className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ backgroundColor: brandLight }}>
-                      <MailCheck className="w-6 h-6" style={{ color: brandColor }} />
+                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full" style={{ backgroundColor: brandLight }}>
+                      <MailCheck className="h-6 w-6" style={{ color: brandColor }} />
                     </div>
-                    <p className="text-sm text-gray-500">Code envoyé à</p>
-                    <p className="text-sm font-medium mt-1">{loginMethod === "email" ? formData.email : formData.phone}</p>
+                    <p className="text-sm text-muted-foreground">Code envoyé à</p>
+                    <p className="text-sm font-medium mt-1">
+                      {loginMethod === "email" ? formData.email : formData.phone}
+                    </p>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Code de vérification</label>
-                    <input
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Code de vérification</Label>
+                    <Input
                       type="text"
                       name="verificationCode"
                       value={formData.verificationCode}
@@ -636,82 +669,65 @@ export default function AccountPage() {
                         const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6)
                         setFormData(prev => ({ ...prev, verificationCode: value }))
                       }}
-                      className="w-full px-4 py-2.5 text-center text-xl tracking-[0.5em] font-mono border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20"
                       placeholder="000000"
                       maxLength={6}
                       required
                       disabled={isSubmitting}
+                      className="text-center text-2xl tracking-[0.5em] font-mono"
                     />
                   </div>
 
                   {countdown > 0 ? (
-                    <p className="text-sm text-gray-500 text-center">Renvoyer dans {countdown}s</p>
+                    <p className="text-center text-sm text-muted-foreground">
+                      Renvoyer dans {countdown} secondes
+                    </p>
                   ) : (
-                    <button type="button" onClick={handleSendCode} className="w-full text-sm text-gray-600 hover:text-gray-900 hover:underline">
+                    <Button type="button" variant="link" onClick={handleSendCode} className="w-full">
                       Renvoyer le code
-                    </button>
+                    </Button>
                   )}
 
-                  <button
+                  <Button
                     type="submit"
-                    disabled={isSubmitting || formData.verificationCode.length !== 6}
-                    className="w-full py-2.5 rounded-xl font-medium text-white transition-all disabled:opacity-50 mt-3"
+                    className="w-full mt-4"
                     style={{ backgroundColor: brandColor }}
+                    disabled={isSubmitting || formData.verificationCode.length !== 6}
                   >
                     {isSubmitting ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Vérification...
-                      </span>
+                      </>
                     ) : (
                       "Vérifier et créer mon compte"
                     )}
-                  </button>
+                  </Button>
                 </>
               )}
             </form>
 
             {step !== "verify" && (
-              <>
-                <div className="relative my-5">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-3 bg-white text-gray-500">Ou continuer avec</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  <button className="flex items-center justify-center py-2.5 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed" disabled>
-                    <FcGoogle className="w-5 h-5" />
-                  </button>
-                  <button className="flex items-center justify-center py-2.5 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed" disabled>
-                    <FaFacebook className="w-5 h-5 text-blue-600" />
-                  </button>
-                  <button className="flex items-center justify-center py-2.5 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed" disabled>
-                    <FaApple className="w-5 h-5" />
-                  </button>
-                </div>
-
-                <p className="text-sm text-center mt-5 text-gray-600">
-                  {step === "login" ? "Pas encore de compte ?" : "Déjà inscrit ?"}{" "}
-                  <button
-                    onClick={() => {
-                      setStep(step === "login" ? "register" : "login")
-                      setError("")
-                      setSuccess("")
-                    }}
-                    className="font-medium hover:underline"
-                    style={{ color: brandColor }}
-                  >
-                    {step === "login" ? "Inscrivez-vous" : "Connectez-vous"}
-                  </button>
-                </p>
-              </>
+              <div className="mt-6 text-center text-sm">
+                <span className="text-muted-foreground">
+                  {step === "login" ? "Pas encore de compte ?" : "Déjà inscrit ?"}
+                </span>{" "}
+                <Button
+                  variant="link"
+                  className="p-0 h-auto font-semibold"
+                  style={{ color: brandColor }}
+                  onClick={() => {
+                    setStep(step === "login" ? "register" : "login")
+                    setError("")
+                    setSuccess("")
+                    setFormData(prev => ({ ...prev, verificationCode: "", password: "", confirmPassword: "" }))
+                  }}
+                >
+                  {step === "login" ? "Inscrivez-vous" : "Connectez-vous"}
+                </Button>
+              </div>
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
