@@ -102,7 +102,7 @@ export function RecommandeEntreprise() {
             </p>
           </div>
           <Link
-            href="/catalogue/entreprise"
+            href="/products?category=entreprise"
             className="text-sm flex items-center gap-1 transition-colors hover:opacity-70"
             style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}
           >
