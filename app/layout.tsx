@@ -82,31 +82,6 @@ function GlobalErrorBoundary({ children }: { children: React.ReactNode }) {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className="scroll-smooth">
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              // Fix Google Translate - Recharge la page après traduction
-              (function() {
-                var originalLang = document.documentElement.lang;
-                var observer = new MutationObserver(function(mutations) {
-                  mutations.forEach(function(mutation) {
-                    if (mutation.type === 'attributes' && mutation.attributeName === 'lang') {
-                      var newLang = document.documentElement.lang;
-                      if (newLang !== originalLang && newLang !== 'fr') {
-                        setTimeout(function() {
-                          window.location.reload();
-                        }, 100);
-                      }
-                    }
-                  });
-                });
-                observer.observe(document.documentElement, { attributes: true });
-              })();
-            `
-          }}
-        />
-      </head>
       <body className={`${poppins.variable} antialiased bg-white text-gray-900 font-sans`}>
         <GlobalErrorBoundary>
           <AuthProvider>
