@@ -81,7 +81,7 @@ function GlobalErrorBoundary({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className="scroll-smooth">
+    <html lang="fr" className="scroll-smooth" translate="no">
       <body className={`${poppins.variable} antialiased bg-white text-gray-900 font-sans`}>
         <GlobalErrorBoundary>
           <AuthProvider>
