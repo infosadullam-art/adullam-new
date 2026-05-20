@@ -5,7 +5,7 @@ import {
   Home, Star, ShoppingCart, HelpCircle, User, LogOut, 
   Mail, Phone, MapPin, Package, Heart, ChevronRight, 
   AlertCircle, Eye, EyeOff, ArrowLeft, Shield, CheckCircle,
-  Clock, Lock, Key, Smartphone, MailCheck, Info, Plus, ShoppingBag, Loader2
+  Clock, Lock, Key, Smartphone, MailCheck, Info, Plus, ShoppingBag
 } from "lucide-react"
 import Image from "next/image"
 import { useAuth } from "@/lib/admin/auth-context"
@@ -40,14 +40,16 @@ export default function AccountPage() {
 
   // Couleurs de la marque
   const brandColor = "#D4372B"
+  const brandGradient = "#D4372B"
   const brandLight = "#FFF0F0"
 
   // ============================================================
-  // ÉTATS POUR L'AUTHENTIFICATION
+  // ÉTATS POUR L'AUTHENTIFICATION SÉCURISÉE
   // ============================================================
   const [step, setStep] = useState<"login" | "register" | "verify">("login")
   const [loginMethod, setLoginMethod] = useState<"email" | "phone">("email")
   
+  // Formulaire
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -57,6 +59,7 @@ export default function AccountPage() {
     verificationCode: ""
   })
   
+  // UI
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState("")
@@ -64,6 +67,7 @@ export default function AccountPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [countdown, setCountdown] = useState(0)
   
+  // Sécurité
   const [attempts, setAttempts] = useState(0)
   const [blockedUntil, setBlockedUntil] = useState<Date | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
@@ -425,149 +429,174 @@ export default function AccountPage() {
   }
 
   // ============================================================
-  // PAGE DE CONNEXION/INSCRIPTION (AVEC FIX GOOGLE TRANSLATE)
+  // PAGE DE CONNEXION/INSCRIPTION
   // ============================================================
   if (!isLogged) {
     return (
-      <div translate="no">
-        <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl mx-auto mb-3 flex items-center justify-center shadow-lg">
+              <ShoppingBag className="w-7 h-7 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">Adullam</h1>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
             
-            <div className="text-center pt-8 pb-4">
-              <div className="w-12 h-12 mx-auto mb-3 flex items-center justify-center rounded-full" style={{ backgroundColor: brandColor }}>
-                <ShoppingBag className="w-6 h-6 text-white" />
+            <div className="p-5 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {step === "login" && "Connexion"}
+                  {step === "register" && "Inscription"}
+                  {step === "verify" && "Vérification"}
+                </h2>
+                {step !== "login" && (
+                  <button
+                    onClick={() => {
+                      setStep("login")
+                      setError("")
+                      setSuccess("")
+                    }}
+                    className="text-sm text-gray-500 hover:text-gray-700"
+                  >
+                    Retour
+                  </button>
+                )}
               </div>
-              <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: "'Poppins', sans-serif" }}>Adullam</h1>
-              <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                {step === "login" && "Connectez-vous à votre espace client"}
-                {step === "register" && "Créez votre compte en quelques secondes"}
-                {step === "verify" && "Vérifiez votre identité"}
-              </p>
             </div>
 
-            <div className="p-6 pt-0">
-              {step !== "login" && (
-                <button
-                  onClick={() => { setStep("login"); setError(""); setSuccess("") }}
-                  className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Retour
-                </button>
-              )}
-
-              {error && (
-                <div className="mb-4 p-3 rounded-xl text-sm" style={{ backgroundColor: brandLight, color: brandColor }}>
-                  {error}
-                </div>
-              )}
-
-              {success && (
-                <div className="mb-4 p-3 rounded-xl text-sm bg-green-50 text-green-600">
-                  {success}
-                </div>
-              )}
-
+            <div className="p-5">
+              
               {step !== "verify" && (
                 <div className="flex gap-2 mb-5">
                   <button
                     onClick={() => setLoginMethod("email")}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-medium transition-all ${
                       loginMethod === "email"
-                        ? "text-white shadow-sm"
+                        ? "bg-gray-900 text-white shadow-lg"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
-                    style={loginMethod === "email" ? { backgroundColor: brandColor } : {}}
                   >
-                    <Mail className="w-4 h-4" />
+                    <Mail className="w-4 h-4 inline mr-2" />
                     Email
                   </button>
                   <button
                     onClick={() => setLoginMethod("phone")}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-medium transition-all ${
                       loginMethod === "phone"
-                        ? "text-white shadow-sm"
+                        ? "bg-gray-900 text-white shadow-lg"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
-                    style={loginMethod === "phone" ? { backgroundColor: brandColor } : {}}
                   >
-                    <Phone className="w-4 h-4" />
+                    <Phone className="w-4 h-4 inline mr-2" />
                     Téléphone
                   </button>
                 </div>
               )}
 
+              {error && (
+                <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-red-600">{error}</p>
+                  </div>
+                </div>
+              )}
+
+              {success && (
+                <div className="mb-5 p-3 bg-green-50 border border-green-200 rounded-xl flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-green-600">{success}</p>
+                  </div>
+                </div>
+              )}
+
               <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
+                
                 <input type="hidden" name="csrf" value={csrfToken.current} />
 
                 {step !== "verify" && (
                   <>
                     {step === "register" && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom complet</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                          Nom complet
+                        </label>
                         <input
                           type="text"
                           name="name"
                           value={formData.name}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20"
+                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all"
                           placeholder="Jean Dupont"
+                          maxLength={50}
                           required
-                          disabled={isSubmitting}
                         />
                       </div>
                     )}
 
                     {loginMethod === "email" ? (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                          Adresse email
+                        </label>
                         <input
                           type="email"
                           name="email"
                           value={formData.email}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20"
+                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all"
                           placeholder="vous@exemple.com"
+                          maxLength={100}
                           required
-                          disabled={isSubmitting}
                         />
                       </div>
                     ) : (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Téléphone</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                          Numéro de téléphone
+                        </label>
                         <div className="flex">
-                          <span className="inline-flex items-center px-4 rounded-l-xl border border-r-0 border-gray-200 bg-gray-50 text-gray-500">+225</span>
+                          <span className="inline-flex items-center px-4 rounded-l-xl border border-r-0 border-gray-200 bg-gray-50 text-gray-500">
+                            +225
+                          </span>
                           <input
                             type="tel"
                             name="phone"
                             value={formData.phone}
                             onChange={handleInputChange}
-                            className="flex-1 px-4 py-2.5 border rounded-r-xl border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900/20"
+                            className="flex-1 px-4 py-2.5 border rounded-r-xl border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all"
                             placeholder="01 23 45 67 89"
+                            maxLength={15}
                             required
-                            disabled={isSubmitting}
                           />
                         </div>
                       </div>
                     )}
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Mot de passe</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Mot de passe
+                      </label>
                       <div className="relative">
                         <input
                           type={showPassword ? "text" : "password"}
                           name="password"
                           value={formData.password}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 pr-11"
+                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all pr-11"
                           placeholder="••••••••"
+                          minLength={8}
+                          maxLength={50}
                           required
-                          disabled={isSubmitting}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         >
                           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
@@ -576,22 +605,25 @@ export default function AccountPage() {
 
                     {step === "register" && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirmer le mot de passe</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                          Confirmer le mot de passe
+                        </label>
                         <div className="relative">
                           <input
                             type={showConfirmPassword ? "text" : "password"}
                             name="confirmPassword"
                             value={formData.confirmPassword}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 pr-11"
+                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all pr-11"
                             placeholder="••••••••"
+                            minLength={8}
+                            maxLength={50}
                             required
-                            disabled={isSubmitting}
                           />
                           <button
                             type="button"
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                           >
                             {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
@@ -602,12 +634,14 @@ export default function AccountPage() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full py-2.5 rounded-xl font-medium text-white transition-all disabled:opacity-50"
-                      style={{ backgroundColor: brandColor }}
+                      className="w-full bg-gradient-to-r from-gray-900 to-gray-800 text-white font-medium py-2.5 px-4 rounded-xl hover:from-gray-800 hover:to-gray-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                     >
                       {isSubmitting ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="flex items-center justify-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
                           Chargement...
                         </span>
                       ) : (
@@ -619,16 +653,22 @@ export default function AccountPage() {
 
                 {step === "verify" && (
                   <>
-                    <div className="text-center mb-4">
-                      <div className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ backgroundColor: brandLight }}>
-                        <MailCheck className="w-6 h-6" style={{ color: brandColor }} />
+                    <div className="text-center mb-5">
+                      <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <MailCheck className="w-6 h-6 text-green-600" />
                       </div>
-                      <p className="text-sm text-gray-500">Code envoyé à</p>
-                      <p className="text-sm font-medium mt-1">{loginMethod === "email" ? formData.email : formData.phone}</p>
+                      <h3 className="text-base font-semibold text-gray-900 mb-1">
+                        Vérification
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        Code envoyé à {loginMethod === "email" ? formData.email : formData.phone}
+                      </p>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Code de vérification</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Code de vérification
+                      </label>
                       <input
                         type="text"
                         name="verificationCode"
@@ -637,18 +677,23 @@ export default function AccountPage() {
                           const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6)
                           setFormData(prev => ({ ...prev, verificationCode: value }))
                         }}
-                        className="w-full px-4 py-2.5 text-center text-xl tracking-[0.5em] font-mono border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20"
+                        className="w-full px-4 py-2.5 text-center text-xl tracking-[0.5em] font-mono border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900/20 transition-all"
                         placeholder="000000"
                         maxLength={6}
                         required
-                        disabled={isSubmitting}
                       />
                     </div>
 
                     {countdown > 0 ? (
-                      <p className="text-sm text-gray-500 text-center">Renvoyer dans {countdown}s</p>
+                      <p className="text-sm text-gray-500 text-center">
+                        Renvoyer dans {countdown}s
+                      </p>
                     ) : (
-                      <button type="button" onClick={handleSendCode} className="w-full text-sm text-gray-600 hover:text-gray-900 hover:underline">
+                      <button
+                        type="button"
+                        onClick={handleSendCode}
+                        className="w-full text-sm text-gray-600 hover:text-gray-900 hover:underline"
+                      >
                         Renvoyer le code
                       </button>
                     )}
@@ -656,12 +701,14 @@ export default function AccountPage() {
                     <button
                       type="submit"
                       disabled={isSubmitting || formData.verificationCode.length !== 6}
-                      className="w-full py-2.5 rounded-xl font-medium text-white transition-all disabled:opacity-50 mt-3"
-                      style={{ backgroundColor: brandColor }}
+                      className="w-full bg-gradient-to-r from-gray-900 to-gray-800 text-white font-medium py-2.5 px-4 rounded-xl hover:from-gray-800 hover:to-gray-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg mt-3"
                     >
                       {isSubmitting ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="flex items-center justify-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
                           Vérification...
                         </span>
                       ) : (
@@ -684,32 +731,48 @@ export default function AccountPage() {
                   </div>
 
                   <div className="grid grid-cols-3 gap-3">
-                    <button className="flex items-center justify-center py-2.5 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed" disabled>
+                    <button
+                      onClick={() => alert("Connexion Google bientôt disponible")}
+                      className="flex items-center justify-center py-2.5 px-3 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed"
+                      disabled
+                      title="Bientôt disponible"
+                    >
                       <FcGoogle className="w-5 h-5" />
                     </button>
-                    <button className="flex items-center justify-center py-2.5 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed" disabled>
+                    <button
+                      onClick={() => alert("Connexion Facebook bientôt disponible")}
+                      className="flex items-center justify-center py-2.5 px-3 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed"
+                      disabled
+                      title="Bientôt disponible"
+                    >
                       <FaFacebook className="w-5 h-5 text-blue-600" />
                     </button>
-                    <button className="flex items-center justify-center py-2.5 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed" disabled>
+                    <button
+                      onClick={() => alert("Connexion Apple bientôt disponible")}
+                      className="flex items-center justify-center py-2.5 px-3 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed"
+                      disabled
+                      title="Bientôt disponible"
+                    >
                       <FaApple className="w-5 h-5" />
                     </button>
                   </div>
-
-                  <p className="text-sm text-center mt-5 text-gray-600">
-                    {step === "login" ? "Pas encore de compte ?" : "Déjà inscrit ?"}{" "}
-                    <button
-                      onClick={() => {
-                        setStep(step === "login" ? "register" : "login")
-                        setError("")
-                        setSuccess("")
-                      }}
-                      className="font-medium hover:underline"
-                      style={{ color: brandColor }}
-                    >
-                      {step === "login" ? "Inscrivez-vous" : "Connectez-vous"}
-                    </button>
-                  </p>
                 </>
+              )}
+
+              {step !== "verify" && (
+                <p className="text-sm text-center mt-5 text-gray-600">
+                  {step === "login" ? "Pas encore de compte ?" : "Déjà inscrit ?"}{" "}
+                  <button
+                    onClick={() => {
+                      setStep(step === "login" ? "register" : "login")
+                      setError("")
+                      setSuccess("")
+                    }}
+                    className="text-gray-900 font-medium hover:underline"
+                  >
+                    {step === "login" ? "Inscrivez-vous" : "Connectez-vous"}
+                  </button>
+                </p>
               )}
             </div>
           </div>
