@@ -78,7 +78,7 @@ export function CategoriesSection() {
           <h2 className="text-base font-semibold text-gray-900">Catégories</h2>
           <p className="text-xs text-gray-500 mt-0.5">Basé sur vos préférences</p>
         </div>
-        <Link href="/categories" className="inline-flex items-center gap-0.5 text-xs text-gray-500 hover:text-gray-900">
+        <Link href="/categorie" className="inline-flex items-center gap-0.5 text-xs text-gray-500 hover:text-gray-900">
           Voir tout
           <ChevronRight className="w-3.5 h-3.5" />
         </Link>
@@ -87,7 +87,7 @@ export function CategoriesSection() {
       <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
         <div className="flex gap-3 min-w-max pb-2">
           {categories.slice(0, 12).map((category) => (
-            <Link key={category.id} href={`/categories/${category.slug}`} className="group block w-[90px]">
+            <Link key={category.id} href={`/categorie/${category.slug}`} className="group block w-[90px]">
               <div className="bg-gray-50 rounded-xl p-3 border border-gray-100 group-hover:border-gray-200 transition-all">
                 <div className="relative aspect-square mb-2">
                   <Image
@@ -131,7 +131,7 @@ export function CategoriesSection() {
           <h2 className="text-xl font-semibold text-gray-900 tracking-tight">Catégories populaires</h2>
           <p className="text-sm text-gray-500 mt-1">Découvrez nos sélections par catégorie</p>
         </div>
-        <Link href="/categories" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-50 px-4 py-2 rounded-lg transition-colors">
+        <Link href="/categorie" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-50 px-4 py-2 rounded-lg transition-colors">
           Explorer
           <ChevronRight className="w-4 h-4" />
         </Link>
@@ -139,7 +139,7 @@ export function CategoriesSection() {
 
       <div className="grid grid-cols-8 gap-4">
         {categories.slice(0, 8).map((category) => (
-          <Link key={category.id} href={`/categories/${category.slug}`} className="group block">
+          <Link key={category.id} href={`/categorie/${category.slug}`} className="group block">
             <div className="bg-white rounded-xl p-4 border border-gray-100 group-hover:border-gray-200 group-hover:shadow-sm transition-all">
               <div className="relative aspect-square mb-3">
                 <Image
