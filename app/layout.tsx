@@ -45,7 +45,10 @@ export const metadata: Metadata = {
     images: ["/og-image.jpg"],
   },
   icons: {
-    icon: "/favicon.svg",
+    icon: [
+      { url: "/favicon-custom.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" }
+    ],
     apple: "/apple-icon.png",
   },
   manifest: "/site.webmanifest",
@@ -82,6 +85,11 @@ function GlobalErrorBoundary({ children }: { children: React.ReactNode }) {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className="scroll-smooth" translate="no">
+      <head>
+        <link rel="icon" type="image/x-icon" href="/favicon-custom.ico" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="apple-touch-icon" href="/apple-icon.png" />
+      </head>
       <body className={`${poppins.variable} antialiased bg-white text-gray-900 font-sans`}>
         <GlobalErrorBoundary>
           <AuthProvider>
