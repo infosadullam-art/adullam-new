@@ -1,1 +1,17 @@
-{"name":"Adullam","short_name":"Adullam","theme_color":"#D4372B","background_color":"#FFFFFF","display":"standalone","icons":[]} 
+{
+  "name": "Adullam Marketplace",
+  "short_name": "Adullam",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "theme_color": "#D4372B",
+  "background_color": "#FFFFFF",
+  "display": "standalone",
+  "start_url": "/",
+  "orientation": "portrait"
+}
