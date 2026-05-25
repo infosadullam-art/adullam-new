@@ -1,4 +1,4 @@
-// app/search/page.tsx - Version corrigée avec Suspense
+// app/search/page.tsx - Version strictement responsive (sans modification logique)
 "use client"
 
 import { Header } from "@/components/header"
@@ -12,7 +12,6 @@ import { useSearchParams } from "next/navigation"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { Search, Loader2, Filter, X } from "lucide-react"
 
-// Types adaptés à TA vraie API
 interface Product {
   id: string
   title: string
@@ -25,9 +24,6 @@ interface Product {
   reviews?: number
 }
 
-// ============================================================
-// COMPOSANT INTERNE QUI UTILISE useSearchParams
-// ============================================================
 function SearchContent() {
   const searchParams = useSearchParams()
   const query = searchParams.get('q') || ''
@@ -43,14 +39,12 @@ function SearchContent() {
   
   const { formatPrice } = useCurrencyFormatter()
 
-  // ✅ CHARGEMENT DES PRODUITS DEPUIS TA VRAIE API
   useEffect(() => {
     const fetchSearchResults = async () => {
       if (!query) return
       
       setIsLoading(true)
       try {
-        // Construction de l'URL avec tous les paramètres
         const params = new URLSearchParams()
         params.append('q', query)
         if (selectedCategory) params.append('category', selectedCategory)
@@ -105,18 +99,17 @@ function SearchContent() {
     setShowFilters(false)
   }
 
-  // Pas de recherche
   if (!query) {
     return (
       <div className="min-h-screen bg-white">
         <div className="hidden lg:block"><Header /></div>
         <div className="block lg:hidden"><MobileHeader /></div>
         
-        <main className="max-w-[1440px] mx-auto px-4 lg:px-6 py-12">
+        <main className="max-w-[1440px] mx-auto px-4 lg:px-6 py-8 sm:py-12">
           <div className="text-center">
-            <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Effectuez une recherche</h2>
-            <p className="text-gray-500">
+            <Search className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-3 sm:mb-4" />
+            <h2 className="text-xl sm:text-2xl font-bold mb-2">Effectuez une recherche</h2>
+            <p className="text-sm sm:text-base text-gray-500">
               Utilisez la barre de recherche pour trouver des produits
             </p>
           </div>
@@ -136,28 +129,29 @@ function SearchContent() {
       <main className="pb-28 lg:pb-0">
         <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-4 lg:py-6">
 
-          {/* En-tête recherche */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">
-                Résultats pour "{query}"
-              </h2>
+          {/* En-tête recherche - responsive */}
+          <div className="mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold">
+                  Résultats pour "{query}"
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  {isLoading ? "Recherche en cours..." : `${pagination.total} produit(s) trouvé(s)`}
+                </p>
+              </div>
               
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="lg:hidden flex items-center gap-2 px-4 py-2 border rounded-lg"
+                className="lg:hidden flex items-center justify-center gap-2 px-4 py-2 border rounded-lg bg-white"
               >
                 <Filter className="w-4 h-4" />
                 Filtres
               </button>
             </div>
-            
-            <p className="text-sm text-gray-500 mt-1">
-              {isLoading ? "Recherche en cours..." : `${pagination.total} produit(s) trouvé(s)`}
-            </p>
           </div>
 
-          {/* Barre de tri */}
+          {/* Barre de tri - desktop */}
           <div className="hidden lg:flex justify-end mb-6">
             <select
               value={sortBy}
@@ -174,13 +168,11 @@ function SearchContent() {
             </select>
           </div>
 
-          {/* Loading */}
           {isLoading ? (
             <div className="flex justify-center items-center py-12">
               <Loader2 className="w-8 h-8 text-brand animate-spin" />
             </div>
           ) : products.length === 0 ? (
-            // Aucun résultat
             <div className="text-center py-12">
               <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">Aucun résultat trouvé</h3>
@@ -202,7 +194,6 @@ function SearchContent() {
                 <div className="bg-gray-50 rounded-lg p-4 sticky top-24">
                   <h3 className="font-bold mb-4">Filtres</h3>
                   
-                  {/* Catégories */}
                   {availableCategories.length > 0 && (
                     <div className="mb-6">
                       <h4 className="font-medium mb-2">Catégories</h4>
@@ -236,7 +227,6 @@ function SearchContent() {
                     </div>
                   )}
 
-                  {/* Prix max */}
                   <div className="mb-6">
                     <h4 className="font-medium mb-2">Prix max</h4>
                     <input
@@ -284,8 +274,8 @@ function SearchContent() {
                   </select>
                 </div>
 
-                {/* Grille produits */}
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Grille produits - RESPONSIVE SANS CHANGER LA LOGIQUE */}
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {products.map((product) => (
                     <Link
                       key={product.id}
@@ -298,6 +288,7 @@ function SearchContent() {
                           alt={product.title}
                           fill
                           className="object-contain p-4 group-hover:scale-105 transition-transform"
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                         />
                         
                         {!product.inStock && (
@@ -324,41 +315,43 @@ function SearchContent() {
                   ))}
                 </div>
 
-                {/* Pagination */}
+                {/* Pagination responsive */}
                 {pagination.totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-2 mt-8">
+                  <div className="flex flex-wrap justify-center items-center gap-2 mt-8">
                     <button
                       onClick={() => handlePageChange(pagination.page - 1)}
                       disabled={pagination.page === 1}
-                      className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                      className="px-3 sm:px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 text-sm sm:text-base"
                     >
                       Précédent
                     </button>
                     
-                    {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
-                      .filter(p => p === 1 || p === pagination.totalPages || Math.abs(p - pagination.page) <= 2)
-                      .map((p, i, arr) => (
-                        <div key={p} className="inline-flex">
-                          {i > 0 && arr[i - 1] !== p - 1 && (
-                            <span className="px-2">...</span>
-                          )}
-                          <button
-                            onClick={() => handlePageChange(p)}
-                            className={`px-4 py-2 rounded-lg ${
-                              p === pagination.page
-                                ? 'bg-brand text-white'
-                                : 'border hover:bg-gray-50'
-                            }`}
-                          >
-                            {p}
-                          </button>
-                        </div>
-                      ))}
+                    <div className="flex flex-wrap gap-1 sm:gap-2">
+                      {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+                        .filter(p => p === 1 || p === pagination.totalPages || Math.abs(p - pagination.page) <= 2)
+                        .map((p, i, arr) => (
+                          <div key={p} className="inline-flex items-center">
+                            {i > 0 && arr[i - 1] !== p - 1 && (
+                              <span className="px-1 sm:px-2 text-gray-400">...</span>
+                            )}
+                            <button
+                              onClick={() => handlePageChange(p)}
+                              className={`min-w-[36px] sm:min-w-[40px] h-9 sm:h-10 px-2 sm:px-3 rounded-lg text-sm sm:text-base ${
+                                p === pagination.page
+                                  ? 'bg-brand text-white'
+                                  : 'border hover:bg-gray-50'
+                              }`}
+                            >
+                              {p}
+                            </button>
+                          </div>
+                        ))}
+                    </div>
                     
                     <button
                       onClick={() => handlePageChange(pagination.page + 1)}
                       disabled={pagination.page === pagination.totalPages}
-                      className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                      className="px-3 sm:px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 text-sm sm:text-base"
                     >
                       Suivant
                     </button>
@@ -437,7 +430,10 @@ function SearchContent() {
             </div>
 
             <button
-              onClick={resetFilters}
+              onClick={() => {
+                resetFilters()
+                setShowFilters(false)
+              }}
               className="w-full px-4 py-2 bg-brand text-white rounded-lg"
             >
               Appliquer les filtres
@@ -450,14 +446,10 @@ function SearchContent() {
       <div className="fixed bottom-0 left-0 right-0 z-50 block lg:hidden">
         <MobileNav />
       </div>
-
     </div>
   )
 }
 
-// ============================================================
-// LOADING FALLBACK PENDANT LE SUSPENSE
-// ============================================================
 function SearchLoadingFallback() {
   return (
     <div className="min-h-screen bg-white">
@@ -475,9 +467,6 @@ function SearchLoadingFallback() {
   )
 }
 
-// ============================================================
-// PAGE PRINCIPALE AVEC SUSPENSE BOUNDARY
-// ============================================================
 export default function SearchPage() {
   return (
     <Suspense fallback={<SearchLoadingFallback />}>
