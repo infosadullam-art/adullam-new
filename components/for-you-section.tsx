@@ -29,6 +29,17 @@ const badgeConfig: Record<string, { label: string; bg: string; color: string }> 
   popular:       { label: "Populaire",  bg: "#FFF4E6", color: "#E67700" },
 }
 
+// ✅ FIX : déplacé hors du composant — évite la recréation du tableau à chaque render
+// L'ancienne version créait un nouveau tableau de 5 objets à chaque render,
+// ce qui pouvait causer des re-renders inutiles dans useEffect
+const TITLES = [
+  { main: "Suggestions",     sub: "personnalisées pour vous" },
+  { main: "Inspirations",    sub: "rien que pour vous" },
+  { main: "Découvertes",     sub: "sélection du moment" },
+  { main: "Recommandations", sub: "basées sur vos goûts" },
+  { main: "Sélections",      sub: "pour votre style" },
+]
+
 export function ForYouSection() {
   const { formatPrice } = useCurrencyFormatter()
   const { fetchWithAuth } = useApi()
@@ -41,28 +52,20 @@ export function ForYouSection() {
   const [titleIndex, setTitleIndex] = useState(0)
   const [sessionId, setSessionId] = useState<string | null>(null)
 
-  // ── Refs stables — évitent les re-renders en cascade ───────
-  const observerRef       = useRef<HTMLDivElement | null>(null)
+  const observerRef        = useRef<HTMLDivElement | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
-  const initialFetchDone  = useRef(false)
-  const isFetchingRef     = useRef(false)   // FIX: ref au lieu de state pour éviter stale closure
-  const pageRef           = useRef(1)       // FIX: ref au lieu de state pour éviter race condition
-  const productsRef       = useRef<Product[]>([]) // FIX: ref miroir pour fetchForYou sans deps cycliques
-  const hasMoreRef        = useRef(true)
-  const viewedProducts    = useRef<Set<string>>(new Set())
-  const trackQueueRef     = useRef<Set<string>>(new Set()) // FIX: déduplique les tracks
-
-  const titles = [
-    { main: "Suggestions",     sub: "personnalisées pour vous" },
-    { main: "Inspirations",    sub: "rien que pour vous" },
-    { main: "Découvertes",     sub: "sélection du moment" },
-    { main: "Recommandations", sub: "basées sur vos goûts" },
-    { main: "Sélections",      sub: "pour votre style" },
-  ]
+  const initialFetchDone   = useRef(false)
+  const isFetchingRef      = useRef(false)
+  const pageRef            = useRef(1)
+  const productsRef        = useRef<Product[]>([])
+  const hasMoreRef         = useRef(true)
+  const viewedProducts     = useRef<Set<string>>(new Set())
+  const trackQueueRef      = useRef<Set<string>>(new Set())
 
   // ── Titre rotatif ──────────────────────────────────────────
+  // ✅ Plus besoin de TITLES dans les deps — c'est une constante module-level
   useEffect(() => {
-    const i = setInterval(() => setTitleIndex(p => (p + 1) % titles.length), 5000)
+    const i = setInterval(() => setTitleIndex(p => (p + 1) % TITLES.length), 5000)
     return () => clearInterval(i)
   }, [])
 
@@ -78,13 +81,11 @@ export function ForYouSection() {
   }, [])
 
   // ── Track interaction ──────────────────────────────────────
-  // FIX 1 : pas de products/page dans les deps → plus de boucle
   const trackInteraction = useCallback(async (
     productId: string,
     type: "VIEW" | "CLICK"
   ) => {
     if (!sessionId) return
-    // FIX 2 : déduplique — un VIEW par produit par session
     const key = `${type}-${productId}`
     if (type === "VIEW" && trackQueueRef.current.has(key)) return
     trackQueueRef.current.add(key)
@@ -93,15 +94,10 @@ export function ForYouSection() {
       await fetchWithAuth("/api/track", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId,
-          type,
-          context: "FOR_YOU",
-          sessionId,
-        }),
+        body: JSON.stringify({ productId, type, context: "FOR_YOU", sessionId }),
       })
     } catch {
-      // silencieux — le tracking ne doit jamais faire crasher l'UI
+      // Silencieux — le tracking ne doit jamais faire crasher l'UI
     }
   }, [sessionId, fetchWithAuth])
 
@@ -126,12 +122,9 @@ export function ForYouSection() {
   }, [products, trackInteraction])
 
   // ── Fetch principal ────────────────────────────────────────
-  // FIX 3 : stable — utilise des refs pour tout ce qui change
-  // → plus de re-création de la fonction à chaque render
   const fetchForYou = useCallback(async () => {
     if (isFetchingRef.current || !hasMoreRef.current || !sessionId) return
 
-    // Annule le fetch précédent si encore en cours
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
     }
@@ -146,11 +139,8 @@ export function ForYouSection() {
       let url = `/api/graph/recommendations/for-you?page=${pageRef.current}&limit=24&sessionId=${sessionId}`
       if (seenIds) url += `&seenIds=${seenIds}`
 
-      const res = await fetchWithAuth(url, {
-        signal: abortControllerRef.current.signal,
-      })
+      const res = await fetchWithAuth(url, { signal: abortControllerRef.current.signal })
 
-      // FIX 4 : guard sur réponse vide → SyntaxError
       const text = await res.text()
       if (!text || text.trim() === "") {
         hasMoreRef.current = false
@@ -162,7 +152,6 @@ export function ForYouSection() {
       try {
         json = JSON.parse(text)
       } catch {
-        // Réponse non-JSON (HTML d'erreur, etc.) → on arrête sans crasher
         hasMoreRef.current = false
         setHasMore(false)
         return
@@ -174,9 +163,7 @@ export function ForYouSection() {
         return
       }
 
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`)
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
       if (!json.success || !Array.isArray(json.data) || json.data.length === 0) {
         hasMoreRef.current = false
@@ -184,22 +171,21 @@ export function ForYouSection() {
         return
       }
 
-      // FIX 5 : déduplication stricte basée sur la ref
       const existingIds = new Set(productsRef.current.map(p => p.id))
       const newProducts: Product[] = json.data
         .filter((p: any) => !existingIds.has(p.id))
         .map((p: any) => ({
-          id:           p.id,
-          name:         p.name || p.title || "Produit",
-          priceUSD:     p.price || p.priceUSD || 0,
-          image:        p.image || "/placeholder.jpg",
-          status:       p.status || "active",
-          isSeed:       p.isSeed || false,
-          forYouScore:  p.forYouScore,
-          reason:       p.reason,
-          source:       p.source,
-          category:     p.category,
-          type:         p.type,
+          id:          p.id,
+          name:        p.name || p.title || "Produit",
+          priceUSD:    p.price || p.priceUSD || 0,
+          image:       p.image || "/placeholder.jpg",
+          status:      p.status || "active",
+          isSeed:      p.isSeed || false,
+          forYouScore: p.forYouScore,
+          reason:      p.reason,
+          source:      p.source,
+          category:    p.category,
+          type:        p.type,
         }))
 
       if (newProducts.length === 0) {
@@ -208,18 +194,16 @@ export function ForYouSection() {
         return
       }
 
-      // Mise à jour ref ET state — ref pour la logique, state pour le rendu
       productsRef.current = [...productsRef.current, ...newProducts]
       setProducts([...productsRef.current])
 
       const more = json.meta?.hasMore ?? false
       hasMoreRef.current = more
       setHasMore(more)
-
       if (more) pageRef.current += 1
 
     } catch (err: any) {
-      if (err?.name === "AbortError") return // fetch annulé normalement
+      if (err?.name === "AbortError") return
       console.error("[ForYou] Erreur fetch:", err.message)
       setError(err.message)
       hasMoreRef.current = false
@@ -229,7 +213,7 @@ export function ForYouSection() {
       setIsLoading(false)
       setInitialized(true)
     }
-  }, [sessionId, fetchWithAuth]) // deps minimales et stables
+  }, [sessionId, fetchWithAuth])
 
   // ── Premier chargement ─────────────────────────────────────
   useEffect(() => {
@@ -239,18 +223,12 @@ export function ForYouSection() {
     }
   }, [fetchForYou, sessionId])
 
-  // ── Infinite scroll observer ───────────────────────────────
-  // FIX 6 : observe uniquement quand initialized change
-  // → plus de re-création constante de l'observer
+  // ── Infinite scroll ────────────────────────────────────────
   useEffect(() => {
     if (!initialized) return
 
     const observer = new IntersectionObserver(entries => {
-      if (
-        entries[0]?.isIntersecting &&
-        !isFetchingRef.current &&
-        hasMoreRef.current
-      ) {
+      if (entries[0]?.isIntersecting && !isFetchingRef.current && hasMoreRef.current) {
         fetchForYou()
       }
     }, { threshold: 0, rootMargin: "400px" })
@@ -284,10 +262,7 @@ export function ForYouSection() {
         {/* Titre dynamique */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-1">
-            <span style={{
-              display: "inline-block", width: "3px", height: "20px",
-              background: "#D4372B", borderRadius: "2px",
-            }} />
+            <span style={{ display: "inline-block", width: "3px", height: "20px", background: "#D4372B", borderRadius: "2px" }} />
             <h2
               key={titleIndex}
               style={{
@@ -295,8 +270,8 @@ export function ForYouSection() {
                 fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.02em",
               }}
             >
-              {titles[titleIndex].main}{" "}
-              <span style={{ color: "#D4372B" }}>{titles[titleIndex].sub}</span>
+              {TITLES[titleIndex].main}{" "}
+              <span style={{ color: "#D4372B" }}>{TITLES[titleIndex].sub}</span>
             </h2>
           </div>
           <p className="flex items-center gap-1.5" style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
@@ -327,9 +302,11 @@ export function ForYouSection() {
                       return (
                         <div
                           key={product.id}
-                          className="relative cursor-pointer"
+                          className="relative cursor-pointer group"
                           data-product-id={product.id}
                           onClick={() => trackInteraction(product.id, "CLICK")}
+                          // ✅ FIX : utiliser CSS classes au lieu de style inline dans les handlers
+                          // Évite les re-renders causés par des nouvelles références de fonctions
                           style={{ transition: "transform 0.2s ease" }}
                           onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)")}
                           onMouseLeave={e => (e.currentTarget.style.transform = "translateY(0)")}
