@@ -4,6 +4,20 @@ import Link from "next/link"
 import Image from "next/image"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
+// ✅ Configuration des badges selon la source
+const badgeConfig: Record<string, { label: string; bg: string; color: string }> = {
+  session_graph: { label: "Pour vous", bg: "#F0F4FF", color: "#3B5BDB" },
+  session: { label: "Pour vous", bg: "#F0F4FF", color: "#3B5BDB" },
+  als: { label: "Recommandé", bg: "#FFF8E1", color: "#E67700" },
+  trend: { label: "Tendance", bg: "#FFF0F0", color: "#D4372B" },
+  new: { label: "Nouveau", bg: "#F3F0FF", color: "#7048E8" },
+  random: { label: "Découverte", bg: "#EBFBEE", color: "#2F9E44" },
+  popular: { label: "Populaire", bg: "#FFF4E6", color: "#E67700" },
+  abandoned_cart: { label: "Panier", bg: "#FFE4E1", color: "#D4372B" },
+  cache: { label: "Pour vous", bg: "#F0F4FF", color: "#3B5BDB" },
+  fallback_total: { label: "Nouveauté", bg: "#F3F0FF", color: "#7048E8" }
+}
+
 interface ProductCardProps {
   product: {
     id: string | number
@@ -11,6 +25,8 @@ interface ProductCardProps {
     priceUSD: number
     image: string
     badge?: string
+    source?: string      // ✅ Pour les badges dynamiques
+    viewers?: number      // ✅ Pour la preuve sociale
     flag?: string
     rating?: number
     reviews?: number
@@ -26,6 +42,23 @@ export function ProductCard({ product }: ProductCardProps) {
     : 0
 
   const formattedPrice = formatPrice(price)
+  
+  // ✅ Déterminer le badge à afficher (priorité à badge, sinon source)
+  let badgeLabel = product.badge
+  let badgeStyle = { background: "#1F2937", color: "white" } // default
+  
+  if (!badgeLabel && product.source) {
+    const config = badgeConfig[product.source]
+    if (config) {
+      badgeLabel = config.label
+      badgeStyle = { background: config.bg, color: config.color }
+    }
+  }
+  
+  // ✅ Texte de preuve sociale
+  const viewersText = product.viewers && product.viewers > 0 
+    ? `🔥 ${product.viewers} regardent`
+    : null
 
   return (
     <Link href={`/products/${product.id}`} className="block group">
@@ -41,17 +74,27 @@ export function ProductCard({ product }: ProductCardProps) {
             className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
           />
           
-          {/* BADGE */}
-          {product.badge && (
-            <span className="absolute top-2 left-2 bg-gray-900 text-white text-[10px] px-2 py-1 rounded-full">
-              {product.badge}
+          {/* BADGE - avec style dynamique */}
+          {badgeLabel && (
+            <span 
+              className="absolute top-2 left-2 text-[10px] px-2 py-1 rounded-full font-medium z-10"
+              style={badgeStyle}
+            >
+              {badgeLabel}
             </span>
           )}
           
           {/* FLAG */}
           {product.flag && (
-            <span className="absolute top-2 right-2 text-lg">
+            <span className="absolute top-2 right-2 text-lg z-10">
               {product.flag}
+            </span>
+          )}
+          
+          {/* VIEWERS - Preuve sociale */}
+          {viewersText && (
+            <span className="absolute bottom-2 left-2 text-[10px] bg-black/70 text-white px-2 py-0.5 rounded-full z-10">
+              {viewersText}
             </span>
           )}
         </div>
