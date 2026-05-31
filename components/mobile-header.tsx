@@ -1,7 +1,7 @@
 "use client"
 
 import { ShoppingCart, User, Menu, Search, X, Home, Grid3x3, Heart, HelpCircle, Tv, Package, Shirt, LogIn, UserPlus, LogOut, ChevronRight } from "lucide-react"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/admin/auth-context"
 
@@ -16,104 +16,138 @@ const categoryItems = [
 ]
 
 export function MobileHeader() {
-  const [showMenu, setShowMenu] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [cartClicked, setCartClicked] = useState(false)
+  const [showMenu, setShowMenu]         = useState(false)
+  const [searchQuery, setSearchQuery]   = useState("")
+  const [cartClicked, setCartClicked]   = useState(false)
   const [searchFocused, setSearchFocused] = useState(false)
+  const [scrolled, setScrolled]         = useState(false)  // ← compression au scroll
+  const [mounted, setMounted]           = useState(false)  // ← fade-in initial
+  const lastScrollY                     = useRef(0)
+
   const router = useRouter()
   const { user, logout, isLoading } = useAuth()
 
-  // Gestion du scroll
+  // Fade-in au montage
   useEffect(() => {
-    if (showMenu) {
-      document.body.style.overflow = "hidden"
-    } else {
-      document.body.style.overflow = ""
+    const t = setTimeout(() => setMounted(true), 50)
+    return () => clearTimeout(t)
+  }, [])
+
+  // Compression au scroll — quand on descend >40px le header se compresse
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY
+      setScrolled(y > 40)
+      lastScrollY.current = y
     }
-    return () => {
-      document.body.style.overflow = ""
-    }
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
+
+  // Lock scroll body quand menu ouvert
+  useEffect(() => {
+    document.body.style.overflow = showMenu ? "hidden" : ""
+    return () => { document.body.style.overflow = "" }
   }, [showMenu])
 
-  // Recherche
   const handleSearch = useCallback((e?: React.FormEvent) => {
     e?.preventDefault()
-    if (searchQuery.trim() !== "") {
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
-    }
+    if (searchQuery.trim()) router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
   }, [searchQuery, router])
 
-  // Panier
   const handleCartClick = useCallback(() => {
     setCartClicked(true)
     router.push("/cart")
-    setTimeout(() => setCartClicked(false), 500)
+    setTimeout(() => setCartClicked(false), 600)
   }, [router])
 
-  // Fermeture du menu
-  const closeMenu = useCallback(() => {
-    setShowMenu(false)
-  }, [])
+  const closeMenu = useCallback(() => setShowMenu(false), [])
 
-  // Déconnexion
   const handleLogout = useCallback(async () => {
     await logout()
     closeMenu()
     router.push("/")
   }, [logout, closeMenu, router])
 
-  // Navigation
   const navigateTo = useCallback((path: string) => {
     closeMenu()
     router.push(path)
   }, [closeMenu, router])
 
-  const goToAccount = useCallback(() => navigateTo("/account"), [navigateTo])
-  const goToLogin = useCallback(() => navigateTo("/account?mode=login"), [navigateTo])
+  const goToAccount  = useCallback(() => navigateTo("/account"), [navigateTo])
+  const goToLogin    = useCallback(() => navigateTo("/account?mode=login"), [navigateTo])
   const goToRegister = useCallback(() => navigateTo("/account?mode=register"), [navigateTo])
-  const goToOrders = useCallback(() => navigateTo("/account"), [navigateTo])
+  const goToOrders   = useCallback(() => navigateTo("/account"), [navigateTo])
   const goToFavorites = useCallback(() => navigateTo("/account"), [navigateTo])
-  const goToHelp = useCallback(() => navigateTo("/account"), [navigateTo])
+  const goToHelp     = useCallback(() => navigateTo("/account"), [navigateTo])
 
   return (
     <>
-      {/* HEADER */}
-      <header className="bg-white sticky top-0 z-50" style={{ borderBottom: "0.5px solid #ECECEC" }}>
-        <div className="px-4 pt-3 pb-2.5 flex flex-col gap-2.5">
-
+      {/* ── HEADER ─────────────────────────────────────────── */}
+      <header
+        className="bg-white sticky top-0 z-50"
+        style={{
+          borderBottom: "0.5px solid #ECECEC",
+          // Ombre subtile qui apparaît au scroll
+          boxShadow: scrolled
+            ? "0 2px 16px rgba(0,0,0,0.06)"
+            : "none",
+          transition: "box-shadow 0.3s ease",
+          // Fade-in au montage
+          opacity: mounted ? 1 : 0,
+          transform: mounted ? "translateY(0)" : "translateY(-4px)",
+        }}
+      >
+        <div
+          className="px-4 flex flex-col"
+          style={{
+            // Compression verticale au scroll : moins de padding
+            paddingTop:    scrolled ? "8px"  : "12px",
+            paddingBottom: scrolled ? "8px"  : "10px",
+            gap:           scrolled ? "6px"  : "10px",
+            transition: "padding 0.25s ease, gap 0.25s ease",
+          }}
+        >
           {/* Row 1 : Logo + actions */}
           <div className="flex items-center justify-between">
 
-            {/* Logo */}
+            {/* Logo — se réduit légèrement au scroll */}
             <button
               onClick={() => router.push("/")}
-              className="flex items-center gap-0 focus:outline-none active:opacity-70 transition-opacity"
+              className="focus:outline-none active:opacity-70"
+              style={{ transition: "transform 0.25s ease" }}
               aria-label="Accueil Adullam"
             >
               <span style={{
                 fontFamily: "'Poppins', sans-serif",
                 fontWeight: 900,
-                fontSize: "20px",
+                fontSize: scrolled ? "17px" : "20px",
                 letterSpacing: "-0.04em",
                 color: "#0A0A0A",
+                transition: "font-size 0.25s ease",
+                display: "inline",
               }}>
                 adul
               </span>
               <span style={{
                 fontFamily: "'Poppins', sans-serif",
                 fontWeight: 900,
-                fontSize: "20px",
+                fontSize: scrolled ? "17px" : "20px",
                 letterSpacing: "-0.04em",
                 color: "#D4372B",
+                transition: "font-size 0.25s ease",
+                display: "inline",
               }}>
                 .
               </span>
               <span style={{
                 fontFamily: "'Poppins', sans-serif",
                 fontWeight: 900,
-                fontSize: "20px",
+                fontSize: scrolled ? "17px" : "20px",
                 letterSpacing: "-0.04em",
                 color: "#0A0A0A",
+                transition: "font-size 0.25s ease",
+                display: "inline",
               }}>
                 lam
               </span>
@@ -125,14 +159,22 @@ export function MobileHeader() {
               {/* Compte */}
               <button
                 onClick={goToAccount}
-                className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all active:scale-95 focus:outline-none"
-                style={{ background: "#F4F4F4" }}
+                className="relative flex items-center justify-center rounded-xl focus:outline-none"
+                style={{
+                  background: "#F4F4F4",
+                  width:  scrolled ? "34px" : "36px",
+                  height: scrolled ? "34px" : "36px",
+                  transition: "width 0.25s ease, height 0.25s ease, transform 0.1s ease",
+                }}
+                onPointerDown={e => e.currentTarget.style.transform = "scale(0.9)"}
+                onPointerUp={e   => e.currentTarget.style.transform = "scale(1)"}
+                onPointerLeave={e => e.currentTarget.style.transform = "scale(1)"}
                 aria-label="Mon compte"
               >
-                <User className="w-[18px] h-[18px]" style={{ color: "#0A0A0A" }} />
+                <User className="w-[17px] h-[17px]" style={{ color: "#0A0A0A" }} />
                 {user && (
                   <span
-                    className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full border-2 border-white"
+                    className="absolute top-1 right-1 w-2 h-2 rounded-full border-2 border-white"
                     style={{ background: "#22C55E" }}
                   />
                 )}
@@ -141,83 +183,123 @@ export function MobileHeader() {
               {/* Panier */}
               <button
                 onClick={handleCartClick}
-                className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all active:scale-95 focus:outline-none"
-                style={{ background: "#D4372B" }}
+                className="relative flex items-center justify-center rounded-xl focus:outline-none overflow-hidden"
+                style={{
+                  background: "#D4372B",
+                  width:  scrolled ? "34px" : "36px",
+                  height: scrolled ? "34px" : "36px",
+                  transition: "width 0.25s ease, height 0.25s ease, transform 0.1s ease",
+                }}
+                onPointerDown={e => e.currentTarget.style.transform = "scale(0.9)"}
+                onPointerUp={e   => e.currentTarget.style.transform = "scale(1)"}
+                onPointerLeave={e => e.currentTarget.style.transform = "scale(1)"}
                 aria-label="Panier"
               >
-                <ShoppingCart className="w-[18px] h-[18px] text-white" />
+                <ShoppingCart className="w-[17px] h-[17px] text-white" />
                 {cartClicked && (
                   <span
-                    className="absolute inset-0 rounded-xl animate-ping"
-                    style={{ background: "#D4372B", opacity: 0.4 }}
+                    className="absolute inset-0 animate-ping rounded-xl"
+                    style={{ background: "#D4372B", opacity: 0.5 }}
                   />
                 )}
               </button>
 
               {/* Burger */}
               <button
-                onClick={() => setShowMenu(prev => !prev)}
-                className="flex items-center justify-center w-9 h-9 rounded-xl transition-all active:scale-95 focus:outline-none"
-                style={{ background: "#F4F4F4" }}
+                onClick={() => setShowMenu(p => !p)}
+                className="flex items-center justify-center rounded-xl focus:outline-none"
+                style={{
+                  background: showMenu ? "#ECECEC" : "#F4F4F4",
+                  width:  scrolled ? "34px" : "36px",
+                  height: scrolled ? "34px" : "36px",
+                  transition: "width 0.25s ease, height 0.25s ease, background 0.2s ease, transform 0.1s ease",
+                }}
+                onPointerDown={e => e.currentTarget.style.transform = "scale(0.9)"}
+                onPointerUp={e   => e.currentTarget.style.transform = "scale(1)"}
+                onPointerLeave={e => e.currentTarget.style.transform = "scale(1)"}
                 aria-label={showMenu ? "Fermer le menu" : "Ouvrir le menu"}
               >
-                {showMenu
-                  ? <X className="w-[18px] h-[18px]" style={{ color: "#0A0A0A" }} />
-                  : <Menu className="w-[18px] h-[18px]" style={{ color: "#0A0A0A" }} />
-                }
+                {/* Icône burger → X avec rotation */}
+                <span
+                  style={{
+                    display: "inline-flex",
+                    transform: showMenu ? "rotate(90deg)" : "rotate(0deg)",
+                    transition: "transform 0.22s cubic-bezier(0.4,0,0.2,1)",
+                  }}
+                >
+                  {showMenu
+                    ? <X className="w-[17px] h-[17px]" style={{ color: "#0A0A0A" }} />
+                    : <Menu className="w-[17px] h-[17px]" style={{ color: "#0A0A0A" }} />
+                  }
+                </span>
               </button>
             </div>
           </div>
 
-          {/* Row 2 : Recherche */}
+          {/* Row 2 : Barre de recherche */}
           <form onSubmit={handleSearch} className="relative">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-colors"
-              style={{ color: searchFocused ? "#D4372B" : "#AAAAAA" }}
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+              style={{
+                color: searchFocused ? "#D4372B" : "#AAAAAA",
+                transition: "color 0.2s ease",
+              }}
             />
             <input
               type="text"
               placeholder="Robes, sneakers, électronique..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
-              className="w-full pl-9 pr-4 py-2.5 text-sm focus:outline-none transition-all"
+              className="w-full pl-9 pr-4 text-sm focus:outline-none"
               style={{
                 background: "#F4F4F4",
                 borderRadius: "10px",
-                border: searchFocused ? "1.5px solid #D4372B" : "1.5px solid transparent",
+                border: searchFocused
+                  ? "1.5px solid #D4372B"
+                  : "1.5px solid transparent",
                 color: "#0A0A0A",
                 fontFamily: "'Poppins', sans-serif",
-                fontWeight: 400,
+                // Input se compresse légèrement au scroll
+                paddingTop:    scrolled ? "8px"  : "10px",
+                paddingBottom: scrolled ? "8px"  : "10px",
+                transition: "border 0.2s ease, padding 0.25s ease",
               }}
             />
           </form>
-
         </div>
       </header>
 
-      {/* OVERLAY */}
-      {showMenu && (
-        <div
-          className="fixed inset-0 z-40"
-          style={{ background: "rgba(0,0,0,0.35)", backdropFilter: "blur(2px)" }}
-          onClick={closeMenu}
-        />
-      )}
+      {/* ── OVERLAY ─────────────────────────────────────────── */}
+      <div
+        className="fixed inset-0 z-40"
+        style={{
+          background: "rgba(0,0,0,0.4)",
+          backdropFilter: "blur(3px)",
+          opacity: showMenu ? 1 : 0,
+          pointerEvents: showMenu ? "auto" : "none",
+          transition: "opacity 0.28s ease",
+        }}
+        onClick={closeMenu}
+      />
 
-      {/* DRAWER */}
+      {/* ── DRAWER ──────────────────────────────────────────── */}
       <div
         className="fixed top-0 left-0 h-full z-50 overflow-y-auto"
         style={{
-          width: "280px",
+          width: "285px",
           background: "#fff",
           transform: showMenu ? "translateX(0)" : "translateX(-100%)",
-          transition: "transform 0.28s cubic-bezier(0.4, 0, 0.2, 1)",
+          transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
           borderRight: "0.5px solid #ECECEC",
+          // Ombre drawer
+          boxShadow: showMenu
+            ? "4px 0 32px rgba(0,0,0,0.12)"
+            : "none",
         }}
       >
-        {/* Drawer header */}
+        {/* Header drawer */}
         <div
           className="flex items-center justify-between px-5 py-4"
           style={{ borderBottom: "0.5px solid #F0F0F0" }}
@@ -233,10 +315,13 @@ export function MobileHeader() {
           </span>
           <button
             onClick={closeMenu}
-            className="flex items-center justify-center w-8 h-8 rounded-lg transition-all active:scale-95 focus:outline-none"
+            className="flex items-center justify-center w-8 h-8 rounded-lg focus:outline-none"
             style={{ background: "#F4F4F4" }}
+            onPointerDown={e => e.currentTarget.style.transform = "scale(0.9)"}
+            onPointerUp={e   => e.currentTarget.style.transform = "scale(1)"}
+            onPointerLeave={e => e.currentTarget.style.transform = "scale(1)"}
           >
-            <X className="w-4 h-4" style={{ color: "#0A0A0A" }} />
+            <X className="w-4 h-4" style={{ color: "#0A0A0A", transition: "transform 0.1s ease" }} />
           </button>
         </div>
 
@@ -258,16 +343,22 @@ export function MobileHeader() {
             <div className="px-5 py-4 flex gap-2" style={{ borderBottom: "0.5px solid #F0F0F0" }}>
               <button
                 onClick={goToLogin}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
-                style={{ background: "#0A0A0A", color: "#fff" }}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold"
+                style={{ background: "#0A0A0A", color: "#fff", transition: "opacity 0.15s ease" }}
+                onPointerDown={e => e.currentTarget.style.opacity = "0.8"}
+                onPointerUp={e   => e.currentTarget.style.opacity = "1"}
+                onPointerLeave={e => e.currentTarget.style.opacity = "1"}
               >
                 <LogIn className="w-4 h-4" />
                 Connexion
               </button>
               <button
                 onClick={goToRegister}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
-                style={{ border: "1.5px solid #ECECEC", color: "#0A0A0A", background: "#fff" }}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold"
+                style={{ border: "1.5px solid #ECECEC", color: "#0A0A0A", background: "#fff", transition: "background 0.15s ease" }}
+                onPointerDown={e => e.currentTarget.style.background = "#F4F4F4"}
+                onPointerUp={e   => e.currentTarget.style.background = "#fff"}
+                onPointerLeave={e => e.currentTarget.style.background = "#fff"}
               >
                 <UserPlus className="w-4 h-4" />
                 S'inscrire
@@ -279,15 +370,18 @@ export function MobileHeader() {
           <nav className="flex flex-col mt-1">
             {[
               ...(user ? [{ label: "Mon compte", icon: User, action: goToAccount }] : []),
-              { label: "Vos commandes", icon: Package, action: goToOrders },
-              { label: "Favoris",        icon: Heart,   action: goToFavorites },
-              { label: "Besoin d'aide",  icon: HelpCircle, action: goToHelp },
+              { label: "Vos commandes", icon: Package,    action: goToOrders    },
+              { label: "Favoris",       icon: Heart,      action: goToFavorites },
+              { label: "Besoin d'aide", icon: HelpCircle, action: goToHelp      },
             ].map(({ label, icon: Icon, action }) => (
               <button
                 key={label}
                 onClick={action}
-                className="group flex items-center justify-between px-5 py-3.5 text-sm font-medium text-left transition-all hover:bg-[#FAFAFA] active:bg-[#F5F5F5]"
-                style={{ color: "#0A0A0A" }}
+                className="flex items-center justify-between px-5 py-3.5 text-sm font-medium text-left"
+                style={{ color: "#0A0A0A", transition: "background 0.15s ease" }}
+                onPointerDown={e => e.currentTarget.style.background = "#F8F8F8"}
+                onPointerUp={e   => e.currentTarget.style.background = "transparent"}
+                onPointerLeave={e => e.currentTarget.style.background = "transparent"}
               >
                 <span className="flex items-center gap-3">
                   <Icon className="w-4 h-4" style={{ color: "#AAAAAA" }} />
@@ -300,8 +394,11 @@ export function MobileHeader() {
             {user && (
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-3 px-5 py-3.5 text-sm font-medium transition-all hover:bg-[#FFF5F5] active:bg-[#FFEEEE]"
-                style={{ color: "#D4372B" }}
+                className="flex items-center gap-3 px-5 py-3.5 text-sm font-medium"
+                style={{ color: "#D4372B", transition: "background 0.15s ease" }}
+                onPointerDown={e => e.currentTarget.style.background = "#FFF5F5"}
+                onPointerUp={e   => e.currentTarget.style.background = "transparent"}
+                onPointerLeave={e => e.currentTarget.style.background = "transparent"}
               >
                 <LogOut className="w-4 h-4" />
                 Déconnexion
@@ -310,12 +407,12 @@ export function MobileHeader() {
           </nav>
 
           {/* Divider */}
-          <div className="mx-5 my-3" style={{ height: "0.5px", background: "#F0F0F0" }} />
+          <div className="mx-5 my-2" style={{ height: "0.5px", background: "#F0F0F0" }} />
 
           {/* Catégories */}
           <div className="px-5">
             <p
-              className="text-xs font-semibold mb-2"
+              className="text-xs font-semibold mb-1.5"
               style={{ color: "#AAAAAA", letterSpacing: "0.08em", textTransform: "uppercase" }}
             >
               Catégories
@@ -326,12 +423,12 @@ export function MobileHeader() {
                 return (
                   <button
                     key={cat.label}
-                    onClick={() => {
-                      setShowMenu(false)
-                      router.push(`/categorie/${cat.slug}`)
-                    }}
-                    className="group flex items-center justify-between py-3 text-sm font-medium text-left transition-all hover:text-[#D4372B] active:text-[#D4372B]"
-                    style={{ borderBottom: "0.5px solid #F8F8F8", color: "#0A0A0A" }}
+                    onClick={() => { setShowMenu(false); router.push(`/categorie/${cat.slug}`) }}
+                    className="flex items-center justify-between py-2.5 text-sm font-medium text-left"
+                    style={{ borderBottom: "0.5px solid #F8F8F8", color: "#0A0A0A", transition: "color 0.15s ease" }}
+                    onPointerDown={e => e.currentTarget.style.color = "#D4372B"}
+                    onPointerUp={e   => e.currentTarget.style.color = "#0A0A0A"}
+                    onPointerLeave={e => e.currentTarget.style.color = "#0A0A0A"}
                   >
                     <span className="flex items-center gap-3">
                       <Icon className="w-4 h-4" style={{ color: "#AAAAAA" }} />
@@ -343,7 +440,6 @@ export function MobileHeader() {
               })}
             </div>
           </div>
-
         </div>
       </div>
     </>
