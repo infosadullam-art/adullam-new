@@ -25,9 +25,7 @@ export function Header() {
   const [suggestionIndex, setSuggestionIndex] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
   
-  // Scroll : avec hysteresis
   const [isHeaderCompact, setIsHeaderCompact] = useState(false)
-  const [lastScrollY, setLastScrollY] = useState(0)
 
   const menuTimerRef = useRef<NodeJS.Timeout | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -38,7 +36,6 @@ export function Header() {
   const { cart } = useCart()
   const { user, logout, isLoading } = useAuth()
 
-  // Carrousel
   useEffect(() => {
     const interval = setInterval(() => {
       setIsAnimating(true)
@@ -50,7 +47,7 @@ export function Header() {
     return () => clearInterval(interval)
   }, [])
 
-  // Scroll avec throttle et hysteresis
+  // Scroll avec hysteresis
   useEffect(() => {
     let ticking = false
     
@@ -59,14 +56,12 @@ export function Header() {
         requestAnimationFrame(() => {
           const currentScrollY = window.scrollY
           
-          // Hysteresis : 100px pour disparaître, 30px pour réapparaître
           if (currentScrollY > 100 && !isHeaderCompact) {
             setIsHeaderCompact(true)
           } else if (currentScrollY < 30 && isHeaderCompact) {
             setIsHeaderCompact(false)
           }
           
-          setLastScrollY(currentScrollY)
           ticking = false
         })
         ticking = true
@@ -155,7 +150,7 @@ export function Header() {
     <>
       <header className="fixed top-0 left-0 right-0 z-50">
         
-        {/* TOPBAR (toujours visible) */}
+        {/* TOPBAR */}
         <div className="hidden lg:flex items-center justify-between px-6 py-2" style={{ background: "#0A0A0A" }}>
           <div className="flex items-center gap-6">
             {isLoading ? (
@@ -183,12 +178,12 @@ export function Header() {
           </span>
         </div>
 
-        {/* BARRE BLANCHE + BARRE NOIRE (ensemble) */}
+        {/* BARRE BLANCHE + BARRE NOIRE */}
         <div className="bg-white" style={{ borderBottom: "0.5px solid #ECECEC" }}>
           
-          {/* BARRE BLANCHE PRINCIPALE */}
+          {/* BARRE BLANCHE */}
           <div 
-            className="transition-all duration-300 ease-out overflow-hidden"
+            className="transition-all duration-300 ease-out"
             style={{ 
               paddingTop: isHeaderCompact ? "8px" : "14px",
               paddingBottom: isHeaderCompact ? "8px" : "14px",
@@ -219,7 +214,7 @@ export function Header() {
                     ref={menuRef}
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
-                    className="absolute top-full left-0 mt-2 bg-white z-50"
+                    className="absolute top-full left-0 mt-2 bg-white z-[9999]"
                     style={{ width: "900px", borderRadius: "16px", border: "0.5px solid #ECECEC", boxShadow: "0 8px 40px rgba(0,0,0,0.10)", padding: "20px" }}
                   >
                     <div className="grid grid-cols-6 gap-2 mb-2">
@@ -293,7 +288,7 @@ export function Header() {
                 )}
               </div>
 
-              {/* Search avec carrousel */}
+              {/* Search */}
               <div className="flex-1 hidden lg:block relative">
                 <Search
                   className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-colors z-10"
@@ -343,7 +338,7 @@ export function Header() {
                 </button>
               </div>
 
-              {/* Actions desktop */}
+              {/* Actions */}
               <div className="hidden lg:flex items-center gap-2">
                 {isLoading ? (
                   <div className="w-9 h-9 rounded-xl animate-pulse" style={{ background: "#F4F4F4" }} />
@@ -364,7 +359,7 @@ export function Header() {
                     </button>
 
                     {userMenuOpen && (
-                      <div className="absolute right-0 mt-2 bg-white z-50" style={{ width: "200px", borderRadius: "14px", border: "0.5px solid #ECECEC", boxShadow: "0 8px 30px rgba(0,0,0,0.08)", padding: "6px" }}>
+                      <div className="absolute right-0 mt-2 bg-white z-[9999]" style={{ width: "200px", borderRadius: "14px", border: "0.5px solid #ECECEC", boxShadow: "0 8px 30px rgba(0,0,0,0.08)", padding: "6px" }}>
                         {[
                           { label: "Mon compte", href: "/account" },
                           { label: "Mes commandes", href: "/orders" },
@@ -448,20 +443,24 @@ export function Header() {
         </div>
       </header>
 
-      {/* Espace compensatoire dynamique */}
+      {/* Espace compensatoire */}
       <div className={`hidden lg:block transition-all duration-300 ${isHeaderCompact ? 'h-[56px]' : 'h-[130px]'}`} />
-      <div className="block lg:hidden transition-all duration-300 h-[56px]" />
+      <div className="block lg:hidden h-[56px]" />
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
 
       {/* MOBILE MENU */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-[1000] overflow-y-auto bg-white" style={{ top: "56px" }}>
+        <div className="lg:hidden fixed inset-0 z-[9999] overflow-y-auto bg-white" style={{ top: "56px" }}>
           <div className="px-5 py-4">
+            {/* contenu mobile inchangé... */}
             <div className="flex items-center justify-between mb-6" style={{ borderBottom: "0.5px solid #F0F0F0", paddingBottom: "16px" }}>
               <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 900, fontSize: "20px", letterSpacing: "-0.04em", color: "#0A0A0A" }}>
                 adul<span style={{ color: "#D4372B" }}>.</span>lam
               </span>
+              <button onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center w-9 h-9 rounded-xl focus:outline-none" style={{ background: "#F4F4F4" }}>
+                <X className="w-5 h-5" style={{ color: "#0A0A0A" }} />
+              </button>
             </div>
 
             {isLoading ? (
