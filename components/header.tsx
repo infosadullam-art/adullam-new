@@ -26,7 +26,6 @@ export function Header() {
   const [isAnimating, setIsAnimating] = useState(false)
   
   const [isHeaderCompact, setIsHeaderCompact] = useState(false)
-  const [lastScrollY, setLastScrollY] = useState(0)
 
   const menuTimerRef = useRef<NodeJS.Timeout | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -48,28 +47,22 @@ export function Header() {
     return () => clearInterval(interval)
   }, [])
 
-  // Scroll : barre disparaît quand on descend, réapparaît quand on remonte
+  // Scroll avec hysteresis pour éviter le clignotement
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Descend et dépasse 100px → barre disparaît
+      // Disparaît à 100px, réapparaît à 50px (évite les boucles)
+      if (currentScrollY > 100 && !isHeaderCompact) {
         setIsHeaderCompact(true)
-      } else if (currentScrollY < lastScrollY) {
-        // Remonte → barre réapparaît
-        setIsHeaderCompact(false)
-      } else if (currentScrollY < 30) {
-        // En haut de page → barre réapparaît
+      } else if (currentScrollY < 50 && isHeaderCompact) {
         setIsHeaderCompact(false)
       }
-      
-      setLastScrollY(currentScrollY)
     }
     
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [lastScrollY])
+  }, [isHeaderCompact])
 
   const openCart = () => setIsCartOpen(true)
   const goToAccount = () => router.push("/account")
@@ -94,11 +87,11 @@ export function Header() {
     router.push("/")
   }
 
-  const handleMouseEnter = () => {
+  const handleMouseEnterMega = () => {
     if (menuTimerRef.current) { clearTimeout(menuTimerRef.current); menuTimerRef.current = null }
     setShowMegaMenu(true)
   }
-  const handleMouseLeave = () => {
+  const handleMouseLeaveMega = () => {
     menuTimerRef.current = setTimeout(() => { setShowMegaMenu(false); setActiveCategory(null) }, 300)
   }
 
@@ -199,8 +192,8 @@ export function Header() {
               <div className="hidden lg:block relative flex-shrink-0">
                 <button
                   ref={buttonRef}
-                  onMouseEnter={handleMouseEnter}
-                  onMouseLeave={handleMouseLeave}
+                  onMouseEnter={handleMouseEnterMega}
+                  onMouseLeave={handleMouseLeaveMega}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors focus:outline-none"
                   style={{ background: "#F4F4F4", color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}
                 >
@@ -211,8 +204,8 @@ export function Header() {
                 {showMegaMenu && (
                   <div
                     ref={menuRef}
-                    onMouseEnter={handleMouseEnter}
-                    onMouseLeave={handleMouseLeave}
+                    onMouseEnter={handleMouseEnterMega}
+                    onMouseLeave={handleMouseLeaveMega}
                     className="absolute top-full left-0 mt-2 bg-white z-[9999]"
                     style={{ width: "900px", borderRadius: "16px", border: "0.5px solid #ECECEC", boxShadow: "0 8px 40px rgba(0,0,0,0.10)", padding: "20px" }}
                   >
