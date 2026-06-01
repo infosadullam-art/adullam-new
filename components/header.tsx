@@ -26,14 +26,11 @@ export function Header() {
   const [isAnimating, setIsAnimating] = useState(false)
   
   const [isHeaderCompact, setIsHeaderCompact] = useState(false)
-  
-  // Ref pour éviter les changements multiples
-  const isScrollingRef = useRef(false)
-  const compactStateRef = useRef(false)
 
   const menuTimerRef = useRef<NodeJS.Timeout | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const router = useRouter()
   const pathname = usePathname()
@@ -51,38 +48,55 @@ export function Header() {
     return () => clearInterval(interval)
   }, [])
 
-  // Scroll avec throttle et seuil fixe
+  // Scroll avec hysteresis
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout | null = null
+    let ticking = false
     
     const handleScroll = () => {
-      // Ne pas traiter si déjà en cours
-      if (isScrollingRef.current) return
-      
-      isScrollingRef.current = true
-      
-      if (timeoutId) clearTimeout(timeoutId)
-      
-      timeoutId = setTimeout(() => {
-        const currentScrollY = window.scrollY
-        const newCompactState = currentScrollY > 80
-        
-        // Ne changer l'état que si différent
-        if (compactStateRef.current !== newCompactState) {
-          compactStateRef.current = newCompactState
-          setIsHeaderCompact(newCompactState)
-        }
-        
-        isScrollingRef.current = false
-      }, 50)
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY
+          
+          if (currentScrollY > 100 && !isHeaderCompact) {
+            setIsHeaderCompact(true)
+          } else if (currentScrollY < 30 && isHeaderCompact) {
+            setIsHeaderCompact(false)
+          }
+          
+          ticking = false
+        })
+        ticking = true
+      }
     }
     
     window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => {
-      window.removeEventListener("scroll", handleScroll)
-      if (timeoutId) clearTimeout(timeoutId)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [isHeaderCompact])
+
+  // Souris survole le header → barre noire réapparaît
+  useEffect(() => {
+    const headerElement = document.querySelector('header')
+    
+    const handleMouseEnter = () => {
+      if (isHeaderCompact) {
+        // Annule le timeout précédent
+        if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
+        // Réapparaît instantanément
+        setIsHeaderCompact(false)
+      }
     }
-  }, [])
+    
+    if (headerElement) {
+      headerElement.addEventListener('mouseenter', handleMouseEnter)
+    }
+    
+    return () => {
+      if (headerElement) {
+        headerElement.removeEventListener('mouseenter', handleMouseEnter)
+      }
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
+    }
+  }, [isHeaderCompact])
 
   const openCart = () => setIsCartOpen(true)
   const goToAccount = () => router.push("/account")
