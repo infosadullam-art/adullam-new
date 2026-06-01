@@ -72,6 +72,19 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [isHeaderCompact])
 
+  // Détection souris près du haut pour réafficher la barre
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      // Si la souris est dans les 50px du haut
+      if (e.clientY < 50 && isHeaderCompact) {
+        setIsHeaderCompact(false) // Réapparaît immédiatement
+      }
+    }
+    
+    window.addEventListener("mousemove", handleMouseMove)
+    return () => window.removeEventListener("mousemove", handleMouseMove)
+  }, [isHeaderCompact])
+
   const openCart = () => setIsCartOpen(true)
   const goToAccount = () => router.push("/account")
   const goToLogin = () => router.push("/account?mode=login")
@@ -453,7 +466,6 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-[9999] overflow-y-auto bg-white" style={{ top: "56px" }}>
           <div className="px-5 py-4">
-            {/* contenu mobile inchangé... */}
             <div className="flex items-center justify-between mb-6" style={{ borderBottom: "0.5px solid #F0F0F0", paddingBottom: "16px" }}>
               <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 900, fontSize: "20px", letterSpacing: "-0.04em", color: "#0A0A0A" }}>
                 adul<span style={{ color: "#D4372B" }}>.</span>lam
