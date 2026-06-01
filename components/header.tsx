@@ -25,9 +25,8 @@ export function Header() {
   const [suggestionIndex, setSuggestionIndex] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
   
-  // Scroll : tout le header se réduit en hauteur
+  // Scroll : mode compact activé dès qu'on scroll (même légèrement)
   const [isHeaderCompact, setIsHeaderCompact] = useState(false)
-  const [lastScrollY, setLastScrollY] = useState(0)
 
   const menuTimerRef = useRef<NodeJS.Timeout | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -38,6 +37,7 @@ export function Header() {
   const { cart } = useCart()
   const { user, logout, isLoading } = useAuth()
 
+  // Carrousel
   useEffect(() => {
     const interval = setInterval(() => {
       setIsAnimating(true)
@@ -49,24 +49,22 @@ export function Header() {
     return () => clearInterval(interval)
   }, [])
 
-  // Scroll : toggle mode compact
+  // Scroll : dès qu'on dépasse 30px, mode compact. Sinon, normal.
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
-      const scrollingDown = currentScrollY > lastScrollY
       
-      if (scrollingDown && currentScrollY > 80) {
-        setIsHeaderCompact(true)  // Mode compact : barre noire cachée, barre blanche réduite
-      } else if (!scrollingDown && currentScrollY < lastScrollY) {
-        setIsHeaderCompact(false) // Mode normal
+      // Seuil bas (30px) pour éviter les bugs de scroll doux
+      if (currentScrollY > 30) {
+        setIsHeaderCompact(true)
+      } else {
+        setIsHeaderCompact(false)
       }
-      
-      setLastScrollY(currentScrollY)
     }
     
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [lastScrollY])
+  }, [])
 
   const openCart = () => setIsCartOpen(true)
   const goToAccount = () => router.push("/account")
@@ -146,7 +144,7 @@ export function Header() {
     <>
       <header className="fixed top-0 left-0 right-0 z-50">
         
-        {/* TOUT LE HEADER (topbar + barre blanche + barre noire) se contracte */}
+        {/* TOUT LE HEADER se contracte */}
         <div 
           className="transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] bg-white"
           style={{ 
