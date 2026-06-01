@@ -25,8 +25,9 @@ export function Header() {
   const [suggestionIndex, setSuggestionIndex] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
   
-  // Scroll : avec hysteresis pour éviter les boucles
+  // Scroll : avec hysteresis
   const [isHeaderCompact, setIsHeaderCompact] = useState(false)
+  const [lastScrollY, setLastScrollY] = useState(0)
 
   const menuTimerRef = useRef<NodeJS.Timeout | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -49,16 +50,26 @@ export function Header() {
     return () => clearInterval(interval)
   }, [])
 
-  // Scroll avec hysteresis : 80px pour disparaître, 50px pour réapparaître
+  // Scroll avec throttle et hysteresis
   useEffect(() => {
+    let ticking = false
+    
     const handleScroll = () => {
-      const currentScrollY = window.scrollY
-      
-      // Disparaît à 80px, mais ne réapparaît qu'à 50px (évite les boucles)
-      if (currentScrollY > 80 && !isHeaderCompact) {
-        setIsHeaderCompact(true)
-      } else if (currentScrollY < 50 && isHeaderCompact) {
-        setIsHeaderCompact(false)
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY
+          
+          // Hysteresis : 100px pour disparaître, 30px pour réapparaître
+          if (currentScrollY > 100 && !isHeaderCompact) {
+            setIsHeaderCompact(true)
+          } else if (currentScrollY < 30 && isHeaderCompact) {
+            setIsHeaderCompact(false)
+          }
+          
+          setLastScrollY(currentScrollY)
+          ticking = false
+        })
+        ticking = true
       }
     }
     
@@ -144,53 +155,48 @@ export function Header() {
     <>
       <header className="fixed top-0 left-0 right-0 z-50">
         
-        {/* TOUT LE HEADER se contracte */}
-        <div 
-          className="transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] bg-white"
-          style={{ 
-            maxHeight: isHeaderCompact ? "56px" : "200px",
-          }}
-        >
-          {/* TOPBAR */}
-          <div className="hidden lg:flex items-center justify-between px-6 py-2" style={{ background: "#0A0A0A" }}>
-            <div className="flex items-center gap-6">
-              {isLoading ? (
-                <div className="h-3 w-32 rounded animate-pulse" style={{ background: "#222" }} />
-              ) : user ? (
-                <button onClick={goToAccount} className="text-xs font-medium hover:opacity-70 transition-opacity" style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
-                  Bonjour, {user.name || user.email?.split("@")[0]}
-                </button>
-              ) : (
-                <>
-                  <button onClick={goToLogin} className="flex items-center gap-1.5 text-xs hover:opacity-70 transition-opacity" style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
-                    <LogIn className="w-3.5 h-3.5" /> Connexion
-                  </button>
-                  <button onClick={goToRegister} className="flex items-center gap-1.5 text-xs font-medium hover:opacity-70 transition-opacity" style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
-                    <UserPlus className="w-3.5 h-3.5" /> Inscription
-                  </button>
-                </>
-              )}
-              <button onClick={goToAccount} className="text-xs hover:opacity-70 transition-opacity" style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
-                Compte & commandes
+        {/* TOPBAR (toujours visible) */}
+        <div className="hidden lg:flex items-center justify-between px-6 py-2" style={{ background: "#0A0A0A" }}>
+          <div className="flex items-center gap-6">
+            {isLoading ? (
+              <div className="h-3 w-32 rounded animate-pulse" style={{ background: "#222" }} />
+            ) : user ? (
+              <button onClick={goToAccount} className="text-xs font-medium hover:opacity-70 transition-opacity" style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
+                Bonjour, {user.name || user.email?.split("@")[0]}
               </button>
-            </div>
-            <span className="text-xs" style={{ color: "#555", fontFamily: "'Poppins', sans-serif" }}>
-              Livraison vers l'Afrique · Paiement Mobile Money
-            </span>
+            ) : (
+              <>
+                <button onClick={goToLogin} className="flex items-center gap-1.5 text-xs hover:opacity-70 transition-opacity" style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
+                  <LogIn className="w-3.5 h-3.5" /> Connexion
+                </button>
+                <button onClick={goToRegister} className="flex items-center gap-1.5 text-xs font-medium hover:opacity-70 transition-opacity" style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
+                  <UserPlus className="w-3.5 h-3.5" /> Inscription
+                </button>
+              </>
+            )}
+            <button onClick={goToAccount} className="text-xs hover:opacity-70 transition-opacity" style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
+              Compte & commandes
+            </button>
           </div>
+          <span className="text-xs" style={{ color: "#555", fontFamily: "'Poppins', sans-serif" }}>
+            Livraison vers l'Afrique · Paiement Mobile Money
+          </span>
+        </div>
 
+        {/* BARRE BLANCHE + BARRE NOIRE (ensemble) */}
+        <div className="bg-white" style={{ borderBottom: "0.5px solid #ECECEC" }}>
+          
           {/* BARRE BLANCHE PRINCIPALE */}
           <div 
-            className="bg-white transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] overflow-hidden"
+            className="transition-all duration-300 ease-out overflow-hidden"
             style={{ 
-              borderBottom: "0.5px solid #ECECEC",
               paddingTop: isHeaderCompact ? "8px" : "14px",
               paddingBottom: isHeaderCompact ? "8px" : "14px",
             }}
           >
             <div className="max-w-7xl mx-auto px-6 flex items-center gap-4">
               <button onClick={() => router.push("/")} className="flex-shrink-0 focus:outline-none">
-                <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 900, fontSize: isHeaderCompact ? "18px" : "22px", letterSpacing: "-0.04em", color: "#0A0A0A", transition: "font-size 0.5s ease" }}>
+                <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 900, fontSize: isHeaderCompact ? "18px" : "22px", letterSpacing: "-0.04em", color: "#0A0A0A", transition: "font-size 0.3s ease" }}>
                   adul<span style={{ color: "#D4372B" }}>.</span>lam
                 </span>
               </button>
@@ -408,7 +414,7 @@ export function Header() {
 
           {/* BARRE NOIRE */}
           <div 
-            className="hidden lg:block transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] overflow-hidden"
+            className="hidden lg:block transition-all duration-300 ease-out overflow-hidden"
             style={{ 
               background: "#0A0A0A",
               maxHeight: isHeaderCompact ? "0px" : "60px",
@@ -442,14 +448,15 @@ export function Header() {
         </div>
       </header>
 
-      {/* Espace compensatoire */}
-      <div className={`transition-all duration-500 ${isHeaderCompact ? 'h-[56px]' : 'h-[130px]'}`} />
+      {/* Espace compensatoire dynamique */}
+      <div className={`hidden lg:block transition-all duration-300 ${isHeaderCompact ? 'h-[56px]' : 'h-[130px]'}`} />
+      <div className="block lg:hidden transition-all duration-300 h-[56px]" />
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
 
       {/* MOBILE MENU */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-[1000] overflow-y-auto bg-white" style={{ top: isHeaderCompact ? '56px' : 'auto' }}>
+        <div className="lg:hidden fixed inset-0 z-[1000] overflow-y-auto bg-white" style={{ top: "56px" }}>
           <div className="px-5 py-4">
             <div className="flex items-center justify-between mb-6" style={{ borderBottom: "0.5px solid #F0F0F0", paddingBottom: "16px" }}>
               <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 900, fontSize: "20px", letterSpacing: "-0.04em", color: "#0A0A0A" }}>
