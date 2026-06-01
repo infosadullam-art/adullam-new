@@ -8,6 +8,18 @@ import { CartDrawer } from "@/components/cart/CartDrawer"
 import { useAuth } from "@/lib/admin/auth-context"
 import Link from "next/link"
 
+// Suggestions pour le carrousel
+const searchSuggestions = [
+  "chaussure", 
+  "robe de soirée", 
+  "écouteur", 
+  "sac à main", 
+  "montre",
+  "parfum",
+  "jean",
+  "casquette"
+]
+
 export function Header() {
   const [showMegaMenu, setShowMegaMenu] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -16,6 +28,14 @@ export function Header() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  
+  // Carrousel
+  const [suggestionIndex, setSuggestionIndex] = useState(0)
+  const [isAnimating, setIsAnimating] = useState(false)
+  
+  // Scroll : cache/montre la barre blanche principale
+  const [isMainHeaderVisible, setIsMainHeaderVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
 
   const menuTimerRef = useRef<NodeJS.Timeout | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -25,6 +45,37 @@ export function Header() {
   const pathname = usePathname()
   const { cart } = useCart()
   const { user, logout, isLoading } = useAuth()
+
+  // Carrousel vertical
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsAnimating(true)
+      setTimeout(() => {
+        setSuggestionIndex((prev) => (prev + 1) % searchSuggestions.length)
+        setIsAnimating(false)
+      }, 200)
+    }, 2500)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Gestion du scroll fluide
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      const scrollingDown = currentScrollY > lastScrollY
+      
+      if (scrollingDown && currentScrollY > 80) {
+        setIsMainHeaderVisible(false)
+      } else if (!scrollingDown && currentScrollY < lastScrollY) {
+        setIsMainHeaderVisible(true)
+      }
+      
+      setLastScrollY(currentScrollY)
+    }
+    
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [lastScrollY])
 
   const openCart = () => setIsCartOpen(true)
   const goToAccount  = () => router.push("/account")
@@ -102,9 +153,9 @@ export function Header() {
 
   return (
     <>
-      <header className="relative z-50">
+      <header className="fixed top-0 left-0 right-0 z-50">
 
-        {/* ── TOPBAR ─────────────────────────────────────────── */}
+        {/* ── TOPBAR (toujours visible) ── */}
         <div className="hidden lg:flex items-center justify-between px-6 py-2" style={{ background: "#0A0A0A" }}>
           <div className="flex items-center gap-6">
             {isLoading ? (
@@ -132,8 +183,15 @@ export function Header() {
           </span>
         </div>
 
-        {/* ── MAIN HEADER ────────────────────────────────────── */}
-        <div className="bg-white" style={{ borderBottom: "0.5px solid #ECECEC" }}>
+        {/* ── MAIN HEADER (cette partie se cache au scroll) ── */}
+        <div 
+          className="bg-white transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
+          style={{ 
+            borderBottom: "0.5px solid #ECECEC",
+            transform: isMainHeaderVisible ? 'translateY(0)' : 'translateY(-100%)',
+            opacity: isMainHeaderVisible ? 1 : 0,
+          }}
+        >
           <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center gap-4">
 
             {/* Logo */}
@@ -164,7 +222,6 @@ export function Header() {
                   className="absolute top-full left-0 mt-2 bg-white z-50"
                   style={{ width: "900px", borderRadius: "16px", border: "0.5px solid #ECECEC", boxShadow: "0 8px 40px rgba(0,0,0,0.10)", padding: "20px" }}
                 >
-                  {/* Grille catégories */}
                   <div className="grid grid-cols-6 gap-2 mb-2">
                     {categories.slice(0, 6).map((cat) => (
                       <button
@@ -198,7 +255,6 @@ export function Header() {
                     ))}
                   </div>
 
-                  {/* Sous-catégories */}
                   {activeCategory && (
                     <div style={{ borderTop: "0.5px solid #F0F0F0", paddingTop: "16px" }}>
                       <p className="text-xs font-semibold mb-3" style={{ color: "#AAAAAA", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "'Poppins', sans-serif" }}>
@@ -237,15 +293,33 @@ export function Header() {
               )}
             </div>
 
-            {/* Search */}
+            {/* Search avec carrousel vertical */}
             <div className="flex-1 hidden lg:block relative">
               <Search
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-colors"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-colors z-10"
                 style={{ color: searchFocused ? "#D4372B" : "#AAAAAA" }}
               />
+              
+              {/* Carrousel vertical animé */}
+              {!searchFocused && !searchQuery && (
+                <div className="absolute left-10 top-1/2 -translate-y-1/2 pointer-events-none overflow-hidden" style={{ height: "20px", width: "180px" }}>
+                  <div
+                    className="transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                    style={{
+                      transform: isAnimating ? 'translateY(-100%)' : 'translateY(0)',
+                      opacity: isAnimating ? 0 : 1,
+                    }}
+                  >
+                    <span className="text-sm" style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
+                      {searchSuggestions[suggestionIndex]}
+                    </span>
+                  </div>
+                </div>
+              )}
+              
               <input
                 type="text"
-                placeholder="Rechercher sur Adullam..."
+                placeholder=""
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 onFocus={() => setSearchFocused(true)}
@@ -260,6 +334,7 @@ export function Header() {
                   fontFamily: "'Poppins', sans-serif",
                 }}
               />
+              
               <button
                 onClick={handleSearch}
                 className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 rounded-lg transition-colors focus:outline-none"
@@ -271,7 +346,6 @@ export function Header() {
 
             {/* Actions desktop */}
             <div className="hidden lg:flex items-center gap-2">
-              {/* User */}
               {isLoading ? (
                 <div className="w-9 h-9 rounded-xl animate-pulse" style={{ background: "#F4F4F4" }} />
               ) : user ? (
@@ -314,7 +388,6 @@ export function Header() {
                 </button>
               )}
 
-              {/* Panier */}
               <button
                 onClick={openCart}
                 className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors focus:outline-none"
@@ -344,7 +417,7 @@ export function Header() {
           </div>
         </div>
 
-        {/* ── NAV DESKTOP ────────────────────────────────────── */}
+        {/* ── NAV DESKTOP (barre noire toujours visible) ── */}
         <div className="hidden lg:block" style={{ background: "#0A0A0A" }}>
           <div className="max-w-7xl mx-auto px-6">
             <nav className="flex items-center gap-1">
@@ -371,11 +444,10 @@ export function Header() {
           </div>
         </div>
 
-        {/* ── MOBILE FULLSCREEN MENU ─────────────────────────── */}
+        {/* ── MOBILE MENU (inchangé) ── */}
         {mobileMenuOpen && (
           <div className="lg:hidden fixed inset-0 z-[1000] overflow-y-auto" style={{ background: "#fff" }}>
             <div className="px-5 py-4">
-              {/* Header du menu */}
               <div className="flex items-center justify-between mb-6" style={{ borderBottom: "0.5px solid #F0F0F0", paddingBottom: "16px" }}>
                 <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 900, fontSize: "20px", letterSpacing: "-0.04em", color: "#0A0A0A" }}>
                   adul<span style={{ color: "#D4372B" }}>.</span>lam
@@ -385,7 +457,6 @@ export function Header() {
                 </button>
               </div>
 
-              {/* Auth */}
               {isLoading ? (
                 <div className="h-4 rounded animate-pulse mb-4" style={{ background: "#F4F4F4", width: "40%" }} />
               ) : user ? (
@@ -404,7 +475,6 @@ export function Header() {
                 </div>
               )}
 
-              {/* Nav items */}
               <div className="flex flex-col mb-4">
                 {navItems.map((item) => (
                   <button
@@ -419,7 +489,6 @@ export function Header() {
                 ))}
               </div>
 
-              {/* Catégories */}
               <p className="text-xs font-semibold mb-3" style={{ color: "#AAAAAA", letterSpacing: "0.08em", textTransform: "uppercase" }}>Catégories</p>
               {categories.map((cat) => (
                 <div key={cat.title}>
@@ -462,6 +531,9 @@ export function Header() {
           </div>
         )}
       </header>
+
+      {/* Espace pour compenser le header fixe */}
+      <div className="h-[110px] lg:h-[130px]" />
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </>
