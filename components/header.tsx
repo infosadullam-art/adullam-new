@@ -26,6 +26,10 @@ export function Header() {
   const [isAnimating, setIsAnimating] = useState(false)
   
   const [isHeaderCompact, setIsHeaderCompact] = useState(false)
+  
+  // Ref pour éviter les changements multiples
+  const isScrollingRef = useRef(false)
+  const compactStateRef = useRef(false)
 
   const menuTimerRef = useRef<NodeJS.Timeout | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -47,22 +51,38 @@ export function Header() {
     return () => clearInterval(interval)
   }, [])
 
-  // Scroll avec hysteresis pour éviter le clignotement
+  // Scroll avec throttle et seuil fixe
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout | null = null
+    
     const handleScroll = () => {
-      const currentScrollY = window.scrollY
+      // Ne pas traiter si déjà en cours
+      if (isScrollingRef.current) return
       
-      // Disparaît à 100px, réapparaît à 50px (évite les boucles)
-      if (currentScrollY > 100 && !isHeaderCompact) {
-        setIsHeaderCompact(true)
-      } else if (currentScrollY < 50 && isHeaderCompact) {
-        setIsHeaderCompact(false)
-      }
+      isScrollingRef.current = true
+      
+      if (timeoutId) clearTimeout(timeoutId)
+      
+      timeoutId = setTimeout(() => {
+        const currentScrollY = window.scrollY
+        const newCompactState = currentScrollY > 80
+        
+        // Ne changer l'état que si différent
+        if (compactStateRef.current !== newCompactState) {
+          compactStateRef.current = newCompactState
+          setIsHeaderCompact(newCompactState)
+        }
+        
+        isScrollingRef.current = false
+      }, 50)
     }
     
     window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [isHeaderCompact])
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      if (timeoutId) clearTimeout(timeoutId)
+    }
+  }, [])
 
   const openCart = () => setIsCartOpen(true)
   const goToAccount = () => router.push("/account")
