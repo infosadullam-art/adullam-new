@@ -30,7 +30,6 @@ export function Header() {
   const menuTimerRef = useRef<NodeJS.Timeout | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const router = useRouter()
   const pathname = usePathname()
@@ -75,26 +74,21 @@ export function Header() {
 
   // Souris survole le header → barre noire réapparaît
   useEffect(() => {
-    const headerElement = document.querySelector('header')
-    
     const handleMouseEnter = () => {
       if (isHeaderCompact) {
-        // Annule le timeout précédent
-        if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
-        // Réapparaît instantanément
         setIsHeaderCompact(false)
       }
     }
     
-    if (headerElement) {
-      headerElement.addEventListener('mouseenter', handleMouseEnter)
+    const header = document.querySelector('header')
+    if (header) {
+      header.addEventListener('mouseenter', handleMouseEnter)
     }
     
     return () => {
-      if (headerElement) {
-        headerElement.removeEventListener('mouseenter', handleMouseEnter)
+      if (header) {
+        header.removeEventListener('mouseenter', handleMouseEnter)
       }
-      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
     }
   }, [isHeaderCompact])
 
