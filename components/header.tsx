@@ -8,16 +8,9 @@ import { CartDrawer } from "@/components/cart/CartDrawer"
 import { useAuth } from "@/lib/admin/auth-context"
 import Link from "next/link"
 
-// Suggestions pour le carrousel
 const searchSuggestions = [
-  "chaussure", 
-  "robe de soirée", 
-  "écouteur", 
-  "sac à main", 
-  "montre",
-  "parfum",
-  "jean",
-  "casquette"
+  "chaussure", "robe de soirée", "écouteur", "sac à main", 
+  "montre", "parfum", "jean", "casquette"
 ]
 
 export function Header() {
@@ -29,12 +22,11 @@ export function Header() {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   
-  // Carrousel
   const [suggestionIndex, setSuggestionIndex] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
   
-  // Scroll : cache/montre la barre blanche principale
-  const [isMainHeaderVisible, setIsMainHeaderVisible] = useState(true)
+  // Scroll : barre noire disparaît ET barre blanche se rétracte
+  const [isNavVisible, setIsNavVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
 
   const menuTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -46,7 +38,7 @@ export function Header() {
   const { cart } = useCart()
   const { user, logout, isLoading } = useAuth()
 
-  // Carrousel vertical
+  // Carrousel
   useEffect(() => {
     const interval = setInterval(() => {
       setIsAnimating(true)
@@ -58,16 +50,16 @@ export function Header() {
     return () => clearInterval(interval)
   }, [])
 
-  // Gestion du scroll fluide
+  // Scroll
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       const scrollingDown = currentScrollY > lastScrollY
       
       if (scrollingDown && currentScrollY > 80) {
-        setIsMainHeaderVisible(false)
+        setIsNavVisible(false)
       } else if (!scrollingDown && currentScrollY < lastScrollY) {
-        setIsMainHeaderVisible(true)
+        setIsNavVisible(true)
       }
       
       setLastScrollY(currentScrollY)
@@ -78,8 +70,8 @@ export function Header() {
   }, [lastScrollY])
 
   const openCart = () => setIsCartOpen(true)
-  const goToAccount  = () => router.push("/account")
-  const goToLogin    = () => router.push("/account?mode=login")
+  const goToAccount = () => router.push("/account")
+  const goToLogin = () => router.push("/account?mode=login")
   const goToRegister = () => router.push("/account?mode=register")
 
   const generateSlug = (name: string): string =>
@@ -155,7 +147,7 @@ export function Header() {
     <>
       <header className="fixed top-0 left-0 right-0 z-50">
 
-        {/* ── TOPBAR (toujours visible) ── */}
+        {/* TOPBAR (toujours visible) */}
         <div className="hidden lg:flex items-center justify-between px-6 py-2" style={{ background: "#0A0A0A" }}>
           <div className="flex items-center gap-6">
             {isLoading ? (
@@ -183,19 +175,19 @@ export function Header() {
           </span>
         </div>
 
-        {/* ── MAIN HEADER (cette partie se cache au scroll) ── */}
+        {/* BARRE BLANCHE PRINCIPALE - se rétracte quand la barre noire disparaît */}
         <div 
-          className="bg-white transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
+          className="bg-white transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] overflow-hidden"
           style={{ 
             borderBottom: "0.5px solid #ECECEC",
-            transform: isMainHeaderVisible ? 'translateY(0)' : 'translateY(-100%)',
-            opacity: isMainHeaderVisible ? 1 : 0,
+            maxHeight: isNavVisible ? "80px" : "56px",
+            paddingTop: isNavVisible ? "14px" : "10px",
+            paddingBottom: isNavVisible ? "14px" : "10px",
           }}
         >
-          <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center gap-4">
+          <div className="max-w-7xl mx-auto px-6 flex items-center gap-4">
 
-            {/* Logo */}
-            <button onClick={() => router.push("/")} className="flex-shrink-0 focus:outline-none" aria-label="Accueil">
+            <button onClick={() => router.push("/")} className="flex-shrink-0 focus:outline-none">
               <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 900, fontSize: "22px", letterSpacing: "-0.04em", color: "#0A0A0A" }}>
                 adul<span style={{ color: "#D4372B" }}>.</span>lam
               </span>
@@ -293,14 +285,13 @@ export function Header() {
               )}
             </div>
 
-            {/* Search avec carrousel vertical */}
+            {/* Search avec carrousel */}
             <div className="flex-1 hidden lg:block relative">
               <Search
                 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-colors z-10"
                 style={{ color: searchFocused ? "#D4372B" : "#AAAAAA" }}
               />
               
-              {/* Carrousel vertical animé */}
               {!searchFocused && !searchQuery && (
                 <div className="absolute left-10 top-1/2 -translate-y-1/2 pointer-events-none overflow-hidden" style={{ height: "20px", width: "180px" }}>
                   <div
@@ -403,22 +394,25 @@ export function Header() {
               </button>
             </div>
 
-            {/* Burger mobile */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden flex items-center justify-center w-9 h-9 rounded-xl ml-auto focus:outline-none"
               style={{ background: "#F4F4F4" }}
             >
-              {mobileMenuOpen
-                ? <X className="w-[18px] h-[18px]" style={{ color: "#0A0A0A" }} />
-                : <Menu className="w-[18px] h-[18px]" style={{ color: "#0A0A0A" }} />
-              }
+              {mobileMenuOpen ? <X className="w-[18px] h-[18px]" /> : <Menu className="w-[18px] h-[18px]" />}
             </button>
           </div>
         </div>
 
-        {/* ── NAV DESKTOP (barre noire toujours visible) ── */}
-        <div className="hidden lg:block" style={{ background: "#0A0A0A" }}>
+        {/* BARRE NOIRE - disparaît complètement */}
+        <div 
+          className="hidden lg:block transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] overflow-hidden"
+          style={{ 
+            background: "#0A0A0A",
+            maxHeight: isNavVisible ? "100px" : "0px",
+            opacity: isNavVisible ? 1 : 0,
+          }}
+        >
           <div className="max-w-7xl mx-auto px-6">
             <nav className="flex items-center gap-1">
               {navItems.map((item) => {
@@ -444,7 +438,7 @@ export function Header() {
           </div>
         </div>
 
-        {/* ── MOBILE MENU (inchangé) ── */}
+        {/* MOBILE MENU */}
         {mobileMenuOpen && (
           <div className="lg:hidden fixed inset-0 z-[1000] overflow-y-auto" style={{ background: "#fff" }}>
             <div className="px-5 py-4">
@@ -532,7 +526,6 @@ export function Header() {
         )}
       </header>
 
-      {/* Espace pour compenser le header fixe */}
       <div className="h-[110px] lg:h-[130px]" />
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
