@@ -25,9 +25,8 @@ export function Header() {
   const [suggestionIndex, setSuggestionIndex] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
   
-  // Scroll : seuil dynamique basé sur le hero
+  // Scroll : mode compact activé seulement après 80px
   const [isHeaderCompact, setIsHeaderCompact] = useState(false)
-  const [scrollThreshold, setScrollThreshold] = useState(400) // Valeur par défaut
 
   const menuTimerRef = useRef<NodeJS.Timeout | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -50,38 +49,22 @@ export function Header() {
     return () => clearInterval(interval)
   }, [])
 
-  // Définir le seuil de scroll dynamiquement (hauteur du hero)
-  useEffect(() => {
-    const getHeroHeight = () => {
-      const heroSection = document.querySelector('section, div') // Ajustez selon votre hero
-      if (heroSection) {
-        const heroHeight = heroSection.getBoundingClientRect().height
-        setScrollThreshold(heroHeight - 100) // Disparaît vers la fin du hero
-      }
-    }
-    
-    // Petit délai pour que le DOM soit chargé
-    setTimeout(getHeroHeight, 100)
-    window.addEventListener('resize', getHeroHeight)
-    return () => window.removeEventListener('resize', getHeroHeight)
-  }, [])
-
-  // Scroll : la barre disparaît dynamiquement à un certain seuil
+  // Scroll : la barre disparaît APRÈS 80px, reste visible avant
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       
-      // La barre disparaît quand on dépasse le seuil (fin du hero)
-      if (currentScrollY > scrollThreshold) {
-        setIsHeaderCompact(true)
-      } else {
-        setIsHeaderCompact(false)
+      // Seuil à 80px - avant rien ne bouge, après elle disparaît
+      if (currentScrollY > 80 && !isHeaderCompact) {
+        setIsHeaderCompact(true)  // Disparaît quand on dépasse 80px
+      } else if (currentScrollY <= 80 && isHeaderCompact) {
+        setIsHeaderCompact(false) // Réapparaît quand on revient en dessous de 80px
       }
     }
     
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [scrollThreshold])
+  }, [isHeaderCompact])
 
   const openCart = () => setIsCartOpen(true)
   const goToAccount = () => router.push("/account")
@@ -161,7 +144,7 @@ export function Header() {
     <>
       <header className="fixed top-0 left-0 right-0 z-50">
         
-        {/* TOUT LE HEADER se contracte dynamiquement */}
+        {/* TOUT LE HEADER se contracte */}
         <div 
           className="transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] bg-white"
           style={{ 
@@ -423,7 +406,7 @@ export function Header() {
             </div>
           </div>
 
-          {/* BARRE NOIRE - se contracte complètement */}
+          {/* BARRE NOIRE */}
           <div 
             className="hidden lg:block transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] overflow-hidden"
             style={{ 
