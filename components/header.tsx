@@ -25,8 +25,9 @@ export function Header() {
   const [suggestionIndex, setSuggestionIndex] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
   
-  // Scroll : mode compact activé dès qu'on scroll (même légèrement)
+  // Scroll : seuil dynamique basé sur le hero
   const [isHeaderCompact, setIsHeaderCompact] = useState(false)
+  const [scrollThreshold, setScrollThreshold] = useState(400) // Valeur par défaut
 
   const menuTimerRef = useRef<NodeJS.Timeout | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -49,13 +50,29 @@ export function Header() {
     return () => clearInterval(interval)
   }, [])
 
-  // Scroll : dès qu'on dépasse 30px, mode compact. Sinon, normal.
+  // Définir le seuil de scroll dynamiquement (hauteur du hero)
+  useEffect(() => {
+    const getHeroHeight = () => {
+      const heroSection = document.querySelector('section, div') // Ajustez selon votre hero
+      if (heroSection) {
+        const heroHeight = heroSection.getBoundingClientRect().height
+        setScrollThreshold(heroHeight - 100) // Disparaît vers la fin du hero
+      }
+    }
+    
+    // Petit délai pour que le DOM soit chargé
+    setTimeout(getHeroHeight, 100)
+    window.addEventListener('resize', getHeroHeight)
+    return () => window.removeEventListener('resize', getHeroHeight)
+  }, [])
+
+  // Scroll : la barre disparaît dynamiquement à un certain seuil
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       
-      // Seuil bas (30px) pour éviter les bugs de scroll doux
-      if (currentScrollY > 30) {
+      // La barre disparaît quand on dépasse le seuil (fin du hero)
+      if (currentScrollY > scrollThreshold) {
         setIsHeaderCompact(true)
       } else {
         setIsHeaderCompact(false)
@@ -64,7 +81,7 @@ export function Header() {
     
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [scrollThreshold])
 
   const openCart = () => setIsCartOpen(true)
   const goToAccount = () => router.push("/account")
@@ -144,7 +161,7 @@ export function Header() {
     <>
       <header className="fixed top-0 left-0 right-0 z-50">
         
-        {/* TOUT LE HEADER se contracte */}
+        {/* TOUT LE HEADER se contracte dynamiquement */}
         <div 
           className="transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] bg-white"
           style={{ 
@@ -179,7 +196,7 @@ export function Header() {
             </span>
           </div>
 
-          {/* BARRE BLANCHE PRINCIPALE - rétrécit en hauteur */}
+          {/* BARRE BLANCHE PRINCIPALE */}
           <div 
             className="bg-white transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] overflow-hidden"
             style={{ 
@@ -442,7 +459,7 @@ export function Header() {
         </div>
       </header>
 
-      {/* Espace compensatoire qui change selon le mode */}
+      {/* Espace compensatoire */}
       <div className={`transition-all duration-500 ${isHeaderCompact ? 'h-[56px]' : 'h-[130px]'}`} />
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
