@@ -25,7 +25,7 @@ export function Header() {
   const [suggestionIndex, setSuggestionIndex] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
   
-  // Scroll : mode compact activé seulement après 80px
+  // Scroll : avec hysteresis pour éviter les boucles
   const [isHeaderCompact, setIsHeaderCompact] = useState(false)
 
   const menuTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -49,16 +49,16 @@ export function Header() {
     return () => clearInterval(interval)
   }, [])
 
-  // Scroll : la barre disparaît APRÈS 80px, reste visible avant
+  // Scroll avec hysteresis : 80px pour disparaître, 50px pour réapparaître
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       
-      // Seuil à 80px - avant rien ne bouge, après elle disparaît
+      // Disparaît à 80px, mais ne réapparaît qu'à 50px (évite les boucles)
       if (currentScrollY > 80 && !isHeaderCompact) {
-        setIsHeaderCompact(true)  // Disparaît quand on dépasse 80px
-      } else if (currentScrollY <= 80 && isHeaderCompact) {
-        setIsHeaderCompact(false) // Réapparaît quand on revient en dessous de 80px
+        setIsHeaderCompact(true)
+      } else if (currentScrollY < 50 && isHeaderCompact) {
+        setIsHeaderCompact(false)
       }
     }
     
