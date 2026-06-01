@@ -25,11 +25,12 @@ export function Header() {
   const [suggestionIndex, setSuggestionIndex] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
   
-  const [isHeaderCompact, setIsHeaderCompact] = useState(false)
+  const [isNavBarVisible, setIsNavBarVisible] = useState(true)
 
   const menuTimerRef = useRef<NodeJS.Timeout | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const router = useRouter()
   const pathname = usePathname()
@@ -47,42 +48,40 @@ export function Header() {
     return () => clearInterval(interval)
   }, [])
 
-  // Scroll avec hysteresis
+  // Scroll : barre noire disparaît après 100px
   useEffect(() => {
-    let ticking = false
-    
     const handleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          const currentScrollY = window.scrollY
-          
-          if (currentScrollY > 100 && !isHeaderCompact) {
-            setIsHeaderCompact(true)
-          } else if (currentScrollY < 30 && isHeaderCompact) {
-            setIsHeaderCompact(false)
-          }
-          
-          ticking = false
-        })
-        ticking = true
+      const currentScrollY = window.scrollY
+      
+      if (currentScrollY > 100) {
+        setIsNavBarVisible(false)
+      } else {
+        setIsNavBarVisible(true)
       }
     }
     
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [isHeaderCompact])
+  }, [])
 
-  // Détection souris près du haut
+  // Souris près du haut : fait réapparaître la barre noire
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (e.clientY < 50 && isHeaderCompact) {
-        setIsHeaderCompact(false)
+      if (e.clientY < 50 && !isNavBarVisible) {
+        setIsNavBarVisible(true)
+        // Après 2 secondes, si on a pas scrollé, elle re-disparaît pas
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
+        scrollTimeoutRef.current = setTimeout(() => {
+          if (window.scrollY > 100) {
+            setIsNavBarVisible(false)
+          }
+        }, 2000)
       }
     }
     
     window.addEventListener("mousemove", handleMouseMove)
     return () => window.removeEventListener("mousemove", handleMouseMove)
-  }, [isHeaderCompact])
+  }, [isNavBarVisible])
 
   const openCart = () => setIsCartOpen(true)
   const goToAccount = () => router.push("/account")
@@ -160,7 +159,7 @@ export function Header() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white">
+      <header className="fixed top-0 left-0 right-0 z-50">
         
         {/* TOPBAR */}
         <div className="hidden lg:flex items-center justify-between px-6 py-2" style={{ background: "#0A0A0A" }}>
@@ -190,18 +189,11 @@ export function Header() {
           </span>
         </div>
 
-        {/* BARRE BLANCHE */}
-        <div 
-          className="transition-all duration-300 ease-out"
-          style={{ 
-            paddingTop: isHeaderCompact ? "8px" : "14px",
-            paddingBottom: isHeaderCompact ? "8px" : "14px",
-            borderBottom: "0.5px solid #ECECEC",
-          }}
-        >
-          <div className="max-w-7xl mx-auto px-6 flex items-center gap-4">
+        {/* BARRE BLANCHE (toujours visible) */}
+        <div className="bg-white" style={{ borderBottom: "0.5px solid #ECECEC" }}>
+          <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center gap-4">
             <button onClick={() => router.push("/")} className="flex-shrink-0 focus:outline-none">
-              <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 900, fontSize: isHeaderCompact ? "18px" : "22px", letterSpacing: "-0.04em", color: "#0A0A0A", transition: "font-size 0.3s ease" }}>
+              <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 900, fontSize: "22px", letterSpacing: "-0.04em", color: "#0A0A0A" }}>
                 adul<span style={{ color: "#D4372B" }}>.</span>lam
               </span>
             </button>
@@ -298,7 +290,7 @@ export function Header() {
               )}
             </div>
 
-            {/* Search */}
+            {/* Search avec carrousel */}
             <div className="flex-1 hidden lg:block relative">
               <Search
                 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-colors z-10"
@@ -329,7 +321,7 @@ export function Header() {
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
                 onKeyDown={e => e.key === "Enter" && handleSearch()}
-                className="w-full pl-10 pr-14 py-2 text-sm focus:outline-none transition-all"
+                className="w-full pl-10 pr-14 py-2.5 text-sm focus:outline-none transition-all"
                 style={{
                   background: "#F4F4F4",
                   borderRadius: "10px",
@@ -394,7 +386,7 @@ export function Header() {
 
               <button
                 onClick={openCart}
-                className="relative flex items-center gap-2 px-4 py-2 rounded-xl transition-colors focus:outline-none"
+                className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors focus:outline-none"
                 style={{ background: "#D4372B" }}
               >
                 <ShoppingCart className="w-[18px] h-[18px] text-white" />
@@ -417,12 +409,13 @@ export function Header() {
           </div>
         </div>
 
-        {/* BARRE NOIRE - Utilisation de translateY au lieu de maxHeight */}
+        {/* BARRE NOIRE (celle qui disparaît et réapparaît) */}
         <div 
-          className="hidden lg:block transition-all duration-300 ease-out"
+          className="hidden lg:block transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] overflow-hidden"
           style={{ 
             background: "#0A0A0A",
-            transform: isHeaderCompact ? 'translateY(-100%)' : 'translateY(0)',
+            maxHeight: isNavBarVisible ? "60px" : "0px",
+            opacity: isNavBarVisible ? 1 : 0,
           }}
         >
           <div className="max-w-7xl mx-auto px-6">
@@ -452,7 +445,7 @@ export function Header() {
       </header>
 
       {/* Espace compensatoire */}
-      <div className={`hidden lg:block transition-all duration-300 ${isHeaderCompact ? 'h-[56px]' : 'h-[130px]'}`} />
+      <div className={`hidden lg:block transition-all duration-500 ${isNavBarVisible ? 'h-[130px]' : 'h-[70px]'}`} />
       <div className="block lg:hidden h-[56px]" />
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
