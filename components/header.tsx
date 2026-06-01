@@ -26,11 +26,11 @@ export function Header() {
   const [isAnimating, setIsAnimating] = useState(false)
   
   const [isHeaderCompact, setIsHeaderCompact] = useState(false)
+  const [lastScrollY, setLastScrollY] = useState(0)
 
   const menuTimerRef = useRef<NodeJS.Timeout | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const router = useRouter()
   const pathname = usePathname()
@@ -48,55 +48,28 @@ export function Header() {
     return () => clearInterval(interval)
   }, [])
 
-  // Scroll avec hysteresis
+  // Scroll : barre disparaît quand on descend, réapparaît quand on remonte
   useEffect(() => {
-    let ticking = false
-    
     const handleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          const currentScrollY = window.scrollY
-          
-          if (currentScrollY > 100 && !isHeaderCompact) {
-            setIsHeaderCompact(true)
-          } else if (currentScrollY < 30 && isHeaderCompact) {
-            setIsHeaderCompact(false)
-          }
-          
-          ticking = false
-        })
-        ticking = true
+      const currentScrollY = window.scrollY
+      
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Descend et dépasse 100px → barre disparaît
+        setIsHeaderCompact(true)
+      } else if (currentScrollY < lastScrollY) {
+        // Remonte → barre réapparaît
+        setIsHeaderCompact(false)
+      } else if (currentScrollY < 30) {
+        // En haut de page → barre réapparaît
+        setIsHeaderCompact(false)
       }
+      
+      setLastScrollY(currentScrollY)
     }
     
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [isHeaderCompact])
-
-  // Souris survole le header → barre noire réapparaît
-  useEffect(() => {
-    const headerElement = document.querySelector('header')
-    
-    const handleMouseEnter = () => {
-      if (isHeaderCompact) {
-        // Annule le timeout précédent
-        if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
-        // Réapparaît instantanément
-        setIsHeaderCompact(false)
-      }
-    }
-    
-    if (headerElement) {
-      headerElement.addEventListener('mouseenter', handleMouseEnter)
-    }
-    
-    return () => {
-      if (headerElement) {
-        headerElement.removeEventListener('mouseenter', handleMouseEnter)
-      }
-      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
-    }
-  }, [isHeaderCompact])
+  }, [lastScrollY])
 
   const openCart = () => setIsCartOpen(true)
   const goToAccount = () => router.push("/account")
@@ -121,11 +94,11 @@ export function Header() {
     router.push("/")
   }
 
-  const handleMouseEnterMega = () => {
+  const handleMouseEnter = () => {
     if (menuTimerRef.current) { clearTimeout(menuTimerRef.current); menuTimerRef.current = null }
     setShowMegaMenu(true)
   }
-  const handleMouseLeaveMega = () => {
+  const handleMouseLeave = () => {
     menuTimerRef.current = setTimeout(() => { setShowMegaMenu(false); setActiveCategory(null) }, 300)
   }
 
@@ -226,8 +199,8 @@ export function Header() {
               <div className="hidden lg:block relative flex-shrink-0">
                 <button
                   ref={buttonRef}
-                  onMouseEnter={handleMouseEnterMega}
-                  onMouseLeave={handleMouseLeaveMega}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors focus:outline-none"
                   style={{ background: "#F4F4F4", color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}
                 >
@@ -238,8 +211,8 @@ export function Header() {
                 {showMegaMenu && (
                   <div
                     ref={menuRef}
-                    onMouseEnter={handleMouseEnterMega}
-                    onMouseLeave={handleMouseLeaveMega}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
                     className="absolute top-full left-0 mt-2 bg-white z-[9999]"
                     style={{ width: "900px", borderRadius: "16px", border: "0.5px solid #ECECEC", boxShadow: "0 8px 40px rgba(0,0,0,0.10)", padding: "20px" }}
                   >
