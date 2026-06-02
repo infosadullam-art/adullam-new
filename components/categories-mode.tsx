@@ -115,10 +115,10 @@ export function CategoriesMode() {
             }
           ])
 
-          // Animation séquentielle des cartes
+          // Animation séquentielle des cartes - CORRECTION : ajout des parenthèses fermantes
           setTimeout(() => setVisibleCards({ men: true }), 100)
-          setTimeout(() => setVisibleCards(prev => ({ ...prev, women: true }), 200)
-          setTimeout(() => setVisibleCards(prev => ({ ...prev, kids: true }), 300)
+          setTimeout(() => setVisibleCards(prev => ({ ...prev, women: true })), 200)
+          setTimeout(() => setVisibleCards(prev => ({ ...prev, kids: true })), 300)
         }
       } catch (error) {
         console.error("Erreur chargement produits:", error)
@@ -185,7 +185,7 @@ export function CategoriesMode() {
             return (
               <div 
                 key={category.id} 
-                className="rounded-lg p-2 space-y-2 transition-all duration-300 animate-fade-in-up"
+                className="rounded-lg p-2 space-y-2 transition-all duration-300"
                 style={{ 
                   background: category.bgColor, 
                   border: "0.5px solid #ECECEC",
@@ -244,14 +244,13 @@ export function CategoriesMode() {
                   </div>
                 </Link>
 
-                {/* Produits associés - plus d'espace */}
+                {/* Produits associés */}
                 <div className="grid grid-cols-2 gap-2">
                   {category.products.slice(0, 2).map((product, productIdx) => (
                     <Link
                       key={product.id}
                       href={`/products/${product.id}`}
                       className="group block transition-all duration-200 hover:-translate-y-0.5"
-                      style={{ animationDelay: `${delay + 100 + productIdx * 50}ms` }}
                     >
                       <div
                         className="bg-white rounded-md p-1.5 transition-all duration-300 hover:shadow-sm"
@@ -282,19 +281,6 @@ export function CategoriesMode() {
           })}
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(15px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </section>
   )
 }
