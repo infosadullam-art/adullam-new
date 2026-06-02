@@ -197,9 +197,10 @@ export function DealCountdown() {
       {/* ══ HEADER PREMIUM ══════════════════════════════════════ */}
       <div className="relative overflow-hidden">
         <div 
-          className="absolute inset-0 opacity-5"
+          className="absolute inset-0 opacity-5 animate-pulse-slow"
           style={{
             background: `radial-gradient(circle at 0% 0%, ${brandAccent} 0%, transparent 70%)`,
+            animation: "pulse 4s ease-in-out infinite",
           }}
         />
         
@@ -375,13 +376,21 @@ export function DealCountdown() {
         </div>
       </div>
 
-      {/* ══ PRODUITS ════════════════════════════════════════════ */}
+      {/* ══ PRODUITS - PLEINE LARGEUR ════════════════════════════ */}
       <div className="px-4 lg:px-8 py-3 lg:py-6">
         
-        {/* MOBILE : 2 blocs, 4 produits chacun (grid-cols-2 = 2x2 = 4) */}
-        <div className="grid grid-cols-2 gap-2 lg:hidden">
+        {/* MOBILE : 2 blocs côte à côte sans espace */}
+        <div className="grid grid-cols-2 gap-1.5 lg:hidden">
           
-          <div className="rounded-xl p-2" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}>
+          {/* Bloc 1 - Sélection avec fond dégradé animé */}
+          <div 
+            className="rounded-xl p-2 transition-all duration-1000 ease-in-out"
+            style={{ 
+              background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
+              border: "0.5px solid #ECECEC",
+              animation: "gradientShift 8s ease-in-out infinite",
+            }}
+          >
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-[10px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}>
                 ✨ Sélection
@@ -397,7 +406,16 @@ export function DealCountdown() {
             </div>
           </div>
 
-          <div className="rounded-xl p-2" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}>
+          {/* Bloc 2 - Best-sellers avec fond dégradé animé */}
+          <div 
+            className="rounded-xl p-2 transition-all duration-1000 ease-in-out"
+            style={{ 
+              background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
+              border: "0.5px solid #ECECEC",
+              animation: "gradientShift 8s ease-in-out infinite",
+              animationDelay: "2s",
+            }}
+          >
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-[10px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}>
                 🔥 Best-sellers
@@ -415,10 +433,18 @@ export function DealCountdown() {
 
         </div>
 
-        {/* DESKTOP : 2 blocs, 6 produits chacun (grid-cols-3 = 3x2 = 6) */}
-        <div className="hidden lg:grid lg:grid-cols-2 gap-5">
+        {/* DESKTOP : 2 blocs côte à côte avec espace réduit */}
+        <div className="hidden lg:grid lg:grid-cols-2 gap-3">
           
-          <div className="rounded-xl p-4" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}>
+          {/* Bloc 1 - Sélection avec fond dégradé animé */}
+          <div 
+            className="rounded-xl p-4 transition-all duration-1000 ease-in-out"
+            style={{ 
+              background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
+              border: "0.5px solid #ECECEC",
+              animation: "gradientShift 8s ease-in-out infinite",
+            }}
+          >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-[11px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}>
                 ✨ Sélection du moment
@@ -434,7 +460,16 @@ export function DealCountdown() {
             </div>
           </div>
 
-          <div className="rounded-xl p-4" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}>
+          {/* Bloc 2 - Best-sellers avec fond dégradé animé (décalé) */}
+          <div 
+            className="rounded-xl p-4 transition-all duration-1000 ease-in-out"
+            style={{ 
+              background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
+              border: "0.5px solid #ECECEC",
+              animation: "gradientShift 8s ease-in-out infinite",
+              animationDelay: "2s",
+            }}
+          >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-[11px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}>
                 🔥 Meilleures ventes
@@ -452,6 +487,33 @@ export function DealCountdown() {
 
         </div>
       </div>
+
+      <style jsx global>{`
+        @keyframes gradientShift {
+          0% {
+            background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
+          }
+          50% {
+            background: linear-gradient(135deg, #FFF5F5 0%, #FAFAFA 100%);
+          }
+          100% {
+            background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
+          }
+        }
+        
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 0.05;
+          }
+          50% {
+            opacity: 0.12;
+          }
+        }
+        
+        .animate-pulse-slow {
+          animation: pulse 4s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   )
 }
