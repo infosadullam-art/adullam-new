@@ -103,7 +103,7 @@ export default function Home() {
       }}
     >
       {/* VERSION MOBILE */}
-      <div className="lg:hidden min-h-screen" style={{ background: "#FAFAFA" }}>
+      <div className="lg:hidden min-h-screen" style={{ background: "#FFFFFF" }}>
         <div className="sticky top-0 z-50 bg-white" style={{ borderBottom: "0.5px solid #ECECEC" }}>
           <MobileHeader />
         </div>
@@ -112,14 +112,16 @@ export default function Home() {
           <AnimatedSection delay={0}>
             <HeroSection />
           </AnimatedSection>
-          <div className="h-2" />
+          
+          <div className="h-4" />
 
           <AnimatedSection delay={100}>
             <div className="px-4 py-3" style={{ background: "#fff" }}>
               <DealCountdown />
             </div>
           </AnimatedSection>
-          <div className="h-2" />
+          
+          <div className="h-4" />
 
           <AnimatedSection delay={200}>
             {showPriority2 && (
@@ -129,6 +131,8 @@ export default function Home() {
             )}
           </AnimatedSection>
 
+          <div className="h-4" />
+
           <AnimatedSection delay={300}>
             {showPriority3 && (
               <div style={{ background: "#fff" }}>
@@ -136,6 +140,8 @@ export default function Home() {
               </div>
             )}
           </AnimatedSection>
+
+          <div className="h-4" />
 
           <AnimatedSection delay={400}>
             {showPriority4 && (
@@ -145,15 +151,17 @@ export default function Home() {
             )}
           </AnimatedSection>
 
+          <div className="h-4" />
+
           <AnimatedSection delay={500}>
             {showPriority5 && (
-              <div style={{ background: "#FAFAFA" }}>
+              <div style={{ background: "#fff" }}>
                 <ForYouSection />
               </div>
             )}
           </AnimatedSection>
 
-          <div className="h-2" />
+          <div className="h-4" />
         </main>
 
         <Footer />
@@ -163,7 +171,7 @@ export default function Home() {
       </div>
 
       {/* VERSION DESKTOP */}
-      <div className="hidden lg:block min-h-screen" style={{ background: "#FAFAFA" }}>
+      <div className="hidden lg:block min-h-screen" style={{ background: "#FFFFFF" }}>
         <div className="sticky top-0 z-50 bg-white" style={{ borderBottom: "0.5px solid #ECECEC", boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
           <Header />
         </div>
@@ -174,7 +182,8 @@ export default function Home() {
               <HeroSection />
             </div>
           </AnimatedSection>
-          <div className="h-2.5" />
+          
+          <div className="h-4" />
 
           <AnimatedSection delay={100}>
             <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -183,7 +192,8 @@ export default function Home() {
               </div>
             </div>
           </AnimatedSection>
-          <div className="h-2.5" />
+          
+          <div className="h-4" />
 
           <AnimatedSection delay={200}>
             {showPriority2 && (
@@ -195,6 +205,8 @@ export default function Home() {
             )}
           </AnimatedSection>
 
+          <div className="h-4" />
+
           <AnimatedSection delay={300}>
             {showPriority3 && (
               <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -204,6 +216,8 @@ export default function Home() {
               </div>
             )}
           </AnimatedSection>
+
+          <div className="h-4" />
 
           <AnimatedSection delay={400}>
             {showPriority4 && (
@@ -215,6 +229,8 @@ export default function Home() {
             )}
           </AnimatedSection>
 
+          <div className="h-4" />
+
           <AnimatedSection delay={500}>
             {showPriority5 && (
               <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -225,7 +241,7 @@ export default function Home() {
             )}
           </AnimatedSection>
 
-          <div className="h-2.5" />
+          <div className="h-4" />
         </main>
 
         <Footer />
