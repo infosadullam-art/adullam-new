@@ -105,6 +105,9 @@ const suppliers = [
   { flag: "🇪🇺", label: "Europe" },
 ]
 
+// Police Amazon Ember
+const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+
 export function HeroSection() {
   const { country } = useLocale()
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -113,10 +116,6 @@ export function HeroSection() {
     return pays[country as keyof typeof pays] || pays.CI
   })
   const [isVisible, setIsVisible] = useState(false)
-  const [animatedText, setAnimatedText] = useState("")
-  const [textIndex, setTextIndex] = useState(0)
-
-  const fullText = "Achetez direct des usines du monde"
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -129,22 +128,10 @@ export function HeroSection() {
     setPaysActuel(pays[country as keyof typeof pays] || pays.CI)
   }, [country])
 
-  // Animation d'apparition de la section
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100)
     return () => clearTimeout(timer)
   }, [])
-
-  // Animation du texte lettre par lettre (desktop seulement)
-  useEffect(() => {
-    if (textIndex < fullText.length) {
-      const timer = setTimeout(() => {
-        setAnimatedText(prev => prev + fullText[textIndex])
-        setTextIndex(prev => prev + 1)
-      }, 50)
-      return () => clearTimeout(timer)
-    }
-  }, [textIndex])
 
   const MobileHero = () => (
     <div 
@@ -152,8 +139,8 @@ export function HeroSection() {
       style={{ 
         height: "220px",
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-        transition: 'opacity 0.6s ease-out, transform 0.6s ease-out',
+        transform: isVisible ? 'translateY(0)' : 'translateY(15px)',
+        transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
       }}
     >
       {heroSlides.map((slide, index) => (
@@ -167,54 +154,32 @@ export function HeroSection() {
 
           <div className="absolute inset-0 flex flex-col justify-center px-5 z-20">
             <div
-              className="flex items-center gap-1.5 w-fit px-2.5 py-1 rounded-full mb-3 animate-fade-in"
+              className="flex items-center gap-1.5 w-fit px-2.5 py-1 rounded-full mb-3"
               style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(6px)", border: "0.5px solid rgba(255,255,255,0.3)" }}
             >
               <MapPin className="w-3 h-3 text-white" />
-              <span style={{ fontSize: "10px", fontWeight: 500, color: "#fff", fontFamily: "'Poppins', sans-serif" }}>
+              <span style={{ fontSize: "10px", fontWeight: 500, color: "#fff", fontFamily: amazonFont }}>
                 {paysActuel.nom} {paysActuel.drapeau}
               </span>
             </div>
 
             <span
-              className="w-fit px-2 py-0.5 rounded-md mb-1.5 text-white animate-slide-up"
-              style={{ background: "#D4372B", fontSize: "10px", fontWeight: 700, fontFamily: "'Poppins', sans-serif", animationDelay: "0.1s" }}
+              className="w-fit px-2 py-0.5 rounded-md mb-1.5 text-white"
+              style={{ background: "#D4372B", fontSize: "10px", fontWeight: 700, fontFamily: amazonFont }}
             >
               {slide.badge}
             </span>
 
-            <h1 
-              className="animate-slide-up"
-              style={{ 
-                fontSize: "22px", 
-                fontWeight: 900, 
-                color: "#fff", 
-                lineHeight: 1.1, 
-                letterSpacing: "-0.03em", 
-                fontFamily: "'Poppins', sans-serif", 
-                marginBottom: "4px",
-                animationDelay: "0.2s",
-              }}
-            >
+            <h1 style={{ fontSize: "22px", fontWeight: 900, color: "#fff", lineHeight: 1.1, letterSpacing: "-0.03em", fontFamily: amazonFont, marginBottom: "4px" }}>
               {slide.title}
             </h1>
-            
-            <p 
-              className="animate-slide-up"
-              style={{ 
-                fontSize: "12px", 
-                color: "rgba(255,255,255,0.7)", 
-                fontFamily: "'Poppins', sans-serif", 
-                marginBottom: "14px",
-                animationDelay: "0.3s",
-              }}
-            >
+            <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", fontFamily: amazonFont, marginBottom: "14px" }}>
               {slide.subtitle}
             </p>
 
             <Link
               href={slide.href}
-              className="flex items-center gap-1.5 w-fit animate-slide-up group"
+              className="flex items-center gap-1.5 w-fit group transition-transform duration-200 hover:scale-105"
               style={{
                 background: "#fff",
                 color: "#0A0A0A",
@@ -222,17 +187,7 @@ export function HeroSection() {
                 padding: "7px 14px",
                 fontSize: "12px",
                 fontWeight: 700,
-                fontFamily: "'Poppins', sans-serif",
-                transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                animationDelay: "0.4s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "scale(1.02)"
-                e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)"
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "scale(1)"
-                e.currentTarget.style.boxShadow = "none"
+                fontFamily: amazonFont,
               }}
             >
               Découvrir {slide.offre}
@@ -262,13 +217,13 @@ export function HeroSection() {
       </div>
 
       <div
-        className="absolute top-4 right-4 z-30 flex flex-col items-center justify-center animate-pulse-subtle"
+        className="absolute top-4 right-4 z-30 flex flex-col items-center justify-center"
         style={{ background: "#D4372B", borderRadius: "10px", width: "52px", height: "52px" }}
       >
-        <span style={{ fontSize: "15px", fontWeight: 900, color: "#fff", lineHeight: 1, fontFamily: "'Poppins', sans-serif" }}>
+        <span style={{ fontSize: "15px", fontWeight: 900, color: "#fff", lineHeight: 1, fontFamily: amazonFont }}>
           {heroSlides[currentSlide].offre}
         </span>
-        <span style={{ fontSize: "8px", color: "rgba(255,255,255,0.8)", fontFamily: "'Poppins', sans-serif" }}>
+        <span style={{ fontSize: "8px", color: "rgba(255,255,255,0.8)", fontFamily: amazonFont }}>
           offre
         </span>
       </div>
@@ -281,8 +236,8 @@ export function HeroSection() {
       style={{ 
         background: "#0A0A0A",
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-        transition: 'opacity 0.6s ease-out, transform 0.6s ease-out',
+        transform: isVisible ? 'translateY(0)' : 'translateY(15px)',
+        transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
       }}
     >
       <div className="max-w-7xl mx-auto px-8 py-6">
@@ -290,12 +245,9 @@ export function HeroSection() {
 
           {/* Gauche — Texte */}
           <div>
-            <div 
-              className="flex items-center gap-2 flex-wrap mb-6 animate-fade-in"
-              style={{ animationDelay: "0.1s" }}
-            >
-              <span style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>Direct depuis :</span>
-              {suppliers.map((s, idx) => (
+            <div className="flex items-center gap-2 flex-wrap mb-6">
+              <span style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: amazonFont }}>Direct depuis :</span>
+              {suppliers.map((s) => (
                 <span
                   key={s.label}
                   style={{
@@ -305,11 +257,10 @@ export function HeroSection() {
                     padding: "4px 12px",
                     fontSize: "12px",
                     color: "#fff",
-                    fontFamily: "'Poppins', sans-serif",
+                    fontFamily: amazonFont,
                     transition: "all 0.2s ease",
-                    animationDelay: `${0.1 + idx * 0.05}s`,
                   }}
-                  className="animate-fade-in hover:bg-white/15 hover:scale-105"
+                  className="hover:bg-white/15 hover:scale-105 transition-all duration-200"
                 >
                   {s.flag} {s.label}
                 </span>
@@ -323,37 +274,23 @@ export function HeroSection() {
                 color: "#fff",
                 lineHeight: 1.05,
                 letterSpacing: "-0.04em",
-                fontFamily: "'Poppins', sans-serif",
+                fontFamily: amazonFont,
                 marginBottom: "16px",
               }}
-              className="animate-slide-up"
-              style={{ animationDelay: "0.2s" }}
             >
-              {animatedText}
-              <span className="animate-blink" style={{ color: "#D4372B", display: "inline-block" }}>|</span>
+              Achetez direct
               <br />
               <span style={{ color: "#D4372B" }}>des usines du monde</span>
             </h1>
 
-            <p 
-              className="animate-slide-up"
-              style={{ 
-                fontSize: "16px", 
-                color: "#AAAAAA", 
-                lineHeight: 1.6, 
-                fontFamily: "'Poppins', sans-serif", 
-                maxWidth: "420px", 
-                marginBottom: "32px",
-                animationDelay: "0.3s",
-              }}
-            >
+            <p style={{ fontSize: "16px", color: "#AAAAAA", lineHeight: 1.6, fontFamily: amazonFont, maxWidth: "420px", marginBottom: "32px" }}>
               Adullam connecte les acheteurs africains aux meilleurs fournisseurs de Chine, Dubaï, Turquie, USA et Europe.
             </p>
 
-            <div className="flex items-center gap-3 animate-slide-up" style={{ animationDelay: "0.4s" }}>
+            <div className="flex items-center gap-3">
               <Link
                 href="/for-you"
-                className="group"
+                className="group transition-all duration-200 hover:scale-105 hover:shadow-lg"
                 style={{
                   background: "#D4372B",
                   color: "#fff",
@@ -361,19 +298,10 @@ export function HeroSection() {
                   padding: "13px 28px",
                   fontSize: "14px",
                   fontWeight: 700,
-                  fontFamily: "'Poppins', sans-serif",
+                  fontFamily: amazonFont,
                   display: "flex",
                   alignItems: "center",
                   gap: "8px",
-                  transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "scale(1.02)"
-                  e.currentTarget.style.boxShadow = "0 8px 20px rgba(212,55,43,0.3)"
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "scale(1)"
-                  e.currentTarget.style.boxShadow = "none"
                 }}
               >
                 Explorer la boutique
@@ -381,7 +309,7 @@ export function HeroSection() {
               </Link>
               <Link
                 href="/boutique-noel"
-                className="group"
+                className="transition-all duration-200 hover:border-[#D4372B] hover:-translate-y-0.5"
                 style={{
                   border: "1.5px solid rgba(255,255,255,0.2)",
                   color: "#fff",
@@ -389,16 +317,7 @@ export function HeroSection() {
                   padding: "12px 24px",
                   fontSize: "14px",
                   fontWeight: 600,
-                  fontFamily: "'Poppins', sans-serif",
-                  transition: "all 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "#D4372B"
-                  e.currentTarget.style.transform = "translateY(-2px)"
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)"
-                  e.currentTarget.style.transform = "translateY(0)"
+                  fontFamily: amazonFont,
                 }}
               >
                 Sourcing B2B
@@ -416,7 +335,6 @@ export function HeroSection() {
                   opacity: index === currentSlide ? 1 : 0, 
                   borderRadius: "16px", 
                   overflow: "hidden",
-                  transform: index === currentSlide ? 'scale(1)' : 'scale(0.95)',
                 }}
               >
                 <Image src={slide.image} alt={slide.title} fill className="object-cover" />
@@ -425,7 +343,7 @@ export function HeroSection() {
                 <div className="absolute top-4 left-4 z-10">
                   <Link
                     href={slide.href}
-                    className="flex items-center gap-1.5 w-fit group"
+                    className="flex items-center gap-1.5 w-fit group transition-transform duration-200 hover:scale-105"
                     style={{
                       background: "#fff",
                       color: "#0A0A0A",
@@ -433,11 +351,8 @@ export function HeroSection() {
                       padding: "6px 12px",
                       fontSize: "11px",
                       fontWeight: 700,
-                      fontFamily: "'Poppins', sans-serif",
-                      transition: "transform 0.2s ease",
+                      fontFamily: amazonFont,
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.02)"}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
                   >
                     Découvrir {slide.offre}
                     <ChevronRight className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5" />
@@ -446,8 +361,8 @@ export function HeroSection() {
 
                 <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between z-10">
                   <div>
-                    <p className="text-[11px] text-white/60 font-poppins">{slide.badge}</p>
-                    <p className="text-[18px] font-extrabold text-white font-poppins tracking-tight">{slide.title}</p>
+                    <p className="text-[11px] text-white/60" style={{ fontFamily: amazonFont }}>{slide.badge}</p>
+                    <p className="text-[18px] font-extrabold text-white tracking-tight" style={{ fontFamily: amazonFont }}>{slide.title}</p>
                   </div>
                   <div
                     className="flex flex-col items-center"
@@ -457,8 +372,8 @@ export function HeroSection() {
                       padding: "8px 14px",
                     }}
                   >
-                    <span className="text-[20px] font-black text-white leading-none font-poppins">{slide.offre}</span>
-                    <span className="text-[9px] text-white/70 font-poppins">aujourd'hui</span>
+                    <span className="text-[20px] font-black text-white leading-none" style={{ fontFamily: amazonFont }}>{slide.offre}</span>
+                    <span className="text-[9px] text-white/70" style={{ fontFamily: amazonFont }}>aujourd'hui</span>
                   </div>
                 </div>
               </div>
@@ -487,29 +402,28 @@ export function HeroSection() {
 
         {/* Trust bar */}
         <div
-          className="grid grid-cols-3 gap-0 mt-8 animate-fade-in"
-          style={{ borderTop: "0.5px solid rgba(255,255,255,0.08)", paddingTop: "20px", animationDelay: "0.5s" }}
+          className="grid grid-cols-3 gap-0 mt-8"
+          style={{ borderTop: "0.5px solid rgba(255,255,255,0.08)", paddingTop: "20px" }}
         >
           {trustItems.map(({ icon: Icon, label, sub }, i) => (
             <div
               key={i}
-              className="flex items-center gap-3 group"
+              className="flex items-center gap-3 group transition-all duration-200 hover:translate-x-0.5"
               style={{ 
                 borderRight: i < 2 ? "0.5px solid rgba(255,255,255,0.08)" : "none", 
                 paddingRight: i < 2 ? "32px" : "0", 
                 paddingLeft: i > 0 ? "32px" : "0",
-                transition: "all 0.2s ease",
               }}
             >
               <div 
                 className="rounded-lg p-2 transition-all duration-300 group-hover:scale-110"
                 style={{ background: "rgba(212,55,43,0.15)" }}
               >
-                <Icon className="w-5 h-5 transition-colors duration-300 group-hover:text-[#D4372B]" style={{ color: "#D4372B" }} />
+                <Icon className="w-5 h-5" style={{ color: "#D4372B" }} />
               </div>
               <div>
-                <p className="text-[13px] font-semibold text-white font-poppins transition-all duration-200 group-hover:translate-x-0.5">{label}</p>
-                <p className="text-[12px] text-[#AAAAAA] font-poppins">{sub}</p>
+                <p className="text-[13px] font-semibold text-white" style={{ fontFamily: amazonFont }}>{label}</p>
+                <p className="text-[12px] text-[#AAAAAA]" style={{ fontFamily: amazonFont }}>{sub}</p>
               </div>
             </div>
           ))}
@@ -522,55 +436,6 @@ export function HeroSection() {
     <>
       <MobileHero />
       <DesktopHero />
-
-      <style jsx global>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        @keyframes pulseSubtle {
-          0%, 100% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.02);
-          }
-        }
-        
-        @keyframes blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0; }
-        }
-        
-        .animate-fade-in {
-          animation: fadeIn 0.6s ease-out forwards;
-        }
-        
-        .animate-slide-up {
-          animation: slideUp 0.6s ease-out forwards;
-          opacity: 0;
-        }
-        
-        .animate-pulse-subtle {
-          animation: pulseSubtle 2s ease-in-out infinite;
-        }
-        
-        .animate-blink {
-          animation: blink 1s step-end infinite;
-        }
-      `}</style>
     </>
   )
 }
