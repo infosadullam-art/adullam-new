@@ -5,6 +5,11 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/admin/auth-context"
 
+const searchSuggestions = [
+  "chaussure", "robe de soirée", "écouteur", "sac à main", 
+  "montre", "parfum", "jean", "casquette", "téléphone", "basket"
+]
+
 const categoryItems = [
   { label: "Électronique", icon: Tv, slug: "electronique" },
   { label: "Mode", icon: Shirt, slug: "mode" },
@@ -20,8 +25,13 @@ export function MobileHeader() {
   const [searchQuery, setSearchQuery]   = useState("")
   const [cartClicked, setCartClicked]   = useState(false)
   const [searchFocused, setSearchFocused] = useState(false)
-  const [scrolled, setScrolled]         = useState(false)  // ← compression au scroll
-  const [mounted, setMounted]           = useState(false)  // ← fade-in initial
+  const [scrolled, setScrolled]         = useState(false)
+  const [mounted, setMounted]           = useState(false)
+  
+  // Carrousel recherche
+  const [suggestionIndex, setSuggestionIndex] = useState(0)
+  const [isAnimating, setIsAnimating] = useState(false)
+  
   const lastScrollY                     = useRef(0)
 
   const router = useRouter()
@@ -33,7 +43,19 @@ export function MobileHeader() {
     return () => clearTimeout(t)
   }, [])
 
-  // Compression au scroll — quand on descend >40px le header se compresse
+  // Carrousel vertical pour la recherche
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsAnimating(true)
+      setTimeout(() => {
+        setSuggestionIndex((prev) => (prev + 1) % searchSuggestions.length)
+        setIsAnimating(false)
+      }, 200)
+    }, 2500)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Compression au scroll
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY
@@ -88,12 +110,10 @@ export function MobileHeader() {
         className="bg-white sticky top-0 z-50"
         style={{
           borderBottom: "0.5px solid #ECECEC",
-          // Ombre subtile qui apparaît au scroll
           boxShadow: scrolled
             ? "0 2px 16px rgba(0,0,0,0.06)"
             : "none",
           transition: "box-shadow 0.3s ease",
-          // Fade-in au montage
           opacity: mounted ? 1 : 0,
           transform: mounted ? "translateY(0)" : "translateY(-4px)",
         }}
@@ -101,7 +121,6 @@ export function MobileHeader() {
         <div
           className="px-4 flex flex-col"
           style={{
-            // Compression verticale au scroll : moins de padding
             paddingTop:    scrolled ? "8px"  : "12px",
             paddingBottom: scrolled ? "8px"  : "10px",
             gap:           scrolled ? "6px"  : "10px",
@@ -219,7 +238,6 @@ export function MobileHeader() {
                 onPointerLeave={e => e.currentTarget.style.transform = "scale(1)"}
                 aria-label={showMenu ? "Fermer le menu" : "Ouvrir le menu"}
               >
-                {/* Icône burger → X avec rotation */}
                 <span
                   style={{
                     display: "inline-flex",
@@ -236,18 +254,36 @@ export function MobileHeader() {
             </div>
           </div>
 
-          {/* Row 2 : Barre de recherche */}
+          {/* Row 2 : Barre de recherche AVEC CARROUSEL VERTICAL */}
           <form onSubmit={handleSearch} className="relative">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none z-10"
               style={{
                 color: searchFocused ? "#D4372B" : "#AAAAAA",
                 transition: "color 0.2s ease",
               }}
             />
+            
+            {/* Carrousel vertical - s'affiche seulement quand pas focus et pas de texte */}
+            {!searchFocused && !searchQuery && (
+              <div className="absolute left-9 top-1/2 -translate-y-1/2 pointer-events-none overflow-hidden" style={{ height: "20px", width: "180px" }}>
+                <div
+                  className="transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                  style={{
+                    transform: isAnimating ? 'translateY(-100%)' : 'translateY(0)',
+                    opacity: isAnimating ? 0 : 1,
+                  }}
+                >
+                  <span className="text-sm" style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
+                    {searchSuggestions[suggestionIndex]}
+                  </span>
+                </div>
+              </div>
+            )}
+            
             <input
               type="text"
-              placeholder="Robes, sneakers, électronique..."
+              placeholder=""
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               onFocus={() => setSearchFocused(true)}
@@ -261,7 +297,6 @@ export function MobileHeader() {
                   : "1.5px solid transparent",
                 color: "#0A0A0A",
                 fontFamily: "'Poppins', sans-serif",
-                // Input se compresse légèrement au scroll
                 paddingTop:    scrolled ? "8px"  : "10px",
                 paddingBottom: scrolled ? "8px"  : "10px",
                 transition: "border 0.2s ease, padding 0.25s ease",
@@ -293,7 +328,6 @@ export function MobileHeader() {
           transform: showMenu ? "translateX(0)" : "translateX(-100%)",
           transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
           borderRight: "0.5px solid #ECECEC",
-          // Ombre drawer
           boxShadow: showMenu
             ? "4px 0 32px rgba(0,0,0,0.12)"
             : "none",
