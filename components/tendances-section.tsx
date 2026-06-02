@@ -7,6 +7,9 @@ import { useLocale } from "@/context/LocaleProvider"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { ChevronRight, TrendingUp, MapPin } from "lucide-react"
 
+// Police Amazon Ember
+const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+
 interface TrendingProduct {
   id: string
   name: string
@@ -104,32 +107,33 @@ export function TendanceParPays() {
     <div className="relative">
       <button
         onClick={() => setShowCountrySelector(!showCountrySelector)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
-        style={{ background: "#F4F4F4", color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}
+        className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold transition-all duration-200 hover:scale-105"
+        style={{ background: "#F4F4F4", color: "#0A0A0A", fontFamily: amazonFont, borderRadius: "20px" }}
       >
         <span>{paysActuel.drapeau}</span>
         <span>{paysActuel.nom}</span>
-        <ChevronRight className="w-3.5 h-3.5" style={{ color: "#AAAAAA", transform: showCountrySelector ? "rotate(90deg)" : "none", transition: "transform 0.2s" }} />
+        <ChevronRight className="w-3 h-3" style={{ color: "#AAAAAA", transform: showCountrySelector ? "rotate(90deg)" : "none", transition: "transform 0.2s" }} />
       </button>
 
       {showCountrySelector && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setShowCountrySelector(false)} />
-          <div className="absolute right-0 mt-2 z-50 overflow-y-auto" style={{ width: "220px", maxHeight: "320px", background: "#fff", borderRadius: "14px", border: "0.5px solid #ECECEC", boxShadow: "0 8px 30px rgba(0,0,0,0.08)", padding: "6px" }}>
+          <div className="absolute right-0 mt-2 z-50 overflow-y-auto" style={{ width: "200px", maxHeight: "280px", background: "#fff", borderRadius: "8px", border: "0.5px solid #ECECEC", boxShadow: "0 8px 30px rgba(0,0,0,0.08)", padding: "4px" }}>
             {Object.values(pays).map((p) => (
               <button
                 key={p.code}
                 onClick={() => { setSelectedCountry(p.code); setShowCountrySelector(false) }}
-                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-left transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-all duration-200 hover:bg-[#FFF0F0]"
                 style={{
                   background: selectedCountry === p.code ? "#FFF0F0" : "transparent",
                   color: selectedCountry === p.code ? "#D4372B" : "#0A0A0A",
-                  fontFamily: "'Poppins', sans-serif",
+                  fontFamily: amazonFont,
+                  borderRadius: "6px",
                 }}
               >
-                <span style={{ fontSize: "16px" }}>{p.drapeau}</span>
+                <span style={{ fontSize: "14px" }}>{p.drapeau}</span>
                 <span className="flex-1">{p.nom}</span>
-                {selectedCountry === p.code && <span style={{ color: "#D4372B", fontSize: "12px" }}>✓</span>}
+                {selectedCountry === p.code && <span style={{ color: "#D4372B", fontSize: "10px" }}>✓</span>}
               </button>
             ))}
           </div>
@@ -142,16 +146,25 @@ export function TendanceParPays() {
   if (isLoading) {
     return (
       <section className="w-full" style={{ background: "#fff" }}>
-        <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="px-4 py-3">
           <div className="animate-pulse">
-            <div className="h-5 w-48 rounded mb-6" style={{ background: "#F4F4F4" }} />
-            <div className="flex gap-3 overflow-hidden">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded" style={{ background: "#F4F4F4", borderRadius: "4px" }} />
+                <div>
+                  <div className="h-3 w-28 rounded mb-1" style={{ background: "#F4F4F4" }} />
+                  <div className="h-2 w-20 rounded" style={{ background: "#F4F4F4" }} />
+                </div>
+              </div>
+              <div className="h-6 w-20 rounded" style={{ background: "#F4F4F4", borderRadius: "20px" }} />
+            </div>
+            <div className="flex gap-2 overflow-hidden">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="flex-shrink-0 w-[130px]" style={{ border: "0.5px solid #ECECEC", borderRadius: "12px", overflow: "hidden" }}>
+                <div key={i} className="flex-shrink-0 w-[110px]" style={{ border: "0.5px solid #ECECEC", borderRadius: "6px", overflow: "hidden" }}>
                   <div className="aspect-square" style={{ background: "#F4F4F4" }} />
-                  <div className="p-2">
-                    <div className="h-2.5 w-full rounded mb-1.5" style={{ background: "#F4F4F4" }} />
-                    <div className="h-3 w-16 rounded" style={{ background: "#F4F4F4" }} />
+                  <div className="p-1.5">
+                    <div className="h-2 w-full rounded mb-1" style={{ background: "#F4F4F4" }} />
+                    <div className="h-2.5 w-12 rounded" style={{ background: "#F4F4F4" }} />
                   </div>
                 </div>
               ))}
@@ -166,47 +179,47 @@ export function TendanceParPays() {
 
   // ── MOBILE ─────────────────────────────────────────────────
   const MobileTrend = () => (
-    <div className="lg:hidden px-4 py-4">
+    <div className="lg:hidden px-4 py-3">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: "#FFF0F0" }}>
-            <TrendingUp className="w-4 h-4" style={{ color: "#D4372B" }} />
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center w-7 h-7" style={{ background: "#FFF0F0", borderRadius: "4px" }}>
+            <TrendingUp className="w-3.5 h-3.5" style={{ color: "#D4372B" }} />
           </div>
           <div>
-            <p style={{ fontSize: "13px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>
+            <p style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont }}>
               Tendances {paysActuel.drapeau}
             </p>
-            <p style={{ fontSize: "10px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
-              {trends.topCategory} · +{trends.trendScore}% cette semaine
+            <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>
+              {trends.topCategory} · +{trends.trendScore}%
             </p>
           </div>
         </div>
         <CountrySelector />
       </div>
 
-      {/* Scroll */}
-      <div className="overflow-x-auto -mx-4 px-4" style={{ scrollbarWidth: "none" }}>
-        <div className="flex gap-3 min-w-max pb-2">
+      {/* Scroll horizontal */}
+      <div className="overflow-x-auto -mx-4 px-4 pb-1" style={{ scrollbarWidth: "none" }}>
+        <div className="flex gap-2 min-w-max">
           {trends.products.map((product) => (
-            <Link key={product.id} href={`/products/${product.id}`} className="group block" style={{ width: "130px" }}>
-              <div style={{ background: "#fff", borderRadius: "12px", border: "0.5px solid #ECECEC", overflow: "hidden" }}>
+            <Link key={product.id} href={`/products/${product.id}`} className="group block transition-all duration-200 hover:-translate-y-0.5" style={{ width: "110px" }}>
+              <div style={{ background: "#fff", borderRadius: "6px", border: "0.5px solid #ECECEC", overflow: "hidden" }}>
                 <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
                   {product.trend > 30 && (
-                    <span className="absolute top-2 left-2 z-10 text-[9px] font-bold px-1.5 py-0.5 text-white rounded-md" style={{ background: "#D4372B" }}>
+                    <span className="absolute top-1 left-1 z-10 text-[8px] font-bold px-1 py-0.5 text-white" style={{ background: "#D4372B", borderRadius: "3px" }}>
                       +{product.trend}%
                     </span>
                   )}
                   {product.flag && (
-                    <span className="absolute top-2 right-2 text-sm z-10">{product.flag}</span>
+                    <span className="absolute top-1 right-1 text-xs z-10">{product.flag}</span>
                   )}
-                  <Image src={product.image} alt={product.name} width={120} height={120} className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300" />
+                  <Image src={product.image} alt={product.name} width={110} height={110} className="w-full h-full object-contain p-1.5 transition-transform duration-300 group-hover:scale-105" />
                 </div>
-                <div className="px-2 py-2">
-                  <p className="truncate mb-0.5" style={{ fontSize: "11px", fontWeight: 500, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>{product.name}</p>
+                <div className="px-1.5 py-1.5">
+                  <p className="truncate mb-0.5" style={{ fontSize: "9px", fontWeight: 500, color: "#0A0A0A", fontFamily: amazonFont }}>{product.name}</p>
                   <div className="flex items-center justify-between">
-                    <p style={{ fontSize: "12px", fontWeight: 700, color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>{formatPrice(product.priceUSD)}</p>
-                    <span style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>{product.views} vues</span>
+                    <p style={{ fontSize: "10px", fontWeight: 700, color: "#D4372B", fontFamily: amazonFont }}>{formatPrice(product.priceUSD)}</p>
+                    <span style={{ fontSize: "8px", color: "#AAAAAA", fontFamily: amazonFont }}>{product.views}</span>
                   </div>
                 </div>
               </div>
@@ -217,80 +230,77 @@ export function TendanceParPays() {
 
       {/* Footer */}
       <div className="flex items-center justify-between pt-2">
-        <div className="flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#D4372B" }} />
-          <span style={{ fontSize: "10px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>Mise à jour en temps réel</span>
+        <div className="flex items-center gap-1">
+          <div className="w-1 h-1 rounded-full" style={{ background: "#D4372B" }} />
+          <span style={{ fontSize: "8px", color: "#AAAAAA", fontFamily: amazonFont }}>Mise à jour en temps réel</span>
         </div>
-        <Link href={`/trending/${selectedCountry}`} className="flex items-center gap-0.5 text-xs font-semibold" style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>
-          Voir tout <ChevronRight className="w-3.5 h-3.5" />
+        <Link href={`/trending/${selectedCountry}`} className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1" style={{ color: "#D4372B", fontFamily: amazonFont }}>
+          Voir tout <ChevronRight className="w-2.5 h-2.5" />
         </Link>
       </div>
     </div>
   )
 
-  // ── DESKTOP ─────────────────────────────────────────────────
+  // ── DESKTOP (inchangé pour l'instant) ─────────────────────────────
   const DesktopTrend = () => (
-    <div className="hidden lg:block rounded-2xl p-6" style={{ border: "0.5px solid #ECECEC", background: "#fff" }}>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+    <div className="hidden lg:block rounded-xl p-5" style={{ border: "0.5px solid #ECECEC", background: "#fff" }}>
+      <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl" style={{ background: "#FFF0F0" }}>
-            <TrendingUp className="w-5 h-5" style={{ color: "#D4372B" }} />
+          <div className="flex items-center justify-center w-9 h-9" style={{ background: "#FFF0F0", borderRadius: "6px" }}>
+            <TrendingUp className="w-4 h-4" style={{ color: "#D4372B" }} />
           </div>
           <div>
-            <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.02em" }}>
+            <h2 style={{ fontSize: "16px", fontWeight: 800, color: "#0A0A0A", fontFamily: amazonFont, letterSpacing: "-0.02em" }}>
               Tendances · {paysActuel.nom} {paysActuel.drapeau}
             </h2>
-            <p style={{ fontSize: "13px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
+            <p style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: amazonFont }}>
               Les produits les plus populaires cette semaine
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}>
-            <MapPin className="w-4 h-4" style={{ color: "#AAAAAA" }} />
-            <span style={{ fontSize: "13px", color: "#555", fontFamily: "'Poppins', sans-serif" }}>{trends.topCategory} en tête</span>
-            <span style={{ fontSize: "13px", fontWeight: 700, color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>+{trends.trendScore}%</span>
+          <div className="flex items-center gap-2 px-2 py-1" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC", borderRadius: "6px" }}>
+            <MapPin className="w-3 h-3" style={{ color: "#AAAAAA" }} />
+            <span style={{ fontSize: "12px", color: "#555", fontFamily: amazonFont }}>{trends.topCategory} en tête</span>
+            <span style={{ fontSize: "12px", fontWeight: 700, color: "#D4372B", fontFamily: amazonFont }}>+{trends.trendScore}%</span>
           </div>
           <CountrySelector />
         </div>
       </div>
 
-      {/* Grille 6 colonnes */}
-      <div className="grid grid-cols-6 gap-3">
+      <div className="grid grid-cols-6 gap-2">
         {trends.products.slice(0, 6).map((product) => (
           <Link key={product.id} href={`/products/${product.id}`} className="group block">
-            <div style={{ background: "#fff", borderRadius: "12px", border: "0.5px solid #ECECEC", padding: "10px" }} className="transition-all hover:shadow-md">
-              <div className="relative aspect-square mb-3" style={{ background: "#FAFAFA", borderRadius: "8px" }}>
-                <span className="absolute top-2 left-2 z-10 text-[9px] font-bold px-1.5 py-0.5 text-white rounded-md" style={{ background: "#D4372B" }}>
+            <div style={{ background: "#fff", borderRadius: "6px", border: "0.5px solid #ECECEC", padding: "8px" }} className="transition-all duration-200 hover:shadow-sm">
+              <div className="relative aspect-square mb-2" style={{ background: "#FAFAFA", borderRadius: "4px" }}>
+                <span className="absolute top-1 left-1 z-10 text-[8px] font-bold px-1 py-0.5 text-white" style={{ background: "#D4372B", borderRadius: "3px" }}>
                   +{product.trend}%
                 </span>
                 {product.flag && (
-                  <span className="absolute top-2 right-2 text-sm z-10 px-1 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.8)", backdropFilter: "blur(4px)" }}>
+                  <span className="absolute top-1 right-1 text-xs z-10 px-0.5 rounded" style={{ background: "rgba(255,255,255,0.8)" }}>
                     {product.flag}
                   </span>
                 )}
-                <Image src={product.image} alt={product.name} width={120} height={120} className="w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-300" />
+                <Image src={product.image} alt={product.name} width={100} height={100} className="w-full h-full object-contain p-1 transition-transform duration-300 group-hover:scale-105" />
               </div>
-              <p className="truncate mb-1.5" style={{ fontSize: "12px", fontWeight: 600, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>{product.name}</p>
+              <p className="truncate mb-1" style={{ fontSize: "11px", fontWeight: 600, color: "#0A0A0A", fontFamily: amazonFont }}>{product.name}</p>
               <div className="flex items-center justify-between">
-                <p style={{ fontSize: "14px", fontWeight: 700, color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>{formatPrice(product.priceUSD)}</p>
-                <span style={{ fontSize: "10px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>{product.orders} cmd</span>
+                <p style={{ fontSize: "12px", fontWeight: 700, color: "#D4372B", fontFamily: amazonFont }}>{formatPrice(product.priceUSD)}</p>
+                <span style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>{product.orders} cmd</span>
               </div>
             </div>
           </Link>
         ))}
       </div>
 
-      {/* Footer */}
-      <div className="flex items-center justify-between mt-5 pt-4" style={{ borderTop: "0.5px solid #F0F0F0" }}>
-        <div className="flex items-center gap-4" style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
+      <div className="flex items-center justify-between mt-4 pt-3" style={{ borderTop: "0.5px solid #F0F0F0" }}>
+        <div className="flex items-center gap-3" style={{ fontSize: "11px", color: "#AAAAAA", fontFamily: amazonFont }}>
           <span>📊 Basé sur les 7 derniers jours</span>
           <span>•</span>
           <span>👥 {trends.products.reduce((a, p) => a + p.views, 0).toLocaleString()} vues</span>
         </div>
-        <Link href={`/trending/${selectedCountry}`} className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>
-          Voir toutes les tendances <ChevronRight className="w-4 h-4" />
+        <Link href={`/trending/${selectedCountry}`} className="flex items-center gap-1 text-xs font-semibold transition-all duration-200 hover:gap-1.5" style={{ color: "#D4372B", fontFamily: amazonFont }}>
+          Voir toutes les tendances <ChevronRight className="w-3 h-3" />
         </Link>
       </div>
     </div>
@@ -300,7 +310,7 @@ export function TendanceParPays() {
     <section className="w-full" style={{ background: "#fff" }}>
       <div className="max-w-7xl mx-auto">
         <MobileTrend />
-        <div className="hidden lg:block px-4 sm:px-6 lg:px-8 py-8">
+        <div className="hidden lg:block px-4 sm:px-6 lg:px-8 py-4">
           <DesktopTrend />
         </div>
       </div>
