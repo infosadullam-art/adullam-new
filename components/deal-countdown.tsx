@@ -287,7 +287,7 @@ export function DealCountdown() {
             </div>
           </div>
 
-          {/* VERSION DESKTOP - fond blanc */}
+          {/* VERSION DESKTOP */}
           <div className="hidden lg:flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div
@@ -383,13 +383,13 @@ export function DealCountdown() {
       {/* ══ BLOCS PRODUITS ════════════════════════════════════════ */}
       <div className="max-w-6xl mx-auto px-4 lg:px-8 py-3 lg:py-2">
         
-        {/* MOBILE */}
+        {/* MOBILE - fond blanc mais animation conservée */}
         <div className="grid grid-cols-2 gap-2 lg:hidden">
           
           <div 
             className="rounded p-2 transition-all duration-1000 ease-in-out"
             style={{ 
-              background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
+              background: "#fff",
               border: "0.5px solid #ECECEC",
               animation: "gradientShift 8s ease-in-out infinite",
             }}
@@ -412,7 +412,7 @@ export function DealCountdown() {
           <div 
             className="rounded p-2 transition-all duration-1000 ease-in-out"
             style={{ 
-              background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
+              background: "#fff",
               border: "0.5px solid #ECECEC",
               animation: "gradientShift 8s ease-in-out infinite",
               animationDelay: "2s",
@@ -435,7 +435,7 @@ export function DealCountdown() {
 
         </div>
 
-        {/* DESKTOP */}
+        {/* DESKTOP - garde le dégradé animé */}
         <div className="hidden lg:grid lg:grid-cols-2 gap-2">
           
           <div 
@@ -499,9 +499,9 @@ export function DealCountdown() {
         }
         
         @keyframes gradientShift {
-          0% { background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%); }
-          50% { background: linear-gradient(135deg, #FFF5F5 0%, #FAFAFA 100%); }
-          100% { background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%); }
+          0% { background: #fff; }
+          50% { background: #FFF5F5; }
+          100% { background: #fff; }
         }
         
         @keyframes pulse {
