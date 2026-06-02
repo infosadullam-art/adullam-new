@@ -128,7 +128,7 @@ export function DealCountdown() {
       <div
         className="bg-white overflow-hidden transition-all duration-300 hover:shadow-md"
         style={{
-          borderRadius: "12px",
+          borderRadius: "10px",
           border: "0.5px solid #ECECEC",
         }}
       >
@@ -137,20 +137,20 @@ export function DealCountdown() {
             src={product.image || "/placeholder.jpg"}
             alt={product.name || "Produit"}
             fill
-            sizes="(max-width: 768px) 140px, 200px"
-            className="object-contain p-3 group-hover:scale-110 transition-transform duration-500 ease-out"
+            sizes="(max-width: 768px) 150px, 200px"
+            className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
           />
           {product.badge && (
             <span
-              className="absolute top-2 left-2 text-[9px] font-bold px-1.5 py-0.5 text-white shadow-sm"
-              style={{ background: "#D4372B", borderRadius: "6px" }}
+              className="absolute top-2 left-2 text-[9px] font-bold px-1.5 py-0.5 text-white"
+              style={{ background: "#D4372B", borderRadius: "5px" }}
             >
               {product.badge}
             </span>
           )}
         </div>
 
-        <div className="px-2 py-2.5">
+        <div className="px-2 py-2">
           <p
             className="text-[11px] font-medium truncate mb-1"
             style={{ color: "#0A0A0A", fontFamily: "'Inter', sans-serif" }}
@@ -158,7 +158,7 @@ export function DealCountdown() {
             {product.name || "Produit"}
           </p>
           <p
-            className="text-[14px] font-bold"
+            className="text-[13px] font-bold"
             style={{ color: "#D4372B", fontFamily: "'Inter', sans-serif" }}
           >
             {formatPrice(product.price)}
@@ -171,7 +171,7 @@ export function DealCountdown() {
   if (isLoading) {
     return (
       <div className="w-full bg-white">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4">
+        <div className="px-4 py-4">
           <div className="animate-pulse flex justify-center items-center h-20">
             <div className="w-8 h-8 rounded-full border-2 border-[#D4372B] border-t-transparent animate-spin" />
           </div>
@@ -183,7 +183,7 @@ export function DealCountdown() {
   if (error) {
     return (
       <div className="w-full bg-white">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 text-center">
+        <div className="px-4 py-4 text-center">
           <p className="text-sm" style={{ color: "#D4372B" }}>{error}</p>
         </div>
       </div>
@@ -195,7 +195,6 @@ export function DealCountdown() {
 
       {/* ══ HEADER PREMIUM ══════════════════════════════════════ */}
       <div className="relative overflow-hidden">
-        {/* Fond avec dégradé subtil */}
         <div 
           className="absolute inset-0 opacity-5"
           style={{
@@ -203,9 +202,9 @@ export function DealCountdown() {
           }}
         />
         
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-4">
+        <div className="px-4 lg:px-8 py-3 lg:py-4">
           
-          {/* VERSION MOBILE */}
+          {/* VERSION MOBILE - HEADER PLEINE LARGEUR */}
           <div className="lg:hidden">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -241,7 +240,6 @@ export function DealCountdown() {
               </Link>
             </div>
             
-            {/* Timer mobile stylisé */}
             <div className="flex items-center justify-between mt-3 pt-2 border-t border-[#ECECEC]">
               <div className="flex items-center gap-1.5">
                 <Clock className="w-3 h-3" style={{ color: "#AAAAAA" }} />
@@ -257,20 +255,20 @@ export function DealCountdown() {
                 ].map(({ val, label }) => (
                   <div key={label} className="flex items-center gap-1">
                     <div
-                      className="flex flex-col items-center justify-center min-w-[40px] px-2 py-1.5 rounded-lg"
+                      className="flex flex-col items-center justify-center min-w-[38px] px-1.5 py-1 rounded-lg"
                       style={{
                         background: brandColor,
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
                       }}
                     >
                       <span
-                        className="text-base font-black leading-none tracking-tight"
+                        className="text-sm font-black leading-none tracking-tight"
                         style={{ color: "#fff", fontFamily: "'Inter', sans-serif" }}
                       >
                         {fmt(val)}
                       </span>
                       <span
-                        className="text-[8px] font-medium leading-none mt-0.5"
+                        className="text-[7px] font-medium leading-none mt-0.5"
                         style={{ color: "rgba(255,255,255,0.6)", fontFamily: "'Inter', sans-serif" }}
                       >
                         {label}
@@ -285,9 +283,8 @@ export function DealCountdown() {
             </div>
           </div>
 
-          {/* VERSION DESKTOP - PREMIUM */}
+          {/* VERSION DESKTOP */}
           <div className="hidden lg:flex items-center justify-between">
-            {/* Partie gauche */}
             <div className="flex items-center gap-4">
               <div
                 className="flex items-center justify-center w-12 h-12 rounded-xl"
@@ -319,7 +316,6 @@ export function DealCountdown() {
               </div>
             </div>
 
-            {/* Partie droite - Timer premium */}
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" style={{ color: "#AAAAAA" }} />
@@ -378,24 +374,25 @@ export function DealCountdown() {
         </div>
       </div>
 
-      {/* ══ PRODUITS ════════════════════════════════════════════ */}
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-6">
-        <div className="grid grid-cols-2 gap-3 lg:gap-5">
-
-          {/* Bloc 1 */}
+      {/* ══ PRODUITS - PLEINE LARGEUR MOBILE ════════════════════ */}
+      <div className="px-4 lg:px-8 py-3 lg:py-6">
+        {/* Mobile : 2 blocs côte à côte avec espace réduit */}
+        <div className="grid grid-cols-2 gap-2 lg:gap-5">
+          
+          {/* Bloc 1 - Sélection */}
           <div
-            className="rounded-xl p-3 lg:p-4 transition-all duration-300 hover:shadow-sm"
+            className="rounded-xl p-2 lg:p-4"
             style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}
           >
-            <div className="flex items-center justify-between mb-3 lg:mb-4">
+            <div className="flex items-center justify-between mb-2 lg:mb-4">
               <h3
-                className="text-[11px] font-black uppercase tracking-wider"
+                className="text-[10px] lg:text-[11px] font-black uppercase tracking-wider"
                 style={{ color: brandColor, fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}
               >
                 ✨ Sélection
               </h3>
               <span
-                className="text-[9px] font-bold px-2 py-0.5 rounded-full"
+                className="text-[8px] lg:text-[9px] font-bold px-1.5 lg:px-2 py-0.5 rounded-full"
                 style={{ background: brandAccent, color: "#fff" }}
               >
                 Nouveau
@@ -405,31 +402,26 @@ export function DealCountdown() {
             {featuredProducts.length === 0 ? (
               <p className="text-xs text-center py-8" style={{ color: "#AAAAAA" }}>Aucun produit disponible</p>
             ) : (
-              <>
-                <div className="grid grid-cols-2 gap-2 lg:hidden">
-                  {featuredProducts.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
-                </div>
-                <div className="hidden lg:grid lg:grid-cols-3 gap-3">
-                  {featuredProducts.map((p) => <ProductCard key={p.id} product={p} />)}
-                </div>
-              </>
+              <div className="grid grid-cols-2 gap-1.5 lg:gap-3">
+                {featuredProducts.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
+              </div>
             )}
           </div>
 
-          {/* Bloc 2 */}
+          {/* Bloc 2 - Best-sellers */}
           <div
-            className="rounded-xl p-3 lg:p-4 transition-all duration-300 hover:shadow-sm"
+            className="rounded-xl p-2 lg:p-4"
             style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}
           >
-            <div className="flex items-center justify-between mb-3 lg:mb-4">
+            <div className="flex items-center justify-between mb-2 lg:mb-4">
               <h3
-                className="text-[11px] font-black uppercase tracking-wider"
+                className="text-[10px] lg:text-[11px] font-black uppercase tracking-wider"
                 style={{ color: brandColor, fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}
               >
                 🔥 Best-sellers
               </h3>
               <span
-                className="text-[9px] font-bold px-2 py-0.5 rounded-full"
+                className="text-[8px] lg:text-[9px] font-bold px-1.5 lg:px-2 py-0.5 rounded-full"
                 style={{ background: "#FFF0F0", color: brandAccent }}
               >
                 Top ventes
@@ -439,14 +431,9 @@ export function DealCountdown() {
             {bestSellers.length === 0 ? (
               <p className="text-xs text-center py-8" style={{ color: "#AAAAAA" }}>Aucun produit disponible</p>
             ) : (
-              <>
-                <div className="grid grid-cols-2 gap-2 lg:hidden">
-                  {bestSellers.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
-                </div>
-                <div className="hidden lg:grid lg:grid-cols-3 gap-3">
-                  {bestSellers.map((p) => <ProductCard key={p.id} product={p} />)}
-                </div>
-              </>
+              <div className="grid grid-cols-2 gap-1.5 lg:gap-3">
+                {bestSellers.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
+              </div>
             )}
           </div>
 
