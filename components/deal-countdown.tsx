@@ -375,14 +375,14 @@ export function DealCountdown() {
         </div>
       </div>
 
-      {/* ══ PRODUITS - BLOCS PLUS LARGES ════════════════════════ */}
+      {/* ══ PRODUITS - MÊME LARGEUR QUE LE BLOC CHRONO ═══════════ */}
       <div className="px-4 lg:px-8 py-3 lg:py-6">
         
-        {/* MOBILE : 2 blocs côte à côte avec plus de largeur */}
-        <div className="flex gap-2 lg:hidden">
+        {/* MOBILE : 2 blocs côte à côte */}
+        <div className="grid grid-cols-2 gap-2 lg:hidden">
           
           <div 
-            className="flex-1 rounded-md p-2 transition-all duration-1000 ease-in-out"
+            className="rounded-md p-2 transition-all duration-1000 ease-in-out"
             style={{ 
               background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
               border: "0.5px solid #ECECEC",
@@ -405,7 +405,7 @@ export function DealCountdown() {
           </div>
 
           <div 
-            className="flex-1 rounded-md p-2 transition-all duration-1000 ease-in-out"
+            className="rounded-md p-2 transition-all duration-1000 ease-in-out"
             style={{ 
               background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
               border: "0.5px solid #ECECEC",
@@ -430,11 +430,11 @@ export function DealCountdown() {
 
         </div>
 
-        {/* DESKTOP : 2 blocs côte à côte avec plus de largeur */}
-        <div className="hidden lg:flex gap-4">
+        {/* DESKTOP : 2 blocs côte à côte - MÊME LARGEUR QUE LE CHRONO */}
+        <div className="hidden lg:grid lg:grid-cols-2 gap-4">
           
           <div 
-            className="flex-1 rounded-md p-4 transition-all duration-1000 ease-in-out"
+            className="rounded-md p-4 transition-all duration-1000 ease-in-out"
             style={{ 
               background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
               border: "0.5px solid #ECECEC",
@@ -457,7 +457,7 @@ export function DealCountdown() {
           </div>
 
           <div 
-            className="flex-1 rounded-md p-4 transition-all duration-1000 ease-in-out"
+            className="rounded-md p-4 transition-all duration-1000 ease-in-out"
             style={{ 
               background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
               border: "0.5px solid #ECECEC",
