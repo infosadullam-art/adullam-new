@@ -7,7 +7,6 @@ import { useLocale } from "@/context/LocaleProvider"
 import { useState, useEffect } from "react"
 
 const pays = {
-  // Afrique de l'Ouest
   CI: { nom: "Côte d'Ivoire", drapeau: "🇨🇮", code: "CI" },
   SN: { nom: "Sénégal", drapeau: "🇸🇳", code: "SN" },
   CM: { nom: "Cameroun", drapeau: "🇨🇲", code: "CM" },
@@ -25,7 +24,6 @@ const pays = {
   SL: { nom: "Sierra Leone", drapeau: "🇸🇱", code: "SL" },
   GM: { nom: "Gambie", drapeau: "🇬🇲", code: "GM" },
   GH: { nom: "Ghana", drapeau: "🇬🇭", code: "GH" },
-  // Afrique Centrale
   CG: { nom: "Congo", drapeau: "🇨🇬", code: "CG" },
   CD: { nom: "RDC", drapeau: "🇨🇩", code: "CD" },
   GA: { nom: "Gabon", drapeau: "🇬🇦", code: "GA" },
@@ -33,7 +31,6 @@ const pays = {
   CF: { nom: "République centrafricaine", drapeau: "🇨🇫", code: "CF" },
   TD: { nom: "Tchad", drapeau: "🇹🇩", code: "TD" },
   ST: { nom: "Sao Tomé", drapeau: "🇸🇹", code: "ST" },
-  // Afrique de l'Est
   KE: { nom: "Kenya", drapeau: "🇰🇪", code: "KE" },
   TZ: { nom: "Tanzanie", drapeau: "🇹🇿", code: "TZ" },
   UG: { nom: "Ouganda", drapeau: "🇺🇬", code: "UG" },
@@ -45,7 +42,6 @@ const pays = {
   DJ: { nom: "Djibouti", drapeau: "🇩🇯", code: "DJ" },
   SS: { nom: "Soudan du Sud", drapeau: "🇸🇸", code: "SS" },
   SD: { nom: "Soudan", drapeau: "🇸🇩", code: "SD" },
-  // Afrique Australe
   ZA: { nom: "Afrique du Sud", drapeau: "🇿🇦", code: "ZA" },
   ZM: { nom: "Zambie", drapeau: "🇿🇲", code: "ZM" },
   ZW: { nom: "Zimbabwe", drapeau: "🇿🇼", code: "ZW" },
@@ -58,12 +54,10 @@ const pays = {
   MU: { nom: "Maurice", drapeau: "🇲🇺", code: "MU" },
   KM: { nom: "Comores", drapeau: "🇰🇲", code: "KM" },
   SC: { nom: "Seychelles", drapeau: "🇸🇨", code: "SC" },
-  // Afrique du Nord
   EG: { nom: "Égypte", drapeau: "🇪🇬", code: "EG" },
   LY: { nom: "Libye", drapeau: "🇱🇾", code: "LY" },
   MR: { nom: "Mauritanie", drapeau: "🇲🇷", code: "MR" },
   EH: { nom: "Sahara occidental", drapeau: "🇪🇭", code: "EH" },
-  // Amérique du Nord
   US: { nom: "États-Unis", drapeau: "🇺🇸", code: "US" },
 }
 
@@ -114,13 +108,15 @@ const suppliers = [
 export function HeroSection() {
   const { country } = useLocale()
   const [currentSlide, setCurrentSlide] = useState(0)
-  
-  // ✅ CORRECTION : Utiliser un état pour le pays qui se met à jour
   const [paysActuel, setPaysActuel] = useState(() => {
-    // Valeur par défaut avant hydratation
     if (typeof window === 'undefined') return pays.CI
     return pays[country as keyof typeof pays] || pays.CI
   })
+  const [isVisible, setIsVisible] = useState(false)
+  const [animatedText, setAnimatedText] = useState("")
+  const [textIndex, setTextIndex] = useState(0)
+
+  const fullText = "Achetez direct des usines du monde"
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -129,14 +125,37 @@ export function HeroSection() {
     return () => clearInterval(timer)
   }, [])
 
-  // ✅ CORRECTION : Mettre à jour le pays quand country change
   useEffect(() => {
     setPaysActuel(pays[country as keyof typeof pays] || pays.CI)
   }, [country])
 
-  // ── MOBILE ─────────────────────────────────────────────────
+  // Animation d'apparition de la section
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), 100)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Animation du texte lettre par lettre (desktop seulement)
+  useEffect(() => {
+    if (textIndex < fullText.length) {
+      const timer = setTimeout(() => {
+        setAnimatedText(prev => prev + fullText[textIndex])
+        setTextIndex(prev => prev + 1)
+      }, 50)
+      return () => clearTimeout(timer)
+    }
+  }, [textIndex])
+
   const MobileHero = () => (
-    <div className="lg:hidden relative overflow-hidden" style={{ height: "220px" }}>
+    <div 
+      className="lg:hidden relative overflow-hidden"
+      style={{ 
+        height: "220px",
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+        transition: 'opacity 0.6s ease-out, transform 0.6s ease-out',
+      }}
+    >
       {heroSlides.map((slide, index) => (
         <div
           key={slide.id}
@@ -148,7 +167,7 @@ export function HeroSection() {
 
           <div className="absolute inset-0 flex flex-col justify-center px-5 z-20">
             <div
-              className="flex items-center gap-1.5 w-fit px-2.5 py-1 rounded-full mb-3"
+              className="flex items-center gap-1.5 w-fit px-2.5 py-1 rounded-full mb-3 animate-fade-in"
               style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(6px)", border: "0.5px solid rgba(255,255,255,0.3)" }}
             >
               <MapPin className="w-3 h-3 text-white" />
@@ -158,22 +177,44 @@ export function HeroSection() {
             </div>
 
             <span
-              className="w-fit px-2 py-0.5 rounded-md mb-1.5 text-white"
-              style={{ background: "#D4372B", fontSize: "10px", fontWeight: 700, fontFamily: "'Poppins', sans-serif" }}
+              className="w-fit px-2 py-0.5 rounded-md mb-1.5 text-white animate-slide-up"
+              style={{ background: "#D4372B", fontSize: "10px", fontWeight: 700, fontFamily: "'Poppins', sans-serif", animationDelay: "0.1s" }}
             >
               {slide.badge}
             </span>
 
-            <h1 style={{ fontSize: "22px", fontWeight: 900, color: "#fff", lineHeight: 1.1, letterSpacing: "-0.03em", fontFamily: "'Poppins', sans-serif", marginBottom: "4px" }}>
+            <h1 
+              className="animate-slide-up"
+              style={{ 
+                fontSize: "22px", 
+                fontWeight: 900, 
+                color: "#fff", 
+                lineHeight: 1.1, 
+                letterSpacing: "-0.03em", 
+                fontFamily: "'Poppins', sans-serif", 
+                marginBottom: "4px",
+                animationDelay: "0.2s",
+              }}
+            >
               {slide.title}
             </h1>
-            <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", fontFamily: "'Poppins', sans-serif", marginBottom: "14px" }}>
+            
+            <p 
+              className="animate-slide-up"
+              style={{ 
+                fontSize: "12px", 
+                color: "rgba(255,255,255,0.7)", 
+                fontFamily: "'Poppins', sans-serif", 
+                marginBottom: "14px",
+                animationDelay: "0.3s",
+              }}
+            >
               {slide.subtitle}
             </p>
 
             <Link
               href={slide.href}
-              className="flex items-center gap-1.5 w-fit"
+              className="flex items-center gap-1.5 w-fit animate-slide-up group"
               style={{
                 background: "#fff",
                 color: "#0A0A0A",
@@ -182,10 +223,20 @@ export function HeroSection() {
                 fontSize: "12px",
                 fontWeight: 700,
                 fontFamily: "'Poppins', sans-serif",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                animationDelay: "0.4s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.02)"
+                e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)"
+                e.currentTarget.style.boxShadow = "none"
               }}
             >
               Découvrir {slide.offre}
-              <ChevronRight className="w-3.5 h-3.5" />
+              <ChevronRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
           </div>
         </div>
@@ -211,7 +262,7 @@ export function HeroSection() {
       </div>
 
       <div
-        className="absolute top-4 right-4 z-30 flex flex-col items-center justify-center"
+        className="absolute top-4 right-4 z-30 flex flex-col items-center justify-center animate-pulse-subtle"
         style={{ background: "#D4372B", borderRadius: "10px", width: "52px", height: "52px" }}
       >
         <span style={{ fontSize: "15px", fontWeight: 900, color: "#fff", lineHeight: 1, fontFamily: "'Poppins', sans-serif" }}>
@@ -224,17 +275,27 @@ export function HeroSection() {
     </div>
   )
 
-  // ── DESKTOP ─────────────────────────────────────────────────
   const DesktopHero = () => (
-    <div className="hidden lg:block" style={{ background: "#0A0A0A" }}>
+    <div 
+      className="hidden lg:block"
+      style={{ 
+        background: "#0A0A0A",
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+        transition: 'opacity 0.6s ease-out, transform 0.6s ease-out',
+      }}
+    >
       <div className="max-w-7xl mx-auto px-8 py-6">
         <div className="grid grid-cols-2 gap-14 items-center">
 
           {/* Gauche — Texte */}
           <div>
-            <div className="flex items-center gap-2 flex-wrap mb-6">
+            <div 
+              className="flex items-center gap-2 flex-wrap mb-6 animate-fade-in"
+              style={{ animationDelay: "0.1s" }}
+            >
               <span style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>Direct depuis :</span>
-              {suppliers.map((s) => (
+              {suppliers.map((s, idx) => (
                 <span
                   key={s.label}
                   style={{
@@ -245,7 +306,10 @@ export function HeroSection() {
                     fontSize: "12px",
                     color: "#fff",
                     fontFamily: "'Poppins', sans-serif",
+                    transition: "all 0.2s ease",
+                    animationDelay: `${0.1 + idx * 0.05}s`,
                   }}
+                  className="animate-fade-in hover:bg-white/15 hover:scale-105"
                 >
                   {s.flag} {s.label}
                 </span>
@@ -262,19 +326,34 @@ export function HeroSection() {
                 fontFamily: "'Poppins', sans-serif",
                 marginBottom: "16px",
               }}
+              className="animate-slide-up"
+              style={{ animationDelay: "0.2s" }}
             >
-              Achetez direct
+              {animatedText}
+              <span className="animate-blink" style={{ color: "#D4372B", display: "inline-block" }}>|</span>
               <br />
               <span style={{ color: "#D4372B" }}>des usines du monde</span>
             </h1>
 
-            <p style={{ fontSize: "16px", color: "#AAAAAA", lineHeight: 1.6, fontFamily: "'Poppins', sans-serif", maxWidth: "420px", marginBottom: "32px" }}>
+            <p 
+              className="animate-slide-up"
+              style={{ 
+                fontSize: "16px", 
+                color: "#AAAAAA", 
+                lineHeight: 1.6, 
+                fontFamily: "'Poppins', sans-serif", 
+                maxWidth: "420px", 
+                marginBottom: "32px",
+                animationDelay: "0.3s",
+              }}
+            >
               Adullam connecte les acheteurs africains aux meilleurs fournisseurs de Chine, Dubaï, Turquie, USA et Europe.
             </p>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 animate-slide-up" style={{ animationDelay: "0.4s" }}>
               <Link
                 href="/for-you"
+                className="group"
                 style={{
                   background: "#D4372B",
                   color: "#fff",
@@ -286,13 +365,23 @@ export function HeroSection() {
                   display: "flex",
                   alignItems: "center",
                   gap: "8px",
+                  transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "scale(1.02)"
+                  e.currentTarget.style.boxShadow = "0 8px 20px rgba(212,55,43,0.3)"
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "scale(1)"
+                  e.currentTarget.style.boxShadow = "none"
                 }}
               >
                 Explorer la boutique
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
               </Link>
               <Link
                 href="/boutique-noel"
+                className="group"
                 style={{
                   border: "1.5px solid rgba(255,255,255,0.2)",
                   color: "#fff",
@@ -301,6 +390,15 @@ export function HeroSection() {
                   fontSize: "14px",
                   fontWeight: 600,
                   fontFamily: "'Poppins', sans-serif",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "#D4372B"
+                  e.currentTarget.style.transform = "translateY(-2px)"
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)"
+                  e.currentTarget.style.transform = "translateY(0)"
                 }}
               >
                 Sourcing B2B
@@ -309,21 +407,25 @@ export function HeroSection() {
           </div>
 
           {/* Droite — Image carrousel */}
-          <div className="relative" style={{ height: "240px" }}>
+          <div className="relative" style={{ height: "280px" }}>
             {heroSlides.map((slide, index) => (
               <div
                 key={slide.id}
-                className="absolute inset-0 transition-opacity duration-700"
-                style={{ opacity: index === currentSlide ? 1 : 0, borderRadius: "20px", overflow: "hidden" }}
+                className="absolute inset-0 transition-all duration-700"
+                style={{ 
+                  opacity: index === currentSlide ? 1 : 0, 
+                  borderRadius: "16px", 
+                  overflow: "hidden",
+                  transform: index === currentSlide ? 'scale(1)' : 'scale(0.95)',
+                }}
               >
                 <Image src={slide.image} alt={slide.title} fill className="object-cover" />
                 <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)" }} />
 
-                {/* AJOUT : CTA en haut à gauche */}
                 <div className="absolute top-4 left-4 z-10">
                   <Link
                     href={slide.href}
-                    className="flex items-center gap-1.5 w-fit"
+                    className="flex items-center gap-1.5 w-fit group"
                     style={{
                       background: "#fff",
                       color: "#0A0A0A",
@@ -332,47 +434,46 @@ export function HeroSection() {
                       fontSize: "11px",
                       fontWeight: 700,
                       fontFamily: "'Poppins', sans-serif",
+                      transition: "transform 0.2s ease",
                     }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.02)"}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
                   >
                     Découvrir {slide.offre}
-                    <ChevronRight className="w-3 h-3" />
+                    <ChevronRight className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </Link>
                 </div>
 
-                {/* Info overlay bas (inchangé) */}
                 <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between z-10">
                   <div>
-                    <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.6)", fontFamily: "'Poppins', sans-serif" }}>{slide.badge}</p>
-                    <p style={{ fontSize: "18px", fontWeight: 800, color: "#fff", fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.02em" }}>{slide.title}</p>
+                    <p className="text-[11px] text-white/60 font-poppins">{slide.badge}</p>
+                    <p className="text-[18px] font-extrabold text-white font-poppins tracking-tight">{slide.title}</p>
                   </div>
                   <div
+                    className="flex flex-col items-center"
                     style={{
                       background: "#D4372B",
                       borderRadius: "10px",
                       padding: "8px 14px",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
                     }}
                   >
-                    <span style={{ fontSize: "20px", fontWeight: 900, color: "#fff", lineHeight: 1, fontFamily: "'Poppins', sans-serif" }}>{slide.offre}</span>
-                    <span style={{ fontSize: "9px", color: "rgba(255,255,255,0.7)", fontFamily: "'Poppins', sans-serif" }}>aujourd'hui</span>
+                    <span className="text-[20px] font-black text-white leading-none font-poppins">{slide.offre}</span>
+                    <span className="text-[9px] text-white/70 font-poppins">aujourd'hui</span>
                   </div>
                 </div>
               </div>
             ))}
 
-            {/* Dots desktop */}
-            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 flex gap-1.5 z-30">
+            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 z-30">
               {heroSlides.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setCurrentSlide(i)}
                   style={{
                     height: "3px",
-                    width: i === currentSlide ? "20px" : "6px",
+                    width: i === currentSlide ? "24px" : "8px",
                     borderRadius: "2px",
-                    background: i === currentSlide ? "#D4372B" : "rgba(255,255,255,0.25)",
+                    background: i === currentSlide ? "#D4372B" : "rgba(255,255,255,0.3)",
                     transition: "all 0.3s ease",
                     border: "none",
                     cursor: "pointer",
@@ -386,21 +487,29 @@ export function HeroSection() {
 
         {/* Trust bar */}
         <div
-          className="grid grid-cols-3 gap-0 mt-8"
-          style={{ borderTop: "0.5px solid rgba(255,255,255,0.08)", paddingTop: "20px" }}
+          className="grid grid-cols-3 gap-0 mt-8 animate-fade-in"
+          style={{ borderTop: "0.5px solid rgba(255,255,255,0.08)", paddingTop: "20px", animationDelay: "0.5s" }}
         >
           {trustItems.map(({ icon: Icon, label, sub }, i) => (
             <div
               key={i}
-              className="flex items-center gap-3"
-              style={{ borderRight: i < 2 ? "0.5px solid rgba(255,255,255,0.08)" : "none", paddingRight: i < 2 ? "32px" : "0", paddingLeft: i > 0 ? "32px" : "0" }}
+              className="flex items-center gap-3 group"
+              style={{ 
+                borderRight: i < 2 ? "0.5px solid rgba(255,255,255,0.08)" : "none", 
+                paddingRight: i < 2 ? "32px" : "0", 
+                paddingLeft: i > 0 ? "32px" : "0",
+                transition: "all 0.2s ease",
+              }}
             >
-              <div style={{ background: "rgba(212,55,43,0.15)", borderRadius: "10px", padding: "10px" }}>
-                <Icon className="w-5 h-5" style={{ color: "#D4372B" }} />
+              <div 
+                className="rounded-lg p-2 transition-all duration-300 group-hover:scale-110"
+                style={{ background: "rgba(212,55,43,0.15)" }}
+              >
+                <Icon className="w-5 h-5 transition-colors duration-300 group-hover:text-[#D4372B]" style={{ color: "#D4372B" }} />
               </div>
               <div>
-                <p style={{ fontSize: "13px", fontWeight: 600, color: "#fff", fontFamily: "'Poppins', sans-serif" }}>{label}</p>
-                <p style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>{sub}</p>
+                <p className="text-[13px] font-semibold text-white font-poppins transition-all duration-200 group-hover:translate-x-0.5">{label}</p>
+                <p className="text-[12px] text-[#AAAAAA] font-poppins">{sub}</p>
               </div>
             </div>
           ))}
@@ -413,6 +522,55 @@ export function HeroSection() {
     <>
       <MobileHero />
       <DesktopHero />
+
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes pulseSubtle {
+          0%, 100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.02);
+          }
+        }
+        
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+        
+        .animate-fade-in {
+          animation: fadeIn 0.6s ease-out forwards;
+        }
+        
+        .animate-slide-up {
+          animation: slideUp 0.6s ease-out forwards;
+          opacity: 0;
+        }
+        
+        .animate-pulse-subtle {
+          animation: pulseSubtle 2s ease-in-out infinite;
+        }
+        
+        .animate-blink {
+          animation: blink 1s step-end infinite;
+        }
+      `}</style>
     </>
   )
 }
