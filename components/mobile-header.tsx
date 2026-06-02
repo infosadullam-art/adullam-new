@@ -5,10 +5,6 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/admin/auth-context"
 
-// Police Amazon Ember (sauf logo)
-const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-const logoFont = "'Poppins', sans-serif"
-
 const searchSuggestions = [
   "chaussure", "robe de soirée", "écouteur", "sac à main", 
   "montre", "parfum", "jean", "casquette", "téléphone", "basket"
@@ -134,7 +130,7 @@ export function MobileHeader() {
           {/* Row 1 : Logo + actions */}
           <div className="flex items-center justify-between">
 
-            {/* Logo — garde Poppins */}
+            {/* Logo — se réduit légèrement au scroll */}
             <button
               onClick={() => router.push("/")}
               className="focus:outline-none active:opacity-70"
@@ -142,7 +138,7 @@ export function MobileHeader() {
               aria-label="Accueil Adullam"
             >
               <span style={{
-                fontFamily: logoFont,
+                fontFamily: "'Poppins', sans-serif",
                 fontWeight: 900,
                 fontSize: scrolled ? "17px" : "20px",
                 letterSpacing: "-0.04em",
@@ -153,7 +149,7 @@ export function MobileHeader() {
                 adul
               </span>
               <span style={{
-                fontFamily: logoFont,
+                fontFamily: "'Poppins', sans-serif",
                 fontWeight: 900,
                 fontSize: scrolled ? "17px" : "20px",
                 letterSpacing: "-0.04em",
@@ -164,7 +160,7 @@ export function MobileHeader() {
                 .
               </span>
               <span style={{
-                fontFamily: logoFont,
+                fontFamily: "'Poppins', sans-serif",
                 fontWeight: 900,
                 fontSize: scrolled ? "17px" : "20px",
                 letterSpacing: "-0.04em",
@@ -182,12 +178,11 @@ export function MobileHeader() {
               {/* Compte */}
               <button
                 onClick={goToAccount}
-                className="relative flex items-center justify-center focus:outline-none"
+                className="relative flex items-center justify-center rounded-xl focus:outline-none"
                 style={{
                   background: "#F4F4F4",
                   width:  scrolled ? "34px" : "36px",
                   height: scrolled ? "34px" : "36px",
-                  borderRadius: "6px",
                   transition: "width 0.25s ease, height 0.25s ease, transform 0.1s ease",
                 }}
                 onPointerDown={e => e.currentTarget.style.transform = "scale(0.9)"}
@@ -207,12 +202,11 @@ export function MobileHeader() {
               {/* Panier */}
               <button
                 onClick={handleCartClick}
-                className="relative flex items-center justify-center overflow-hidden focus:outline-none"
+                className="relative flex items-center justify-center rounded-xl focus:outline-none overflow-hidden"
                 style={{
                   background: "#D4372B",
                   width:  scrolled ? "34px" : "36px",
                   height: scrolled ? "34px" : "36px",
-                  borderRadius: "6px",
                   transition: "width 0.25s ease, height 0.25s ease, transform 0.1s ease",
                 }}
                 onPointerDown={e => e.currentTarget.style.transform = "scale(0.9)"}
@@ -223,8 +217,8 @@ export function MobileHeader() {
                 <ShoppingCart className="w-[17px] h-[17px] text-white" />
                 {cartClicked && (
                   <span
-                    className="absolute inset-0 animate-ping"
-                    style={{ background: "#D4372B", opacity: 0.5, borderRadius: "6px" }}
+                    className="absolute inset-0 animate-ping rounded-xl"
+                    style={{ background: "#D4372B", opacity: 0.5 }}
                   />
                 )}
               </button>
@@ -232,12 +226,11 @@ export function MobileHeader() {
               {/* Burger */}
               <button
                 onClick={() => setShowMenu(p => !p)}
-                className="flex items-center justify-center focus:outline-none"
+                className="flex items-center justify-center rounded-xl focus:outline-none"
                 style={{
                   background: showMenu ? "#ECECEC" : "#F4F4F4",
                   width:  scrolled ? "34px" : "36px",
                   height: scrolled ? "34px" : "36px",
-                  borderRadius: "6px",
                   transition: "width 0.25s ease, height 0.25s ease, background 0.2s ease, transform 0.1s ease",
                 }}
                 onPointerDown={e => e.currentTarget.style.transform = "scale(0.9)"}
@@ -281,7 +274,7 @@ export function MobileHeader() {
                     opacity: isAnimating ? 0 : 1,
                   }}
                 >
-                  <span className="text-sm" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>
+                  <span className="text-sm" style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
                     {searchSuggestions[suggestionIndex]}
                   </span>
                 </div>
@@ -298,12 +291,12 @@ export function MobileHeader() {
               className="w-full pl-9 pr-4 text-sm focus:outline-none"
               style={{
                 background: "#F4F4F4",
-                borderRadius: "6px",
+                borderRadius: "10px",
                 border: searchFocused
                   ? "1.5px solid #D4372B"
                   : "1.5px solid transparent",
                 color: "#0A0A0A",
-                fontFamily: amazonFont,
+                fontFamily: "'Poppins', sans-serif",
                 paddingTop:    scrolled ? "8px"  : "10px",
                 paddingBottom: scrolled ? "8px"  : "10px",
                 transition: "border 0.2s ease, padding 0.25s ease",
@@ -340,13 +333,13 @@ export function MobileHeader() {
             : "none",
         }}
       >
-        {/* Header drawer - logo garde Poppins */}
+        {/* Header drawer */}
         <div
           className="flex items-center justify-between px-5 py-4"
           style={{ borderBottom: "0.5px solid #F0F0F0" }}
         >
           <span style={{
-            fontFamily: logoFont,
+            fontFamily: "'Poppins', sans-serif",
             fontWeight: 900,
             fontSize: "18px",
             letterSpacing: "-0.04em",
@@ -356,8 +349,8 @@ export function MobileHeader() {
           </span>
           <button
             onClick={closeMenu}
-            className="flex items-center justify-center w-8 h-8 focus:outline-none"
-            style={{ background: "#F4F4F4", borderRadius: "6px" }}
+            className="flex items-center justify-center w-8 h-8 rounded-lg focus:outline-none"
+            style={{ background: "#F4F4F4" }}
             onPointerDown={e => e.currentTarget.style.transform = "scale(0.9)"}
             onPointerUp={e   => e.currentTarget.style.transform = "scale(1)"}
             onPointerLeave={e => e.currentTarget.style.transform = "scale(1)"}
@@ -375,8 +368,8 @@ export function MobileHeader() {
             </div>
           ) : user ? (
             <div className="px-5 py-4" style={{ borderBottom: "0.5px solid #F0F0F0" }}>
-              <p className="text-xs mb-0.5" style={{ color: "#AAAAAA", fontWeight: 500, fontFamily: amazonFont }}>Connecté en tant que</p>
-              <p className="text-sm font-semibold truncate" style={{ color: "#0A0A0A", fontFamily: amazonFont }}>
+              <p className="text-xs mb-0.5" style={{ color: "#AAAAAA", fontWeight: 500 }}>Connecté en tant que</p>
+              <p className="text-sm font-semibold truncate" style={{ color: "#0A0A0A" }}>
                 {user.name || user.email}
               </p>
             </div>
@@ -384,8 +377,8 @@ export function MobileHeader() {
             <div className="px-5 py-4 flex gap-2" style={{ borderBottom: "0.5px solid #F0F0F0" }}>
               <button
                 onClick={goToLogin}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-semibold"
-                style={{ background: "#0A0A0A", color: "#fff", borderRadius: "8px", transition: "opacity 0.15s ease", fontFamily: amazonFont }}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold"
+                style={{ background: "#0A0A0A", color: "#fff", transition: "opacity 0.15s ease" }}
                 onPointerDown={e => e.currentTarget.style.opacity = "0.8"}
                 onPointerUp={e   => e.currentTarget.style.opacity = "1"}
                 onPointerLeave={e => e.currentTarget.style.opacity = "1"}
@@ -395,8 +388,8 @@ export function MobileHeader() {
               </button>
               <button
                 onClick={goToRegister}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-semibold"
-                style={{ border: "1.5px solid #ECECEC", color: "#0A0A0A", background: "#fff", borderRadius: "8px", transition: "background 0.15s ease", fontFamily: amazonFont }}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold"
+                style={{ border: "1.5px solid #ECECEC", color: "#0A0A0A", background: "#fff", transition: "background 0.15s ease" }}
                 onPointerDown={e => e.currentTarget.style.background = "#F4F4F4"}
                 onPointerUp={e   => e.currentTarget.style.background = "#fff"}
                 onPointerLeave={e => e.currentTarget.style.background = "#fff"}
@@ -419,7 +412,7 @@ export function MobileHeader() {
                 key={label}
                 onClick={action}
                 className="flex items-center justify-between px-5 py-3.5 text-sm font-medium text-left"
-                style={{ color: "#0A0A0A", fontFamily: amazonFont, transition: "background 0.15s ease" }}
+                style={{ color: "#0A0A0A", transition: "background 0.15s ease" }}
                 onPointerDown={e => e.currentTarget.style.background = "#F8F8F8"}
                 onPointerUp={e   => e.currentTarget.style.background = "transparent"}
                 onPointerLeave={e => e.currentTarget.style.background = "transparent"}
@@ -436,7 +429,7 @@ export function MobileHeader() {
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-3 px-5 py-3.5 text-sm font-medium"
-                style={{ color: "#D4372B", fontFamily: amazonFont, transition: "background 0.15s ease" }}
+                style={{ color: "#D4372B", transition: "background 0.15s ease" }}
                 onPointerDown={e => e.currentTarget.style.background = "#FFF5F5"}
                 onPointerUp={e   => e.currentTarget.style.background = "transparent"}
                 onPointerLeave={e => e.currentTarget.style.background = "transparent"}
@@ -454,7 +447,7 @@ export function MobileHeader() {
           <div className="px-5">
             <p
               className="text-xs font-semibold mb-1.5"
-              style={{ color: "#AAAAAA", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: amazonFont }}
+              style={{ color: "#AAAAAA", letterSpacing: "0.08em", textTransform: "uppercase" }}
             >
               Catégories
             </p>
@@ -466,7 +459,7 @@ export function MobileHeader() {
                     key={cat.label}
                     onClick={() => { setShowMenu(false); router.push(`/categorie/${cat.slug}`) }}
                     className="flex items-center justify-between py-2.5 text-sm font-medium text-left"
-                    style={{ borderBottom: "0.5px solid #F8F8F8", color: "#0A0A0A", fontFamily: amazonFont, transition: "color 0.15s ease" }}
+                    style={{ borderBottom: "0.5px solid #F8F8F8", color: "#0A0A0A", transition: "color 0.15s ease" }}
                     onPointerDown={e => e.currentTarget.style.color = "#D4372B"}
                     onPointerUp={e   => e.currentTarget.style.color = "#0A0A0A"}
                     onPointerLeave={e => e.currentTarget.style.color = "#0A0A0A"}
