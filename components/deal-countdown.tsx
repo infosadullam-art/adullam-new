@@ -127,7 +127,7 @@ export function DealCountdown() {
       <div
         className="bg-white overflow-hidden transition-all duration-300 hover:shadow-md"
         style={{
-          borderRadius: "10px",
+          borderRadius: "8px",
           border: "0.5px solid #ECECEC",
         }}
       >
@@ -142,7 +142,7 @@ export function DealCountdown() {
           {product.badge && (
             <span
               className="absolute top-2 left-2 text-[9px] font-bold px-1.5 py-0.5 text-white"
-              style={{ background: "#D4372B", borderRadius: "5px" }}
+              style={{ background: "#D4372B", borderRadius: "4px" }}
             >
               {product.badge}
             </span>
@@ -197,10 +197,9 @@ export function DealCountdown() {
       {/* ══ HEADER PREMIUM ══════════════════════════════════════ */}
       <div className="relative overflow-hidden">
         <div 
-          className="absolute inset-0 opacity-5 animate-pulse-slow"
+          className="absolute inset-0 opacity-5"
           style={{
             background: `radial-gradient(circle at 0% 0%, ${brandAccent} 0%, transparent 70%)`,
-            animation: "pulse 4s ease-in-out infinite",
           }}
         />
         
@@ -211,7 +210,7 @@ export function DealCountdown() {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div
-                  className="flex items-center justify-center w-8 h-8 rounded-xl"
+                  className="flex items-center justify-center w-8 h-8 rounded-lg"
                   style={{ background: `linear-gradient(135deg, ${brandAccent}, #B82D20)` }}
                 >
                   <Zap className="w-4 h-4 text-white" fill="white" />
@@ -257,7 +256,7 @@ export function DealCountdown() {
                 ].map(({ val, label }) => (
                   <div key={label} className="flex items-center gap-1">
                     <div
-                      className="flex flex-col items-center justify-center min-w-[38px] px-1.5 py-1 rounded-lg"
+                      className="flex flex-col items-center justify-center min-w-[38px] px-1.5 py-1 rounded-md"
                       style={{
                         background: brandColor,
                         boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
@@ -289,7 +288,7 @@ export function DealCountdown() {
           <div className="hidden lg:flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div
-                className="flex items-center justify-center w-12 h-12 rounded-xl"
+                className="flex items-center justify-center w-12 h-12 rounded-lg"
                 style={{
                   background: `linear-gradient(135deg, ${brandAccent}, #B82D20)`,
                   boxShadow: "0 4px 12px rgba(212,55,43,0.25)",
@@ -334,7 +333,7 @@ export function DealCountdown() {
                 ].map(({ val, label }, idx) => (
                   <div key={label} className="flex items-center gap-2">
                     <div
-                      className="flex flex-col items-center justify-center min-w-[70px] px-3 py-2 rounded-xl"
+                      className="flex flex-col items-center justify-center min-w-[70px] px-3 py-2 rounded-lg"
                       style={{
                         background: brandColor,
                         boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
@@ -362,7 +361,7 @@ export function DealCountdown() {
 
               <Link
                 href="/deals-du-jour"
-                className="group flex items-center gap-2 px-5 py-2.5 text-white rounded-xl text-sm font-bold transition-all duration-300 hover:shadow-lg hover:scale-105"
+                className="group flex items-center gap-2 px-5 py-2.5 text-white rounded-lg text-sm font-bold transition-all duration-300 hover:shadow-lg hover:scale-105"
                 style={{
                   background: `linear-gradient(135deg, ${brandAccent}, #B82D20)`,
                   fontFamily: "'Inter', sans-serif",
@@ -379,16 +378,14 @@ export function DealCountdown() {
       {/* ══ PRODUITS - PLEINE LARGEUR ════════════════════════════ */}
       <div className="px-4 lg:px-8 py-3 lg:py-6">
         
-        {/* MOBILE : 2 blocs côte à côte sans espace */}
+        {/* MOBILE : 2 blocs côte à côte */}
         <div className="grid grid-cols-2 gap-1.5 lg:hidden">
           
-          {/* Bloc 1 - Sélection avec fond dégradé animé */}
           <div 
-            className="rounded-xl p-2 transition-all duration-1000 ease-in-out"
+            className="rounded-md p-2"
             style={{ 
-              background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
+              background: "#FAFAFA",
               border: "0.5px solid #ECECEC",
-              animation: "gradientShift 8s ease-in-out infinite",
             }}
           >
             <div className="flex items-center justify-between mb-2">
@@ -406,14 +403,11 @@ export function DealCountdown() {
             </div>
           </div>
 
-          {/* Bloc 2 - Best-sellers avec fond dégradé animé */}
           <div 
-            className="rounded-xl p-2 transition-all duration-1000 ease-in-out"
+            className="rounded-md p-2"
             style={{ 
-              background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
+              background: "#FAFAFA",
               border: "0.5px solid #ECECEC",
-              animation: "gradientShift 8s ease-in-out infinite",
-              animationDelay: "2s",
             }}
           >
             <div className="flex items-center justify-between mb-2">
@@ -433,16 +427,14 @@ export function DealCountdown() {
 
         </div>
 
-        {/* DESKTOP : 2 blocs côte à côte avec espace réduit */}
+        {/* DESKTOP : 2 blocs côte à côte */}
         <div className="hidden lg:grid lg:grid-cols-2 gap-3">
           
-          {/* Bloc 1 - Sélection avec fond dégradé animé */}
           <div 
-            className="rounded-xl p-4 transition-all duration-1000 ease-in-out"
+            className="rounded-md p-4"
             style={{ 
-              background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
+              background: "#FAFAFA",
               border: "0.5px solid #ECECEC",
-              animation: "gradientShift 8s ease-in-out infinite",
             }}
           >
             <div className="flex items-center justify-between mb-4">
@@ -460,14 +452,11 @@ export function DealCountdown() {
             </div>
           </div>
 
-          {/* Bloc 2 - Best-sellers avec fond dégradé animé (décalé) */}
           <div 
-            className="rounded-xl p-4 transition-all duration-1000 ease-in-out"
+            className="rounded-md p-4"
             style={{ 
-              background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
+              background: "#FAFAFA",
               border: "0.5px solid #ECECEC",
-              animation: "gradientShift 8s ease-in-out infinite",
-              animationDelay: "2s",
             }}
           >
             <div className="flex items-center justify-between mb-4">
@@ -487,33 +476,6 @@ export function DealCountdown() {
 
         </div>
       </div>
-
-      <style jsx global>{`
-        @keyframes gradientShift {
-          0% {
-            background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
-          }
-          50% {
-            background: linear-gradient(135deg, #FFF5F5 0%, #FAFAFA 100%);
-          }
-          100% {
-            background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
-          }
-        }
-        
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 0.05;
-          }
-          50% {
-            opacity: 0.12;
-          }
-        }
-        
-        .animate-pulse-slow {
-          animation: pulse 4s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   )
 }
