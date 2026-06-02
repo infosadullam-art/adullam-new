@@ -5,6 +5,9 @@ import { useEffect, useRef, useState, useCallback } from "react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useApi } from "@/hooks/useApi"
 
+// Police Amazon Ember
+const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+
 interface Product {
   id: string
   name: string
@@ -29,9 +32,6 @@ const badgeConfig: Record<string, { label: string; bg: string; color: string }> 
   popular:       { label: "Populaire",  bg: "#FFF4E6", color: "#E67700" },
 }
 
-// ✅ FIX : déplacé hors du composant — évite la recréation du tableau à chaque render
-// L'ancienne version créait un nouveau tableau de 5 objets à chaque render,
-// ce qui pouvait causer des re-renders inutiles dans useEffect
 const TITLES = [
   { main: "Suggestions",     sub: "personnalisées pour vous" },
   { main: "Inspirations",    sub: "rien que pour vous" },
@@ -62,14 +62,11 @@ export function ForYouSection() {
   const viewedProducts     = useRef<Set<string>>(new Set())
   const trackQueueRef      = useRef<Set<string>>(new Set())
 
-  // ── Titre rotatif ──────────────────────────────────────────
-  // ✅ Plus besoin de TITLES dans les deps — c'est une constante module-level
   useEffect(() => {
     const i = setInterval(() => setTitleIndex(p => (p + 1) % TITLES.length), 5000)
     return () => clearInterval(i)
   }, [])
 
-  // ── Session ID ─────────────────────────────────────────────
   useEffect(() => {
     let stored = localStorage.getItem("adullam_session_id")
     if (!stored) {
@@ -80,7 +77,6 @@ export function ForYouSection() {
     document.cookie = `sessionId=${stored}; path=/; max-age=86400; SameSite=Lax`
   }, [])
 
-  // ── Track interaction ──────────────────────────────────────
   const trackInteraction = useCallback(async (
     productId: string,
     type: "VIEW" | "CLICK"
@@ -97,11 +93,10 @@ export function ForYouSection() {
         body: JSON.stringify({ productId, type, context: "FOR_YOU", sessionId }),
       })
     } catch {
-      // Silencieux — le tracking ne doit jamais faire crasher l'UI
+      // Silencieux
     }
   }, [sessionId, fetchWithAuth])
 
-  // ── Observer visibility pour les VIEWs ────────────────────
   useEffect(() => {
     if (!products.length) return
 
@@ -121,7 +116,6 @@ export function ForYouSection() {
     return () => observer.disconnect()
   }, [products, trackInteraction])
 
-  // ── Fetch principal ────────────────────────────────────────
   const fetchForYou = useCallback(async () => {
     if (isFetchingRef.current || !hasMoreRef.current || !sessionId) return
 
@@ -215,7 +209,6 @@ export function ForYouSection() {
     }
   }, [sessionId, fetchWithAuth])
 
-  // ── Premier chargement ─────────────────────────────────────
   useEffect(() => {
     if (!initialFetchDone.current && sessionId) {
       initialFetchDone.current = true
@@ -223,7 +216,6 @@ export function ForYouSection() {
     }
   }, [fetchForYou, sessionId])
 
-  // ── Infinite scroll ────────────────────────────────────────
   useEffect(() => {
     if (!initialized) return
 
@@ -237,7 +229,6 @@ export function ForYouSection() {
     return () => observer.disconnect()
   }, [initialized, fetchForYou])
 
-  // ── Rendu ──────────────────────────────────────────────────
   const rows: Product[][] = []
   for (let i = 0; i < products.length; i += 6) {
     rows.push(products.slice(i, i + 6))
@@ -245,9 +236,9 @@ export function ForYouSection() {
 
   if (!isLoading && products.length === 0 && !error) {
     return (
-      <section className="w-full py-12" style={{ background: "#fff" }}>
+      <section className="w-full py-8" style={{ background: "#fff" }}>
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <p style={{ color: "#AAAAAA", fontSize: "14px", fontFamily: "'Poppins', sans-serif" }}>
+          <p style={{ color: "#AAAAAA", fontSize: "13px", fontFamily: amazonFont }}>
             Chargement des recommandations...
           </p>
         </div>
@@ -256,47 +247,47 @@ export function ForYouSection() {
   }
 
   return (
-    <section className="w-full py-10 lg:py-14" style={{ background: "#FAFAFA" }}>
+    <section className="w-full py-6 lg:py-10" style={{ background: "#FAFAFA" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Titre dynamique */}
-        <div className="mb-6">
+        <div className="mb-4">
           <div className="flex items-center gap-2 mb-1">
-            <span style={{ display: "inline-block", width: "3px", height: "20px", background: "#D4372B", borderRadius: "2px" }} />
+            <span style={{ display: "inline-block", width: "3px", height: "18px", background: "#D4372B", borderRadius: "2px" }} />
             <h2
               key={titleIndex}
               style={{
-                fontSize: "20px", fontWeight: 800, color: "#0A0A0A",
-                fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.02em",
+                fontSize: "18px", fontWeight: 800, color: "#0A0A0A",
+                fontFamily: amazonFont, letterSpacing: "-0.02em",
               }}
             >
               {TITLES[titleIndex].main}{" "}
               <span style={{ color: "#D4372B" }}>{TITLES[titleIndex].sub}</span>
             </h2>
           </div>
-          <p className="flex items-center gap-1.5" style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
-            <span style={{ display: "inline-block", width: "6px", height: "6px", borderRadius: "50%", background: "#D4372B" }} />
+          <p className="flex items-center gap-1.5" style={{ fontSize: "11px", color: "#AAAAAA", fontFamily: amazonFont }}>
+            <span style={{ display: "inline-block", width: "5px", height: "5px", borderRadius: "50%", background: "#D4372B" }} />
             {products.length} articles · mise à jour en continu
           </p>
         </div>
 
         {/* Grille */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {error && (
-            <div className="text-center py-6" style={{ color: "#D4372B", fontSize: "13px", fontFamily: "'Poppins', sans-serif" }}>
+            <div className="text-center py-4" style={{ color: "#D4372B", fontSize: "12px", fontFamily: amazonFont }}>
               Erreur de chargement — réessai au prochain scroll
             </div>
           )}
 
           {rows.map((row, rowIndex) => (
-            <div key={rowIndex} className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div key={rowIndex} className="grid grid-cols-1 md:grid-cols-3 gap-2">
               {[0, 1, 2].map((blockIndex) => (
                 <div
                   key={blockIndex}
-                  className="rounded-xl p-3"
-                  style={{ background: "#fff", border: "0.5px solid #ECECEC" }}
+                  className="p-2"
+                  style={{ background: "#fff", border: "0.5px solid #ECECEC", borderRadius: "6px" }}
                 >
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2">
                     {row.slice(blockIndex * 2, blockIndex * 2 + 2).map((product) => {
                       const badge = product.source ? badgeConfig[product.source] : null
                       return (
@@ -305,8 +296,6 @@ export function ForYouSection() {
                           className="relative cursor-pointer group"
                           data-product-id={product.id}
                           onClick={() => trackInteraction(product.id, "CLICK")}
-                          // ✅ FIX : utiliser CSS classes au lieu de style inline dans les handlers
-                          // Évite les re-renders causés par des nouvelles références de fonctions
                           style={{ transition: "transform 0.2s ease" }}
                           onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)")}
                           onMouseLeave={e => (e.currentTarget.style.transform = "translateY(0)")}
@@ -315,11 +304,11 @@ export function ForYouSection() {
                             <span
                               className="absolute z-10"
                               style={{
-                                top: "-6px", right: "-6px",
+                                top: "-4px", right: "-4px",
                                 background: badge.bg, color: badge.color,
-                                fontSize: "8px", fontWeight: 700,
-                                padding: "2px 6px", borderRadius: "100px",
-                                fontFamily: "'Poppins', sans-serif",
+                                fontSize: "7px", fontWeight: 700,
+                                padding: "2px 5px", borderRadius: "20px",
+                                fontFamily: amazonFont,
                                 border: `0.5px solid ${badge.color}20`,
                               }}
                             >
@@ -342,20 +331,20 @@ export function ForYouSection() {
           ))}
 
           {/* Sentinel infinite scroll + loader */}
-          <div ref={observerRef} className="flex justify-center py-6">
+          <div ref={observerRef} className="flex justify-center py-4">
             {isLoading && (
-              <div className="flex flex-col items-center gap-2">
-                <div className="relative w-7 h-7">
+              <div className="flex flex-col items-center gap-1.5">
+                <div className="relative w-6 h-6">
                   <div className="absolute inset-0 rounded-full" style={{ border: "1.5px solid #ECECEC" }} />
                   <div className="absolute inset-0 rounded-full animate-spin" style={{ border: "1.5px solid #D4372B", borderTopColor: "transparent" }} />
                 </div>
-                <span style={{ fontSize: "11px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
+                <span style={{ fontSize: "10px", color: "#AAAAAA", fontFamily: amazonFont }}>
                   Chargement...
                 </span>
               </div>
             )}
             {!hasMore && products.length > 0 && !isLoading && (
-              <p style={{ fontSize: "11px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
+              <p style={{ fontSize: "10px", color: "#AAAAAA", fontFamily: amazonFont }}>
                 {products.length} suggestions
               </p>
             )}
