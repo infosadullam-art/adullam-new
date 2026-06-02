@@ -46,7 +46,6 @@ export function DealCountdown() {
 
   const brandColor    = "#0A0A0A"
   const brandAccent   = "#D4372B"
-  const brandLight    = "#F4F4F4"
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -123,7 +122,8 @@ export function DealCountdown() {
 
   const fmt = (n: number) => n.toString().padStart(2, "0")
 
-  const ProductCard = ({ product }: { product: Product }) => (
+  // ProductCard avec version mobile sans nom
+  const ProductCard = ({ product, hideName = false }: { product: Product; hideName?: boolean }) => (
     <Link href={`/products/${product.id}`} className="group block">
       <div
         className="bg-white overflow-hidden transition-all duration-300 hover:shadow-md"
@@ -150,13 +150,16 @@ export function DealCountdown() {
           )}
         </div>
 
+        {/* Infos produit - version desktop avec nom, mobile sans nom */}
         <div className="px-2 py-2">
-          <p
-            className="text-[11px] font-medium truncate mb-1"
-            style={{ color: "#0A0A0A", fontFamily: "'Inter', sans-serif" }}
-          >
-            {product.name || "Produit"}
-          </p>
+          {!hideName && (
+            <p
+              className="text-[11px] font-medium truncate mb-1"
+              style={{ color: "#0A0A0A", fontFamily: "'Inter', sans-serif" }}
+            >
+              {product.name || "Produit"}
+            </p>
+          )}
           <p
             className="text-[13px] font-bold"
             style={{ color: "#D4372B", fontFamily: "'Inter', sans-serif" }}
@@ -204,7 +207,7 @@ export function DealCountdown() {
         
         <div className="px-4 lg:px-8 py-3 lg:py-4">
           
-          {/* VERSION MOBILE - HEADER PLEINE LARGEUR */}
+          {/* VERSION MOBILE */}
           <div className="lg:hidden">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -374,67 +377,79 @@ export function DealCountdown() {
         </div>
       </div>
 
-      {/* ══ PRODUITS - PLEINE LARGEUR MOBILE ════════════════════ */}
+      {/* ══ PRODUITS ════════════════════════════════════════════ */}
       <div className="px-4 lg:px-8 py-3 lg:py-6">
-        {/* Mobile : 2 blocs côte à côte avec espace réduit */}
-        <div className="grid grid-cols-2 gap-2 lg:gap-5">
+        
+        {/* MOBILE : 2 blocs, 4 produits chacun, SANS NOM */}
+        <div className="grid grid-cols-2 gap-2 lg:hidden">
           
-          {/* Bloc 1 - Sélection */}
-          <div
-            className="rounded-xl p-2 lg:p-4"
-            style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}
-          >
-            <div className="flex items-center justify-between mb-2 lg:mb-4">
-              <h3
-                className="text-[10px] lg:text-[11px] font-black uppercase tracking-wider"
-                style={{ color: brandColor, fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}
-              >
+          <div className="rounded-xl p-2" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-[10px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}>
                 ✨ Sélection
               </h3>
-              <span
-                className="text-[8px] lg:text-[9px] font-bold px-1.5 lg:px-2 py-0.5 rounded-full"
-                style={{ background: brandAccent, color: "#fff" }}
-              >
+              <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: brandAccent, color: "#fff" }}>
                 Nouveau
               </span>
             </div>
-
-            {featuredProducts.length === 0 ? (
-              <p className="text-xs text-center py-8" style={{ color: "#AAAAAA" }}>Aucun produit disponible</p>
-            ) : (
-              <div className="grid grid-cols-2 gap-1.5 lg:gap-3">
-                {featuredProducts.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
-              </div>
-            )}
+            <div className="grid grid-cols-2 gap-1.5">
+              {featuredProducts.slice(0, 4).map((p) => (
+                <ProductCard key={p.id} product={p} hideName={true} />
+              ))}
+            </div>
           </div>
 
-          {/* Bloc 2 - Best-sellers */}
-          <div
-            className="rounded-xl p-2 lg:p-4"
-            style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}
-          >
-            <div className="flex items-center justify-between mb-2 lg:mb-4">
-              <h3
-                className="text-[10px] lg:text-[11px] font-black uppercase tracking-wider"
-                style={{ color: brandColor, fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}
-              >
+          <div className="rounded-xl p-2" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-[10px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}>
                 🔥 Best-sellers
               </h3>
-              <span
-                className="text-[8px] lg:text-[9px] font-bold px-1.5 lg:px-2 py-0.5 rounded-full"
-                style={{ background: "#FFF0F0", color: brandAccent }}
-              >
+              <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "#FFF0F0", color: brandAccent }}>
                 Top ventes
               </span>
             </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              {bestSellers.slice(0, 4).map((p) => (
+                <ProductCard key={p.id} product={p} hideName={true} />
+              ))}
+            </div>
+          </div>
 
-            {bestSellers.length === 0 ? (
-              <p className="text-xs text-center py-8" style={{ color: "#AAAAAA" }}>Aucun produit disponible</p>
-            ) : (
-              <div className="grid grid-cols-2 gap-1.5 lg:gap-3">
-                {bestSellers.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
-              </div>
-            )}
+        </div>
+
+        {/* DESKTOP : 2 blocs, 6 produits chacun, AVEC NOM */}
+        <div className="hidden lg:grid lg:grid-cols-2 gap-5">
+          
+          <div className="rounded-xl p-4" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[11px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}>
+                ✨ Sélection du moment
+              </h3>
+              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: brandAccent, color: "#fff" }}>
+                Nouveau
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {featuredProducts.map((p) => (
+                <ProductCard key={p.id} product={p} hideName={false} />
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-xl p-4" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[11px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}>
+                🔥 Meilleures ventes
+              </h3>
+              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#FFF0F0", color: brandAccent }}>
+                Top ventes
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {bestSellers.map((p) => (
+                <ProductCard key={p.id} product={p} hideName={false} />
+              ))}
+            </div>
           </div>
 
         </div>
