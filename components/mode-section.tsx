@@ -124,7 +124,7 @@ export function ModeSection() {
       <div style={{ background: "#0A0A0A", padding: "12px 16px" }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-7 h-7 rounded" style={{ background: "#D4372B" }}>
+            <div className="flex items-center justify-center w-7 h-7" style={{ background: "#D4372B", borderRadius: "4px" }}>
               <Zap className="w-3.5 h-3.5 text-white" fill="white" />
             </div>
             <div>
@@ -153,7 +153,7 @@ export function ModeSection() {
           <button
             key={id}
             onClick={() => setActiveFilter(id)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full whitespace-nowrap text-xs font-semibold flex-shrink-0 transition-all duration-200 hover:scale-105"
+            className="flex items-center gap-1.5 px-3 py-1.5 whitespace-nowrap text-xs font-semibold flex-shrink-0 transition-all duration-200 hover:scale-105"
             style={{
               background: activeFilter === id ? "#0A0A0A" : "#F4F4F4",
               color: activeFilter === id ? "#fff" : "#555",
@@ -184,7 +184,7 @@ export function ModeSection() {
               <Link key={product.id} href={`/products/${product.id}`} className="group block flex-shrink-0 transition-all duration-200 hover:-translate-y-0.5" style={{ width: "120px" }}>
                 <div style={{ background: "#fff", borderRadius: "6px", border: "0.5px solid #ECECEC", overflow: "hidden" }}>
                   <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
-                    <span className="absolute top-1.5 left-1.5 z-10 text-[8px] font-bold px-1.5 py-0.5 text-white rounded" style={{ background: "#D4372B" }}>
+                    <span className="absolute top-1.5 left-1.5 z-10 text-[8px] font-bold px-1.5 py-0.5 text-white" style={{ background: "#D4372B", borderRadius: "3px" }}>
                       -{product.discount}%
                     </span>
                     <Image src={product.image || "/placeholder.svg"} alt={product.name} width={120} height={120} className="w-full h-full object-contain p-1.5 transition-transform duration-300 group-hover:scale-105" />
@@ -217,10 +217,10 @@ export function ModeSection() {
 
           <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
             {categories.map((category) => (
-              <div key={category.id} className="rounded-lg p-2 transition-all duration-200 hover:shadow-sm" style={{ background: "#fff", border: "0.5px solid #ECECEC", borderRadius: "6px" }}>
+              <div key={category.id} className="p-2 transition-all duration-200 hover:shadow-sm" style={{ background: "#fff", border: "0.5px solid #ECECEC", borderRadius: "6px" }}>
                 <Link href={category.href} className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center justify-center w-7 h-7 rounded" style={{ background: "#F4F4F4" }}>
+                    <div className="flex items-center justify-center w-7 h-7" style={{ background: "#F4F4F4", borderRadius: "4px" }}>
                       <category.icon className="w-3.5 h-3.5" style={{ color: "#0A0A0A" }} />
                     </div>
                     <div>
@@ -253,7 +253,7 @@ export function ModeSection() {
       )}
 
       {/* ── BANNIÈRE PROMO ─────────────────────────────────────── */}
-      <div className="mx-4 my-3 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-md" style={{ background: "#0A0A0A", borderRadius: "6px" }}>
+      <div className="mx-4 my-3 overflow-hidden transition-all duration-300 hover:shadow-md" style={{ background: "#0A0A0A", borderRadius: "6px" }}>
         <div className="flex items-center justify-between px-3 py-2 gap-2">
           <div>
             <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont, textTransform: "uppercase", letterSpacing: "0.06em" }}>Première commande</p>
@@ -263,7 +263,7 @@ export function ModeSection() {
             <code style={{ fontSize: "10px", fontWeight: 700, color: "#D4372B", letterSpacing: "0.08em", fontFamily: amazonFont }}>BIENVENUE10</code>
             <button
               onClick={copyCouponCode}
-              className="text-[9px] font-bold px-2 py-1 rounded transition-all duration-200 hover:scale-105"
+              className="text-[9px] font-bold px-2 py-1 transition-all duration-200 hover:scale-105"
               style={{ background: "#D4372B", color: "#fff", fontFamily: amazonFont, borderRadius: "4px" }}
             >
               Copier
