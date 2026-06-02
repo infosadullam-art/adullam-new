@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Zap, ArrowRight } from "lucide-react"
+import { Zap, ArrowRight, Clock, Sparkles } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
@@ -44,12 +44,10 @@ export function DealCountdown() {
 
   const { formatPrice } = useCurrencyFormatter()
 
-  // ── Palette Adullam unifiée ─────────────────────────────────
   const brandColor    = "#0A0A0A"
   const brandAccent   = "#D4372B"
   const brandLight    = "#F4F4F4"
 
-  // ── Fetch data ──────────────────────────────────────────────
   useEffect(() => {
     const fetchAllData = async () => {
       try {
@@ -110,7 +108,6 @@ export function DealCountdown() {
     fetchAllData()
   }, [])
 
-  // ── Timer ───────────────────────────────────────────────────
   useEffect(() => {
     if (!hasFlashSale) return
     const timer = setInterval(() => {
@@ -126,46 +123,43 @@ export function DealCountdown() {
 
   const fmt = (n: number) => n.toString().padStart(2, "0")
 
-  // ── ProductCard mobile ──────────────────────────────────────
   const ProductCard = ({ product }: { product: Product }) => (
     <Link href={`/products/${product.id}`} className="group block">
       <div
-        className="bg-white overflow-hidden transition-all duration-200"
+        className="bg-white overflow-hidden transition-all duration-300 hover:shadow-md"
         style={{
-          borderRadius: "10px",
+          borderRadius: "12px",
           border: "0.5px solid #ECECEC",
         }}
       >
-        {/* Image */}
-        <div className="relative w-full aspect-square bg-[#FAFAFA]">
+        <div className="relative w-full aspect-square bg-gradient-to-br from-[#FAFAFA] to-[#F5F5F5]">
           <Image
             src={product.image || "/placeholder.jpg"}
             alt={product.name || "Produit"}
             fill
             sizes="(max-width: 768px) 140px, 200px"
-            className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+            className="object-contain p-3 group-hover:scale-110 transition-transform duration-500 ease-out"
           />
           {product.badge && (
             <span
-              className="absolute top-2 left-2 text-[9px] font-bold px-1.5 py-0.5 text-white"
-              style={{ background: "#D4372B", borderRadius: "5px" }}
+              className="absolute top-2 left-2 text-[9px] font-bold px-1.5 py-0.5 text-white shadow-sm"
+              style={{ background: "#D4372B", borderRadius: "6px" }}
             >
               {product.badge}
             </span>
           )}
         </div>
 
-        {/* Infos */}
-        <div className="px-2 py-2">
+        <div className="px-2 py-2.5">
           <p
             className="text-[11px] font-medium truncate mb-1"
-            style={{ color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}
+            style={{ color: "#0A0A0A", fontFamily: "'Inter', sans-serif" }}
           >
             {product.name || "Produit"}
           </p>
           <p
-            className="text-[13px] font-bold"
-            style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}
+            className="text-[14px] font-bold"
+            style={{ color: "#D4372B", fontFamily: "'Inter', sans-serif" }}
           >
             {formatPrice(product.price)}
           </p>
@@ -174,300 +168,282 @@ export function DealCountdown() {
     </Link>
   )
 
-  // ── Loading skeleton mobile ─────────────────────────────────
   if (isLoading) {
     return (
-      <div className="w-full bg-white font-poppins">
-        <div className="lg:hidden px-0 pt-2 pb-2" style={{ borderBottom: "0.5px solid #ECECEC" }}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg animate-pulse" style={{ background: "#F4F4F4" }} />
-              <div>
-                <div className="h-2 w-16 rounded animate-pulse mb-1" style={{ background: "#F4F4F4" }} />
-                <div className="h-1.5 w-12 rounded animate-pulse" style={{ background: "#F4F4F4" }} />
-              </div>
-            </div>
-            <div className="flex gap-1">
-              {[0,1,2].map(i => (
-                <div key={i} className="w-8 h-8 rounded-lg animate-pulse" style={{ background: "#F4F4F4" }} />
-              ))}
-            </div>
+      <div className="w-full bg-white">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4">
+          <div className="animate-pulse flex justify-center items-center h-20">
+            <div className="w-8 h-8 rounded-full border-2 border-[#D4372B] border-t-transparent animate-spin" />
           </div>
-        </div>
-        <div className="lg:hidden px-0 pt-3">
-          <div className="grid grid-cols-2 gap-3">
-            {[0,1].map(col => (
-              <div key={col} className="rounded-xl p-2" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}>
-                <div className="h-2 w-20 rounded animate-pulse mb-2" style={{ background: "#ECECEC" }} />
-                <div className="grid grid-cols-2 gap-2">
-                  {[0,1,2,3].map(i => (
-                    <div key={i} className="rounded-xl overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
-                      <div className="aspect-square animate-pulse" style={{ background: "#F4F4F4" }} />
-                      <div className="p-1.5">
-                        <div className="h-1.5 w-full rounded animate-pulse mb-1" style={{ background: "#F4F4F4" }} />
-                        <div className="h-2 w-12 rounded animate-pulse" style={{ background: "#F4F4F4" }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="hidden lg:flex justify-center items-center h-32 bg-white">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2" style={{ borderColor: "#D4372B" }} />
         </div>
       </div>
     )
   }
 
-  // ── Error ───────────────────────────────────────────────────
   if (error) {
     return (
       <div className="w-full bg-white">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 text-center">
-          <p className="text-xs" style={{ color: "#D4372B" }}>{error}</p>
+          <p className="text-sm" style={{ color: "#D4372B" }}>{error}</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="w-full bg-white font-poppins">
+    <div className="w-full bg-white">
 
-      {/* ══ HEADER ══════════════════════════════════════════════ - HAUTEUR RÉDUITE */}
-      <div style={{ borderBottom: "0.5px solid #ECECEC" }}>
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-2 lg:py-3">
-
-          {/* ── MOBILE header ── */}
-          <div className="lg:hidden flex items-center justify-between">
-
-            <div className="flex items-center gap-2">
-              <div
-                className="flex items-center justify-center w-7 h-7 rounded-lg"
-                style={{ background: "#D4372B" }}
+      {/* ══ HEADER PREMIUM ══════════════════════════════════════ */}
+      <div className="relative overflow-hidden">
+        {/* Fond avec dégradé subtil */}
+        <div 
+          className="absolute inset-0 opacity-5"
+          style={{
+            background: `radial-gradient(circle at 0% 0%, ${brandAccent} 0%, transparent 70%)`,
+          }}
+        />
+        
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-4">
+          
+          {/* VERSION MOBILE */}
+          <div className="lg:hidden">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div
+                  className="flex items-center justify-center w-8 h-8 rounded-xl"
+                  style={{ background: `linear-gradient(135deg, ${brandAccent}, #B82D20)` }}
+                >
+                  <Zap className="w-4 h-4 text-white" fill="white" />
+                </div>
+                <div>
+                  <p
+                    className="text-sm font-black tracking-tight"
+                    style={{ color: brandColor, fontFamily: "'Inter', sans-serif" }}
+                  >
+                    FLASH SALE
+                  </p>
+                  <p
+                    className="text-[10px] font-medium"
+                    style={{ color: "#AAAAAA", fontFamily: "'Inter', sans-serif" }}
+                  >
+                    jusqu'à -50%
+                  </p>
+                </div>
+              </div>
+              
+              <Link
+                href="/deals-du-jour"
+                className="flex items-center gap-1 text-[11px] font-semibold"
+                style={{ color: brandAccent, fontFamily: "'Inter', sans-serif" }}
               >
-                <Zap className="w-3.5 h-3.5 text-white" fill="white" />
-              </div>
-              <div>
-                <p
-                  className="text-[11px] font-bold leading-tight"
-                  style={{ color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}
-                >
-                  Vente flash
-                </p>
-                <p
-                  className="text-[9px] leading-tight"
-                  style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}
-                >
-                  Jusqu'à -50%
-                </p>
-              </div>
+                Voir tout
+                <ArrowRight className="w-3 h-3" />
+              </Link>
             </div>
-
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-0.5">
+            
+            {/* Timer mobile stylisé */}
+            <div className="flex items-center justify-between mt-3 pt-2 border-t border-[#ECECEC]">
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-3 h-3" style={{ color: "#AAAAAA" }} />
+                <span className="text-[10px] font-medium" style={{ color: "#AAAAAA", fontFamily: "'Inter', sans-serif" }}>
+                  Se termine dans
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
                 {[
-                  { val: timeLeft.hours,   unit: "h" },
-                  { val: timeLeft.minutes, unit: "m" },
-                  { val: timeLeft.seconds, unit: "s" },
-                ].map(({ val, unit }, i) => (
-                  <div key={unit} className="flex items-center gap-0.5">
-                    {i > 0 && (
-                      <span className="text-[10px] font-bold" style={{ color: "#ECECEC" }}>:</span>
-                    )}
+                  { val: timeLeft.hours, label: "h" },
+                  { val: timeLeft.minutes, label: "m" },
+                  { val: timeLeft.seconds, label: "s" },
+                ].map(({ val, label }) => (
+                  <div key={label} className="flex items-center gap-1">
                     <div
-                      className="flex flex-col items-center justify-center"
+                      className="flex flex-col items-center justify-center min-w-[40px] px-2 py-1.5 rounded-lg"
                       style={{
-                        background: "#0A0A0A",
-                        borderRadius: "6px",
-                        minWidth: "28px",
-                        padding: "2px 4px",
+                        background: brandColor,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                       }}
                     >
                       <span
-                        className="text-[11px] font-bold leading-none"
-                        style={{ color: "#fff", fontFamily: "'Poppins', sans-serif" }}
+                        className="text-base font-black leading-none tracking-tight"
+                        style={{ color: "#fff", fontFamily: "'Inter', sans-serif" }}
                       >
                         {fmt(val)}
                       </span>
                       <span
-                        className="text-[7px] leading-none mt-0.5"
-                        style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}
+                        className="text-[8px] font-medium leading-none mt-0.5"
+                        style={{ color: "rgba(255,255,255,0.6)", fontFamily: "'Inter', sans-serif" }}
                       >
-                        {unit}
+                        {label}
                       </span>
                     </div>
+                    {label !== "s" && (
+                      <span className="text-sm font-bold" style={{ color: "#D4372B" }}>:</span>
+                    )}
                   </div>
                 ))}
               </div>
-
-              <Link
-                href="/deals-du-jour"
-                className="flex items-center gap-0.5 text-[10px] font-semibold"
-                style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}
-              >
-                Tout
-                <ArrowRight className="w-2.5 h-2.5" />
-              </Link>
             </div>
           </div>
 
-          {/* ── DESKTOP header - HAUTEUR RÉDUITE ── */}
+          {/* VERSION DESKTOP - PREMIUM */}
           <div className="hidden lg:flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            {/* Partie gauche */}
+            <div className="flex items-center gap-4">
               <div
-                className="flex items-center justify-center w-8 h-8 rounded-lg"
-                style={{ background: brandAccent }}
+                className="flex items-center justify-center w-12 h-12 rounded-xl"
+                style={{
+                  background: `linear-gradient(135deg, ${brandAccent}, #B82D20)`,
+                  boxShadow: "0 4px 12px rgba(212,55,43,0.25)",
+                }}
               >
-                <Zap className="w-4 h-4 text-white" fill="white" />
+                <Sparkles className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2
-                  className="text-sm font-bold font-poppins"
-                  style={{ color: brandColor, letterSpacing: "-0.02em" }}
-                >
-                  Vente flash
-                </h2>
-                <p className="text-xs font-poppins" style={{ color: "#AAAAAA" }}>
+                <div className="flex items-center gap-2">
+                  <h2
+                    className="text-xl font-black tracking-tight"
+                    style={{ color: brandColor, fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}
+                  >
+                    FLASH SALE
+                  </h2>
+                  <span
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                    style={{ background: "#FFF0F0", color: brandAccent }}
+                  >
+                    🔥 Limited
+                  </span>
+                </div>
+                <p className="text-sm" style={{ color: "#AAAAAA", fontFamily: "'Inter', sans-serif" }}>
                   Jusqu'à -50% · Renouvellement quotidien
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              <span className="text-xs font-poppins" style={{ color: "#AAAAAA" }}>
-                Se termine dans
-              </span>
+            {/* Partie droite - Timer premium */}
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4" style={{ color: "#AAAAAA" }} />
+                <span className="text-sm font-medium" style={{ color: "#AAAAAA", fontFamily: "'Inter', sans-serif" }}>
+                  Fin dans
+                </span>
+              </div>
 
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 {[
-                  { val: timeLeft.hours,   unit: "h" },
-                  { val: timeLeft.minutes, unit: "m" },
-                  { val: timeLeft.seconds, unit: "s" },
-                ].map(({ val, unit }, i) => (
-                  <div key={unit} className="flex items-center gap-1">
-                    {i > 0 && (
-                      <span className="text-sm font-bold" style={{ color: "#ECECEC" }}>:</span>
-                    )}
+                  { val: timeLeft.hours, label: "HEURES" },
+                  { val: timeLeft.minutes, label: "MINUTES" },
+                  { val: timeLeft.seconds, label: "SECONDES" },
+                ].map(({ val, label }, idx) => (
+                  <div key={label} className="flex items-center gap-2">
                     <div
-                      className="flex flex-col items-center justify-center"
+                      className="flex flex-col items-center justify-center min-w-[70px] px-3 py-2 rounded-xl"
                       style={{
                         background: brandColor,
-                        borderRadius: "8px",
-                        minWidth: "44px",
-                        padding: "4px 6px",
+                        boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
                       }}
                     >
                       <span
-                        className="text-base font-bold leading-none font-poppins"
-                        style={{ color: "#fff", letterSpacing: "-0.02em" }}
+                        className="text-2xl font-black leading-none tracking-tight"
+                        style={{ color: "#fff", fontFamily: "'Inter', sans-serif" }}
                       >
                         {fmt(val)}
                       </span>
                       <span
-                        className="text-[8px] leading-none mt-0.5 font-poppins"
-                        style={{ color: "#AAAAAA" }}
+                        className="text-[9px] font-semibold leading-none mt-1.5 tracking-wider"
+                        style={{ color: "rgba(255,255,255,0.5)", fontFamily: "'Inter', sans-serif" }}
                       >
-                        {unit}
+                        {label}
                       </span>
                     </div>
+                    {idx < 2 && (
+                      <span className="text-xl font-black" style={{ color: brandAccent }}>:</span>
+                    )}
                   </div>
                 ))}
               </div>
 
               <Link
                 href="/deals-du-jour"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-white rounded-lg text-xs font-semibold font-poppins transition-all hover:opacity-90"
-                style={{ background: brandAccent }}
+                className="group flex items-center gap-2 px-5 py-2.5 text-white rounded-xl text-sm font-bold transition-all duration-300 hover:shadow-lg hover:scale-105"
+                style={{
+                  background: `linear-gradient(135deg, ${brandAccent}, #B82D20)`,
+                  fontFamily: "'Inter', sans-serif",
+                }}
               >
                 Voir toutes les offres
-                <ArrowRight className="w-3 h-3" />
+                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </div>
           </div>
-
         </div>
       </div>
 
       {/* ══ PRODUITS ════════════════════════════════════════════ */}
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-4">
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-6">
         <div className="grid grid-cols-2 gap-3 lg:gap-5">
 
-          {/* Bloc 1 — Sélection du moment */}
+          {/* Bloc 1 */}
           <div
-            className="rounded-xl p-2 lg:p-3"
+            className="rounded-xl p-3 lg:p-4 transition-all duration-300 hover:shadow-sm"
             style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}
           >
-            <div className="flex items-center justify-between mb-2 lg:hidden">
-              <p
-                className="text-[9px] font-bold uppercase tracking-wider"
-                style={{ color: "#0A0A0A", fontFamily: "'Poppins', sans-serif", letterSpacing: "0.08em" }}
+            <div className="flex items-center justify-between mb-3 lg:mb-4">
+              <h3
+                className="text-[11px] font-black uppercase tracking-wider"
+                style={{ color: brandColor, fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}
               >
-                Sélection
-              </p>
+                ✨ Sélection
+              </h3>
               <span
-                className="text-[8px] font-semibold px-1 py-0.5 rounded-full"
-                style={{ background: "#FFF0F0", color: "#D4372B" }}
+                className="text-[9px] font-bold px-2 py-0.5 rounded-full"
+                style={{ background: brandAccent, color: "#fff" }}
               >
                 Nouveau
               </span>
             </div>
-            <h3
-              className="hidden lg:block text-[11px] font-bold uppercase tracking-wider mb-3 font-poppins"
-              style={{ color: brandColor, letterSpacing: "0.08em" }}
-            >
-              Sélection du moment
-            </h3>
 
             {featuredProducts.length === 0 ? (
-              <p className="text-xs text-center py-3" style={{ color: "#AAAAAA" }}>Aucun produit disponible</p>
+              <p className="text-xs text-center py-8" style={{ color: "#AAAAAA" }}>Aucun produit disponible</p>
             ) : (
               <>
                 <div className="grid grid-cols-2 gap-2 lg:hidden">
                   {featuredProducts.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
                 </div>
-                <div className="hidden lg:grid lg:grid-cols-3 gap-2">
+                <div className="hidden lg:grid lg:grid-cols-3 gap-3">
                   {featuredProducts.map((p) => <ProductCard key={p.id} product={p} />)}
                 </div>
               </>
             )}
           </div>
 
-          {/* Bloc 2 — Meilleures ventes */}
+          {/* Bloc 2 */}
           <div
-            className="rounded-xl p-2 lg:p-3"
+            className="rounded-xl p-3 lg:p-4 transition-all duration-300 hover:shadow-sm"
             style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}
           >
-            <div className="flex items-center justify-between mb-2 lg:hidden">
-              <p
-                className="text-[9px] font-bold uppercase tracking-wider"
-                style={{ color: "#0A0A0A", fontFamily: "'Poppins', sans-serif", letterSpacing: "0.08em" }}
+            <div className="flex items-center justify-between mb-3 lg:mb-4">
+              <h3
+                className="text-[11px] font-black uppercase tracking-wider"
+                style={{ color: brandColor, fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}
+              >
+                🔥 Best-sellers
+              </h3>
+              <span
+                className="text-[9px] font-bold px-2 py-0.5 rounded-full"
+                style={{ background: "#FFF0F0", color: brandAccent }}
               >
                 Top ventes
-              </p>
-              <span
-                className="text-[8px] font-semibold px-1 py-0.5 rounded-full"
-                style={{ background: "#FFF0F0", color: "#D4372B" }}
-              >
-                🔥
               </span>
             </div>
-            <h3
-              className="hidden lg:block text-[11px] font-bold uppercase tracking-wider mb-3 font-poppins"
-              style={{ color: brandColor, letterSpacing: "0.08em" }}
-            >
-              Meilleures ventes
-            </h3>
 
             {bestSellers.length === 0 ? (
-              <p className="text-xs text-center py-3" style={{ color: "#AAAAAA" }}>Aucun produit disponible</p>
+              <p className="text-xs text-center py-8" style={{ color: "#AAAAAA" }}>Aucun produit disponible</p>
             ) : (
               <>
                 <div className="grid grid-cols-2 gap-2 lg:hidden">
                   {bestSellers.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
                 </div>
-                <div className="hidden lg:grid lg:grid-cols-3 gap-2">
+                <div className="hidden lg:grid lg:grid-cols-3 gap-3">
                   {bestSellers.map((p) => <ProductCard key={p.id} product={p} />)}
                 </div>
               </>
@@ -476,11 +452,6 @@ export function DealCountdown() {
 
         </div>
       </div>
-
-      <style jsx>{`
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
     </div>
   )
 }
