@@ -11,37 +11,31 @@ import { Footer }        from "@/components/footer"
 import MobileNav         from "@/components/mobile-nav"
 
 // ── Chargement progressif contrôlé ──
-// Priorité 1: DealCountdown (léger, rapide)
 const DealCountdown = dynamic(
   () => import("@/components/deal-countdown").then(m => ({ default: m.DealCountdown })),
   { ssr: false, loading: () => <Skeleton height={120} /> }
 )
 
-// Priorité 2: MeilleuresVentesMobile
 const MeilleuresVentesMobile = dynamic(
   () => import("@/components/meilleures-ventes-mobile").then(m => ({ default: m.MeilleuresVentesMobile })),
   { ssr: false, loading: () => <Skeleton height={200} /> }
 )
 
-// Priorité 3: ModeSection
 const ModeSection = dynamic(
   () => import("@/components/mode-section").then(m => ({ default: m.ModeSection })),
   { ssr: false, loading: () => <Skeleton height={280} /> }
 )
 
-// Priorité 4: TendanceParPays
 const TendanceParPays = dynamic(
   () => import("@/components/tendances-section").then(m => ({ default: m.TendanceParPays })),
   { ssr: false, loading: () => <Skeleton height={200} /> }
 )
 
-// Priorité 5: ForYouSection (le plus lourd)
 const ForYouSection = dynamic(
   () => import("@/components/for-you-section").then(m => ({ default: m.ForYouSection })),
   { ssr: false, loading: () => <Skeleton height={300} /> }
 )
 
-// Desktop sections
 const CategoriesPourVous = dynamic(
   () => import("@/components/categories-pour-vous").then(m => ({ default: m.CategoriesPourVous })),
   { ssr: false, loading: () => <Skeleton height={200} /> }
@@ -57,7 +51,6 @@ const RecommandeEntreprise = dynamic(
   { ssr: false, loading: () => <Skeleton height={200} /> }
 )
 
-// ── Composant Skeleton ──
 function Skeleton({ height }: { height: number }) {
   return (
     <div
@@ -67,30 +60,48 @@ function Skeleton({ height }: { height: number }) {
   )
 }
 
-// ── Gestionnaire d'ordre d'affichage ──
-function ProgressiveLoadOrder({ children, onReady }: { children: React.ReactNode; onReady?: () => void }) {
-  const [isReady, setIsReady] = useState(false)
+// ── Section animée avec fade-in ──
+function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    // Petit délai pour laisser le DOM respirer
-    const timer = setTimeout(() => setIsReady(true), 50)
-    onReady?.()
+    const timer = setTimeout(() => setIsVisible(true), delay)
     return () => clearTimeout(timer)
-  }, [onReady])
+  }, [delay])
 
-  if (!isReady) return <Skeleton height={100} />
-  return <>{children}</>
+  return (
+    <div
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+        transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
+      }}
+    >
+      {children}
+    </div>
+  )
 }
 
 export default function Home() {
-  // 🔥 Force l'ordre d'apparition visuelle
   const [showPriority2, setShowPriority2] = useState(false)
   const [showPriority3, setShowPriority3] = useState(false)
   const [showPriority4, setShowPriority4] = useState(false)
   const [showPriority5, setShowPriority5] = useState(false)
+  const [pageReady, setPageReady] = useState(false)
+
+  // Animation globale de la page
+  useEffect(() => {
+    const timer = setTimeout(() => setPageReady(true), 100)
+    return () => clearTimeout(timer)
+  }, [])
 
   return (
-    <>
+    <div
+      style={{
+        opacity: pageReady ? 1 : 0,
+        transition: 'opacity 0.4s ease-in',
+      }}
+    >
       {/* VERSION MOBILE */}
       <div className="lg:hidden min-h-screen" style={{ background: "#FAFAFA" }}>
         <div className="sticky top-0 z-50 bg-white" style={{ borderBottom: "0.5px solid #ECECEC" }}>
@@ -98,51 +109,49 @@ export default function Home() {
         </div>
 
         <main className="overflow-hidden pb-16">
-          <HeroSection />
+          <AnimatedSection delay={0}>
+            <HeroSection />
+          </AnimatedSection>
           <div className="h-2" />
 
-          {/* PRIORITÉ 1 : DealCountdown - charge en premier */}
-          <div className="px-4 py-3" style={{ background: "#fff" }}>
-            <DealCountdown />
-          </div>
-
+          <AnimatedSection delay={100}>
+            <div className="px-4 py-3" style={{ background: "#fff" }}>
+              <DealCountdown />
+            </div>
+          </AnimatedSection>
           <div className="h-2" />
 
-          {/* PRIORITÉ 2 : Meilleures ventes - charge APRÈS DealCountdown */}
-          <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority2(true), 100)}>
+          <AnimatedSection delay={200}>
             {showPriority2 && (
               <div style={{ background: "#fff" }}>
                 <MeilleuresVentesMobile />
               </div>
             )}
-          </ProgressiveLoadOrder>
+          </AnimatedSection>
 
-          {/* PRIORITÉ 3 : Mode section - charge APRÈS MeilleuresVentes */}
-          <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority3(true), 200)}>
+          <AnimatedSection delay={300}>
             {showPriority3 && (
               <div style={{ background: "#fff" }}>
                 <ModeSection />
               </div>
             )}
-          </ProgressiveLoadOrder>
+          </AnimatedSection>
 
-          {/* PRIORITÉ 4 : Tendances - charge APRÈS ModeSection */}
-          <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority4(true), 300)}>
+          <AnimatedSection delay={400}>
             {showPriority4 && (
               <div style={{ background: "#fff" }}>
                 <TendanceParPays />
               </div>
             )}
-          </ProgressiveLoadOrder>
+          </AnimatedSection>
 
-          {/* PRIORITÉ 5 : For You - charge EN DERNIER */}
-          <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority5(true), 400)}>
+          <AnimatedSection delay={500}>
             {showPriority5 && (
               <div style={{ background: "#FAFAFA" }}>
                 <ForYouSection />
               </div>
             )}
-          </ProgressiveLoadOrder>
+          </AnimatedSection>
 
           <div className="h-2" />
         </main>
@@ -153,28 +162,30 @@ export default function Home() {
         </div>
       </div>
 
-      {/* VERSION DESKTOP - même logique */}
+      {/* VERSION DESKTOP */}
       <div className="hidden lg:block min-h-screen" style={{ background: "#FAFAFA" }}>
         <div className="sticky top-0 z-50 bg-white" style={{ borderBottom: "0.5px solid #ECECEC", boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
           <Header />
         </div>
 
         <main className="overflow-hidden">
-          <div style={{ background: "#0A0A0A" }}>
-            <HeroSection />
-          </div>
-          <div className="h-2.5" />
-
-          <div className="w-full px-4 sm:px-6 lg:px-8">
-            <div className="max-w-7xl mx-auto">
-              <DealCountdown />
+          <AnimatedSection delay={0}>
+            <div style={{ background: "#0A0A0A" }}>
+              <HeroSection />
             </div>
-          </div>
-
+          </AnimatedSection>
           <div className="h-2.5" />
 
-          {/* Desktop - charge progressif */}
-          <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority2(true), 100)}>
+          <AnimatedSection delay={100}>
+            <div className="w-full px-4 sm:px-6 lg:px-8">
+              <div className="max-w-7xl mx-auto">
+                <DealCountdown />
+              </div>
+            </div>
+          </AnimatedSection>
+          <div className="h-2.5" />
+
+          <AnimatedSection delay={200}>
             {showPriority2 && (
               <div className="w-full px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto">
@@ -182,9 +193,9 @@ export default function Home() {
                 </div>
               </div>
             )}
-          </ProgressiveLoadOrder>
+          </AnimatedSection>
 
-          <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority3(true), 200)}>
+          <AnimatedSection delay={300}>
             {showPriority3 && (
               <div className="w-full px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto">
@@ -192,9 +203,9 @@ export default function Home() {
                 </div>
               </div>
             )}
-          </ProgressiveLoadOrder>
+          </AnimatedSection>
 
-          <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority4(true), 300)}>
+          <AnimatedSection delay={400}>
             {showPriority4 && (
               <div className="w-full px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto">
@@ -202,9 +213,9 @@ export default function Home() {
                 </div>
               </div>
             )}
-          </ProgressiveLoadOrder>
+          </AnimatedSection>
 
-          <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority5(true), 400)}>
+          <AnimatedSection delay={500}>
             {showPriority5 && (
               <div className="w-full px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto">
@@ -212,13 +223,31 @@ export default function Home() {
                 </div>
               </div>
             )}
-          </ProgressiveLoadOrder>
+          </AnimatedSection>
 
           <div className="h-2.5" />
         </main>
 
         <Footer />
       </div>
-    </>
+
+      {/* Timeline pour déclencher le chargement des sections */}
+      <div style={{ display: 'none' }}>
+        <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority2(true), 100)} />
+        <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority3(true), 200)} />
+        <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority4(true), 300)} />
+        <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority5(true), 400)} />
+      </div>
+    </div>
   )
+}
+
+// Garder ce composant pour la compatibilité
+function ProgressiveLoadOrder({ children, onReady }: { children?: React.ReactNode; onReady?: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(() => onReady?.(), 50)
+    return () => clearTimeout(timer)
+  }, [onReady])
+
+  return <>{children}</>
 }
