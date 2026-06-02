@@ -6,12 +6,14 @@ import Link from "next/link"
 import { ChevronRight, Sparkles, Shirt, Footprints, Baby } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
+// Police Amazon Ember
+const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+
 interface Product {
   id: string
   name: string
   priceUSD: number
   image: string
-  moq: number
 }
 
 interface Category {
@@ -33,6 +35,7 @@ export function CategoriesMode() {
   const { formatPrice } = useCurrencyFormatter()
   const [categories, setCategories] = useState<Category[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [visibleCards, setVisibleCards] = useState<{ [key: string]: boolean }>({})
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -70,7 +73,6 @@ export function CategoriesMode() {
                 name: p.title || p.name,
                 priceUSD: p.price,
                 image: p.images?.[0] || p.image || "/placeholder.jpg",
-                moq: p.moq || Math.floor(Math.random() * 10) + 5
               }))
             },
             {
@@ -90,7 +92,6 @@ export function CategoriesMode() {
                 name: p.title || p.name,
                 priceUSD: p.price,
                 image: p.images?.[0] || p.image || "/placeholder.jpg",
-                moq: p.moq || Math.floor(Math.random() * 10) + 5
               }))
             },
             {
@@ -110,10 +111,14 @@ export function CategoriesMode() {
                 name: p.title || p.name,
                 priceUSD: p.price,
                 image: p.images?.[0] || p.image || "/placeholder.jpg",
-                moq: p.moq || Math.floor(Math.random() * 10) + 5
               }))
             }
           ])
+
+          // Animation séquentielle des cartes
+          setTimeout(() => setVisibleCards({ men: true }), 100)
+          setTimeout(() => setVisibleCards(prev => ({ ...prev, women: true }), 200)
+          setTimeout(() => setVisibleCards(prev => ({ ...prev, kids: true }), 300)
         }
       } catch (error) {
         console.error("Erreur chargement produits:", error)
@@ -127,10 +132,10 @@ export function CategoriesMode() {
 
   if (isLoading) {
     return (
-      <section className="w-full py-4 lg:py-6" style={{ background: "#FAFAFA" }}>
+      <section className="w-full py-3 lg:py-4" style={{ background: "#FAFAFA" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center items-center h-32">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2" style={{ borderColor: "#D4372B" }} />
+          <div className="flex justify-center items-center h-24">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2" style={{ borderColor: "#D4372B" }} />
           </div>
         </div>
       </section>
@@ -142,50 +147,59 @@ export function CategoriesMode() {
   }
 
   return (
-    <section className="w-full py-4 lg:py-6" style={{ background: "#FAFAFA" }}>
+    <section className="w-full py-3 lg:py-4" style={{ background: "#FAFAFA" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg" style={{ background: "#FFF0F0" }}>
-              <Sparkles className="w-4 h-4" style={{ color: "#D4372B" }} />
+            <div className="p-1 rounded" style={{ background: "#FFF0F0", borderRadius: "4px" }}>
+              <Sparkles className="w-3.5 h-3.5" style={{ color: "#D4372B" }} />
             </div>
             <div>
-              <h2 className="text-base lg:text-xl font-semibold" style={{ color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>
+              <h2 className="text-sm lg:text-base font-semibold" style={{ color: "#0A0A0A", fontFamily: amazonFont }}>
                 Mode pour toute la famille
               </h2>
-              <p className="text-xs" style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
+              <p className="text-[10px] lg:text-xs" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>
                 Hommes • Femmes • Enfants
               </p>
             </div>
           </div>
           <Link
             href="/categorie/t-shirts-homme"
-            className="text-xs inline-flex items-center gap-1 transition-colors hover:opacity-70"
-            style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}
+            className="text-[10px] lg:text-xs inline-flex items-center gap-1 transition-all duration-200 hover:gap-1.5 hover:opacity-70"
+            style={{ color: "#AAAAAA", fontFamily: amazonFont }}
           >
             Voir toute la mode
-            <ChevronRight className="w-3 h-3" />
+            <ChevronRight className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
           </Link>
         </div>
 
         {/* Grille catégories */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {categories.map((category, index) => {
             const Icon = category.icon
+            const isVisible = visibleCards[category.id]
+            const delay = index * 100
+
             return (
               <div 
                 key={category.id} 
-                className="rounded-xl p-3 space-y-3 transition-all duration-300"
-                style={{ background: category.bgColor, border: "0.5px solid #ECECEC" }}
+                className="rounded-lg p-2 space-y-2 transition-all duration-300 animate-fade-in-up"
+                style={{ 
+                  background: category.bgColor, 
+                  border: "0.5px solid #ECECEC",
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? 'translateY(0)' : 'translateY(15px)',
+                  transition: `opacity 0.4s ease-out ${delay}ms, transform 0.4s ease-out ${delay}ms`,
+                }}
                 onMouseEnter={(e) => { e.currentTarget.style.background = "#FAFAFA"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.05)" }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = category.bgColor; e.currentTarget.style.boxShadow = "none" }}
               >
                 {/* Carte catégorie principale */}
                 <Link href={category.href} className="group block">
                   <div
-                    className="relative bg-white rounded-xl overflow-hidden transition-all duration-300"
+                    className="relative bg-white rounded-md overflow-hidden transition-all duration-300"
                     style={{ border: "0.5px solid #ECECEC" }}
                   >
                     <div className="relative aspect-[16/9] overflow-hidden">
@@ -193,36 +207,36 @@ export function CategoriesMode() {
                         src={category.image}
                         alt={category.name}
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                       <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)" }} />
                     </div>
 
-                    <div className="absolute inset-0 flex flex-col justify-end p-3">
+                    <div className="absolute inset-0 flex flex-col justify-end p-2.5">
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        <div className="bg-white/90 backdrop-blur-sm p-1 rounded-lg" style={{ border: "0.5px solid rgba(0,0,0,0.08)" }}>
-                          <Icon className="w-3 h-3" style={{ color: "#0A0A0A" }} />
+                        <div className="bg-white/90 backdrop-blur-sm p-0.5 rounded" style={{ border: "0.5px solid rgba(0,0,0,0.08)" }}>
+                          <Icon className="w-2.5 h-2.5" style={{ color: "#0A0A0A" }} />
                         </div>
-                        <h3 className="text-sm font-semibold text-white" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                        <h3 className="text-xs font-semibold text-white" style={{ fontFamily: amazonFont }}>
                           {category.name}
                         </h3>
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-white/80" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                        <span className="text-[9px] text-white/80" style={{ fontFamily: amazonFont }}>
                           {category.productCount} produits
                         </span>
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-white group-hover:gap-2 transition-all" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                        <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-white transition-all duration-200 group-hover:gap-1" style={{ fontFamily: amazonFont }}>
                           Explorer
-                          <ChevronRight className="w-3 h-3" />
+                          <ChevronRight className="w-2.5 h-2.5" />
                         </span>
                       </div>
                     </div>
 
                     {index === 1 && (
                       <div
-                        className="absolute top-2 right-2 text-[9px] font-medium px-1.5 py-0.5 rounded-full"
-                        style={{ background: "#FFF0F0", color: "#D4372B", border: "0.5px solid rgba(212,55,43,0.2)", fontFamily: "'Poppins', sans-serif" }}
+                        className="absolute top-2 right-2 text-[8px] font-medium px-1.5 py-0.5 rounded-full"
+                        style={{ background: "#FFF0F0", color: "#D4372B", border: "0.5px solid rgba(212,55,43,0.2)", fontFamily: amazonFont }}
                       >
                         Tendance
                       </div>
@@ -230,37 +244,34 @@ export function CategoriesMode() {
                   </div>
                 </Link>
 
-                {/* Produits associés */}
+                {/* Produits associés - plus d'espace */}
                 <div className="grid grid-cols-2 gap-2">
-                  {category.products.slice(0, 2).map((product) => (
+                  {category.products.slice(0, 2).map((product, productIdx) => (
                     <Link
                       key={product.id}
                       href={`/products/${product.id}`}
-                      className="group block"
+                      className="group block transition-all duration-200 hover:-translate-y-0.5"
+                      style={{ animationDelay: `${delay + 100 + productIdx * 50}ms` }}
                     >
                       <div
-                        className="bg-white rounded-lg p-2 transition-all duration-300"
+                        className="bg-white rounded-md p-1.5 transition-all duration-300 hover:shadow-sm"
                         style={{ border: "0.5px solid #ECECEC" }}
                       >
-                        <div className="relative aspect-square mb-1 rounded-lg overflow-hidden" style={{ background: "#FAFAFA" }}>
+                        <div className="relative aspect-square mb-1 rounded overflow-hidden" style={{ background: "#FAFAFA" }}>
                           <Image
                             src={product.image}
                             alt={product.name}
                             fill
-                            className="object-contain p-1 group-hover:scale-105 transition-transform duration-300"
+                            className="object-contain p-1 transition-transform duration-300 group-hover:scale-105"
                           />
                         </div>
 
-                        <h4 className="text-[10px] font-medium line-clamp-1" style={{ color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>
+                        <h4 className="text-[9px] font-medium line-clamp-1" style={{ color: "#0A0A0A", fontFamily: amazonFont }}>
                           {product.name}
                         </h4>
                         
-                        <p className="text-xs font-semibold mt-0.5" style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>
+                        <p className="text-[10px] font-semibold mt-0.5" style={{ color: "#D4372B", fontFamily: amazonFont }}>
                           {formatPrice(product.priceUSD)}
-                        </p>
-                        
-                        <p className="text-[8px]" style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
-                          MOQ: {product.moq}
                         </p>
                       </div>
                     </Link>
@@ -271,6 +282,19 @@ export function CategoriesMode() {
           })}
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(15px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </section>
   )
 }
