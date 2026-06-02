@@ -6,7 +6,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
-// Types
+// Types (inchangés)
 interface Product {
   id: string
   name: string
@@ -375,14 +375,14 @@ export function DealCountdown() {
         </div>
       </div>
 
-      {/* ══ PRODUITS - MÊME CONTENEUR QUE LE CHRONO ════════════ */}
+      {/* ══ PRODUITS - LARGEUR UNIFORME AVEC LE CHRONO ════════════ */}
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-6">
         
-        {/* MOBILE */}
-        <div className="grid grid-cols-2 gap-2 lg:hidden">
+        {/* MOBILE - gap supprimé pour que les blocs touchent les bords */}
+        <div className="grid grid-cols-2 gap-0 lg:hidden w-full">
           
           <div 
-            className="rounded-md p-2 transition-all duration-1000 ease-in-out"
+            className="rounded-md p-2 mr-1 transition-all duration-1000 ease-in-out"
             style={{ 
               background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
               border: "0.5px solid #ECECEC",
@@ -405,7 +405,7 @@ export function DealCountdown() {
           </div>
 
           <div 
-            className="rounded-md p-2 transition-all duration-1000 ease-in-out"
+            className="rounded-md p-2 ml-1 transition-all duration-1000 ease-in-out"
             style={{ 
               background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
               border: "0.5px solid #ECECEC",
@@ -430,11 +430,11 @@ export function DealCountdown() {
 
         </div>
 
-        {/* DESKTOP */}
-        <div className="hidden lg:grid lg:grid-cols-2 gap-4">
+        {/* DESKTOP - gap supprimé pour que les blocs touchent les bords */}
+        <div className="hidden lg:grid lg:grid-cols-2 gap-0 w-full">
           
           <div 
-            className="rounded-md p-4 transition-all duration-1000 ease-in-out"
+            className="rounded-md p-4 mr-2 transition-all duration-1000 ease-in-out"
             style={{ 
               background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
               border: "0.5px solid #ECECEC",
@@ -457,7 +457,7 @@ export function DealCountdown() {
           </div>
 
           <div 
-            className="rounded-md p-4 transition-all duration-1000 ease-in-out"
+            className="rounded-md p-4 ml-2 transition-all duration-1000 ease-in-out"
             style={{ 
               background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
               border: "0.5px solid #ECECEC",
