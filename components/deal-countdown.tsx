@@ -6,7 +6,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
-// Types (inchangés)
+// Types
 interface Product {
   id: string
   name: string
@@ -194,7 +194,7 @@ export function DealCountdown() {
   return (
     <div className="w-full bg-white">
 
-      {/* ══ BLOC CHRONO - PADDING RÉDUIT ════════════════════════ */}
+      {/* ══ BLOC CHRONO ════════════════════════════════════════ */}
       <div className="relative overflow-hidden">
         <div 
           className="absolute inset-0 opacity-5 animate-pulse-slow"
@@ -204,7 +204,8 @@ export function DealCountdown() {
           }}
         />
         
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-2 lg:py-3">
+        {/* CHRONO - garder l'espace original sur mobile */}
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-3">
           
           {/* VERSION MOBILE */}
           <div className="lg:hidden">
@@ -378,8 +379,8 @@ export function DealCountdown() {
         </div>
       </div>
 
-      {/* ══ BLOCS PRODUITS - ESPACE RÉDUIT AVEC LE CHRONO ════════ */}
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-0 lg:py-2">
+      {/* ══ BLOCS PRODUITS - ESPACE ORIGINAL MOBILE, RÉDUIT DESKTOP ════════ */}
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-2">
         
         {/* MOBILE */}
         <div className="grid grid-cols-2 gap-2 lg:hidden">
