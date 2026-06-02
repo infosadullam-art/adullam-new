@@ -203,7 +203,7 @@ export function DealCountdown() {
           }}
         />
         
-        <div className="px-4 lg:px-8 py-3 lg:py-4">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-4">
           
           {/* VERSION MOBILE */}
           <div className="lg:hidden">
@@ -375,10 +375,10 @@ export function DealCountdown() {
         </div>
       </div>
 
-      {/* ══ PRODUITS - MÊME LARGEUR QUE LE BLOC CHRONO ═══════════ */}
-      <div className="px-4 lg:px-8 py-3 lg:py-6">
+      {/* ══ PRODUITS - MÊME CONTENEUR QUE LE CHRONO ════════════ */}
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-6">
         
-        {/* MOBILE : 2 blocs côte à côte */}
+        {/* MOBILE */}
         <div className="grid grid-cols-2 gap-2 lg:hidden">
           
           <div 
@@ -430,7 +430,7 @@ export function DealCountdown() {
 
         </div>
 
-        {/* DESKTOP : 2 blocs côte à côte - MÊME LARGEUR QUE LE CHRONO */}
+        {/* DESKTOP */}
         <div className="hidden lg:grid lg:grid-cols-2 gap-4">
           
           <div 
