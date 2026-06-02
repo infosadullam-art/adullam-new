@@ -20,6 +20,7 @@ export function RecommandeEntreprise() {
   const { formatPrice } = useCurrencyFormatter()
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isHovered, setIsHovered] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -87,7 +88,7 @@ export function RecommandeEntreprise() {
     <section className="w-full py-3" style={{ background: "#FAFAFA" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* TITRE - hauteur réduite */}
+        {/* TITRE */}
         <div className="flex items-center justify-between mb-3">
           <div>
             <h2 className="text-lg lg:text-xl font-semibold mb-0.5" style={{ color: "#0A0A0A", fontFamily: amazonFont, letterSpacing: "-0.02em" }}>
@@ -107,29 +108,42 @@ export function RecommandeEntreprise() {
           </Link>
         </div>
 
-        {/* BANDE PRINCIPALE - animation de fond comme deal-countdown */}
+        {/* BANDE PRINCIPALE - avec gestion du hover pour les flèches */}
         <div
-          className="rounded-md p-4 lg:p-5 relative overflow-hidden transition-all duration-1000 ease-in-out"
+          className="rounded-md p-4 lg:p-5 relative overflow-hidden"
           style={{ 
-            background: "linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 100%)",
+            background: "#0A0A0A",
             boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-            animation: "gradientShift 8s ease-in-out infinite",
           }}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
         >
           
-          {/* FLECHES DE NAVIGATION */}
+          {/* FLECHES DE NAVIGATION - apparaissent uniquement au hover */}
           <button 
             onClick={() => scroll('left')}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-200 hover:scale-105 hidden lg:block"
-            style={{ border: "0.5px solid rgba(255,255,255,0.15)" }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hover:scale-105 hidden lg:block"
+            style={{ 
+              border: "0.5px solid rgba(255,255,255,0.15)",
+              opacity: isHovered ? 1 : 0,
+              transform: isHovered ? 'translateY(-50%) scale(1)' : 'translateY(-50%) scale(0.8)',
+              pointerEvents: isHovered ? 'auto' : 'none',
+              transition: 'opacity 0.3s ease, transform 0.3s ease',
+            }}
           >
             <ChevronRight className="w-4 h-4 rotate-180" />
           </button>
           
           <button 
             onClick={() => scroll('right')}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-200 hover:scale-105 hidden lg:block"
-            style={{ border: "0.5px solid rgba(255,255,255,0.15)" }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hover:scale-105 hidden lg:block"
+            style={{ 
+              border: "0.5px solid rgba(255,255,255,0.15)",
+              opacity: isHovered ? 1 : 0,
+              transform: isHovered ? 'translateY(-50%) scale(1)' : 'translateY(-50%) scale(0.8)',
+              pointerEvents: isHovered ? 'auto' : 'none',
+              transition: 'opacity 0.3s ease, transform 0.3s ease',
+            }}
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -167,7 +181,6 @@ export function RecommandeEntreprise() {
                     key={product.id}
                     href={`/products/${product.id}`}
                     className="group flex-shrink-0 w-[150px] transition-all duration-200 hover:-translate-y-0.5"
-                    style={{ animationDelay: `${idx * 50}ms` }}
                   >
                     <div
                       className="bg-white rounded-md p-2 transition-all duration-300 hover:shadow-md"
@@ -200,19 +213,7 @@ export function RecommandeEntreprise() {
         </div>
       </div>
 
-      <style jsx global>{`
-        @keyframes gradientShift {
-          0% {
-            background: linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 100%);
-          }
-          50% {
-            background: linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%);
-          }
-          100% {
-            background: linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 100%);
-          }
-        }
-        
+      <style jsx>{`
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }
