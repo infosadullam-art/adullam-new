@@ -194,12 +194,13 @@ export function DealCountdown() {
   return (
     <div className="w-full bg-white">
 
-      {/* ══ HEADER PREMIUM AVEC BOUTON ══════════════════════════ */}
+      {/* ══ HEADER PREMIUM ══════════════════════════════════════ */}
       <div className="relative overflow-hidden">
         <div 
           className="absolute inset-0 opacity-5 animate-pulse-slow"
           style={{
             background: `radial-gradient(circle at 0% 0%, ${brandAccent} 0%, transparent 70%)`,
+            pointerEvents: "none", // ← permet de cliquer à travers
           }}
         />
         
@@ -361,10 +362,12 @@ export function DealCountdown() {
 
               <Link
                 href="/deals-du-jour"
-                className="group flex items-center gap-2 px-5 py-2.5 text-white rounded-lg text-sm font-bold transition-all duration-300 hover:shadow-lg hover:scale-105"
+                className="group flex items-center gap-2 px-5 py-2.5 text-white rounded-lg text-sm font-bold transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer"
                 style={{
                   background: `linear-gradient(135deg, ${brandAccent}, #B82D20)`,
                   fontFamily: "'Inter', sans-serif",
+                  position: "relative",
+                  zIndex: 10,
                 }}
               >
                 Voir toutes les offres
@@ -375,7 +378,7 @@ export function DealCountdown() {
         </div>
       </div>
 
-      {/* ══ PRODUITS - SUPPRESSION DU PADDING EXTERNE POUR COLLER AU CHRONO ════════ */}
+      {/* ══ PRODUITS ════════════════════════════════════════════ */}
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-6">
         
         {/* MOBILE */}
