@@ -204,7 +204,6 @@ export function DealCountdown() {
           }}
         />
         
-        {/* CHRONO - garder l'espace original sur mobile */}
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-3">
           
           {/* VERSION MOBILE */}
@@ -379,10 +378,10 @@ export function DealCountdown() {
         </div>
       </div>
 
-      {/* ══ BLOCS PRODUITS - ESPACE ORIGINAL MOBILE, RÉDUIT DESKTOP ════════ */}
+      {/* ══ BLOCS PRODUITS - ESPACE RÉDUIT ENTRE LES DEUX BLOCS SUR DESKTOP ════════ */}
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-2">
         
-        {/* MOBILE */}
+        {/* MOBILE - inchangé */}
         <div className="grid grid-cols-2 gap-2 lg:hidden">
           
           <div 
@@ -434,8 +433,8 @@ export function DealCountdown() {
 
         </div>
 
-        {/* DESKTOP */}
-        <div className="hidden lg:grid lg:grid-cols-2 gap-4">
+        {/* DESKTOP - gap réduit de 4 à 2 */}
+        <div className="hidden lg:grid lg:grid-cols-2 gap-2">
           
           <div 
             className="rounded-md p-4 transition-all duration-1000 ease-in-out"
