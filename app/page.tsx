@@ -89,7 +89,6 @@ export default function Home() {
   const [showPriority5, setShowPriority5] = useState(false)
   const [pageReady, setPageReady] = useState(false)
 
-  // Animation globale de la page
   useEffect(() => {
     const timer = setTimeout(() => setPageReady(true), 100)
     return () => clearTimeout(timer)
@@ -113,7 +112,7 @@ export default function Home() {
             <HeroSection />
           </AnimatedSection>
           
-          <div className="h-4" />
+          <div className="h-2" />
 
           <AnimatedSection delay={100}>
             <div className="px-4 py-3" style={{ background: "#fff" }}>
@@ -121,7 +120,7 @@ export default function Home() {
             </div>
           </AnimatedSection>
           
-          <div className="h-4" />
+          <div className="h-2" />
 
           <AnimatedSection delay={200}>
             {showPriority2 && (
@@ -131,7 +130,7 @@ export default function Home() {
             )}
           </AnimatedSection>
 
-          <div className="h-4" />
+          <div className="h-2" />
 
           <AnimatedSection delay={300}>
             {showPriority3 && (
@@ -141,7 +140,7 @@ export default function Home() {
             )}
           </AnimatedSection>
 
-          <div className="h-4" />
+          <div className="h-2" />
 
           <AnimatedSection delay={400}>
             {showPriority4 && (
@@ -151,7 +150,7 @@ export default function Home() {
             )}
           </AnimatedSection>
 
-          <div className="h-4" />
+          <div className="h-2" />
 
           <AnimatedSection delay={500}>
             {showPriority5 && (
@@ -161,7 +160,7 @@ export default function Home() {
             )}
           </AnimatedSection>
 
-          <div className="h-4" />
+          <div className="h-2" />
         </main>
 
         <Footer />
@@ -183,7 +182,7 @@ export default function Home() {
             </div>
           </AnimatedSection>
           
-          <div className="h-4" />
+          <div className="h-2" />
 
           <AnimatedSection delay={100}>
             <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -193,7 +192,7 @@ export default function Home() {
             </div>
           </AnimatedSection>
           
-          <div className="h-4" />
+          <div className="h-2" />
 
           <AnimatedSection delay={200}>
             {showPriority2 && (
@@ -205,7 +204,7 @@ export default function Home() {
             )}
           </AnimatedSection>
 
-          <div className="h-4" />
+          <div className="h-2" />
 
           <AnimatedSection delay={300}>
             {showPriority3 && (
@@ -217,7 +216,7 @@ export default function Home() {
             )}
           </AnimatedSection>
 
-          <div className="h-4" />
+          <div className="h-2" />
 
           <AnimatedSection delay={400}>
             {showPriority4 && (
@@ -229,7 +228,7 @@ export default function Home() {
             )}
           </AnimatedSection>
 
-          <div className="h-4" />
+          <div className="h-2" />
 
           <AnimatedSection delay={500}>
             {showPriority5 && (
@@ -241,7 +240,7 @@ export default function Home() {
             )}
           </AnimatedSection>
 
-          <div className="h-4" />
+          <div className="h-2" />
         </main>
 
         <Footer />
@@ -258,7 +257,6 @@ export default function Home() {
   )
 }
 
-// Garder ce composant pour la compatibilité
 function ProgressiveLoadOrder({ children, onReady }: { children?: React.ReactNode; onReady?: () => void }) {
   useEffect(() => {
     const timer = setTimeout(() => onReady?.(), 50)
