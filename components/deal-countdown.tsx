@@ -6,7 +6,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
-// Types
+// Types (inchangés)
 interface Product {
   id: string
   name: string
@@ -194,17 +194,17 @@ export function DealCountdown() {
   return (
     <div className="w-full bg-white">
 
-      {/* ══ HEADER PREMIUM ══════════════════════════════════════ */}
+      {/* ══ BLOC CHRONO - PADDING RÉDUIT ════════════════════════ */}
       <div className="relative overflow-hidden">
         <div 
           className="absolute inset-0 opacity-5 animate-pulse-slow"
           style={{
             background: `radial-gradient(circle at 0% 0%, ${brandAccent} 0%, transparent 70%)`,
-            pointerEvents: "none", // ← permet de cliquer à travers
+            pointerEvents: "none",
           }}
         />
         
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-4">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-2 lg:py-3">
           
           {/* VERSION MOBILE */}
           <div className="lg:hidden">
@@ -242,7 +242,7 @@ export function DealCountdown() {
               </Link>
             </div>
             
-            <div className="flex items-center justify-between mt-3 pt-2 border-t border-[#ECECEC]">
+            <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#ECECEC]">
               <div className="flex items-center gap-1.5">
                 <Clock className="w-3 h-3" style={{ color: "#AAAAAA" }} />
                 <span className="text-[10px] font-medium" style={{ color: "#AAAAAA", fontFamily: "'Inter', sans-serif" }}>
@@ -378,8 +378,8 @@ export function DealCountdown() {
         </div>
       </div>
 
-      {/* ══ PRODUITS ════════════════════════════════════════════ */}
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-6">
+      {/* ══ BLOCS PRODUITS - ESPACE RÉDUIT AVEC LE CHRONO ════════ */}
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-0 lg:py-2">
         
         {/* MOBILE */}
         <div className="grid grid-cols-2 gap-2 lg:hidden">
@@ -488,29 +488,17 @@ export function DealCountdown() {
 
       <style jsx global>{`
         @keyframes gradientShift {
-          0% {
-            background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
-          }
-          50% {
-            background: linear-gradient(135deg, #FFF5F5 0%, #FAFAFA 100%);
-          }
-          100% {
-            background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
-          }
+          0% { background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%); }
+          50% { background: linear-gradient(135deg, #FFF5F5 0%, #FAFAFA 100%); }
+          100% { background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%); }
         }
         
         @keyframes pulse {
-          0%, 100% {
-            opacity: 0.05;
-          }
-          50% {
-            opacity: 0.12;
-          }
+          0%, 100% { opacity: 0.05; }
+          50% { opacity: 0.12; }
         }
         
-        .animate-pulse-slow {
-          animation: pulse 4s ease-in-out infinite;
-        }
+        .animate-pulse-slow { animation: pulse 4s ease-in-out infinite; }
       `}</style>
     </div>
   )
