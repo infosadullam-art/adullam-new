@@ -178,36 +178,34 @@ export function DealCountdown() {
   if (isLoading) {
     return (
       <div className="w-full bg-white font-poppins">
-        {/* Skeleton header mobile */}
-        <div className="lg:hidden px-0 pt-3 pb-3" style={{ borderBottom: "0.5px solid #ECECEC" }}>
-          <div className="flex items-center justify-between mb-3">
+        <div className="lg:hidden px-0 pt-2 pb-2" style={{ borderBottom: "0.5px solid #ECECEC" }}>
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg animate-pulse" style={{ background: "#F4F4F4" }} />
+              <div className="w-7 h-7 rounded-lg animate-pulse" style={{ background: "#F4F4F4" }} />
               <div>
-                <div className="h-3 w-20 rounded animate-pulse mb-1" style={{ background: "#F4F4F4" }} />
-                <div className="h-2 w-14 rounded animate-pulse" style={{ background: "#F4F4F4" }} />
+                <div className="h-2 w-16 rounded animate-pulse mb-1" style={{ background: "#F4F4F4" }} />
+                <div className="h-1.5 w-12 rounded animate-pulse" style={{ background: "#F4F4F4" }} />
               </div>
             </div>
             <div className="flex gap-1">
               {[0,1,2].map(i => (
-                <div key={i} className="w-10 h-8 rounded-lg animate-pulse" style={{ background: "#F4F4F4" }} />
+                <div key={i} className="w-8 h-8 rounded-lg animate-pulse" style={{ background: "#F4F4F4" }} />
               ))}
             </div>
           </div>
         </div>
-        {/* Skeleton grid */}
-        <div className="lg:hidden px-0 pt-4">
+        <div className="lg:hidden px-0 pt-3">
           <div className="grid grid-cols-2 gap-3">
             {[0,1].map(col => (
-              <div key={col} className="rounded-xl p-3" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}>
-                <div className="h-3 w-24 rounded animate-pulse mb-3" style={{ background: "#ECECEC" }} />
+              <div key={col} className="rounded-xl p-2" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}>
+                <div className="h-2 w-20 rounded animate-pulse mb-2" style={{ background: "#ECECEC" }} />
                 <div className="grid grid-cols-2 gap-2">
                   {[0,1,2,3].map(i => (
                     <div key={i} className="rounded-xl overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
                       <div className="aspect-square animate-pulse" style={{ background: "#F4F4F4" }} />
-                      <div className="p-2">
-                        <div className="h-2 w-full rounded animate-pulse mb-1.5" style={{ background: "#F4F4F4" }} />
-                        <div className="h-3 w-16 rounded animate-pulse" style={{ background: "#F4F4F4" }} />
+                      <div className="p-1.5">
+                        <div className="h-1.5 w-full rounded animate-pulse mb-1" style={{ background: "#F4F4F4" }} />
+                        <div className="h-2 w-12 rounded animate-pulse" style={{ background: "#F4F4F4" }} />
                       </div>
                     </div>
                   ))}
@@ -216,9 +214,8 @@ export function DealCountdown() {
             ))}
           </div>
         </div>
-        {/* Desktop skeleton */}
-        <div className="hidden lg:flex justify-center items-center h-40 bg-white">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: "#D4372B" }} />
+        <div className="hidden lg:flex justify-center items-center h-32 bg-white">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2" style={{ borderColor: "#D4372B" }} />
         </div>
       </div>
     )
@@ -228,8 +225,8 @@ export function DealCountdown() {
   if (error) {
     return (
       <div className="w-full bg-white">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8 text-center">
-          <p className="text-sm" style={{ color: "#D4372B" }}>{error}</p>
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 text-center">
+          <p className="text-xs" style={{ color: "#D4372B" }}>{error}</p>
         </div>
       </div>
     )
@@ -238,30 +235,29 @@ export function DealCountdown() {
   return (
     <div className="w-full bg-white font-poppins">
 
-      {/* ══ HEADER ══════════════════════════════════════════════ */}
+      {/* ══ HEADER ══════════════════════════════════════════════ - HAUTEUR RÉDUITE */}
       <div style={{ borderBottom: "0.5px solid #ECECEC" }}>
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-4">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-2 lg:py-3">
 
-          {/* ── MOBILE header ─────────────────────────────────── */}
+          {/* ── MOBILE header ── */}
           <div className="lg:hidden flex items-center justify-between">
 
-            {/* Gauche : icône + titre */}
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <div
-                className="flex items-center justify-center w-8 h-8 rounded-lg"
+                className="flex items-center justify-center w-7 h-7 rounded-lg"
                 style={{ background: "#D4372B" }}
               >
-                <Zap className="w-4 h-4 text-white" fill="white" />
+                <Zap className="w-3.5 h-3.5 text-white" fill="white" />
               </div>
               <div>
                 <p
-                  className="text-xs font-bold leading-tight"
+                  className="text-[11px] font-bold leading-tight"
                   style={{ color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}
                 >
                   Vente flash
                 </p>
                 <p
-                  className="text-[10px] leading-tight"
+                  className="text-[9px] leading-tight"
                   style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}
                 >
                   Jusqu'à -50%
@@ -269,36 +265,34 @@ export function DealCountdown() {
               </div>
             </div>
 
-            {/* Droite : timer + lien */}
-            <div className="flex items-center gap-2.5">
-              {/* Blocs timer */}
-              <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-0.5">
                 {[
                   { val: timeLeft.hours,   unit: "h" },
                   { val: timeLeft.minutes, unit: "m" },
                   { val: timeLeft.seconds, unit: "s" },
                 ].map(({ val, unit }, i) => (
-                  <div key={unit} className="flex items-center gap-1">
+                  <div key={unit} className="flex items-center gap-0.5">
                     {i > 0 && (
-                      <span className="text-xs font-bold" style={{ color: "#ECECEC" }}>:</span>
+                      <span className="text-[10px] font-bold" style={{ color: "#ECECEC" }}>:</span>
                     )}
                     <div
                       className="flex flex-col items-center justify-center"
                       style={{
                         background: "#0A0A0A",
-                        borderRadius: "7px",
-                        minWidth: "34px",
-                        padding: "4px 6px",
+                        borderRadius: "6px",
+                        minWidth: "28px",
+                        padding: "2px 4px",
                       }}
                     >
                       <span
-                        className="text-sm font-bold leading-none"
+                        className="text-[11px] font-bold leading-none"
                         style={{ color: "#fff", fontFamily: "'Poppins', sans-serif" }}
                       >
                         {fmt(val)}
                       </span>
                       <span
-                        className="text-[8px] leading-none mt-0.5"
+                        className="text-[7px] leading-none mt-0.5"
                         style={{ color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}
                       >
                         {unit}
@@ -308,76 +302,71 @@ export function DealCountdown() {
                 ))}
               </div>
 
-              {/* Voir tout */}
               <Link
                 href="/deals-du-jour"
-                className="flex items-center gap-0.5 text-[11px] font-semibold"
+                className="flex items-center gap-0.5 text-[10px] font-semibold"
                 style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}
               >
                 Tout
-                <ArrowRight className="w-3 h-3" />
+                <ArrowRight className="w-2.5 h-2.5" />
               </Link>
             </div>
           </div>
 
-          {/* ── DESKTOP header ─────────────────────────────────── */}
+          {/* ── DESKTOP header - HAUTEUR RÉDUITE ── */}
           <div className="hidden lg:flex items-center justify-between">
-            {/* Gauche : icône + titre */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <div
-                className="flex items-center justify-center w-10 h-10 rounded-xl"
+                className="flex items-center justify-center w-8 h-8 rounded-lg"
                 style={{ background: brandAccent }}
               >
-                <Zap className="w-5 h-5 text-white" fill="white" />
+                <Zap className="w-4 h-4 text-white" fill="white" />
               </div>
               <div>
                 <h2
-                  className="text-base font-bold font-poppins"
+                  className="text-sm font-bold font-poppins"
                   style={{ color: brandColor, letterSpacing: "-0.02em" }}
                 >
                   Vente flash
                 </h2>
-                <p className="text-sm font-poppins" style={{ color: "#AAAAAA" }}>
+                <p className="text-xs font-poppins" style={{ color: "#AAAAAA" }}>
                   Jusqu'à -50% · Renouvellement quotidien
                 </p>
               </div>
             </div>
 
-            {/* Droite : timer + CTA */}
-            <div className="flex items-center gap-6">
-              {/* Label */}
-              <span className="text-sm font-poppins" style={{ color: "#AAAAAA" }}>
+            <div className="flex items-center gap-4">
+              <span className="text-xs font-poppins" style={{ color: "#AAAAAA" }}>
                 Se termine dans
               </span>
 
-              {/* Blocs timer desktop */}
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1">
                 {[
                   { val: timeLeft.hours,   unit: "h" },
                   { val: timeLeft.minutes, unit: "m" },
                   { val: timeLeft.seconds, unit: "s" },
                 ].map(({ val, unit }, i) => (
-                  <div key={unit} className="flex items-center gap-1.5">
+                  <div key={unit} className="flex items-center gap-1">
                     {i > 0 && (
-                      <span className="text-lg font-bold" style={{ color: "#ECECEC" }}>:</span>
+                      <span className="text-sm font-bold" style={{ color: "#ECECEC" }}>:</span>
                     )}
                     <div
                       className="flex flex-col items-center justify-center"
                       style={{
                         background: brandColor,
-                        borderRadius: "10px",
-                        minWidth: "56px",
-                        padding: "8px 10px",
+                        borderRadius: "8px",
+                        minWidth: "44px",
+                        padding: "4px 6px",
                       }}
                     >
                       <span
-                        className="text-xl font-bold leading-none font-poppins"
+                        className="text-base font-bold leading-none font-poppins"
                         style={{ color: "#fff", letterSpacing: "-0.02em" }}
                       >
                         {fmt(val)}
                       </span>
                       <span
-                        className="text-[10px] leading-none mt-1 font-poppins"
+                        className="text-[8px] leading-none mt-0.5 font-poppins"
                         style={{ color: "#AAAAAA" }}
                       >
                         {unit}
@@ -387,14 +376,13 @@ export function DealCountdown() {
                 ))}
               </div>
 
-              {/* CTA */}
               <Link
                 href="/deals-du-jour"
-                className="flex items-center gap-2 px-5 py-2.5 text-white rounded-xl text-sm font-semibold font-poppins transition-all hover:opacity-90 hover:shadow-lg"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-white rounded-lg text-xs font-semibold font-poppins transition-all hover:opacity-90"
                 style={{ background: brandAccent }}
               >
                 Voir toutes les offres
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
           </div>
@@ -403,44 +391,43 @@ export function DealCountdown() {
       </div>
 
       {/* ══ PRODUITS ════════════════════════════════════════════ */}
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-6">
-        <div className="grid grid-cols-2 gap-3 lg:gap-6">
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-4">
+        <div className="grid grid-cols-2 gap-3 lg:gap-5">
 
           {/* Bloc 1 — Sélection du moment */}
           <div
-            className="rounded-xl p-3 lg:p-4"
+            className="rounded-xl p-2 lg:p-3"
             style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}
           >
-            {/* Label section mobile */}
-            <div className="flex items-center justify-between mb-3 lg:hidden">
+            <div className="flex items-center justify-between mb-2 lg:hidden">
               <p
-                className="text-[10px] font-bold uppercase tracking-wider"
+                className="text-[9px] font-bold uppercase tracking-wider"
                 style={{ color: "#0A0A0A", fontFamily: "'Poppins', sans-serif", letterSpacing: "0.08em" }}
               >
                 Sélection
               </p>
               <span
-                className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
+                className="text-[8px] font-semibold px-1 py-0.5 rounded-full"
                 style={{ background: "#FFF0F0", color: "#D4372B" }}
               >
                 Nouveau
               </span>
             </div>
             <h3
-              className="hidden lg:block text-xs font-bold uppercase tracking-wider mb-4 font-poppins"
+              className="hidden lg:block text-[11px] font-bold uppercase tracking-wider mb-3 font-poppins"
               style={{ color: brandColor, letterSpacing: "0.08em" }}
             >
               Sélection du moment
             </h3>
 
             {featuredProducts.length === 0 ? (
-              <p className="text-xs text-center py-4" style={{ color: "#AAAAAA" }}>Aucun produit disponible</p>
+              <p className="text-xs text-center py-3" style={{ color: "#AAAAAA" }}>Aucun produit disponible</p>
             ) : (
               <>
                 <div className="grid grid-cols-2 gap-2 lg:hidden">
                   {featuredProducts.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
                 </div>
-                <div className="hidden lg:grid lg:grid-cols-3 gap-3">
+                <div className="hidden lg:grid lg:grid-cols-3 gap-2">
                   {featuredProducts.map((p) => <ProductCard key={p.id} product={p} />)}
                 </div>
               </>
@@ -449,39 +436,38 @@ export function DealCountdown() {
 
           {/* Bloc 2 — Meilleures ventes */}
           <div
-            className="rounded-xl p-3 lg:p-4"
+            className="rounded-xl p-2 lg:p-3"
             style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}
           >
-            {/* Label section mobile */}
-            <div className="flex items-center justify-between mb-3 lg:hidden">
+            <div className="flex items-center justify-between mb-2 lg:hidden">
               <p
-                className="text-[10px] font-bold uppercase tracking-wider"
+                className="text-[9px] font-bold uppercase tracking-wider"
                 style={{ color: "#0A0A0A", fontFamily: "'Poppins', sans-serif", letterSpacing: "0.08em" }}
               >
                 Top ventes
               </p>
               <span
-                className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
+                className="text-[8px] font-semibold px-1 py-0.5 rounded-full"
                 style={{ background: "#FFF0F0", color: "#D4372B" }}
               >
                 🔥
               </span>
             </div>
             <h3
-              className="hidden lg:block text-xs font-bold uppercase tracking-wider mb-4 font-poppins"
+              className="hidden lg:block text-[11px] font-bold uppercase tracking-wider mb-3 font-poppins"
               style={{ color: brandColor, letterSpacing: "0.08em" }}
             >
               Meilleures ventes
             </h3>
 
             {bestSellers.length === 0 ? (
-              <p className="text-xs text-center py-4" style={{ color: "#AAAAAA" }}>Aucun produit disponible</p>
+              <p className="text-xs text-center py-3" style={{ color: "#AAAAAA" }}>Aucun produit disponible</p>
             ) : (
               <>
                 <div className="grid grid-cols-2 gap-2 lg:hidden">
                   {bestSellers.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
                 </div>
-                <div className="hidden lg:grid lg:grid-cols-3 gap-3">
+                <div className="hidden lg:grid lg:grid-cols-3 gap-2">
                   {bestSellers.map((p) => <ProductCard key={p.id} product={p} />)}
                 </div>
               </>
