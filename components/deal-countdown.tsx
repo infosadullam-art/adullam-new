@@ -174,7 +174,7 @@ export function DealCountdown() {
 
   if (isLoading) {
     return (
-      <div className="w-full bg-white">
+      <div className="w-full">
         <div className="max-w-6xl mx-auto px-4 lg:px-8 py-4">
           <div className="animate-pulse flex justify-center items-center h-20">
             <div className="w-8 h-8 rounded-full border-2 border-[#D4372B] border-t-transparent animate-spin" />
@@ -186,7 +186,7 @@ export function DealCountdown() {
 
   if (error) {
     return (
-      <div className="w-full bg-white">
+      <div className="w-full">
         <div className="max-w-6xl mx-auto px-4 lg:px-8 py-4 text-center">
           <p className="text-sm" style={{ color: "#D4372B", fontFamily: amazonFont }}>{error}</p>
         </div>
@@ -195,9 +195,8 @@ export function DealCountdown() {
   }
 
   return (
-    <div className="w-full bg-white">
-
-      {/* ══ BLOC CHRONO - LARGEUR RÉDUITE (max-w-6xl) ═══════════ */}
+    <div className="w-full lg:bg-white" style={{ background: "#FAFAFA" }}>
+      {/* ══ BLOC CHRONO ════════════════════════════════════════ */}
       <div className="relative overflow-hidden">
         <div 
           className="absolute inset-0 opacity-5 animate-pulse-slow"
@@ -288,7 +287,7 @@ export function DealCountdown() {
             </div>
           </div>
 
-          {/* VERSION DESKTOP */}
+          {/* VERSION DESKTOP - fond blanc */}
           <div className="hidden lg:flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div
