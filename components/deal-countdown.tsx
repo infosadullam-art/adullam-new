@@ -122,7 +122,6 @@ export function DealCountdown() {
 
   const fmt = (n: number) => n.toString().padStart(2, "0")
 
-  // ProductCard avec version mobile sans nom
   const ProductCard = ({ product, hideName = false }: { product: Product; hideName?: boolean }) => (
     <Link href={`/products/${product.id}`} className="group block">
       <div
@@ -150,7 +149,6 @@ export function DealCountdown() {
           )}
         </div>
 
-        {/* Infos produit - version desktop avec nom, mobile sans nom */}
         <div className="px-2 py-2">
           {!hideName && (
             <p
@@ -380,7 +378,7 @@ export function DealCountdown() {
       {/* ══ PRODUITS ════════════════════════════════════════════ */}
       <div className="px-4 lg:px-8 py-3 lg:py-6">
         
-        {/* MOBILE : 2 blocs, 4 produits chacun, SANS NOM */}
+        {/* MOBILE : 2 blocs, 4 produits chacun (grid-cols-2 = 2x2 = 4) */}
         <div className="grid grid-cols-2 gap-2 lg:hidden">
           
           <div className="rounded-xl p-2" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}>
@@ -417,7 +415,7 @@ export function DealCountdown() {
 
         </div>
 
-        {/* DESKTOP : 2 blocs, 6 produits chacun, AVEC NOM */}
+        {/* DESKTOP : 2 blocs, 6 produits chacun (grid-cols-3 = 3x2 = 6) */}
         <div className="hidden lg:grid lg:grid-cols-2 gap-5">
           
           <div className="rounded-xl p-4" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC" }}>
