@@ -172,7 +172,7 @@ export function DealCountdown() {
   if (isLoading) {
     return (
       <div className="w-full bg-white">
-        <div className="px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4">
           <div className="animate-pulse flex justify-center items-center h-20">
             <div className="w-8 h-8 rounded-full border-2 border-[#D4372B] border-t-transparent animate-spin" />
           </div>
@@ -184,7 +184,7 @@ export function DealCountdown() {
   if (error) {
     return (
       <div className="w-full bg-white">
-        <div className="px-4 py-4 text-center">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 text-center">
           <p className="text-sm" style={{ color: "#D4372B" }}>{error}</p>
         </div>
       </div>
@@ -194,7 +194,7 @@ export function DealCountdown() {
   return (
     <div className="w-full bg-white">
 
-      {/* ══ HEADER PREMIUM ══════════════════════════════════════ */}
+      {/* ══ HEADER PREMIUM AVEC BOUTON ══════════════════════════ */}
       <div className="relative overflow-hidden">
         <div 
           className="absolute inset-0 opacity-5 animate-pulse-slow"
@@ -375,7 +375,7 @@ export function DealCountdown() {
         </div>
       </div>
 
-      {/* ══ PRODUITS - MÊME CONTENEUR ET MÊME PADDING QUE LE CHRONO ════════ */}
+      {/* ══ PRODUITS - SUPPRESSION DU PADDING EXTERNE POUR COLLER AU CHRONO ════════ */}
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-3 lg:py-6">
         
         {/* MOBILE */}
