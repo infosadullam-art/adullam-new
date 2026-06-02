@@ -6,6 +6,9 @@ import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
+// Police Amazon Ember
+const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+
 interface Product {
   id: string
   name: string
@@ -73,9 +76,9 @@ export function CategoriesPourVous() {
   if (isLoading) {
     return (
       <div className="w-full" style={{ background: "#0A0A0A" }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-center items-center h-32">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2" style={{ borderColor: "#D4372B" }} />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex justify-center items-center h-24">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2" style={{ borderColor: "#D4372B" }} />
           </div>
         </div>
       </div>
@@ -86,27 +89,27 @@ export function CategoriesPourVous() {
 
   return (
     <section className="w-full" style={{ background: "#0A0A0A" }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <span style={{ display: "inline-block", width: "3px", height: "18px", background: "#D4372B", borderRadius: "2px" }} />
+            <span style={{ display: "inline-block", width: "3px", height: "16px", background: "#D4372B", borderRadius: "2px" }} />
             <div>
-              <h2 style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'Poppins', sans-serif" }}>
+              <h2 style={{ fontSize: "12px", fontWeight: 700, color: "#fff", fontFamily: amazonFont }}>
                 Tendances Cuisine 🔥
               </h2>
-              <p style={{ fontSize: "10px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
+              <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>
                 Les produits les plus populaires
               </p>
             </div>
           </div>
           <Link
             href="/categorie/cuisine"
-            className="flex items-center gap-0.5 text-xs font-semibold"
-            style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}
+            className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1"
+            style={{ color: "#D4372B", fontFamily: amazonFont }}
           >
-            Voir tout <ChevronRight className="w-3.5 h-3.5" />
+            Voir tout <ChevronRight className="w-3 h-3" />
           </Link>
         </div>
 
@@ -117,27 +120,27 @@ export function CategoriesPourVous() {
           <div className="col-span-4" ref={productContainerRef}>
             <div className="grid grid-cols-4 gap-2">
               {products.slice(0, 4).map((product) => (
-                <Link key={product.id} href={`/products/${product.id}`} className="group block">
+                <Link key={product.id} href={`/products/${product.id}`} className="group block transition-all duration-200 hover:-translate-y-0.5">
                   <div
-                    className="overflow-hidden transition-all duration-200 group-hover:shadow-md"
-                    style={{ background: "#fff", borderRadius: "12px", border: "0.5px solid rgba(255,255,255,0.08)" }}
+                    className="overflow-hidden transition-all duration-200 hover:shadow-md"
+                    style={{ background: "#fff", borderRadius: "6px", border: "0.5px solid rgba(255,255,255,0.08)" }}
                   >
                     <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
                       <Image
                         src={product.image}
                         alt={product.name}
                         fill
-                        className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                        className="object-contain p-1.5 transition-transform duration-300 group-hover:scale-105"
                       />
                     </div>
-                    <div className="px-2 py-2">
+                    <div className="px-1.5 py-1.5">
                       <p
                         className="truncate mb-0.5"
-                        style={{ fontSize: "10px", fontWeight: 500, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}
+                        style={{ fontSize: "9px", fontWeight: 500, color: "#0A0A0A", fontFamily: amazonFont }}
                       >
                         {product.name}
                       </p>
-                      <p style={{ fontSize: "11px", fontWeight: 700, color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}>
+                      <p style={{ fontSize: "10px", fontWeight: 700, color: "#D4372B", fontFamily: amazonFont }}>
                         {formatPrice(product.price)}
                       </p>
                     </div>
@@ -152,7 +155,7 @@ export function CategoriesPourVous() {
             <div
               className="relative overflow-hidden"
               style={{
-                borderRadius: "12px",
+                borderRadius: "6px",
                 height: slideHeight ? `${slideHeight}px` : "auto",
                 border: "0.5px solid rgba(255,255,255,0.08)",
               }}
@@ -161,32 +164,32 @@ export function CategoriesPourVous() {
                 <Link
                   key={slide.id}
                   href={slide.href}
-                  className="absolute inset-0 transition-opacity duration-700"
+                  className="absolute inset-0 transition-opacity duration-700 group"
                   style={{ opacity: index === currentSlide ? 1 : 0, zIndex: index === currentSlide ? 10 : 0 }}
                 >
-                  <Image src={slide.image} alt={slide.title} fill className="object-cover" />
-                  <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 60%)" }} />
-                  <div className="absolute bottom-2.5 left-3 right-3 z-10">
-                    <p style={{ fontSize: "12px", fontWeight: 600, color: "#fff", fontFamily: "'Poppins', sans-serif", lineHeight: 1.2 }}>
+                  <Image src={slide.image} alt={slide.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                  <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%)" }} />
+                  <div className="absolute bottom-2 left-3 right-3 z-10">
+                    <p style={{ fontSize: "11px", fontWeight: 600, color: "#fff", fontFamily: amazonFont, lineHeight: 1.2 }}>
                       {slide.title}
                     </p>
-                    <span className="flex items-center gap-0.5 mt-1" style={{ fontSize: "10px", color: "rgba(255,255,255,0.7)", fontFamily: "'Poppins', sans-serif" }}>
-                      Découvrir <ChevronRight className="w-3 h-3" />
+                    <span className="flex items-center gap-0.5 mt-0.5 transition-all duration-200 group-hover:gap-1" style={{ fontSize: "9px", color: "rgba(255,255,255,0.7)", fontFamily: amazonFont }}>
+                      Découvrir <ChevronRight className="w-2.5 h-2.5" />
                     </span>
                   </div>
                 </Link>
               ))}
 
               {/* Dots */}
-              <div className="absolute bottom-2.5 right-3 z-20 flex gap-1">
+              <div className="absolute bottom-2 right-2 z-20 flex gap-1">
                 {slides.map((_, i) => (
                   <button
                     key={i}
                     onClick={() => setCurrentSlide(i)}
                     style={{
-                      width: i === currentSlide ? "16px" : "4px",
-                      height: "3px",
-                      borderRadius: "2px",
+                      width: i === currentSlide ? "14px" : "3px",
+                      height: "2px",
+                      borderRadius: "1px",
                       background: i === currentSlide ? "#D4372B" : "rgba(255,255,255,0.4)",
                       transition: "all 0.3s ease",
                       border: "none",
