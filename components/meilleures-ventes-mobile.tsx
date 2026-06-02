@@ -51,7 +51,7 @@ export function MeilleuresVentesMobile() {
   // ── Skeleton ────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <section className="w-full lg:hidden" style={{ background: "#fff" }}>
+      <section className="w-full lg:hidden" style={{ background: "#FAFAFA" }}>
         <div className="px-4 py-2">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
@@ -65,7 +65,7 @@ export function MeilleuresVentesMobile() {
           </div>
           <div className="flex gap-2 overflow-hidden">
             {[0,1,2,3].map(i => (
-              <div key={i} className="flex-shrink-0 w-[120px]" style={{ border: "0.5px solid #ECECEC", borderRadius: "6px", overflow: "hidden" }}>
+              <div key={i} className="flex-shrink-0 w-[120px]" style={{ border: "0.5px solid #ECECEC", borderRadius: "6px", overflow: "hidden", background: "#fff" }}>
                 <div className="aspect-square animate-pulse" style={{ background: "#F4F4F4" }} />
                 <div className="p-1.5">
                   <div className="h-2 w-full rounded animate-pulse mb-1" style={{ background: "#F4F4F4" }} />
@@ -82,7 +82,7 @@ export function MeilleuresVentesMobile() {
   if (products.length === 0) return null
 
   return (
-    <section className="w-full lg:hidden" style={{ background: "#fff" }}>
+    <section className="w-full lg:hidden" style={{ background: "#FAFAFA" }}>
       <div className="px-4 py-2">
 
         {/* Header */}
