@@ -4,9 +4,6 @@ import Link from "next/link"
 import Image from "next/image"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
-// Police Amazon Ember
-const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-
 // ✅ Configuration des badges selon la source
 const badgeConfig: Record<string, { label: string; bg: string; color: string }> = {
   session_graph: { label: "Pour vous", bg: "#F0F4FF", color: "#3B5BDB" },
@@ -74,13 +71,13 @@ export function ProductCard({ product }: ProductCardProps) {
             alt={product.name}
             width={200}
             height={200}
-            className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
           />
           
           {/* BADGE - avec style dynamique */}
           {badgeLabel && (
             <span 
-              className="absolute top-2 left-2 text-[10px] px-2 py-0.5 rounded-full font-medium z-10"
+              className="absolute top-2 left-2 text-[10px] px-2 py-1 rounded-full font-medium z-10"
               style={badgeStyle}
             >
               {badgeLabel}
@@ -102,9 +99,9 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-        {/* INFOS - ESPACE RÉDUIT */}
-        <div className="px-2 py-1.5">
-          <h3 className="text-xs lg:text-sm font-medium text-gray-900 truncate" style={{ fontFamily: amazonFont, marginBottom: "2px" }}>
+        {/* INFOS */}
+        <div className="p-2 lg:p-3">
+          <h3 className="text-xs lg:text-sm font-medium text-gray-900 truncate mb-1">
             {product.name}
           </h3>
 
@@ -128,16 +125,16 @@ export function ProductCard({ product }: ProductCardProps) {
                 ))}
               </div>
               {product.reviews && (
-                <span className="text-[10px] lg:text-xs text-gray-500" style={{ fontFamily: amazonFont }}>
+                <span className="text-[10px] lg:text-xs text-gray-500">
                   ({product.reviews})
                 </span>
               )}
             </div>
           )}
 
-          {/* PRIX - marge réduite */}
-          <div className="mt-0.5">
-            <p className="text-sm lg:text-base font-bold text-red-500" style={{ fontFamily: amazonFont }}>
+          {/* PRIX EN ROUGE */}
+          <div className="mt-2">
+            <p className="text-sm lg:text-base font-bold text-red-500">
               {formattedPrice}
             </p>
           </div>
