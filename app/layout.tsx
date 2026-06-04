@@ -8,6 +8,7 @@ import { CartProvider } from "@/context/CartContext"
 import { AuthProvider } from "@/lib/admin/auth-context"
 import { Toaster } from "react-hot-toast"
 import * as Sentry from "@sentry/nextjs"
+import SplashScreen from "@/components/SplashScreen"
 
 const poppins = Poppins({ 
   subsets: ["latin"],
@@ -17,22 +18,22 @@ const poppins = Poppins({
 })
 
 export const metadata: Metadata = {
-  title: "Adullam | Marketplace Internationale",
+  title: "ADULLAM",
   description: "Connectez-vous aux meilleurs fournisseurs du monde entier. Mode, électronique, maison — livraison vers l'Afrique.",
   generator: "v0.app",
   keywords: "marketplace international, e-commerce, Afrique, shopping en ligne, fournisseurs internationaux",
   authors: [{ name: "Adullam" }],
   openGraph: {
-    title: "Adullam - Marketplace Internationale",
+    title: "ADULLAM - Marketplace Internationale",
     description: "Achetez direct des usines du monde entier",
     url: "https://adullam.com",
-    siteName: "Adullam",
+    siteName: "ADULLAM",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Adullam Marketplace",
+        alt: "ADULLAM Marketplace",
       },
     ],
     locale: "fr_FR",
@@ -40,7 +41,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Adullam - Marketplace Internationale",
+    title: "ADULLAM - Marketplace Internationale",
     description: "Achetez direct des usines du monde entier",
     images: ["/og-image.jpg"],
   },
@@ -89,8 +90,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" type="image/x-icon" href="/favicon-custom.ico" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="apple-touch-icon" href="/apple-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="ADULLAM" />
+        <meta name="theme-color" content="#D4372B" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
       <body className={`${poppins.variable} antialiased bg-white text-gray-900 font-sans`}>
+        <SplashScreen />
         <GlobalErrorBoundary>
           <AuthProvider>
             <LocaleProvider>
