@@ -6,23 +6,17 @@ export default function SplashScreen() {
   const [show, setShow] = useState(true);
 
   useEffect(() => {
-    // Cache le contenu principal immédiatement
-    const content = document.getElementById('main-content');
-    if (content) content.style.display = 'none';
-
+    // Détecter si c'est une PWA installée (mobile) OU un navigateur desktop
     const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
-    if (!isPWA) {
+    // Afficher le splash UNIQUEMENT sur mobile PWA
+    if (!isPWA || !isMobile) {
       setShow(false);
-      if (content) content.style.display = '';
       return;
     }
 
-    const timer = setTimeout(() => {
-      setShow(false);
-      if (content) content.style.display = '';
-    }, 2000);
-
+    const timer = setTimeout(() => setShow(false), 2000);
     return () => clearTimeout(timer);
   }, []);
 
