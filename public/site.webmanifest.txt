@@ -1,5 +1,5 @@
 {
-  "name": "Adullam Marketplace",
+  "name": "Adullam",
   "short_name": "Adullam",
   "icons": [
     {
@@ -10,7 +10,7 @@
     }
   ],
   "theme_color": "#D4372B",
-  "background_color": "#FFFFFF",
+  "background_color": "#D4372B",
   "display": "standalone",
   "start_url": "/",
   "orientation": "portrait"
