@@ -99,47 +99,49 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${poppins.variable} antialiased bg-white text-gray-900 font-sans`}>
         <SplashScreen />
-        <GlobalErrorBoundary>
-          <AuthProvider>
-            <LocaleProvider>
-              <CartProvider>
-                <ClientWrapper>
-                  {children}
-                </ClientWrapper>
-                <Toaster 
-                  position="top-center"
-                  reverseOrder={false}
-                  toastOptions={{
-                    duration: 3000,
-                    style: {
-                      background: '#1A1A1A',
-                      color: '#fff',
-                      fontSize: '14px',
-                      borderRadius: '8px',
-                      padding: '12px 16px',
-                      fontFamily: 'var(--font-poppins)',
-                      fontWeight: 500,
-                    },
-                    success: {
+        <div id="main-content">
+          <GlobalErrorBoundary>
+            <AuthProvider>
+              <LocaleProvider>
+                <CartProvider>
+                  <ClientWrapper>
+                    {children}
+                  </ClientWrapper>
+                  <Toaster 
+                    position="top-center"
+                    reverseOrder={false}
+                    toastOptions={{
                       duration: 3000,
-                      icon: '✓',
                       style: {
-                        background: '#0F2A44',
+                        background: '#1A1A1A',
+                        color: '#fff',
+                        fontSize: '14px',
+                        borderRadius: '8px',
+                        padding: '12px 16px',
+                        fontFamily: 'var(--font-poppins)',
+                        fontWeight: 500,
                       },
-                    },
-                    error: {
-                      duration: 4000,
-                      style: {
-                        background: '#B91C1C',
+                      success: {
+                        duration: 3000,
+                        icon: '✓',
+                        style: {
+                          background: '#0F2A44',
+                        },
                       },
-                    },
-                  }}
-                />
-              </CartProvider>
-            </LocaleProvider>
-          </AuthProvider>
-        </GlobalErrorBoundary>
-        <Analytics />
+                      error: {
+                        duration: 4000,
+                        style: {
+                          background: '#B91C1C',
+                        },
+                      },
+                    }}
+                  />
+                </CartProvider>
+              </LocaleProvider>
+            </AuthProvider>
+          </GlobalErrorBoundary>
+          <Analytics />
+        </div>
       </body>
     </html>
   )
