@@ -97,12 +97,10 @@
 }
 
 @theme inline {
-  /* ── Polices ──────────────────────────────────────────────── */
   --font-sans:    "Poppins", system-ui, -apple-system, sans-serif;
   --font-mono:    "Geist Mono", monospace;
   --font-display: "Poppins", sans-serif;
 
-  /* ── Couleurs Tailwind ────────────────────────────────────── */
   --color-brand:          var(--brand);
   --color-brand-hover:    var(--brand-hover);
   --color-accent:         var(--accent);
@@ -138,13 +136,11 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
 
-  /* ── Radius ───────────────────────────────────────────────── */
-  --radius-sm: calc(var(--radius) - 4px); /* 6px  */
-  --radius-md: var(--radius);             /* 10px */
-  --radius-lg: calc(var(--radius) + 2px); /* 12px */
-  --radius-xl: calc(var(--radius) + 6px); /* 16px */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 6px);
 
-  /* ── Sidebar ──────────────────────────────────────────────── */
   --color-sidebar:                    var(--sidebar);
   --color-sidebar-foreground:         var(--sidebar-foreground);
   --color-sidebar-primary:            var(--sidebar-primary);
@@ -191,12 +187,10 @@
   button { @apply transition-all duration-200; }
 }
 
-/* ── Safe area mobile ─────────────────────────────────────── */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 }
 
-/* ── Utilitaires Poppins ──────────────────────────────────── */
 .font-poppins-light     { font-weight: 300; }
 .font-poppins-regular   { font-weight: 400; }
 .font-poppins-medium    { font-weight: 500; }
@@ -205,14 +199,13 @@
 .font-poppins-extrabold { font-weight: 800; }
 .font-poppins-black     { font-weight: 900; }
 
-/* ── Animations classiques ────────────────────────────────── */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in { animation: fadeIn 0.4s ease-out; }
 
-/* ── SPLASH SCREEN ANIMATIONS ─────────────────────────────── */
+/* ── SPLASH SCREEN ─────────────────────────────────────────── */
 @keyframes zoomIn {
   0% { transform: scale(0.5); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
@@ -228,7 +221,6 @@
   100% { opacity: 0; visibility: hidden; }
 }
 
-/* ── Classes pour le splash screen ───────────────────────── */
 .splash-screen {
   position: fixed;
   top: 0;
@@ -263,16 +255,18 @@
 .splash-title {
   margin-top: 24px;
   font-family: var(--font-sans);
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: 2px;
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
   color: white;
-  text-transform: uppercase;
   opacity: 0;
   animation: fadeUp 0.3s ease-out 0.2s forwards;
 }
 
-/* Disparition du splash après animation */
+.splash-dot {
+  color: #FF6B6B;
+}
+
 .splash-screen.fade-out {
   animation: fadeOut 0.5s ease-out forwards;
 }
