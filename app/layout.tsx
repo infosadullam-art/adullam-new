@@ -18,22 +18,22 @@ const poppins = Poppins({
 })
 
 export const metadata: Metadata = {
-  title: "ADULLAM",
+  title: "Adullam Marketplace - Achetez direct des usines du monde entier",
   description: "Connectez-vous aux meilleurs fournisseurs du monde entier. Mode, électronique, maison — livraison vers l'Afrique.",
   generator: "v0.app",
   keywords: "marketplace international, e-commerce, Afrique, shopping en ligne, fournisseurs internationaux",
   authors: [{ name: "Adullam" }],
   openGraph: {
-    title: "ADULLAM - Marketplace Internationale",
+    title: "Adullam Marketplace - Achetez direct des usines du monde entier",
     description: "Achetez direct des usines du monde entier",
     url: "https://adullam.com",
-    siteName: "ADULLAM",
+    siteName: "Adullam Marketplace",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "ADULLAM Marketplace",
+        alt: "Adullam Marketplace",
       },
     ],
     locale: "fr_FR",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ADULLAM - Marketplace Internationale",
+    title: "Adullam Marketplace - Achetez direct des usines du monde entier",
     description: "Achetez direct des usines du monde entier",
     images: ["/og-image.jpg"],
   },
@@ -93,7 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="ADULLAM" />
+        <meta name="apple-mobile-web-app-title" content="Adullam" />
         <meta name="theme-color" content="#D4372B" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
