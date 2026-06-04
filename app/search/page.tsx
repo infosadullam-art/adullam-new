@@ -1,4 +1,4 @@
-// app/search/page.tsx - Version strictement responsive (sans modification logique)
+// app/search/page.tsx - Version corrigée sans flash
 "use client"
 
 import { Header } from "@/components/header"
@@ -30,6 +30,7 @@ function SearchContent() {
   
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [showFilters, setShowFilters] = useState(false)
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000])
@@ -41,7 +42,11 @@ function SearchContent() {
 
   useEffect(() => {
     const fetchSearchResults = async () => {
-      if (!query) return
+      if (!query) {
+        setIsLoading(false)
+        setIsInitialLoad(false)
+        return
+      }
       
       setIsLoading(true)
       try {
@@ -56,12 +61,8 @@ function SearchContent() {
           params.append('maxPrice', priceRange[1].toString())
         }
 
-        console.log("🔍 Appel API:", `/api/search?${params.toString()}`)
-        
         const res = await fetch(`/api/search?${params.toString()}`)
         const data = await res.json()
-        
-        console.log("📦 Réponse API:", data)
 
         if (data.success) {
           setProducts(data.data)
@@ -72,7 +73,6 @@ function SearchContent() {
             setPriceRange([0, data.filters.priceRange.max])
           }
         } else {
-          console.error("❌ Erreur API:", data)
           setProducts([])
         }
       } catch (error) {
@@ -80,6 +80,7 @@ function SearchContent() {
         setProducts([])
       } finally {
         setIsLoading(false)
+        setIsInitialLoad(false)
       }
     }
 
@@ -97,6 +98,21 @@ function SearchContent() {
     setSortBy('relevance')
     setPagination(prev => ({ ...prev, page: 1 }))
     setShowFilters(false)
+  }
+
+  // ✅ Évite le flash : écran de chargement initial
+  if (isInitialLoad && query) {
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="hidden lg:block"><Header /></div>
+        <div className="block lg:hidden"><MobileHeader /></div>
+        <main className="flex justify-center items-center min-h-[60vh]">
+          <Loader2 className="w-8 h-8 text-brand animate-spin" />
+        </main>
+        <Footer />
+        <div className="lg:hidden"><MobileNav /></div>
+      </div>
+    )
   }
 
   if (!query) {
@@ -274,7 +290,7 @@ function SearchContent() {
                   </select>
                 </div>
 
-                {/* Grille produits - RESPONSIVE SANS CHANGER LA LOGIQUE */}
+                {/* Grille produits */}
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {products.map((product) => (
                     <Link
@@ -315,7 +331,7 @@ function SearchContent() {
                   ))}
                 </div>
 
-                {/* Pagination responsive */}
+                {/* Pagination */}
                 {pagination.totalPages > 1 && (
                   <div className="flex flex-wrap justify-center items-center gap-2 mt-8">
                     <button
