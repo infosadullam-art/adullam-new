@@ -3,21 +3,26 @@
 import { useEffect, useState } from 'react';
 
 export default function SplashScreen() {
-  const [show, setShow] = useState(true);
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
-    // Détecter si c'est une PWA installée (mobile) OU un navigateur desktop
+    // Vérifier si c'est une PWA installée sur mobile
     const isPWA = window.matchMedia('(display-mode: standalone)').matches;
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
-    // Afficher le splash UNIQUEMENT sur mobile PWA
-    if (!isPWA || !isMobile) {
-      setShow(false);
-      return;
+    // Vérifier si le splash a déjà été montré pendant cette session
+    const splashShown = sessionStorage.getItem('splashShown');
+    
+    // Afficher UNIQUEMENT sur mobile PWA et UNE SEULE FOIS par session
+    if (isPWA && isMobile && !splashShown) {
+      setShow(true);
+      sessionStorage.setItem('splashShown', 'true');
+      
+      const timer = setTimeout(() => setShow(false), 2000);
+      return () => clearTimeout(timer);
     }
-
-    const timer = setTimeout(() => setShow(false), 2000);
-    return () => clearTimeout(timer);
+    
+    setShow(false);
   }, []);
 
   if (!show) return null;
