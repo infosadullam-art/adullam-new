@@ -6,10 +6,17 @@ export default function SplashScreen() {
   const [show, setShow] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // Vérifier si on est en mode PWA (installée sur mobile)
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+    
+    // Si navigateur desktop classique, ne pas afficher
+    if (!isPWA) {
       setShow(false);
-    }, 2500);
+      return;
+    }
 
+    // Disparaît après 2 secondes
+    const timer = setTimeout(() => setShow(false), 2000);
     return () => clearTimeout(timer);
   }, []);
 
