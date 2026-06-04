@@ -315,8 +315,8 @@ export function ForYouSection() {
                               {badge.label}
                             </span>
                           )}
-                          {/* WRAPPER POUR RÉDUIRE L'ESPACE UNIQUEMENT ICI */}
-                          <div className="[&_.p-2]:!p-1.5 [&_.mb-1]:!mb-0.5 [&_.mt-2]:!mt-1">
+                          {/* WRAPPER POUR RÉDUIRE L'ESPACE TITRE/PRIX */}
+                          <div className="[&_.p-2]:!p-1 [&_.mb-1]:!mb-0 [&_.mt-2]:!mt-0.5">
                             <ProductCard product={{
                               id: product.id,
                               name: product.name,
