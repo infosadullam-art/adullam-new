@@ -4,7 +4,10 @@
   "outputDirectory": ".next",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "env": {
-    "NEXT_PUBLIC_API_URL": "https://outstanding-enchantment-production-109f.up.railway.app/api"
-  }
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "http://162.55.220.187:3000/api/:path*"
+    }
+  ]
 }
