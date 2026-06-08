@@ -1,6 +1,12 @@
 import { getAccessToken, setAccessToken, clearAccessToken } from "./auth"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://outstanding-enchantment-production-109f.up.railway.app"
+// ✅ CORRIGÉ : Suppression du fallback Railway, utilisation UNIQUEMENT de la variable d'environnement
+const API_URL = process.env.NEXT_PUBLIC_API_URL
+
+// ✅ Vérification : si la variable n'est pas définie, on affiche une erreur claire
+if (!API_URL) {
+  console.error("❌ NEXT_PUBLIC_API_URL n'est pas définie dans les variables d'environnement")
+}
 
 export async function apiFetch(
   input: RequestInfo,
@@ -13,7 +19,7 @@ export async function apiFetch(
   console.log('🔍 [apiFetch] URL appelée:', typeof input === 'string' ? input : input.url)
   console.log('🔍 [apiFetch] Token présent:', !!token)
   console.log('🔍 [apiFetch] Méthode:', init.method || 'GET')
-  console.log('🔍 [apiFetch] API_URL depuis env:', process.env.NEXT_PUBLIC_API_URL)
+  console.log('🔍 [apiFetch] API_URL depuis env:', API_URL)
   
   const fullUrl = `${API_URL}${input}`
   console.log('🔍 [apiFetch] URL complète:', fullUrl)
@@ -25,10 +31,9 @@ export async function apiFetch(
       ...(init.headers || {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    credentials: "include", // 🔥 pour refresh cookie
+    credentials: "include",
   })
 
-  // Log du statut de la réponse
   console.log(`🔍 [apiFetch] Statut réponse: ${res.status} pour ${fullUrl}`)
 
   // Access token expiré
@@ -43,7 +48,6 @@ export async function apiFetch(
     }
 
     console.log('✅ [apiFetch] Refresh réussi, nouvelle tentative...')
-    // Retry original request
     return apiFetch(input, init)
   }
 
