@@ -94,7 +94,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Adullam" />
-        <meta name="theme-color" content="#D4372B" />
+        <meta name="theme-color" content="#C41E3A" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
       <body className={`${poppins.variable} antialiased bg-white text-gray-900 font-sans`}>
@@ -113,7 +113,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     toastOptions={{
                       duration: 3000,
                       style: {
-                        background: '#333333',
+                        background: '#C41E3A',
                         color: '#fff',
                         fontSize: '14px',
                         borderRadius: '8px',
