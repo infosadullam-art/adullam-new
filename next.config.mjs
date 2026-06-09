@@ -10,17 +10,17 @@ const nextConfig = {
   typescript: { ignoreBuildErrors: true },
   
   images: { 
-    unoptimized: true,  // ← plus simple et fiable
+    unoptimized: true,
   },
 
   turbopack: { root: resolve(__dirname) },
 
-  // ✅ REWRITES PROXY - Cache l'URL du backend
+  // ✅ REWRITES PROXY - Maintenant vers ton VPS
   async rewrites() {
     return [
       {
         source: "/api/:path*",
-        destination: "https://outstanding-enchantment-production-109f.up.railway.app/api/:path*",
+        destination: "https://api.adullamarket.com/api/:path*",
       },
     ]
   },
