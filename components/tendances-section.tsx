@@ -6,6 +6,7 @@ import Link from "next/link"
 import { useLocale } from "@/context/LocaleProvider"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { ChevronRight, TrendingUp, MapPin } from "lucide-react"
+import { apiFetch } from "@/lib/api"
 
 // Police Amazon Ember
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
@@ -89,7 +90,7 @@ export function TendanceParPays() {
     const fetchTrends = async () => {
       try {
         setIsLoading(true)
-        const res = await fetch(`/api/graph/trending?country=${selectedCountry}&limit=6`)
+        const res = await apiFetch(`/api/graph/trending?country=${selectedCountry}&limit=6`)
         const data = await res.json()
         if (data.success) setTrends(data.trend)
         else setTrends(fallbackTrends[selectedCountry as keyof typeof fallbackTrends] || fallbackTrends.CI)
