@@ -39,8 +39,7 @@ export function MobileHeader() {
 
   // Fade-in au montage
   useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 50)
-    return () => clearTimeout(t)
+    setMounted(true)
   }, [])
 
   // Carrousel vertical pour la recherche
@@ -103,6 +102,23 @@ export function MobileHeader() {
   const goToFavorites = useCallback(() => navigateTo("/account"), [navigateTo])
   const goToHelp     = useCallback(() => navigateTo("/account"), [navigateTo])
 
+  if (!mounted) {
+    return (
+      <header className="bg-white sticky top-0 z-50" style={{ borderBottom: "0.5px solid #ECECEC", height: "64px" }}>
+        <div className="px-4 flex items-center justify-between" style={{ paddingTop: "12px", paddingBottom: "10px" }}>
+          <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 900, fontSize: "20px", letterSpacing: "-0.04em", color: "#0A0A0A" }}>
+            adul<span style={{ color: "#D4372B" }}>.</span>lam
+          </span>
+          <div className="flex items-center gap-1.5">
+            <div className="rounded-xl" style={{ background: "#F4F4F4", width: "36px", height: "36px" }} />
+            <div className="rounded-xl" style={{ background: "#D4372B", width: "36px", height: "36px" }} />
+            <div className="rounded-xl" style={{ background: "#F4F4F4", width: "36px", height: "36px" }} />
+          </div>
+        </div>
+      </header>
+    )
+  }
+
   return (
     <>
       {/* ── HEADER ─────────────────────────────────────────── */}
@@ -114,8 +130,6 @@ export function MobileHeader() {
             ? "0 2px 16px rgba(0,0,0,0.06)"
             : "none",
           transition: "box-shadow 0.3s ease",
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? "translateY(0)" : "translateY(-4px)",
         }}
       >
         <div
