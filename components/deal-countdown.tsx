@@ -5,6 +5,7 @@ import { Zap, ArrowRight, Clock, Sparkles } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { apiFetch } from "@/lib/api"
 
 // Types
 interface Product {
@@ -57,9 +58,9 @@ export function DealCountdown() {
         setError(null)
 
         const [featuredRes, bestSellersRes, flashSaleRes] = await Promise.all([
-          fetch("/api/deals/featured?limit=6"),
-          fetch("/api/deals/best-sellers?limit=6"),
-          fetch("/api/deals/flash-sales/current"),
+          apiFetch("/api/deals/featured?limit=6"),
+          apiFetch("/api/deals/best-sellers?limit=6"),
+          apiFetch("/api/deals/flash-sales/current"),
         ])
 
         if (featuredRes.ok) {
@@ -101,6 +102,7 @@ export function DealCountdown() {
           }
         }
       } catch (err) {
+        console.error("Erreur chargement offres:", err)
         setError("Impossible de charger les offres")
       } finally {
         setIsLoading(false)
@@ -288,7 +290,7 @@ export function DealCountdown() {
           </div>
 
           {/* VERSION DESKTOP */}
-          <div className="hidden lg:flex items-center justify-between">
+          <div className="hidden lg:flex lg:items-center lg:justify-between">
             <div className="flex items-center gap-4">
               <div
                 className="flex items-center justify-center w-12 h-12 rounded"
