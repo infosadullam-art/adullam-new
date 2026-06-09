@@ -8,6 +8,7 @@ import { Footer } from "@/components/footer"
 import { TrendingUp, Star, ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { apiFetch } from "@/lib/api"
 
 export default function MeilleuresVentesPage() {
   const { formatPrice } = useCurrencyFormatter()
@@ -21,7 +22,7 @@ export default function MeilleuresVentesPage() {
     const fetchBestSellers = async () => {
       setIsLoading(true)
       try {
-        const res = await fetch(`/api/best-sellers?page=${currentPage}&limit=${itemsPerPage}`)
+        const res = await apiFetch(`/api/best-sellers?page=${currentPage}&limit=${itemsPerPage}`)
         const data = await res.json()
         if (data.success) {
           setProducts(data.data)
