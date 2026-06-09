@@ -15,12 +15,12 @@ const nextConfig = {
 
   turbopack: { root: resolve(__dirname) },
 
-  // ✅ REWRITES PROXY - Maintenant vers ton VPS
+  // ✅ REWRITES PROXY - Appel direct à l'IP du VPS (sans HTTPS, sans DNS)
   async rewrites() {
     return [
       {
         source: "/api/:path*",
-        destination: "https://api.adullamarket.com/api/:path*",
+        destination: "http://162.55.220.187:3000/api/:path*",
       },
     ]
   },
