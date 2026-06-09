@@ -32,6 +32,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PaymentButton } from "@/components/PaymentButton";
 import { CouponInput } from "@/components/CouponInput";
+import { apiFetch } from "@/lib/api";
 
 // Couleurs dynamiques
 const brandColor = "#D4372B";
@@ -131,7 +132,6 @@ export default function CheckoutPage() {
 
   // États
   const [step, setStep] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState<"mtn" | "orange" | "wave" | "visa" | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -239,7 +239,7 @@ export default function CheckoutPage() {
     setLoadingAddresses(true);
     try {
       const token = localStorage.getItem('adullam_token');
-      const res = await fetch("/api/user/addresses", {
+      const res = await apiFetch("/api/user/addresses", {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -297,7 +297,7 @@ export default function CheckoutPage() {
   const handleAddAddress = async () => {
     try {
       const token = localStorage.getItem('adullam_token');
-      const res = await fetch("/api/user/addresses", {
+      const res = await apiFetch("/api/user/addresses", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -381,13 +381,12 @@ export default function CheckoutPage() {
   };
 
   const handlePaymentSuccess = () => {
-    console.log('✅ Paiement initialisé avec succès');
+    setIsSuccess(true);
   };
 
   const handlePaymentError = (paymentError: string) => {
     console.error('❌ Erreur paiement:', paymentError);
     setError(paymentError);
-    setStep(3);
   };
 
   const handleApplyCoupon = (coupon: any) => {
@@ -495,22 +494,21 @@ export default function CheckoutPage() {
             {[
               { step: 1, label: "Livraison" },
               { step: 2, label: "Expédition" },
-              { step: 3, label: "Paiement" },
-              { step: 4, label: "Confirmation" }
+              { step: 3, label: "Confirmation" }
             ].map((item, index) => (
               <div key={item.step} className="flex items-center">
                 <div className="flex flex-col items-center">
                   <div 
-  className={`w-7 h-7 lg:w-8 lg:h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
-    step >= item.step ? 'text-white' : 'text-gray-400'
-  }`}
-  style={{ background: step >= item.step ? '#D4372B' : '#F4F4F4' }}
->
+                    className={`w-7 h-7 lg:w-8 lg:h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
+                      step >= item.step ? 'text-white' : 'text-gray-400'
+                    }`}
+                    style={{ background: step >= item.step ? '#D4372B' : '#F4F4F4' }}
+                  >
                     {step > item.step ? <Check className="w-3 h-3 lg:w-4 lg:h-4" /> : item.step}
                   </div>
                   <span className="text-[10px] lg:text-xs mt-1 text-gray-500">{item.label}</span>
                 </div>
-                {index < 3 && (
+                {index < 2 && (
                   <div className={`w-8 lg:w-12 h-0.5 mx-1 lg:mx-2 ${
                     step > item.step ? 'bg-[#D4372B]' : 'bg-gray-200'
                   }`} />
@@ -881,81 +879,8 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* ÉTAPE 3 - PAIEMENT Desktop */}
+              {/* ÉTAPE 3 - CONFIRMATION Desktop (ancienne étape 4 sans choix de paiement) */}
               {step === 3 && (
-                <div className="bg-white rounded-xl border-0 p-4 lg:p-6">
-                  <h2 className="text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2">
-                    <CreditCard className="w-4 h-4" style={{ color: '#D4372B' }} />
-                    Mode de paiement
-                  </h2>
-
-                  {error && (
-                    <div className="mb-4 p-3 rounded-xl flex items-center gap-2 text-xs" style={{ background: '#FFF0F0', border: '0.5px solid #FECACA', color: '#D4372B' }}>
-                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                      <span>{error}</span>
-                    </div>
-                  )}
-
-                  <div className="space-y-2">
-                    {[
-                      { id: 'mtn', name: 'MTN Money', icon: '📱', color: '#F5A623' },
-                      { id: 'orange', name: 'Orange Money', icon: '📱', color: '#FF7900' },
-                      { id: 'wave', name: 'Wave', icon: '🌊', color: '#2D9CDB' },
-                      { id: 'visa', name: 'Carte bancaire', icon: '💳', color: '#5E6AD2' }
-                    ].map((method) => (
-                      <button
-                        key={method.id}
-                        onClick={() => setPaymentMethod(method.id as any)}
-                        className={`w-full p-3 border rounded-lg flex items-center gap-3 transition-all ${
-                          paymentMethod === method.id
-                            ? 'border-[#D4372B] bg-[#D4372B]/5' 
-                            : 'border-gray-100 hover:border-gray-200'
-                        }`}
-                      >
-                        <div 
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0"
-                          style={{ backgroundColor: `${method.color}20`, color: method.color }}
-                        >
-                          {method.icon}
-                        </div>
-                        <span className="flex-1 text-sm text-left truncate">{method.name}</span>
-                        {paymentMethod === method.id && (
-                          <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: brandColor }}>
-                            <Check className="w-3 h-3 text-white" />
-                          </div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg flex items-start gap-2">
-                    <Lock className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-blue-800">
-                      Paiement sécurisé
-                    </p>
-                  </div>
-
-                  <div className="flex gap-2 mt-4">
-                    <button
-                      onClick={() => setStep(2)}
-                      className="flex-1 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors" style={{ border: '1.5px solid #ECECEC', color: '#0A0A0A' }}
-                    >
-                      Retour
-                    </button>
-                    <button
-                      onClick={() => paymentMethod && setStep(4)}
-                      disabled={!paymentMethod}
-                      className="flex-1 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50"
-                      style={{ background: '#D4372B' }}
-                    >
-                      Continuer
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* ÉTAPE 4 - CONFIRMATION Desktop avec PaymentButton */}
-              {step === 4 && (
                 <div className="bg-white rounded-xl border-0 p-4 lg:p-6">
                   <h2 className="text-sm lg:text-base font-medium mb-3 lg:mb-4">Confirmation</h2>
 
@@ -1019,7 +944,7 @@ export default function CheckoutPage() {
 
                     <div className="flex gap-2 pt-2">
                       <button
-                        onClick={() => setStep(3)}
+                        onClick={() => setStep(2)}
                         className="flex-1 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors" style={{ border: '1.5px solid #ECECEC', color: '#0A0A0A' }}
                       >
                         Retour
@@ -1407,64 +1332,8 @@ export default function CheckoutPage() {
                 </>
               )}
 
-              {/* ÉTAPE 3 - PAIEMENT Mobile */}
+              {/* ÉTAPE 3 - CONFIRMATION Mobile (ancienne étape 4 sans choix de paiement) */}
               {step === 3 && (
-                <>
-                  <div className="bg-white rounded-xl border-0 p-4">
-                    <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
-                      <CreditCard className="w-4 h-4" style={{ color: '#D4372B' }} />
-                      Mode de paiement
-                    </h2>
-
-                    {error && <div className="mb-3 p-2 bg-red-50 rounded-lg text-xs text-red-600">{error}</div>}
-
-                    <div className="space-y-2">
-                      {[
-                        { id: 'mtn', name: 'MTN Money', icon: '📱' },
-                        { id: 'orange', name: 'Orange Money', icon: '📱' },
-                        { id: 'wave', name: 'Wave', icon: '🌊' },
-                        { id: 'visa', name: 'Carte bancaire', icon: '💳' }
-                      ].map((method) => (
-                        <button
-                          key={method.id}
-                          onClick={() => setPaymentMethod(method.id as any)}
-                          className={`w-full p-3 border rounded-lg flex items-center gap-3 ${
-                            paymentMethod === method.id ? 'border-[#D4372B] bg-[#D4372B]/5' : 'border-gray-100'
-                          }`}
-                        >
-                          <span className="text-lg">{method.icon}</span>
-                          <span className="flex-1 text-left text-sm">{method.name}</span>
-                          {paymentMethod === method.id && <Check className="w-4 h-4" style={{ color: '#D4372B' }} />}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="flex gap-2 mt-4">
-                      <button onClick={() => setStep(2)} className="flex-1 py-2 text-sm border rounded-lg">Retour</button>
-                      <button onClick={() => paymentMethod && setStep(4)} disabled={!paymentMethod} className="flex-1 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-50" style={{ background: '#D4372B' }}>Continuer</button>
-                    </div>
-                  </div>
-
-                  <div className="bg-white rounded-xl border-0 p-4">
-                    <h2 className="text-sm font-medium mb-3">Récapitulatif</h2>
-                    <div className="space-y-1.5 text-xs">
-                      <div className="flex justify-between"><span>Sous-total</span><span>{formatPrice(totalUSD)}</span></div>
-                      <div className="flex justify-between"><span>Expédition</span><span>{formatPrice(totalShippingUSD)}</span></div>
-                      <div className="flex justify-between"><span>Porte-à-porte</span><span>{formatPrice(totalPortePorteUSD)}</span></div>
-                      {discountAmount > 0 && (
-                        <div className="flex justify-between text-green-600">
-                          <span>Réduction</span>
-                          <span>- {formatPrice(discountAmount)}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between font-bold pt-1 border-t"><span>Total</span><span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span></div>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* ÉTAPE 4 - CONFIRMATION Mobile avec PaymentButton */}
-              {step === 4 && (
                 <div className="bg-white rounded-xl border-0 p-4">
                   <h2 className="text-sm font-medium mb-3">Confirmation</h2>
                   
@@ -1504,7 +1373,7 @@ export default function CheckoutPage() {
                     />
 
                     <div className="flex gap-2 pt-2">
-                      <button onClick={() => setStep(3)} className="flex-1 py-2 text-sm border rounded-lg">Retour</button>
+                      <button onClick={() => setStep(2)} className="flex-1 py-2 text-sm border rounded-lg">Retour</button>
                       <PaymentButton
                         email={shippingInfo.email || user?.email || ""}
                         amount={finalTotal}
