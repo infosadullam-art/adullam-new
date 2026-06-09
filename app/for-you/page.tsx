@@ -8,6 +8,7 @@ import { Footer } from "@/components/footer"
 import { Sparkles, Star, ChevronLeft, ChevronRight, TrendingUp, Compass, Zap } from "lucide-react"
 import Image from "next/image"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { apiFetch } from "@/lib/api"
 
 // Couleurs de la charte
 const brandColor = "#D4372B"
@@ -43,7 +44,7 @@ export default function ForYouPage() {
       
       setIsLoading(true)
       try {
-        const res = await fetch(`/api/graph/recommendations/for-you?page=${currentPage}&limit=${itemsPerPage}&sessionId=${sessionId}`)
+        const res = await apiFetch(`/api/graph/recommendations/for-you?page=${currentPage}&limit=${itemsPerPage}&sessionId=${sessionId}`)
         const data = await res.json()
         
         if (data.success && data.data) {
