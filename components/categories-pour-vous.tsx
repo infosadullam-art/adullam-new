@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { apiFetch } from "@/lib/api"
 
 // Police Amazon Ember
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
@@ -33,7 +34,7 @@ export function CategoriesPourVous() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch("/api/trending/cuisine?limit=4")
+        const res = await apiFetch("/api/trending/cuisine?limit=4")
         const data = await res.json()
         if (data.success && data.data) {
           setProducts(data.data.map((p: any) => ({
