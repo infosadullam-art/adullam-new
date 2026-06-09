@@ -11,6 +11,7 @@ import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { apiFetch } from "@/lib/api"
 
 export default function CartPage() {
   const {
@@ -43,7 +44,7 @@ export default function CartPage() {
   ]
 
   useEffect(() => {
-    fetch("https://ipapi.co/json/")
+    apiFetch("https://ipapi.co/json/")
       .then(res => res.json())
       .then(data => {
         const found = africanCountries.find(c => c.name === data.country_name)
