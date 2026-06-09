@@ -10,45 +10,45 @@ import { HeroSection }   from "@/components/hero-section"
 import { Footer }        from "@/components/footer"
 import MobileNav         from "@/components/mobile-nav"
 
-// ── Chargement progressif contrôlé ──
+// ── Chargement progressif contrôlé (ssr: true par défaut pour hydratation)
 const DealCountdown = dynamic(
   () => import("@/components/deal-countdown").then(m => ({ default: m.DealCountdown })),
-  { ssr: false, loading: () => <Skeleton height={120} /> }
+  { loading: () => <Skeleton height={120} /> }
 )
 
 const MeilleuresVentesMobile = dynamic(
   () => import("@/components/meilleures-ventes-mobile").then(m => ({ default: m.MeilleuresVentesMobile })),
-  { ssr: false, loading: () => <Skeleton height={200} /> }
+  { loading: () => <Skeleton height={200} /> }
 )
 
 const ModeSection = dynamic(
   () => import("@/components/mode-section").then(m => ({ default: m.ModeSection })),
-  { ssr: false, loading: () => <Skeleton height={280} /> }
+  { loading: () => <Skeleton height={280} /> }
 )
 
 const TendanceParPays = dynamic(
   () => import("@/components/tendances-section").then(m => ({ default: m.TendanceParPays })),
-  { ssr: false, loading: () => <Skeleton height={200} /> }
+  { loading: () => <Skeleton height={200} /> }
 )
 
 const ForYouSection = dynamic(
   () => import("@/components/for-you-section").then(m => ({ default: m.ForYouSection })),
-  { ssr: false, loading: () => <Skeleton height={300} /> }
+  { loading: () => <Skeleton height={300} /> }
 )
 
 const CategoriesPourVous = dynamic(
   () => import("@/components/categories-pour-vous").then(m => ({ default: m.CategoriesPourVous })),
-  { ssr: false, loading: () => <Skeleton height={200} /> }
+  { loading: () => <Skeleton height={200} /> }
 )
 
 const CategoriesMode = dynamic(
   () => import("@/components/categories-mode").then(m => ({ default: m.CategoriesMode })),
-  { ssr: false, loading: () => <Skeleton height={240} /> }
+  { loading: () => <Skeleton height={240} /> }
 )
 
 const RecommandeEntreprise = dynamic(
   () => import("@/components/recommande-entreprise").then(m => ({ default: m.RecommandeEntreprise })),
-  { ssr: false, loading: () => <Skeleton height={200} /> }
+  { loading: () => <Skeleton height={200} /> }
 )
 
 function Skeleton({ height }: { height: number }) {
