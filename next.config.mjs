@@ -20,7 +20,7 @@ const nextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "https://api.adullamarket.com/:path*",
+        destination: "https://outstanding-enchantment-production-109f.up.railway.app/api/:path*",
       },
     ]
   },
