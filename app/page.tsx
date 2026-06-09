@@ -11,19 +11,44 @@ import { Footer }        from "@/components/footer"
 import MobileNav         from "@/components/mobile-nav"
 
 // ── Chargement progressif contrôlé ──
-// ⚠️ TEMPORAIREMENT DÉSACTIVÉS (routes manquantes sur VPS)
-// const DealCountdown = dynamic(...)
-// const MeilleuresVentesMobile = dynamic(...)
-// const ModeSection = dynamic(...)
-// const TendanceParPays = dynamic(...)
-// const CategoriesPourVous = dynamic(...)
-// const CategoriesMode = dynamic(...)
-// const RecommandeEntreprise = dynamic(...)
+const DealCountdown = dynamic(
+  () => import("@/components/deal-countdown").then(m => ({ default: m.DealCountdown })),
+  { ssr: false, loading: () => <Skeleton height={120} /> }
+)
 
-// ✅ Seul ForYouSection fonctionne (recommandations)
+const MeilleuresVentesMobile = dynamic(
+  () => import("@/components/meilleures-ventes-mobile").then(m => ({ default: m.MeilleuresVentesMobile })),
+  { ssr: false, loading: () => <Skeleton height={200} /> }
+)
+
+const ModeSection = dynamic(
+  () => import("@/components/mode-section").then(m => ({ default: m.ModeSection })),
+  { ssr: false, loading: () => <Skeleton height={280} /> }
+)
+
+const TendanceParPays = dynamic(
+  () => import("@/components/tendances-section").then(m => ({ default: m.TendanceParPays })),
+  { ssr: false, loading: () => <Skeleton height={200} /> }
+)
+
 const ForYouSection = dynamic(
   () => import("@/components/for-you-section").then(m => ({ default: m.ForYouSection })),
   { ssr: false, loading: () => <Skeleton height={300} /> }
+)
+
+const CategoriesPourVous = dynamic(
+  () => import("@/components/categories-pour-vous").then(m => ({ default: m.CategoriesPourVous })),
+  { ssr: false, loading: () => <Skeleton height={200} /> }
+)
+
+const CategoriesMode = dynamic(
+  () => import("@/components/categories-mode").then(m => ({ default: m.CategoriesMode })),
+  { ssr: false, loading: () => <Skeleton height={240} /> }
+)
+
+const RecommandeEntreprise = dynamic(
+  () => import("@/components/recommande-entreprise").then(m => ({ default: m.RecommandeEntreprise })),
+  { ssr: false, loading: () => <Skeleton height={200} /> }
 )
 
 function Skeleton({ height }: { height: number }) {
@@ -58,6 +83,10 @@ function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; d
 }
 
 export default function Home() {
+  const [showPriority2, setShowPriority2] = useState(false)
+  const [showPriority3, setShowPriority3] = useState(false)
+  const [showPriority4, setShowPriority4] = useState(false)
+  const [showPriority5, setShowPriority5] = useState(false)
   const [pageReady, setPageReady] = useState(false)
 
   useEffect(() => {
@@ -87,16 +116,48 @@ export default function Home() {
 
           <AnimatedSection delay={100}>
             <div className="px-4 py-3" style={{ background: "#fff" }}>
-              {/* DealCountdown temporairement désactivé */}
+              <DealCountdown />
             </div>
           </AnimatedSection>
           
           <div className="h-2" />
 
           <AnimatedSection delay={200}>
-            <div style={{ background: "#fff" }}>
-              <ForYouSection />
-            </div>
+            {showPriority2 && (
+              <div style={{ background: "#fff" }}>
+                <MeilleuresVentesMobile />
+              </div>
+            )}
+          </AnimatedSection>
+
+          <div className="h-2" />
+
+          <AnimatedSection delay={300}>
+            {showPriority3 && (
+              <div style={{ background: "#fff" }}>
+                <ModeSection />
+              </div>
+            )}
+          </AnimatedSection>
+
+          <div className="h-2" />
+
+          <AnimatedSection delay={400}>
+            {showPriority4 && (
+              <div style={{ background: "#fff" }}>
+                <TendanceParPays />
+              </div>
+            )}
+          </AnimatedSection>
+
+          <div className="h-2" />
+
+          <AnimatedSection delay={500}>
+            {showPriority5 && (
+              <div style={{ background: "#fff" }}>
+                <ForYouSection />
+              </div>
+            )}
           </AnimatedSection>
 
           <div className="h-2" />
@@ -126,7 +187,7 @@ export default function Home() {
           <AnimatedSection delay={100}>
             <div className="w-full px-4 sm:px-6 lg:px-8">
               <div className="max-w-7xl mx-auto">
-                {/* DealCountdown temporairement désactivé */}
+                <DealCountdown />
               </div>
             </div>
           </AnimatedSection>
@@ -134,11 +195,49 @@ export default function Home() {
           <div className="h-2" />
 
           <AnimatedSection delay={200}>
-            <div className="w-full px-4 sm:px-6 lg:px-8">
-              <div className="max-w-7xl mx-auto">
-                <ForYouSection />
+            {showPriority2 && (
+              <div className="w-full px-4 sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto">
+                  <CategoriesPourVous />
+                </div>
               </div>
-            </div>
+            )}
+          </AnimatedSection>
+
+          <div className="h-2" />
+
+          <AnimatedSection delay={300}>
+            {showPriority3 && (
+              <div className="w-full px-4 sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto">
+                  <CategoriesMode />
+                </div>
+              </div>
+            )}
+          </AnimatedSection>
+
+          <div className="h-2" />
+
+          <AnimatedSection delay={400}>
+            {showPriority4 && (
+              <div className="w-full px-4 sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto">
+                  <RecommandeEntreprise />
+                </div>
+              </div>
+            )}
+          </AnimatedSection>
+
+          <div className="h-2" />
+
+          <AnimatedSection delay={500}>
+            {showPriority5 && (
+              <div className="w-full px-4 sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto">
+                  <ForYouSection />
+                </div>
+              </div>
+            )}
           </AnimatedSection>
 
           <div className="h-2" />
@@ -146,6 +245,23 @@ export default function Home() {
 
         <Footer />
       </div>
+
+      {/* Timeline pour déclencher le chargement des sections */}
+      <div style={{ display: 'none' }}>
+        <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority2(true), 100)} />
+        <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority3(true), 200)} />
+        <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority4(true), 300)} />
+        <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority5(true), 400)} />
+      </div>
     </div>
   )
+}
+
+function ProgressiveLoadOrder({ children, onReady }: { children?: React.ReactNode; onReady?: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(() => onReady?.(), 50)
+    return () => clearTimeout(timer)
+  }, [onReady])
+
+  return <>{children}</>
 }

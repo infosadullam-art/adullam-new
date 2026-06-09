@@ -36,9 +36,11 @@ interface FlashSaleData {
 export function DealCountdown() {
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 })
   const [hasFlashSale, setHasFlashSale] = useState(false)
+  const [flashSaleData, setFlashSaleData] = useState<FlashSaleData | null>(null)
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
   const [bestSellers, setBestSellers] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const { formatPrice } = useCurrencyFormatter()
 
@@ -52,73 +54,54 @@ export function DealCountdown() {
     const fetchAllData = async () => {
       try {
         setIsLoading(true)
+        setError(null)
 
-        // ✅ Récupération sécurisée avec gestion d'erreur individuelle
         const [featuredRes, bestSellersRes, flashSaleRes] = await Promise.all([
-          fetch("/api/deals/featured?limit=6").catch(() => null),
-          fetch("/api/deals/best-sellers?limit=6").catch(() => null),
-          fetch("/api/deals/flash-sales/current").catch(() => null),
+          fetch("/api/deals/featured?limit=6"),
+          fetch("/api/deals/best-sellers?limit=6"),
+          fetch("/api/deals/flash-sales/current"),
         ])
 
-        // Featured
-        if (featuredRes && featuredRes.ok) {
-          const text = await featuredRes.text()
-          try {
-            const featuredData = JSON.parse(text)
-            if (featuredData.success && featuredData.data) {
-              setFeaturedProducts(
-                featuredData.data.slice(0, 6).map((p: any) => ({
-                  id: p.id,
-                  name: p.title || p.name,
-                  price: p.price,
-                  image: p.image || "/placeholder.jpg",
-                  badge: p.badge,
-                }))
-              )
-            }
-          } catch (e) {
-            console.warn("[DealCountdown] Featured parse error:", e)
+        if (featuredRes.ok) {
+          const featuredData = await featuredRes.json()
+          if (featuredData.success && featuredData.data) {
+            setFeaturedProducts(
+              featuredData.data.map((p: any) => ({
+                id: p.id,
+                name: p.title || p.name,
+                price: p.price,
+                image: p.image || "/placeholder.jpg",
+                badge: p.badge,
+              }))
+            )
           }
         }
 
-        // Best Sellers
-        if (bestSellersRes && bestSellersRes.ok) {
-          const text = await bestSellersRes.text()
-          try {
-            const bestSellersData = JSON.parse(text)
-            if (bestSellersData.success && bestSellersData.data) {
-              setBestSellers(
-                bestSellersData.data.slice(0, 6).map((p: any) => ({
-                  id: p.id,
-                  name: p.title || p.name,
-                  price: p.price,
-                  image: p.image || "/placeholder.jpg",
-                  badge: p.badge || (p.purchaseCount > 1000 ? "🔥 Best-seller" : undefined),
-                }))
-              )
-            }
-          } catch (e) {
-            console.warn("[DealCountdown] Best sellers parse error:", e)
+        if (bestSellersRes.ok) {
+          const bestSellersData = await bestSellersRes.json()
+          if (bestSellersData.success && bestSellersData.data) {
+            setBestSellers(
+              bestSellersData.data.map((p: any) => ({
+                id: p.id,
+                name: p.title || p.name,
+                price: p.price,
+                image: p.image || "/placeholder.jpg",
+                badge: p.badge || (p.purchaseCount > 1000 ? "🔥 Best-seller" : undefined),
+              }))
+            )
           }
         }
 
-        // Flash Sale
-        if (flashSaleRes && flashSaleRes.ok) {
-          const text = await flashSaleRes.text()
-          try {
-            const flashData = JSON.parse(text)
-            if (flashData.success) {
-              setHasFlashSale(flashData.hasActiveSale)
-              if (flashData.hasActiveSale && flashData.timeLeft) {
-                setTimeLeft(flashData.timeLeft)
-              }
-            }
-          } catch (e) {
-            console.warn("[DealCountdown] Flash sale parse error:", e)
+        if (flashSaleRes.ok) {
+          const flashData = await flashSaleRes.json()
+          if (flashData.success) {
+            setFlashSaleData(flashData)
+            setHasFlashSale(flashData.hasActiveSale)
+            if (flashData.hasActiveSale) setTimeLeft(flashData.timeLeft)
           }
         }
       } catch (err) {
-        console.warn("[DealCountdown] Network error:", err)
+        setError("Impossible de charger les offres")
       } finally {
         setIsLoading(false)
       }
@@ -189,18 +172,23 @@ export function DealCountdown() {
     </Link>
   )
 
-  // ✅ Ne rien afficher si pas de produits (pas d'erreur)
-  if (!isLoading && featuredProducts.length === 0 && bestSellers.length === 0) {
-    return null
-  }
-
   if (isLoading) {
     return (
       <div className="w-full">
         <div className="max-w-6xl mx-auto px-4 lg:px-8 py-4">
-          <div className="flex justify-center items-center h-20">
+          <div className="animate-pulse flex justify-center items-center h-20">
             <div className="w-8 h-8 rounded-full border-2 border-[#D4372B] border-t-transparent animate-spin" />
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="w-full">
+        <div className="max-w-6xl mx-auto px-4 lg:px-8 py-4 text-center">
+          <p className="text-sm" style={{ color: "#D4372B", fontFamily: amazonFont }}>{error}</p>
         </div>
       </div>
     )
@@ -393,118 +381,112 @@ export function DealCountdown() {
       </div>
 
       {/* ══ BLOCS PRODUITS ════════════════════════════════════════ */}
-      {featuredProducts.length > 0 || bestSellers.length > 0 ? (
-        <div className="max-w-6xl mx-auto px-4 lg:px-8 py-3 lg:py-2">
+      <div className="max-w-6xl mx-auto px-4 lg:px-8 py-3 lg:py-2">
+        
+        {/* MOBILE - fond blanc mais animation conservée */}
+        <div className="grid grid-cols-2 gap-2 lg:hidden">
           
-          {/* MOBILE */}
-          <div className="grid grid-cols-2 gap-2 lg:hidden">
-            {featuredProducts.length > 0 && (
-              <div 
-                className="rounded p-2 transition-all duration-1000 ease-in-out"
-                style={{ 
-                  background: "#fff",
-                  border: "0.5px solid #ECECEC",
-                  animation: "gradientShift 8s ease-in-out infinite",
-                }}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-[10px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: amazonFont, letterSpacing: "0.1em" }}>
-                    ✨ Sélection
-                  </h3>
-                  <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: brandAccent, color: "#fff", fontFamily: amazonFont }}>
-                    Nouveau
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {featuredProducts.slice(0, 4).map((p) => (
-                    <ProductCard key={p.id} product={p} hideName={true} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {bestSellers.length > 0 && (
-              <div 
-                className="rounded p-2 transition-all duration-1000 ease-in-out"
-                style={{ 
-                  background: "#fff",
-                  border: "0.5px solid #ECECEC",
-                  animation: "gradientShift 8s ease-in-out infinite",
-                  animationDelay: "2s",
-                }}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-[10px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: amazonFont, letterSpacing: "0.1em" }}>
-                    🔥 Best-sellers
-                  </h3>
-                  <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "#FFF0F0", color: brandAccent, fontFamily: amazonFont }}>
-                    Top ventes
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {bestSellers.slice(0, 4).map((p) => (
-                    <ProductCard key={p.id} product={p} hideName={true} />
-                  ))}
-                </div>
-              </div>
-            )}
+          <div 
+            className="rounded p-2 transition-all duration-1000 ease-in-out"
+            style={{ 
+              background: "#fff",
+              border: "0.5px solid #ECECEC",
+              animation: "gradientShift 8s ease-in-out infinite",
+            }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-[10px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: amazonFont, letterSpacing: "0.1em" }}>
+                ✨ Sélection
+              </h3>
+              <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: brandAccent, color: "#fff", fontFamily: amazonFont }}>
+                Nouveau
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              {featuredProducts.slice(0, 4).map((p) => (
+                <ProductCard key={p.id} product={p} hideName={true} />
+              ))}
+            </div>
           </div>
 
-          {/* DESKTOP */}
-          <div className="hidden lg:grid lg:grid-cols-2 gap-2">
-            {featuredProducts.length > 0 && (
-              <div 
-                className="rounded p-4 transition-all duration-1000 ease-in-out"
-                style={{ 
-                  background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
-                  border: "0.5px solid #ECECEC",
-                  animation: "gradientShift 8s ease-in-out infinite",
-                }}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-[11px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: amazonFont, letterSpacing: "0.1em" }}>
-                    ✨ Sélection du moment
-                  </h3>
-                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: brandAccent, color: "#fff", fontFamily: amazonFont }}>
-                    Nouveau
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  {featuredProducts.map((p) => (
-                    <ProductCard key={p.id} product={p} hideName={false} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {bestSellers.length > 0 && (
-              <div 
-                className="rounded p-4 transition-all duration-1000 ease-in-out"
-                style={{ 
-                  background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
-                  border: "0.5px solid #ECECEC",
-                  animation: "gradientShift 8s ease-in-out infinite",
-                  animationDelay: "2s",
-                }}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-[11px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: amazonFont, letterSpacing: "0.1em" }}>
-                    🔥 Meilleures ventes
-                  </h3>
-                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#FFF0F0", color: brandAccent, fontFamily: amazonFont }}>
-                    Top ventes
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  {bestSellers.map((p) => (
-                    <ProductCard key={p.id} product={p} hideName={false} />
-                  ))}
-                </div>
-              </div>
-            )}
+          <div 
+            className="rounded p-2 transition-all duration-1000 ease-in-out"
+            style={{ 
+              background: "#fff",
+              border: "0.5px solid #ECECEC",
+              animation: "gradientShift 8s ease-in-out infinite",
+              animationDelay: "2s",
+            }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-[10px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: amazonFont, letterSpacing: "0.1em" }}>
+                🔥 Best-sellers
+              </h3>
+              <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "#FFF0F0", color: brandAccent, fontFamily: amazonFont }}>
+                Top ventes
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              {bestSellers.slice(0, 4).map((p) => (
+                <ProductCard key={p.id} product={p} hideName={true} />
+              ))}
+            </div>
           </div>
+
         </div>
-      ) : null}
+
+        {/* DESKTOP - garde le dégradé animé */}
+        <div className="hidden lg:grid lg:grid-cols-2 gap-2">
+          
+          <div 
+            className="rounded p-4 transition-all duration-1000 ease-in-out"
+            style={{ 
+              background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
+              border: "0.5px solid #ECECEC",
+              animation: "gradientShift 8s ease-in-out infinite",
+            }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[11px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: amazonFont, letterSpacing: "0.1em" }}>
+                ✨ Sélection du moment
+              </h3>
+              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: brandAccent, color: "#fff", fontFamily: amazonFont }}>
+                Nouveau
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {featuredProducts.map((p) => (
+                <ProductCard key={p.id} product={p} hideName={false} />
+              ))}
+            </div>
+          </div>
+
+          <div 
+            className="rounded p-4 transition-all duration-1000 ease-in-out"
+            style={{ 
+              background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
+              border: "0.5px solid #ECECEC",
+              animation: "gradientShift 8s ease-in-out infinite",
+              animationDelay: "2s",
+            }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[11px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: amazonFont, letterSpacing: "0.1em" }}>
+                🔥 Meilleures ventes
+              </h3>
+              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#FFF0F0", color: brandAccent, fontFamily: amazonFont }}>
+                Top ventes
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {bestSellers.map((p) => (
+                <ProductCard key={p.id} product={p} hideName={false} />
+              ))}
+            </div>
+          </div>
+
+        </div>
+      </div>
 
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&display=swap');
