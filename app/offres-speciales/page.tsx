@@ -8,6 +8,7 @@ import { Footer } from "@/components/footer"
 import { Zap, Timer, Star, Sparkles } from "lucide-react"
 import Image from "next/image"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { apiFetch } from "@/lib/api"
 
 // Couleurs de la charte
 const brandColor = "#D4372B"
@@ -27,7 +28,7 @@ export default function OffresSpecialesPage() {
   useEffect(() => {
     const fetchFlashSale = async () => {
       try {
-        const res = await fetch('/api/deals/flash-sales/current')
+        const res = await apiFetch('/api/deals/flash-sales/current')
         const data = await res.json()
         if (data.success && data.hasActiveSale) {
           setFlashSale(data.sale)
@@ -59,7 +60,7 @@ export default function OffresSpecialesPage() {
     const fetchProducts = async () => {
       setIsLoading(true)
       try {
-        const res = await fetch('/api/deals/flash-sales?limit=48')
+        const res = await apiFetch('/api/deals/flash-sales?limit=48')
         const data = await res.json()
         if (data.success) {
           setProducts(data.data)
