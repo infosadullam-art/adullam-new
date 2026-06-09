@@ -11,6 +11,7 @@ import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { Search, Loader2, Filter, X } from "lucide-react"
+import { apiFetch } from "@/lib/api"
 
 interface Product {
   id: string
@@ -61,7 +62,7 @@ function SearchContent() {
           params.append('maxPrice', priceRange[1].toString())
         }
 
-        const res = await fetch(`/api/search?${params.toString()}`)
+        const res = await apiFetch(`/api/search?${params.toString()}`)
         const data = await res.json()
 
         if (data.success) {
