@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Zap, ChevronRight } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { apiFetch } from "@/lib/api"
 
 // Police Amazon Ember
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
@@ -26,7 +27,7 @@ export function RecommandeEntreprise() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch('/api/products?limit=10&sort=popular')
+        const res = await apiFetch('/api/products?limit=10&sort=popular')
         const data = await res.json()
         
         let productsData: any[] = []
