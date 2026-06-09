@@ -4,6 +4,7 @@ import { Home, Search, Newspaper, Bell, User } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/admin/auth-context"
+import { apiFetch } from "@/lib/api"
 
 const navItems = [
   { icon: Home,      label: "Accueil",        id: "home",          path: "/" },
@@ -18,6 +19,11 @@ export default function MobileNav() {
   const router    = useRouter()
   const { user }  = useAuth()
   const [unreadCount, setUnreadCount] = useState(0)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   /* ── Notifications non lues ────────────────────────────────── */
   useEffect(() => {
@@ -26,7 +32,7 @@ export default function MobileNav() {
     const fetchUnreadCount = async () => {
       try {
         const token = localStorage.getItem("adullam_token")
-        const res   = await fetch("/api/notifications?unread=true&limit=1", {
+        const res   = await apiFetch("/api/notifications?unread=true&limit=1", {
           headers: { Authorization: `Bearer ${token}` },
         })
         const data = await res.json()
@@ -59,6 +65,23 @@ export default function MobileNav() {
   }
 
   const activeTab = getActiveTab()
+
+  if (!mounted) {
+    return (
+      <div className="lg:hidden">
+        <nav
+          className="fixed bottom-0 left-0 right-0 z-50"
+          style={{
+            background: "#fff",
+            borderTop: "0.5px solid #ECECEC",
+            paddingBottom: "env(safe-area-inset-bottom)",
+          }}
+        >
+          <div className="grid grid-cols-5" style={{ height: "56px" }} />
+        </nav>
+      </div>
+    )
+  }
 
   return (
     <div className="lg:hidden">
