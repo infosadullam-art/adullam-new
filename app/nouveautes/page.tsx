@@ -8,6 +8,7 @@ import { Footer } from "@/components/footer"
 import { Sparkles, Star, ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { apiFetch } from "@/lib/api"
 
 // Couleurs de la charte
 const brandColor = "#D4372B"
@@ -29,7 +30,7 @@ export default function NouveautesPage() {
     const fetchNewArrivals = async () => {
       setIsLoading(true)
       try {
-        const res = await fetch(`/api/new-arrivals?page=${currentPage}&limit=${itemsPerPage}`)
+        const res = await apiFetch(`/api/new-arrivals?page=${currentPage}&limit=${itemsPerPage}`)
         const data = await res.json()
         if (data.success) {
           setProducts(data.data)
