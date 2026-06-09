@@ -9,6 +9,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useState, useEffect } from "react"
+import { apiFetch } from "@/lib/api"
 
 // Couleurs de la charte
 const brandColor = "#D4372B"
@@ -37,7 +38,7 @@ export default function DealsDuJourPage() {
   useEffect(() => {
     const fetchDeals = async () => {
       try {
-        const res = await fetch('/api/deals/flash-sales?limit=24')
+        const res = await apiFetch('/api/deals/flash-sales?limit=24')
         const data = await res.json()
         
         if (data.success && data.data) {
