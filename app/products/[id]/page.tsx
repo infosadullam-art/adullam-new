@@ -38,6 +38,7 @@ import { toast } from "react-hot-toast"
 import { wishlistApi } from "@/lib/admin/api-client"
 import { useAuth } from "@/lib/admin/auth-context"
 import { Loader } from "@/components/Loader"
+import { apiFetch } from "@/lib/api"
 
 // ============================================================
 // INTERFACE POUR LES AVIS CLIENTS
@@ -107,10 +108,6 @@ interface LogisticsData {
   }
 }
 
-// ============================================================
-// CONFIGURATION BACKEND - CORRIGÉ
-// ============================================================
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL
 export default function ProductPage() {
   const { id } = useParams()
   const router = useRouter()
@@ -216,7 +213,7 @@ export default function ProductPage() {
   // ============================================================
   useEffect(() => {
     if (!id) return
-    fetch(`/api/products/${id}`)
+    apiFetch(`/api/products/${id}`)
       .then((res) => res.json())
       .then((res) => {
         setProduct(res.data)
@@ -233,7 +230,7 @@ export default function ProductPage() {
     const fetchReviews = async () => {
       setIsLoadingReviews(true)
       try {
-        const response = await fetch(`${BACKEND_URL}/products/${product.id}/reviews`)
+        const response = await apiFetch(`/api/products/${product.id}/reviews`)
         const data = await response.json()
         
         if (data.success) {
@@ -302,7 +299,7 @@ export default function ProductPage() {
     setIsSubmittingReview(true)
     
     try {
-      const response = await fetch(`${BACKEND_URL}/products/${product.id}/reviews`, {
+      const response = await apiFetch(`/api/products/${product.id}/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -322,7 +319,7 @@ export default function ProductPage() {
         setShowReviewForm(false)
         setNewReview({ rating: 5, comment: '', authorName: '' })
         
-        const refreshResponse = await fetch(`${BACKEND_URL}/products/${product.id}/reviews`)
+        const refreshResponse = await apiFetch(`/api/products/${product.id}/reviews`)
         const refreshData = await refreshResponse.json()
         
         if (refreshData.success) {
@@ -443,7 +440,7 @@ export default function ProductPage() {
           country: country
         })
         
-        const response = await fetch(`/api/logistics/estimate?${params}`)
+        const response = await apiFetch(`/api/logistics/estimate?${params}`)
         const data = await response.json()
         
         if (data.success) {
@@ -993,7 +990,7 @@ export default function ProductPage() {
   useEffect(() => {
     const fetchFallbackRecommendations = async () => {
       try {
-        const res = await fetch(`/api/graph/recommendations/fallback?limit=8&exclude=${product?.id || ''}`)
+        const res = await apiFetch(`/api/graph/recommendations/fallback?limit=8&exclude=${product?.id || ''}`)
         const data = await res.json()
         if (data.success && data.data.length > 0) {
           setRelatedProducts(data.data)
@@ -1078,7 +1075,7 @@ export default function ProductPage() {
               <span className="text-gray-600">{productName}</span>
             </div>
 
-            {/* SECTION MOBILE */}
+            {/* SECTION MOBILE - Gardée identique car pas de fetch direct */}
             <div className="lg:hidden">
               {/* Mobile Gallery */}
               <div className="mb-4">
@@ -1160,7 +1157,7 @@ export default function ProductPage() {
                 )}
               </div>
 
-              {/* Mobile Product Info */}
+              {/* Mobile Product Info - Gardée identique */}
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
@@ -1208,7 +1205,7 @@ export default function ProductPage() {
                   <span className="text-xs text-white px-1.5 py-0.5 rounded" style={{ background: "#D4372B" }}>-20%</span>
                 </div>
 
-                {/* AFFICHAGE DYNAMIQUE DES VARIANTES */}
+                {/* AFFICHAGE DYNAMIQUE DES VARIANTES - Identique */}
                 {hasVariants && (
                   <>
                     {hasSimpleVariants && (
@@ -1593,7 +1590,7 @@ export default function ProductPage() {
                 </div>
               </div>
 
-              {/* Mobile Tabs */}
+              {/* Mobile Tabs - Gardé identique */}
               <div className="mt-6 bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 shadow-sm">
                 <div className="overflow-x-auto hide-scrollbar border-b border-gray-200">
                   <div className="flex gap-4 min-w-max px-1">
@@ -1862,7 +1859,7 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* SECTION DESKTOP */}
+            {/* SECTION DESKTOP - Gardée identique car pas de fetch direct */}
             <div className="hidden lg:grid lg:grid-cols-12 gap-6 lg:gap-8 mb-16">
               
               <div className="lg:col-span-5">
@@ -2353,7 +2350,7 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* Desktop Tabs */}
+            {/* Desktop Tabs - Gardé identique */}
             <div className="hidden lg:block mt-8 bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 shadow-sm">
               <div className="border-b border-gray-200 mb-6">
                 <div className="flex gap-6">
