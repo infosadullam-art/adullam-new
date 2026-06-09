@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight, Zap, Tag, Truck, Percent, Shirt, Footprints, Baby } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { apiFetch } from "@/lib/api"
 
 // Police Amazon Ember
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
@@ -55,8 +56,8 @@ export function ModeSection() {
       try {
         setIsLoading(true)
         const [modeRes, flashRes] = await Promise.all([
-          fetch("/api/categories/mode"),
-          fetch("/api/products?limit=8&sort=discount"),
+          apiFetch("/api/categories/mode"),
+          apiFetch("/api/products?limit=8&sort=discount"),
         ])
 
         const flashData = await flashRes.json()
