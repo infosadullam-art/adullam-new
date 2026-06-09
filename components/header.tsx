@@ -18,6 +18,7 @@ const searchSuggestions = [
 ]
 
 export function Header() {
+  const [mounted, setMounted] = useState(false)
   const [showMegaMenu, setShowMegaMenu] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -39,6 +40,10 @@ export function Header() {
   const pathname = usePathname()
   const { cart } = useCart()
   const { user, logout, isLoading } = useAuth()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -145,6 +150,10 @@ export function Header() {
     else document.body.style.overflow = ""
     return () => { document.body.style.overflow = "" }
   }, [mobileMenuOpen])
+
+  if (!mounted) {
+    return <div style={{ height: "130px" }} className="hidden lg:block" />
+  }
 
   const navItems = [
     { label: "Deals du jour", path: "/deals-du-jour" },
