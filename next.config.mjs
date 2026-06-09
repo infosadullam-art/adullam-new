@@ -10,7 +10,7 @@ const nextConfig = {
   typescript: { ignoreBuildErrors: true },
   
   images: { 
-    unoptimized: true,  // ← plus simple et fiable
+    unoptimized: true,
   },
 
   turbopack: { root: resolve(__dirname) },
