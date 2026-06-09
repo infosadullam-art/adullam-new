@@ -10,10 +10,20 @@ const nextConfig = {
   typescript: { ignoreBuildErrors: true },
   
   images: { 
-    unoptimized: true,
+    unoptimized: true,  // ← plus simple et fiable
   },
 
   turbopack: { root: resolve(__dirname) },
+
+  // ✅ REWRITES PROXY - Cache l'URL du backend
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "https://api.adullamarket.com/:path*",
+      },
+    ]
+  },
 
   webpack: (config) => {
     config.resolve.fallback = { fs: false, path: false }
