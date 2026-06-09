@@ -1,12 +1,14 @@
 import { getAccessToken, setAccessToken, clearAccessToken } from "./auth"
 
-// ✅ CORRIGÉ : Suppression du fallback Railway, utilisation UNIQUEMENT de la variable d'environnement
-const API_URL = process.env.NEXT_PUBLIC_API_URL
+// ✅ CORRIGÉ : URL forcée vers ton VPS (sans dépendre des env vars)
+const API_URL = 'https://api.adullamarket.com'
 
-// ✅ Vérification : si la variable n'est pas définie, on affiche une erreur claire
+// Vérification
 if (!API_URL) {
-  console.error("❌ NEXT_PUBLIC_API_URL n'est pas définie dans les variables d'environnement")
+  console.error("❌ API_URL n'est pas définie")
 }
+
+console.log('🔴 [lib/api.ts] API_URL configurée:', API_URL)
 
 export async function apiFetch(
   input: RequestInfo,
@@ -19,7 +21,7 @@ export async function apiFetch(
   console.log('🔍 [apiFetch] URL appelée:', typeof input === 'string' ? input : input.url)
   console.log('🔍 [apiFetch] Token présent:', !!token)
   console.log('🔍 [apiFetch] Méthode:', init.method || 'GET')
-  console.log('🔍 [apiFetch] API_URL depuis env:', API_URL)
+  console.log('🔍 [apiFetch] API_URL:', API_URL)
   
   const fullUrl = `${API_URL}${input}`
   console.log('🔍 [apiFetch] URL complète:', fullUrl)
@@ -43,7 +45,9 @@ export async function apiFetch(
     if (!refreshed) {
       console.log('❌ [apiFetch] Refresh échoué, redirection...')
       clearAccessToken()
-      window.location.href = "/login"
+      if (typeof window !== 'undefined') {
+        window.location.href = "/login"
+      }
       throw new Error("Session expired")
     }
 
