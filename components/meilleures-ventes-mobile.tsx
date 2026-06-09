@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight, TrendingUp } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { apiFetch } from "@/lib/api"
 
 // Police Amazon Ember
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
@@ -26,7 +27,7 @@ export function MeilleuresVentesMobile() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch("/api/deals/best-sellers/mobile")
+        const res = await apiFetch("/api/deals/best-sellers/mobile")
         const data = await res.json()
         if (data.success && data.data) setProducts(data.data)
       } catch (error) {
