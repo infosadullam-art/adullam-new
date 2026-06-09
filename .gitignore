@@ -4,3 +4,5 @@
 node_modules/ 
 .next/ 
 ".env.production.txt" 
+".env.local" 
+".env" 
