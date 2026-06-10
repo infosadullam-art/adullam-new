@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useLocale } from "./LocaleProvider";
+import { apiFetch } from "@/lib/api";
 
 // ============================================================
 // TYPES POUR LES ARTICLES DU PANIER
@@ -97,7 +98,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("shippingMode", shippingMode);
   }, [shippingMode, ready]);
 
-  // ✅ Appel à l'API logistique avec le mode sélectionné - CORRIGÉ pour récupérer transportCost et portePorteCost
+  // ✅ Appel à l'API logistique avec le mode sélectionné - CORRIGÉ avec apiFetch
   const fetchShippingEstimate = async (
     productId: string,
     productTitle: string,
@@ -115,7 +116,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         country: destinationCountry
       });
 
-      const response = await fetch(`/api/logistics/estimate?${params}`);
+      const response = await apiFetch(`/api/logistics/estimate?${params}`);
       const data = await response.json();
 
       if (data.success && data.data) {
