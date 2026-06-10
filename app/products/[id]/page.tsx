@@ -1079,7 +1079,7 @@ export default function ProductPage() {
               <span className="text-gray-600">{productName}</span>
             </div>
 
-            {/* SECTION MOBILE - inchangée */}
+            {/* SECTION MOBILE - inchangée sauf titre plus petit */}
             <div className="lg:hidden">
               {/* Mobile Gallery */}
               <div className="mb-4">
@@ -1161,20 +1161,21 @@ export default function ProductPage() {
                 )}
               </div>
 
-              {/* Mobile Product Info - inchangée */}
+              {/* Mobile Product Info - avec titre plus petit */}
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1.5">
                       <span 
-                        className="text-xs font-medium px-2 py-0.5 rounded-full"
+                        className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
                         style={{ background: '#D4372B', color: '#fff', fontFamily: "'Poppins', sans-serif" }}
                       >
                         Top vente
                       </span>
-                      <span className="text-xs text-gray-400">SKU: {product.id}</span>
+                      <span className="text-[10px] text-gray-400">SKU: {product.id}</span>
                     </div>
-                    <h1 className="text-lg font-medium leading-tight">{productName}</h1>
+                    {/* ✅ TITRE MOBILE PLUS PETIT */}
+                    <h1 className="text-base font-medium leading-tight">{productName}</h1>
                   </div>
                   <button 
                     onClick={handleToggleWishlist}
@@ -1594,7 +1595,7 @@ export default function ProductPage() {
                 </div>
               </div>
 
-              {/* Mobile Tabs - inchangé avec TABLEAU pour specifications */}
+              {/* Mobile Tabs - avec tableau pour specifications */}
               <div className="mt-6 bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 shadow-sm">
                 <div className="overflow-x-auto hide-scrollbar border-b border-gray-200">
                   <div className="flex gap-4 min-w-max px-1">
@@ -1641,7 +1642,7 @@ export default function ProductPage() {
                     </div>
                   )}
                   
-                  {/* ✅ MODIFICATION : Tableau pour les spécifications (mobile) */}
+                  {/* ✅ Tableau pour les spécifications (mobile) */}
                   {activeTab === "specifications" && (
                     <div className="overflow-x-auto">
                       <table className="w-full text-xs border-collapse">
@@ -1690,8 +1691,7 @@ export default function ProductPage() {
                       )}
                       
                       {showReviewForm && (
-                        <div className="rounded-xl" style={{ background: "#fff", border: "0.5px solid #ECECEC" }}
-                    className=" p-4 space-y-4 shadow-sm">
+                        <div className="rounded-xl" style={{ background: "#fff", border: "0.5px solid #ECECEC" }} className="p-4 space-y-4 shadow-sm">
                           <div className="flex items-center justify-between">
                             <h4 className="font-semibold text-gray-900">Votre avis</h4>
                             <button 
@@ -1871,7 +1871,7 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* ✅ SECTION DESKTOP CORRIGÉE */}
+            {/* SECTION DESKTOP */}
             <div className="hidden lg:grid lg:grid-cols-2 gap-8 mb-16 items-start">
               
               {/* PARTIE GAUCHE - IMAGE (sticky + hauteur fixe 400px) */}
@@ -1940,7 +1940,7 @@ export default function ProductPage() {
                 )}
               </div>
 
-              {/* PARTIE DROITE - INFOS PRODUIT (pas de scroll interne) */}
+              {/* PARTIE DROITE - INFOS PRODUIT */}
               <div>
                 <div className="flex items-start justify-between mb-3">
                   <div>
@@ -2364,7 +2364,7 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* Desktop Tabs - inchangé avec TABLEAU pour specifications */}
+            {/* Desktop Tabs - avec tableau pour specifications */}
             <div className="hidden lg:block mt-8 bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 shadow-sm">
               <div className="border-b border-gray-200 mb-6">
                 <div className="flex gap-6">
@@ -2411,7 +2411,7 @@ export default function ProductPage() {
                   </div>
                 )}
                 
-                {/* ✅ MODIFICATION : Tableau pour les spécifications (desktop) */}
+                {/* ✅ Tableau pour les spécifications (desktop) */}
                 {activeTab === "specifications" && (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm border-collapse">
@@ -2672,7 +2672,7 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* RELATED PRODUCTS - inchangé */}
+            {/* RELATED PRODUCTS */}
             <div className="mt-8 lg:mt-12">
               <div className="flex items-center justify-between mb-4 lg:mb-6">
                 <h2 className="text-base lg:text-lg font-medium">Vous aimerez aussi</h2>
