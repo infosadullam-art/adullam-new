@@ -1863,7 +1863,7 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* ✅ CORRECTION 2 : SECTION DESKTOP - 50/50 avec grid-cols-2 */}
+            {/* ✅ CORRECTION 2 : SECTION DESKTOP - 50/50 avec grid-cols-2 (au lieu de grid-cols-12) */}
             <div className="hidden lg:grid lg:grid-cols-2 gap-8 mb-16">
               
               {/* PARTIE GAUCHE - IMAGE */}
