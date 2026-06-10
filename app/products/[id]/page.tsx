@@ -1025,7 +1025,6 @@ export default function ProductPage() {
     return logisticsData.shipping[mode]?.estimatedDate || ""
   }
 
-  // ✅ CORRECTION 1 : getShippingDays corrigé pour Express (10j au lieu de 10-10j)
   const getShippingDays = (mode: "bateau" | "avion" | "express"): string => {
     if (!logisticsData?.shipping || !logisticsData.shipping[mode]) return ""
     const shipping = logisticsData.shipping[mode]
@@ -1063,7 +1062,6 @@ export default function ProductPage() {
       </div>
 
       <main className="pb-24 lg:pb-0">
-        {/* ✅ Largeur max réduite de 1440px à 1200px */}
         <div className="max-w-[1200px] mx-auto">
           
           <div className="lg:hidden px-4 py-3 border-b border-gray-100">
@@ -1072,11 +1070,8 @@ export default function ProductPage() {
 
           <div className="px-4 lg:px-8 py-3 lg:py-8">
             
-            <div className="hidden lg:flex items-center gap-2 text-xs mb-6 text-gray-400">
-              <a href="/" className="hover:text-gray-600">Accueil</a>
-              <ChevronRight className="w-3 h-3" />
-              <a href="/category/electronique" className="hover:text-gray-600">Électronique</a>
-              <ChevronRight className="w-3 h-3" />
+            {/* ✅ Breadcrumb desktop simplifié - seulement le nom du produit */}
+            <div className="hidden lg:block text-xs mb-6 text-gray-400">
               <span className="text-gray-600">{productName}</span>
             </div>
 
@@ -1864,10 +1859,10 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* ✅ SECTION DESKTOP - 50/50 SANS HAUTEURS FIXES NI SCROLLS INTERNES */}
+            {/* ✅ SECTION DESKTOP - 50/50 SANS SCROLL INTERNE */}
             <div className="hidden lg:grid lg:grid-cols-2 gap-8 mb-16">
               
-              {/* PARTIE GAUCHE - IMAGE (pas de hauteur fixe, pas de scroll) */}
+              {/* PARTIE GAUCHE - IMAGE (aspect-square, pas de hauteur fixe) */}
               <div>
                 <div className="bg-white mb-2 aspect-square flex items-center justify-center overflow-hidden border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow">
                   <Image
@@ -1933,7 +1928,7 @@ export default function ProductPage() {
                 )}
               </div>
 
-              {/* PARTIE DROITE - INFOS (pas de hauteur max, pas de scroll interne) */}
+              {/* PARTIE DROITE - INFOS (pas de scroll interne) */}
               <div>
                 <div className="flex items-start justify-between mb-3">
                   <div>
