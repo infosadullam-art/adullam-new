@@ -1025,7 +1025,6 @@ export default function ProductPage() {
     return logisticsData.shipping[mode]?.estimatedDate || ""
   }
 
-  // ✅ CORRECTION 1 : getShippingDays corrigé pour Express (10j au lieu de 10-10j)
   const getShippingDays = (mode: "bateau" | "avion" | "express"): string => {
     if (!logisticsData?.shipping || !logisticsData.shipping[mode]) return ""
     const shipping = logisticsData.shipping[mode]
@@ -1065,11 +1064,10 @@ export default function ProductPage() {
       <main className="pb-24 lg:pb-0">
         <div className="max-w-[1200px] mx-auto">
           
-          <div className="lg:hidden px-4 py-2 border-b border-gray-100">
+          <div className="lg:hidden px-4 py-3 border-b border-gray-100">
             <CurrencyIndicator />
           </div>
 
-          {/* ✅ Padding réduit sur desktop */}
           <div className="px-4 lg:px-8 py-2 lg:py-3">
             
             <div className="hidden lg:flex items-center gap-2 text-xs mb-3 text-gray-400">
@@ -1080,7 +1078,7 @@ export default function ProductPage() {
               <span className="text-gray-600">{productName}</span>
             </div>
 
-            {/* SECTION MOBILE - avec espaces réduits */}
+            {/* SECTION MOBILE */}
             <div className="lg:hidden">
               {/* Mobile Gallery */}
               <div className="mb-3">
@@ -1144,7 +1142,7 @@ export default function ProductPage() {
                       <button
                         key={idx}
                         onClick={() => setSelectedImage(idx)}
-                        className="flex-shrink-0 w-14 h-14 bg-white rounded-lg overflow-hidden border"
+                        className="flex-shrink-0 w-14 h-14 bg-white rounded-md overflow-hidden border"
                         style={{
                           borderColor: selectedImage === idx ? '#D4372B' : '#ECECEC'
                         }}
@@ -1162,13 +1160,13 @@ export default function ProductPage() {
                 )}
               </div>
 
-              {/* Mobile Product Info - espaces réduits */}
+              {/* Mobile Product Info */}
               <div className="space-y-2">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
                     <div className="flex items-center gap-1.5 mb-1">
                       <span 
-                        className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
+                        className="text-[10px] font-medium px-1.5 py-0.5 rounded"
                         style={{ background: '#D4372B', color: '#fff', fontFamily: "'Poppins', sans-serif" }}
                       >
                         Top vente
@@ -1210,11 +1208,10 @@ export default function ProductPage() {
                   <span className="text-[10px] text-white px-1.5 py-0.5 rounded" style={{ background: "#D4372B" }}>-20%</span>
                 </div>
 
-                {/* AFFICHAGE DYNAMIQUE DES VARIANTES - compact */}
                 {hasVariants && (
                   <>
                     {hasSimpleVariants && (
-                      <div className="p-2 rounded-xl mb-2" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
+                      <div className="p-2 rounded-md mb-2" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
                         <h3 className="text-[10px] font-medium text-gray-700 mb-1.5">
                           {primaryAttrName}
                         </h3>
@@ -1227,7 +1224,7 @@ export default function ProductPage() {
                                 key={value}
                                 onClick={() => openSimpleVariantModal(value)}
                                 className={`
-                                  px-2 py-1 text-[10px] rounded-md transition-all relative
+                                  px-2 py-1 text-[10px] rounded transition-all relative
                                   ${qty > 0 
                                     ? 'bg-[#D4372B] text-white font-semibold shadow-sm' 
                                     : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
@@ -1264,7 +1261,7 @@ export default function ProductPage() {
 
                     {hasComplexVariants && (
                       <>
-                        <div className="p-2 rounded-xl mb-2" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
+                        <div className="p-2 rounded-md mb-2" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
                           <h3 className="text-[10px] font-medium text-gray-700 mb-1.5">
                             {primaryAttrName}
                           </h3>
@@ -1278,7 +1275,7 @@ export default function ProductPage() {
                                   key={primaryValue}
                                   onClick={() => openPrimaryModal(primaryValue)}
                                   className={`
-                                    px-2 py-1 text-[10px] rounded-md transition-all relative
+                                    px-2 py-1 text-[10px] rounded transition-all relative
                                     ${total > 0 
                                       ? 'bg-[#D4372B] text-white font-semibold shadow-sm' 
                                       : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
@@ -1313,7 +1310,7 @@ export default function ProductPage() {
                         </div>
 
                         {secondaryAttrName && (
-                          <div className="p-2 rounded-xl mb-2" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
+                          <div className="p-2 rounded-md mb-2" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
                             <h3 className="text-[10px] font-medium text-gray-700 mb-1.5">
                               {secondaryAttrName}
                             </h3>
@@ -1326,7 +1323,7 @@ export default function ProductPage() {
                                     key={secondaryValue}
                                     onClick={() => openSecondaryModal(secondaryValue)}
                                     className={`
-                                      px-2 py-1 text-[10px] rounded-md transition-all relative
+                                      px-2 py-1 text-[10px] rounded transition-all relative
                                       ${total > 0 
                                         ? 'bg-[#D4372B] text-white font-semibold shadow-sm' 
                                         : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
@@ -1353,7 +1350,7 @@ export default function ProductPage() {
                 {!hasVariants && (
                   <div className="mb-2">
                     <h3 className="text-[10px] font-medium text-gray-700 mb-1">Quantité</h3>
-                    <div className="flex items-center rounded-lg overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
+                    <div className="flex items-center rounded-md overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
                       <button
                         onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))}
                         className="p-1.5 transition-colors" style={{ background: "#F4F4F4" }}
@@ -1407,7 +1404,7 @@ export default function ProductPage() {
                   {isLoadingLogistics ? (
                     <div className="grid grid-cols-3 gap-1">
                       {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex flex-col items-center p-1.5 rounded-lg border border-gray-200 bg-gray-50 animate-pulse">
+                        <div key={i} className="flex flex-col items-center p-1.5 rounded-md border border-gray-200 bg-gray-50 animate-pulse">
                           <div className="w-3 h-3 bg-gray-200 rounded-full mb-0.5"></div>
                           <div className="w-6 h-2 bg-gray-200 rounded mb-0.5"></div>
                           <div className="w-8 h-2 bg-gray-200 rounded"></div>
@@ -1415,7 +1412,7 @@ export default function ProductPage() {
                       ))}
                     </div>
                   ) : logisticsError ? (
-                    <div className="text-[10px] text-red-500 p-1.5 border border-red-200 rounded-lg bg-red-50">
+                    <div className="text-[10px] text-red-500 p-1.5 border border-red-200 rounded-md bg-red-50">
                       {logisticsError}
                     </div>
                   ) : (
@@ -1436,7 +1433,7 @@ export default function ProductPage() {
                           <button
                             key={item.mode}
                             onClick={() => setSelectedShipping(shippingMode)}
-                            className="flex flex-col items-center p-1.5 rounded-lg border transition-all"
+                            className="flex flex-col items-center p-1.5 rounded-md border transition-all"
                             style={{
                               borderColor: selectedShipping === shippingMode ? brandColor : '#e5e7eb',
                               background: selectedShipping === shippingMode ? '#D4372B' : '#fff'
@@ -1461,7 +1458,7 @@ export default function ProductPage() {
 
                 <div 
                   onClick={() => setIsProtectionModalOpen(true)}
-                  className="rounded-lg p-2 cursor-pointer transition-all hover:shadow-md"
+                  className="rounded-md p-2 cursor-pointer transition-all hover:shadow-sm"
                 >
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-1">
@@ -1473,7 +1470,7 @@ export default function ProductPage() {
                   
                   <div className="flex flex-wrap items-center gap-1 mb-1">
                     {['MTN', 'Orange', 'Wave', 'Visa'].map((method) => (
-                      <span key={method} className="text-[8px] px-1.5 py-0.5 bg-white border border-gray-200 rounded-full text-gray-600">
+                      <span key={method} className="text-[8px] px-1.5 py-0.5 bg-white border border-gray-200 rounded text-gray-600">
                         {method}
                       </span>
                     ))}
@@ -1486,7 +1483,7 @@ export default function ProductPage() {
                 </div>
 
                 {!isMOQMet && grandTotal > 0 && (
-                  <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-1.5 text-[10px] text-yellow-800">
+                  <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-md p-1.5 text-[10px] text-yellow-800">
                     MOQ: {minQuantity} min. Contactez-nous.
                   </div>
                 )}
@@ -1495,7 +1492,7 @@ export default function ProductPage() {
                   <div className="flex gap-2 max-w-[1440px] mx-auto">
                     <button
                       onClick={isMOQMet && grandTotal > 0 ? handleAddToCart : handleContactWhatsApp}
-                      className="flex-1 py-2 rounded-lg font-medium text-[11px] flex items-center justify-center gap-1 transition-all active:scale-[0.98] hover:shadow-lg"
+                      className="flex-1 py-2 rounded-md font-medium text-[11px] flex items-center justify-center gap-1 transition-all active:scale-[0.98] hover:shadow-sm"
                       style={{
                         background: (isMOQMet && grandTotal > 0) ? brandGradient : 'linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%)',
                         color: 'white'
@@ -1507,7 +1504,7 @@ export default function ProductPage() {
                     <button
                       onClick={handleBuyNow}
                       disabled={!isMOQMet || grandTotal === 0}
-                      className="flex-1 py-2 rounded-lg font-medium text-[11px] flex items-center justify-center gap-1 transition-all active:scale-[0.98] hover:shadow-lg"
+                      className="flex-1 py-2 rounded-md font-medium text-[11px] flex items-center justify-center gap-1 transition-all active:scale-[0.98] hover:shadow-sm"
                       style={{
                         background: 'linear-gradient(135deg, #1A2F3F 0%, #2D3F4F 100%)',
                         color: 'white',
@@ -1531,8 +1528,8 @@ export default function ProductPage() {
                 </div>
               </div>
 
-              {/* Mobile Tabs - compact */}
-              <div className="mt-3 bg-gradient-to-br from-gray-50 to-white rounded-xl p-2 shadow-sm">
+              {/* Mobile Tabs */}
+              <div className="mt-3 bg-gradient-to-br from-gray-50 to-white rounded-lg p-2 shadow-sm">
                 <div className="overflow-x-auto hide-scrollbar border-b border-gray-200">
                   <div className="flex gap-3 min-w-max px-1">
                     {[
@@ -1590,12 +1587,12 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* SECTION DESKTOP - avec espaces réduits */}
+            {/* SECTION DESKTOP */}
             <div className="hidden lg:grid lg:grid-cols-2 gap-8 mb-8 items-start">
               
-              {/* PARTIE GAUCHE - IMAGE (hauteur fixe 400px) */}
+              {/* PARTIE GAUCHE - IMAGE */}
               <div className="sticky top-24">
-                <div className="bg-white mb-2 h-[400px] flex items-center justify-center overflow-hidden border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                <div className="bg-white mb-2 h-[400px] flex items-center justify-center overflow-hidden border border-gray-100 rounded-md hover:shadow-sm transition-shadow">
                   <Image
                     src={safeImages[selectedImage]}
                     alt={productName}
@@ -1611,7 +1608,7 @@ export default function ProductPage() {
                     {safeImages.length > 5 && (
                       <button
                         onClick={() => scrollThumbnails("left")}
-                        className="absolute -left-2 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full p-0.5 shadow-md border hover:bg-gray-50"
+                        className="absolute -left-2 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full p-0.5 shadow-sm border hover:bg-gray-50"
                       >
                         <ChevronLeft className="w-3 h-3" />
                       </button>
@@ -1629,7 +1626,7 @@ export default function ProductPage() {
                         <button
                           key={idx}
                           onClick={() => setSelectedImage(idx)}
-                          className="flex-shrink-0 w-1/5 aspect-square bg-white rounded-lg overflow-hidden border transition-all hover:shadow-md"
+                          className="flex-shrink-0 w-1/5 aspect-square bg-white rounded-md overflow-hidden border transition-all hover:shadow-sm"
                           style={{
                             flexBasis: "calc(20% - 4px)",
                             borderColor: selectedImage === idx ? brandColor : '#e5e7eb',
@@ -1650,7 +1647,7 @@ export default function ProductPage() {
                     {safeImages.length > 5 && (
                       <button
                         onClick={() => scrollThumbnails("right")}
-                        className="absolute -right-2 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full p-0.5 shadow-md border hover:bg-gray-50"
+                        className="absolute -right-2 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full p-0.5 shadow-sm border hover:bg-gray-50"
                       >
                         <ChevronRight className="w-3 h-3" />
                       </button>
@@ -1659,13 +1656,13 @@ export default function ProductPage() {
                 )}
               </div>
 
-              {/* PARTIE DROITE - INFOS PRODUIT (compact) */}
+              {/* PARTIE DROITE - INFOS PRODUIT */}
               <div>
                 <div className="flex items-start justify-between mb-1.5">
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
                       <span 
-                        className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
+                        className="text-[10px] font-medium px-1.5 py-0.5 rounded"
                         style={{ background: '#D4372B', color: '#fff', fontFamily: "'Poppins', sans-serif" }}
                       >
                         Top vente
@@ -1692,13 +1689,13 @@ export default function ProductPage() {
                   
                   <button 
                     onClick={handleToggleWishlist}
-                    className="p-1 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="p-1 rounded-md hover:bg-gray-50 transition-colors"
                   >
                     <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
                   </button>
                 </div>
 
-                <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg p-2 mb-2 shadow-sm">
+                <div className="bg-gradient-to-br from-gray-50 to-white rounded-md p-2 mb-2 shadow-sm">
                   <div className="flex items-baseline gap-2 mb-0.5">
                     <span className="text-xl font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
                       {formatPrice(currentPrice)} x {grandTotal || 1}
@@ -1723,7 +1720,7 @@ export default function ProductPage() {
                                   key={value}
                                   onClick={() => openSimpleVariantModal(value)}
                                   className={`
-                                    px-2 py-1 text-[10px] border rounded-lg transition-all flex items-center gap-1 hover:shadow-md
+                                    px-2 py-1 text-[10px] border rounded-md transition-all flex items-center gap-1 hover:shadow-sm
                                     ${qty > 0 
                                       ? 'border-[#D4372B] text-[#D4372B] font-medium shadow-sm' 
                                       : 'border-gray-200 text-gray-600 hover:border-gray-300'
@@ -1771,7 +1768,7 @@ export default function ProductPage() {
                                     key={primaryValue}
                                     onClick={() => openPrimaryModal(primaryValue)}
                                     className={`
-                                      px-2 py-1 text-[10px] border rounded-lg transition-all flex items-center gap-1 hover:shadow-md
+                                      px-2 py-1 text-[10px] border rounded-md transition-all flex items-center gap-1 hover:shadow-sm
                                       ${total > 0 
                                         ? 'border-[#D4372B] text-[#D4372B] font-medium shadow-sm' 
                                         : 'border-gray-200 text-gray-600 hover:border-gray-300'
@@ -1816,7 +1813,7 @@ export default function ProductPage() {
                                       key={secondaryValue}
                                       onClick={() => openSecondaryModal(secondaryValue)}
                                       className={`
-                                        px-2 py-1 text-[10px] border rounded-lg transition-all relative hover:shadow-md
+                                        px-2 py-1 text-[10px] border rounded-md transition-all relative hover:shadow-sm
                                         ${total > 0 
                                           ? 'border-[#D4372B] text-[#D4372B] font-medium shadow-sm' 
                                           : 'border-gray-200 text-gray-600 hover:border-gray-300'
@@ -1828,7 +1825,7 @@ export default function ProductPage() {
                                     >
                                       {secondaryValue}
                                       {total > 0 && (
-                                        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#D4372B] text-white text-[7px] rounded-full flex items-center justify-center shadow-lg">
+                                        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#D4372B] text-white text-[7px] rounded-full flex items-center justify-center shadow-sm">
                                           {total}
                                         </span>
                                       )}
@@ -1846,7 +1843,7 @@ export default function ProductPage() {
                   {!hasVariants && (
                     <div className="mb-1.5">
                       <div className="text-[10px] text-gray-500 mb-1">Quantité</div>
-                      <div className="flex items-center rounded-lg overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
+                      <div className="flex items-center rounded-md overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
                         <button
                           onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))}
                           className="p-1 hover:bg-gray-50 transition-colors"
@@ -1896,7 +1893,7 @@ export default function ProductPage() {
 
                 <div 
                   onClick={() => setIsProtectionModalOpen(true)}
-                  className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg p-2 mb-2 cursor-pointer hover:shadow-md transition-all"
+                  className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-md p-2 mb-2 cursor-pointer hover:shadow-sm transition-all"
                 >
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-1">
@@ -1908,7 +1905,7 @@ export default function ProductPage() {
                   
                   <div className="flex flex-wrap items-center gap-1.5 mb-1">
                     {['MTN', 'Orange', 'Wave', 'Visa'].map((method) => (
-                      <span key={method} className="text-[9px] px-1.5 py-0.5 bg-white border border-gray-200 rounded-full text-gray-600">
+                      <span key={method} className="text-[9px] px-1.5 py-0.5 bg-white border border-gray-200 rounded text-gray-600">
                         {method}
                       </span>
                     ))}
@@ -1932,7 +1929,7 @@ export default function ProductPage() {
                   {isLoadingLogistics ? (
                     <div className="grid grid-cols-3 gap-1.5">
                       {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex items-center justify-between p-1.5 rounded-lg border border-gray-200 bg-gray-50 animate-pulse">
+                        <div key={i} className="flex items-center justify-between p-1.5 rounded-md border border-gray-200 bg-gray-50 animate-pulse">
                           <div className="flex items-center gap-1">
                             <div className="w-4 h-4 bg-gray-200 rounded-full"></div>
                             <div>
@@ -1945,7 +1942,7 @@ export default function ProductPage() {
                       ))}
                     </div>
                   ) : logisticsError ? (
-                    <div className="text-[10px] text-red-500 p-1 border border-red-200 rounded-lg bg-red-50">
+                    <div className="text-[10px] text-red-500 p-1 border border-red-200 rounded-md bg-red-50">
                       {logisticsError}
                     </div>
                   ) : (
@@ -1967,7 +1964,7 @@ export default function ProductPage() {
                           <button
                             key={item.mode}
                             onClick={() => setSelectedShipping(shippingMode)}
-                            className="flex items-center justify-between p-1.5 rounded-lg border transition-all text-[10px] hover:shadow-md"
+                            className="flex items-center justify-between p-1.5 rounded-md border transition-all text-[10px] hover:shadow-sm"
                             style={{
                               borderColor: selectedShipping === shippingMode ? brandColor : '#e5e7eb',
                               background: selectedShipping === shippingMode ? '#D4372B' : '#fff'
@@ -2001,7 +1998,7 @@ export default function ProductPage() {
 
                 <div className="space-y-1.5 mb-2">
                   {!isMOQMet && grandTotal > 0 && (
-                    <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-1.5 text-[9px] text-yellow-800">
+                    <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-md p-1.5 text-[9px] text-yellow-800">
                       MOQ non atteint ({minQuantity} min). Contactez-nous.
                     </div>
                   )}
@@ -2009,7 +2006,7 @@ export default function ProductPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={isMOQMet && grandTotal > 0 ? handleAddToCart : handleContactWhatsApp}
-                      className="flex-1 py-2 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1 hover:shadow-lg"
+                      className="flex-1 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-1 hover:shadow-sm"
                       style={{
                         background: (isMOQMet && grandTotal > 0) ? brandGradient : 'linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%)',
                         color: 'white'
@@ -2022,7 +2019,7 @@ export default function ProductPage() {
                     <button
                       onClick={handleBuyNow}
                       disabled={!isMOQMet || grandTotal === 0}
-                      className="flex-1 py-2 text-sm text-white font-medium rounded-lg transition-all hover:shadow-lg"
+                      className="flex-1 py-2 text-sm text-white font-medium rounded-md transition-all hover:shadow-sm"
                       style={{
                         background: 'linear-gradient(135deg, #1A2F3F 0%, #2D3F4F 100%)',
                         opacity: (isMOQMet && grandTotal > 0) ? 1 : 0.5
@@ -2033,7 +2030,7 @@ export default function ProductPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-1.5 p-2 bg-gradient-to-r from-gray-50 to-white rounded-lg text-[9px] shadow-sm">
+                <div className="grid grid-cols-4 gap-1.5 p-2 bg-gradient-to-r from-gray-50 to-white rounded-md text-[9px] shadow-sm">
                   <div className="flex items-center gap-1">
                     <Shield className="w-3 h-3" style={{ color: '#D4372B' }} />
                     <span>Garantie 12m</span>
@@ -2054,8 +2051,8 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* Desktop Tabs - compact */}
-            <div className="hidden lg:block mt-4 bg-gradient-to-br from-gray-50 to-white rounded-xl p-3 shadow-sm">
+            {/* Desktop Tabs */}
+            <div className="hidden lg:block mt-4 bg-gradient-to-br from-gray-50 to-white rounded-lg p-3">
               <div className="border-b border-gray-200 mb-3">
                 <div className="flex gap-4">
                   {[
@@ -2116,7 +2113,7 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* RELATED PRODUCTS - compact */}
+            {/* RELATED PRODUCTS */}
             <div className="mt-4 lg:mt-6">
               <div className="flex items-center justify-between mb-2 lg:mb-3">
                 <h2 className="text-sm lg:text-base font-medium">Vous aimerez aussi</h2>
@@ -2143,7 +2140,7 @@ export default function ProductPage() {
                           href={`/products/${p.id}`} 
                           className="group w-[150px]"
                         >
-                          <div className="bg-white rounded-lg aspect-square mb-1 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
+                          <div className="bg-white rounded-md aspect-square mb-1 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-sm transition-all">
                             <Image
                               src={p.image || "/placeholder.svg"}
                               alt={p.name}
@@ -2171,13 +2168,13 @@ export default function ProductPage() {
                   
                   <button 
                     onClick={() => scrollRelated("left")}
-                    className="absolute left-0 top-1/3 -translate-y-1/2 -ml-3 w-6 h-6 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+                    className="absolute left-0 top-1/3 -translate-y-1/2 -ml-3 w-6 h-6 bg-white rounded-full shadow-sm border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
                   >
                     <ChevronLeft className="w-3.5 h-3.5 text-gray-600" />
                   </button>
                   <button 
                     onClick={() => scrollRelated("right")}
-                    className="absolute right-0 top-1/3 -translate-y-1/2 -mr-3 w-6 h-6 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+                    className="absolute right-0 top-1/3 -translate-y-1/2 -mr-3 w-6 h-6 bg-white rounded-full shadow-sm border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
                   >
                     <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
                   </button>
@@ -2188,10 +2185,10 @@ export default function ProductPage() {
         </div>
       </main>
 
-      {/* MODAL DE SÉLECTION POUR VARIANTES SIMPLES - compact */}
+      {/* MODAL DE SÉLECTION POUR VARIANTES SIMPLES */}
       {isSimpleVariantModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-end lg:items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-t-xl lg:rounded-xl w-full max-w-md overflow-hidden shadow-2xl">
+          <div className="bg-white rounded-t-lg lg:rounded-lg w-full max-w-md overflow-hidden shadow-xl">
             <div className="sticky top-0 bg-white border-b border-gray-100 p-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {attributeImages[`${simpleVariantType}:${selectedSimpleValue}`] && (
@@ -2221,7 +2218,7 @@ export default function ProductPage() {
             </div>
 
             <div className="p-4">
-              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg mb-3">
+              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md mb-3">
                 <span className="text-xs font-medium">Quantité</span>
                 <div className="flex items-center gap-2">
                   <button
@@ -2241,7 +2238,7 @@ export default function ProductPage() {
                 </div>
               </div>
 
-              <div className="mt-3 p-2 rounded-xl bg-black">
+              <div className="mt-3 p-2 rounded-md bg-black">
                 <div className="flex justify-between text-xs font-medium text-white">
                   <span>Total sélectionné:</span>
                   <span>{simpleModalQuantity} article(s)</span>
@@ -2251,13 +2248,13 @@ export default function ProductPage() {
               <div className="flex gap-2 mt-3">
                 <button
                   onClick={() => setIsSimpleVariantModalOpen(false)}
-                  className="flex-1 py-2 border rounded-lg text-xs font-medium"
+                  className="flex-1 py-2 border rounded-md text-xs font-medium"
                 >
                   Annuler
                 </button>
                 <button
                   onClick={confirmSimpleVariantSelection}
-                  className="flex-1 py-2 rounded-lg text-xs font-medium text-white bg-[#D4372B]"
+                  className="flex-1 py-2 rounded-md text-xs font-medium text-white bg-[#D4372B]"
                 >
                   Confirmer
                 </button>
@@ -2267,10 +2264,10 @@ export default function ProductPage() {
         </div>
       )}
 
-      {/* MODAL DE SÉLECTION POUR VARIANTES MULTIPLES - compact */}
+      {/* MODAL DE SÉLECTION POUR VARIANTES MULTIPLES */}
       {isVariantModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-end lg:items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-t-xl lg:rounded-xl w-full max-w-md max-h-[80vh] overflow-y-auto shadow-2xl">
+          <div className="bg-white rounded-t-lg lg:rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto shadow-xl">
             <div className="sticky top-0 bg-white border-b border-gray-100 p-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {modalMode === 'primary' && modalPrimaryValue && attributeImages[`${Object.keys(attributeGroups)[0]}:${modalPrimaryValue}`] && (
@@ -2306,7 +2303,7 @@ export default function ProductPage() {
 
             <div className="p-3 space-y-2">
               {modalSecondaryOptions.map((value) => (
-                <div key={value} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                <div key={value} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
                   <span className="text-xs font-medium">{value}</span>
                   <div className="flex items-center gap-1.5">
                     <button
@@ -2327,7 +2324,7 @@ export default function ProductPage() {
                 </div>
               ))}
 
-              <div className="mt-3 p-2 rounded-xl bg-black">
+              <div className="mt-3 p-2 rounded-md bg-black">
                 <div className="flex justify-between text-xs font-medium text-white">
                   <span>Total sélectionné:</span>
                   <span>{Object.values(modalQuantities).reduce((a, b) => a + b, 0)} articles</span>
@@ -2337,13 +2334,13 @@ export default function ProductPage() {
               <div className="flex gap-2 pt-2">
                 <button
                   onClick={() => setIsVariantModalOpen(false)}
-                  className="flex-1 py-2 border rounded-lg text-xs font-medium"
+                  className="flex-1 py-2 border rounded-md text-xs font-medium"
                 >
                   Annuler
                 </button>
                 <button
                   onClick={confirmModalSelection}
-                  className="flex-1 py-2 rounded-lg text-xs font-medium text-white bg-[#D4372B]"
+                  className="flex-1 py-2 rounded-md text-xs font-medium text-white bg-[#D4372B]"
                 >
                   Confirmer
                 </button>
@@ -2353,10 +2350,10 @@ export default function ProductPage() {
         </div>
       )}
 
-      {/* MODAL PROTECTION ADULLAM - compact */}
+      {/* MODAL PROTECTION ADULLAM */}
       {isProtectionModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
             <div className="sticky top-0 bg-white border-b border-gray-100 p-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-[#D4372B]" />
@@ -2375,7 +2372,7 @@ export default function ProductPage() {
                 <h4 className="text-xs font-medium mb-2">Moyens de paiement acceptés</h4>
                 <div className="grid grid-cols-4 gap-2">
                   {['MTN', 'Orange', 'Wave', 'Visa'].map((method) => (
-                    <div key={method} className="bg-gray-50 border rounded-lg p-2 text-center text-[10px] font-medium">
+                    <div key={method} className="bg-gray-50 border rounded-md p-2 text-center text-[10px] font-medium">
                       {method}
                     </div>
                   ))}
@@ -2385,11 +2382,11 @@ export default function ProductPage() {
               <div>
                 <h4 className="text-xs font-medium mb-2">Protection de votre commande</h4>
                 <div className="space-y-2">
-                  <div className="bg-gray-50 rounded-lg p-2">
+                  <div className="bg-gray-50 rounded-md p-2">
                     <p className="text-[10px] font-medium mb-0.5">Paiements sécurisés</p>
                     <p className="text-[9px] text-gray-600">Cryptage SSL strict.</p>
                   </div>
-                  <div className="bg-gray-50 rounded-lg p-2">
+                  <div className="bg-gray-50 rounded-md p-2">
                     <p className="text-[10px] font-medium mb-0.5">Garantie remboursement</p>
                     <p className="text-[9px] text-gray-600">Remboursement si non expédiée.</p>
                   </div>
