@@ -1063,7 +1063,8 @@ export default function ProductPage() {
       </div>
 
       <main className="pb-24 lg:pb-0">
-        <div className="max-w-[1440px] mx-auto">
+        {/* ✅ Modification 1 : Largeur max réduite de 1440px à 1200px */}
+        <div className="max-w-[1200px] mx-auto">
           
           <div className="lg:hidden px-4 py-3 border-b border-gray-100">
             <CurrencyIndicator />
@@ -1863,12 +1864,14 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* ✅ CORRECTION 2 : SECTION DESKTOP - 50/50 avec grid-cols-2 */}
+            {/* ✅ SECTION DESKTOP - 50/50 avec hauteur réduite */}
+            {/* ✅ Modification 2 : hauteur fixe pour l'image (400px) */}
+            {/* ✅ Modification 3 : hauteur max pour la colonne infos avec scroll */}
             <div className="hidden lg:grid lg:grid-cols-2 gap-8 mb-16">
               
-              {/* PARTIE GAUCHE - IMAGE */}
+              {/* PARTIE GAUCHE - IMAGE (hauteur réduite à 400px) */}
               <div>
-                <div className="bg-white mb-2 aspect-square flex items-center justify-center overflow-hidden border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                <div className="bg-white mb-2 h-[400px] flex items-center justify-center overflow-hidden border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow">
                   <Image
                     src={safeImages[selectedImage]}
                     alt={productName}
@@ -1932,8 +1935,8 @@ export default function ProductPage() {
                 )}
               </div>
 
-              {/* PARTIE DROITE - INFOS PRODUIT */}
-              <div>
+              {/* PARTIE DROITE - INFOS PRODUIT (hauteur max avec scroll) */}
+              <div className="max-h-[500px] overflow-y-auto pr-2">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -2746,27 +2749,27 @@ export default function ProductPage() {
                           <a 
                             key={p.id} 
                             href={`/products/${p.id}`} 
-                            className="group w-[calc((1440px-4rem)/6-1rem)] min-w-[180px]"
+                            className="group w-[calc((1200px-4rem)/6-1rem)] min-w-[160px]"
                           >
                             <div className="bg-white rounded-xl aspect-square mb-3 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
                               <Image
                                 src={p.image || "/placeholder.svg"}
                                 alt={p.name}
-                                width={200}
-                                height={200}
-                                className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform"
+                                width={180}
+                                height={180}
+                                className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform"
                               />
                             </div>
-                            <h3 className="font-medium text-sm mb-1 line-clamp-2 text-gray-800">{p.name}</h3>
+                            <h3 className="font-medium text-xs mb-1 line-clamp-2 text-gray-800">{p.name}</h3>
                             <div className="flex items-center gap-1 mb-1">
                               <div className="flex">
                                 {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star key={star} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                  <Star key={star} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
                                 ))}
                               </div>
-                              <span className="text-xs text-gray-500">{p.rating || 4.5}</span>
+                              <span className="text-[10px] text-gray-500">{p.rating || 4.5}</span>
                             </div>
-                            <p className="text-base font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
+                            <p className="text-xs font-bold" style={{ color: '#D4372B' }}>
                               {formatPrice(p.priceUSD)}
                             </p>
                           </a>
@@ -2776,15 +2779,15 @@ export default function ProductPage() {
                     
                     <button 
                       onClick={() => scrollRelated("left")}
-                      className="absolute left-0 top-1/3 -translate-y-1/2 -ml-4 w-8 h-8 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+                      className="absolute left-0 top-1/3 -translate-y-1/2 -ml-4 w-7 h-7 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
                     >
-                      <ChevronLeft className="w-4 h-4 text-gray-600" />
+                      <ChevronLeft className="w-3.5 h-3.5 text-gray-600" />
                     </button>
                     <button 
                       onClick={() => scrollRelated("right")}
-                      className="absolute right-0 top-1/3 -translate-y-1/2 -mr-4 w-8 h-8 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+                      className="absolute right-0 top-1/3 -translate-y-1/2 -mr-4 w-7 h-7 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
                     >
-                      <ChevronRight className="w-4 h-4 text-gray-600" />
+                      <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
                     </button>
                   </div>
                 </>
