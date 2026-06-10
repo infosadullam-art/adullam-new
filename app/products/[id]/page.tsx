@@ -1594,7 +1594,7 @@ export default function ProductPage() {
                 </div>
               </div>
 
-              {/* Mobile Tabs - inchangé */}
+              {/* Mobile Tabs - inchangé avec TABLEAU pour specifications */}
               <div className="mt-6 bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 shadow-sm">
                 <div className="overflow-x-auto hide-scrollbar border-b border-gray-200">
                   <div className="flex gap-4 min-w-max px-1">
@@ -1641,32 +1641,40 @@ export default function ProductPage() {
                     </div>
                   )}
                   
+                  {/* ✅ MODIFICATION : Tableau pour les spécifications (mobile) */}
                   {activeTab === "specifications" && (
-                    <div className="space-y-3">
-                      {product.specifications ? (
-                        <div className="divide-y divide-gray-100">
-                          {product.specifications.map((spec: any, i: number) => (
-                            <div key={i} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0">
-                              <span className="text-xs text-gray-500">{spec.label}</span>
-                              <span className="text-sm font-medium text-gray-800 break-words">{spec.value}</span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 gap-3">
-                          {[
-                            { label: "Marque", value: product.brand || "TechPro" },
-                            { label: "Modèle", value: product.model || "Standard" },
-                            { label: "Poids", value: product.weight ? `${product.weight} kg` : "N/A" },
-                            { label: "Garantie", value: "12 mois" }
-                          ].map((spec, i) => (
-                            <div key={i} className="flex justify-between items-center py-2 border-b border-gray-100">
-                              <span className="text-xs text-gray-500">{spec.label}</span>
-                              <span className="text-sm font-medium text-gray-800 break-words max-w-[60%] text-right">{spec.value}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs border-collapse">
+                        <tbody>
+                          {product.specifications ? (
+                            product.specifications.map((spec: any, i: number) => (
+                              <tr key={i} className="border-b border-gray-100">
+                                <td className="py-1.5 pr-3 text-gray-500 w-1/3">{spec.label}</td>
+                                <td className="py-1.5 text-gray-800">{spec.value}</td>
+                              </tr>
+                            ))
+                          ) : (
+                            <>
+                              <tr className="border-b border-gray-100">
+                                <td className="py-1.5 pr-3 text-gray-500 w-1/3">Marque</td>
+                                <td className="py-1.5 text-gray-800">{product.brand || "TechPro"}</td>
+                              </tr>
+                              <tr className="border-b border-gray-100">
+                                <td className="py-1.5 pr-3 text-gray-500">Modèle</td>
+                                <td className="py-1.5 text-gray-800">{product.model || "Standard"}</td>
+                              </tr>
+                              <tr className="border-b border-gray-100">
+                                <td className="py-1.5 pr-3 text-gray-500">Poids</td>
+                                <td className="py-1.5 text-gray-800">{product.weight ? `${product.weight} kg` : "N/A"}</td>
+                              </tr>
+                              <tr className="border-b border-gray-100">
+                                <td className="py-1.5 pr-3 text-gray-500">Garantie</td>
+                                <td className="py-1.5 text-gray-800">12 mois</td>
+                              </tr>
+                            </>
+                          )}
+                        </tbody>
+                      </table>
                     </div>
                   )}
                   
@@ -2356,7 +2364,7 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* Desktop Tabs - inchangé */}
+            {/* Desktop Tabs - inchangé avec TABLEAU pour specifications */}
             <div className="hidden lg:block mt-8 bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 shadow-sm">
               <div className="border-b border-gray-200 mb-6">
                 <div className="flex gap-6">
@@ -2403,56 +2411,40 @@ export default function ProductPage() {
                   </div>
                 )}
                 
+                {/* ✅ MODIFICATION : Tableau pour les spécifications (desktop) */}
                 {activeTab === "specifications" && (
-                  <div className="grid lg:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      {product.specifications ? (
-                        product.specifications.slice(0, 4).map((spec: any, i: number) => (
-                          <div key={i} className="flex justify-between py-2 border-b border-gray-200">
-                            <span className="text-gray-500">{spec.label}</span>
-                            <span className="font-medium text-gray-800">{spec.value}</span>
-                          </div>
-                        ))
-                      ) : (
-                        <>
-                          {[
-                            { label: "Marque", value: "TechPro" },
-                            { label: "Modèle", value: "TP-EB001" },
-                            { label: "Version Bluetooth", value: "5.2" },
-                            { label: "Autonomie (écouteurs)", value: "6 heures" }
-                          ].map((spec, i) => (
-                            <div key={i} className="flex justify-between py-2 border-b border-gray-200">
-                              <span className="text-gray-500">{spec.label}</span>
-                              <span className="font-medium text-gray-800">{spec.value}</span>
-                            </div>
-                          ))}
-                        </>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      {product.specifications ? (
-                        product.specifications.slice(4, 8).map((spec: any, i: number) => (
-                          <div key={i} className="flex justify-between py-2 border-b border-gray-200">
-                            <span className="text-gray-500">{spec.label}</span>
-                            <span className="font-medium text-gray-800">{spec.value}</span>
-                          </div>
-                        ))
-                      ) : (
-                        <>
-                          {[
-                            { label: "Autonomie (boîtier)", value: "24 heures" },
-                            { label: "Temps de charge", value: "1.5 heures" },
-                            { label: "Poids", value: "4.5g par écouteur" },
-                            { label: "Garantie", value: "12 mois" }
-                          ].map((spec, i) => (
-                            <div key={i} className="flex justify-between py-2 border-b border-gray-200">
-                              <span className="text-gray-500">{spec.label}</span>
-                              <span className="font-medium text-gray-800">{spec.value}</span>
-                            </div>
-                          ))}
-                        </>
-                      )}
-                    </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border-collapse">
+                      <tbody>
+                        {product.specifications ? (
+                          product.specifications.map((spec: any, i: number) => (
+                            <tr key={i} className="border-b border-gray-200">
+                              <td className="py-2 pr-4 text-gray-500 font-medium w-1/3">{spec.label}</td>
+                              <td className="py-2 text-gray-800">{spec.value}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <>
+                            <tr className="border-b border-gray-200">
+                              <td className="py-2 pr-4 text-gray-500 font-medium w-1/3">Marque</td>
+                              <td className="py-2 text-gray-800">{product.brand || "TechPro"}</td>
+                            </tr>
+                            <tr className="border-b border-gray-200">
+                              <td className="py-2 pr-4 text-gray-500 font-medium">Modèle</td>
+                              <td className="py-2 text-gray-800">{product.model || "Standard"}</td>
+                            </tr>
+                            <tr className="border-b border-gray-200">
+                              <td className="py-2 pr-4 text-gray-500 font-medium">Poids</td>
+                              <td className="py-2 text-gray-800">{product.weight ? `${product.weight} kg` : "N/A"}</td>
+                            </tr>
+                            <tr className="border-b border-gray-200">
+                              <td className="py-2 pr-4 text-gray-500 font-medium">Garantie</td>
+                              <td className="py-2 text-gray-800">12 mois</td>
+                            </tr>
+                          </>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 )}
                 
