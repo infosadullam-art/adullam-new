@@ -1069,9 +1069,11 @@ export default function ProductPage() {
             <CurrencyIndicator />
           </div>
 
-          <div className="px-4 lg:px-8 py-3 lg:py-8">
+          {/* ✅ Modification 2 : py-3 lg:py-8 → py-2 lg:py-4 */}
+          <div className="px-4 lg:px-8 py-2 lg:py-4">
             
-            <div className="hidden lg:flex items-center gap-2 text-xs mb-6 text-gray-400">
+            {/* ✅ Modification 3 : mb-6 → mb-3 */}
+            <div className="hidden lg:flex items-center gap-2 text-xs mb-3 text-gray-400">
               <a href="/" className="hover:text-gray-600">Accueil</a>
               <ChevronRight className="w-3 h-3" />
               <a href="/category/electronique" className="hover:text-gray-600">Électronique</a>
@@ -1863,12 +1865,14 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* ✅ CORRECTION 2 : SECTION DESKTOP - 50/50 avec grid-cols-2 (au lieu de grid-cols-12) */}
-            <div className="hidden lg:grid lg:grid-cols-2 gap-8 mb-16">
+            {/* ✅ CORRECTION 2 : SECTION DESKTOP - 50/50 avec grid-cols-2 */}
+            {/* ✅ Modification 4 : mb-16 → mb-8 */}
+            <div className="hidden lg:grid lg:grid-cols-2 gap-8 mb-8">
               
               {/* PARTIE GAUCHE - IMAGE */}
+              {/* ✅ Modification 1 : ajout de max-h-[450px] */}
               <div>
-                <div className="bg-white mb-2 aspect-square flex items-center justify-center overflow-hidden border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                <div className="bg-white mb-2 aspect-square flex items-center justify-center overflow-hidden border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow max-h-[450px]">
                   <Image
                     src={safeImages[selectedImage]}
                     alt={productName}
