@@ -1069,15 +1069,10 @@ export default function ProductPage() {
             <CurrencyIndicator />
           </div>
 
-          <div className="px-4 lg:px-8 py-3 lg:py-8">
+          {/* ✅ Container avec padding réduit */}
+          <div className="px-4 lg:px-8 py-2 lg:py-3">
             
-            <div className="hidden lg:flex items-center gap-2 text-xs mb-6 text-gray-400">
-              <a href="/" className="hover:text-gray-600">Accueil</a>
-              <ChevronRight className="w-3 h-3" />
-              <a href="/category/electronique" className="hover:text-gray-600">Électronique</a>
-              <ChevronRight className="w-3 h-3" />
-              <span className="text-gray-600">{productName}</span>
-            </div>
+            {/* ✅ Breadcrumb SUPPRIMÉ - plus de "Accueil / Électronique / Nom" */}
 
             {/* SECTION MOBILE - inchangée */}
             <div className="lg:hidden">
@@ -1863,8 +1858,8 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* ✅ SECTION DESKTOP CORRIGÉE */}
-            <div className="hidden lg:grid lg:grid-cols-2 gap-8 mb-16 items-start">
+            {/* ✅ SECTION DESKTOP - avec marge réduite (mb-8 au lieu de mb-16) */}
+            <div className="hidden lg:grid lg:grid-cols-2 gap-8 mb-8 items-start">
               
               {/* PARTIE GAUCHE - IMAGE (sticky + hauteur fixe 400px) */}
               <div className="sticky top-24">
@@ -2356,9 +2351,9 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* Desktop Tabs - inchangé */}
-            <div className="hidden lg:block mt-8 bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 shadow-sm">
-              <div className="border-b border-gray-200 mb-6">
+            {/* ✅ Desktop Tabs - avec marges réduites (mt-6 au lieu de mt-8, p-4 au lieu de p-6, mb-3 au lieu de mb-6) */}
+            <div className="hidden lg:block mt-6 bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 shadow-sm">
+              <div className="border-b border-gray-200 mb-3">
                 <div className="flex gap-6">
                   {[
                     { id: "description", label: "Description" },
@@ -2368,7 +2363,7 @@ export default function ProductPage() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`pb-3 px-1 text-sm font-medium transition-colors relative`}
+                      className={`pb-2 px-1 text-sm font-medium transition-colors relative`}
                       style={{
                         color: activeTab === tab.id ? brandColor : '#6B7280',
                         borderBottom: activeTab === tab.id ? `2px solid ${brandColor}` : '2px solid transparent'
@@ -2383,14 +2378,14 @@ export default function ProductPage() {
               <div className="text-sm">
                 {activeTab === "description" && (
                   <div>
-                    <h3 className="font-medium mb-3 text-gray-900">Description</h3>
+                    <h3 className="font-medium mb-2 text-gray-900">Description</h3>
                     <p className="text-gray-700 leading-relaxed">
                       {product.description || product.cleanedDesc || "Description non disponible"}
                     </p>
                     {product.features && product.features.length > 0 && (
-                      <div className="mt-6">
-                        <h3 className="font-medium mb-3 text-gray-900">Caractéristiques principales</h3>
-                        <ul className="space-y-2 text-gray-700">
+                      <div className="mt-4">
+                        <h3 className="font-medium mb-2 text-gray-900">Caractéristiques principales</h3>
+                        <ul className="space-y-1 text-gray-700">
                           {product.features.map((feature: string, i: number) => (
                             <li key={i} className="flex items-start gap-2">
                               <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#D4372B' }} />
@@ -2461,15 +2456,15 @@ export default function ProductPage() {
                     {!showReviewForm && (
                       <button
                         onClick={() => setShowReviewForm(true)}
-                        className="mb-6 px-4 py-2 bg-[#D4372B] text-white rounded-lg text-sm font-medium hover:bg-[#B5271C] transition-colors"
+                        className="mb-4 px-4 py-2 bg-[#D4372B] text-white rounded-lg text-sm font-medium hover:bg-[#B5271C] transition-colors"
                       >
                         ✍️ Donner mon avis
                       </button>
                     )}
                     
                     {showReviewForm && (
-                      <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
-                        <div className="flex items-center justify-between mb-4">
+                      <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 shadow-sm">
+                        <div className="flex items-center justify-between mb-3">
                           <h3 className="font-semibold text-gray-900">Donnez votre avis</h3>
                           <button 
                             onClick={() => setShowReviewForm(false)}
@@ -2479,9 +2474,9 @@ export default function ProductPage() {
                           </button>
                         </div>
                         
-                        <div className="mb-4">
+                        <div className="mb-3">
                           <label className="text-sm text-gray-600 font-medium">Note</label>
-                          <div className="flex gap-2 mt-2">
+                          <div className="flex gap-2 mt-1">
                             {[1, 2, 3, 4, 5].map((star) => (
                               <button
                                 key={star}
@@ -2489,7 +2484,7 @@ export default function ProductPage() {
                                 className="focus:outline-none"
                               >
                                 <Star 
-                                  className={`w-8 h-8 ${
+                                  className={`w-7 h-7 ${
                                     star <= newReview.rating 
                                       ? 'fill-yellow-400 text-yellow-400' 
                                       : 'text-gray-300'
@@ -2500,7 +2495,7 @@ export default function ProductPage() {
                           </div>
                         </div>
                         
-                        <div className="mb-4">
+                        <div className="mb-3">
                           <label className="text-sm text-gray-600 font-medium">Votre nom</label>
                           <input
                             type="text"
@@ -2511,91 +2506,91 @@ export default function ProductPage() {
                           />
                         </div>
                         
-                        <div className="mb-4">
+                        <div className="mb-3">
                           <label className="text-sm text-gray-600 font-medium">Votre commentaire</label>
                           <textarea
                             value={newReview.comment}
                             onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
                             className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#D4372B] resize-none"
-                            rows={4}
+                            rows={3}
                             placeholder="Partagez votre expérience..."
                           />
                         </div>
                         
-                        <div className="flex gap-3">
+                        <div className="flex gap-2">
                           <button
                             onClick={() => setShowReviewForm(false)}
-                            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50"
+                            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50"
                           >
                             Annuler
                           </button>
                           <button
                             onClick={handleSubmitReview}
                             disabled={isSubmittingReview}
-                            className="px-4 py-2 bg-[#D4372B] text-white rounded-lg text-sm font-medium hover:bg-[#B5271C] disabled:opacity-50"
+                            className="px-3 py-1.5 bg-[#D4372B] text-white rounded-lg text-sm font-medium hover:bg-[#B5271C] disabled:opacity-50"
                           >
-                            {isSubmittingReview ? "Envoi..." : "Publier mon avis"}
+                            {isSubmittingReview ? "Envoi..." : "Publier"}
                           </button>
                         </div>
                       </div>
                     )}
                     
                     {isLoadingReviews ? (
-                      <div className="space-y-6">
-                        <div className="flex items-center gap-6 mb-6 animate-pulse">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4 mb-4 animate-pulse">
                           <div className="text-center">
-                            <div className="w-16 h-8 bg-gray-200 rounded mb-1"></div>
+                            <div className="w-12 h-6 bg-gray-200 rounded mb-1"></div>
                             <div className="flex gap-1 mt-1">
                               {[1,2,3,4,5].map((i) => (
-                                <div key={i} className="w-4 h-4 bg-gray-200 rounded"></div>
+                                <div key={i} className="w-3 h-3 bg-gray-200 rounded"></div>
                               ))}
                             </div>
-                            <div className="w-16 h-3 bg-gray-200 rounded mt-1"></div>
+                            <div className="w-12 h-2 bg-gray-200 rounded mt-1"></div>
                           </div>
-                          <div className="flex-1 space-y-2">
+                          <div className="flex-1 space-y-1">
                             {[1,2,3,4,5].map((i) => (
                               <div key={i} className="flex items-center gap-2">
-                                <div className="w-12 h-3 bg-gray-200 rounded"></div>
-                                <div className="flex-1 h-2 bg-gray-200 rounded"></div>
-                                <div className="w-8 h-3 bg-gray-200 rounded"></div>
+                                <div className="w-8 h-2 bg-gray-200 rounded"></div>
+                                <div className="flex-1 h-1.5 bg-gray-200 rounded"></div>
+                                <div className="w-6 h-2 bg-gray-200 rounded"></div>
                               </div>
                             ))}
                           </div>
                         </div>
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                           {[1,2,3].map((i) => (
-                            <div key={i} className="border-b border-gray-200 pb-4 animate-pulse">
-                              <div className="flex items-center justify-between mb-2">
+                            <div key={i} className="border-b border-gray-200 pb-3 animate-pulse">
+                              <div className="flex items-center justify-between mb-1">
                                 <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-                                  <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                  <div className="w-6 h-6 bg-gray-200 rounded-full"></div>
+                                  <div className="h-3 bg-gray-200 rounded w-20"></div>
                                 </div>
-                                <div className="h-3 bg-gray-200 rounded w-20"></div>
+                                <div className="h-2 bg-gray-200 rounded w-16"></div>
                               </div>
-                              <div className="flex gap-1 ml-10 mb-2">
+                              <div className="flex gap-1 ml-7 mb-1">
                                 {[1,2,3,4,5].map((star) => (
-                                  <div key={star} className="w-3 h-3 bg-gray-200 rounded"></div>
+                                  <div key={star} className="w-2 h-2 bg-gray-200 rounded"></div>
                                 ))}
                               </div>
-                              <div className="ml-10 space-y-1">
-                                <div className="h-3 bg-gray-200 rounded w-full"></div>
-                                <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                              <div className="ml-7 space-y-1">
+                                <div className="h-2 bg-gray-200 rounded w-full"></div>
+                                <div className="h-2 bg-gray-200 rounded w-2/3"></div>
                               </div>
                             </div>
                           ))}
                         </div>
                       </div>
                     ) : reviews.length === 0 ? (
-                      <div className="text-center py-12">
-                        <div className="w-20 h-20 mx-auto mb-4 bg-gray-50 rounded-full flex items-center justify-center">
-                          <Star className="w-10 h-10 text-gray-300" />
+                      <div className="text-center py-8">
+                        <div className="w-16 h-16 mx-auto mb-3 bg-gray-50 rounded-full flex items-center justify-center">
+                          <Star className="w-8 h-8 text-gray-300" />
                         </div>
-                        <p className="text-gray-500">Aucun avis pour le moment</p>
-                        <p className="text-sm text-gray-400 mt-1">Soyez le premier à donner votre avis</p>
+                        <p className="text-gray-500 text-sm">Aucun avis pour le moment</p>
+                        <p className="text-xs text-gray-400 mt-1">Soyez le premier à donner votre avis</p>
                       </div>
                     ) : (
                       <>
-                        <div className="flex items-center gap-6 mb-6">
+                        <div className="flex items-center gap-4 mb-4">
                           <div className="text-center">
                             <div className="text-2xl font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
                               {reviewsStats.averageRating}
@@ -2604,7 +2599,7 @@ export default function ProductPage() {
                               {[1, 2, 3, 4, 5].map((star) => (
                                 <Star 
                                   key={star} 
-                                  className={`w-3.5 h-3.5 ${
+                                  className={`w-3 h-3 ${
                                     star <= Math.round(reviewsStats.averageRating) 
                                       ? 'fill-yellow-400 text-yellow-400' 
                                       : 'text-gray-300'
@@ -2612,50 +2607,50 @@ export default function ProductPage() {
                                 />
                               ))}
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">{reviewsStats.totalReviews} avis</p>
+                            <p className="text-[10px] text-gray-500 mt-1">{reviewsStats.totalReviews} avis</p>
                           </div>
                           <div className="flex-1 space-y-1">
                             {[5, 4, 3, 2, 1].map((rating) => {
                               const count = reviewsStats.ratingDistribution[rating as keyof typeof reviewsStats.ratingDistribution] || 0
                               const percentage = reviewsStats.totalReviews > 0 ? (count / reviewsStats.totalReviews) * 100 : 0
                               return (
-                                <div key={rating} className="flex items-center gap-3 text-sm">
-                                  <span className="w-12 text-gray-600">{rating} étoiles</span>
-                                  <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div key={rating} className="flex items-center gap-2 text-xs">
+                                  <span className="w-8 text-gray-600">{rating} ★</span>
+                                  <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                                     <div 
                                       className="h-full rounded-full" 
                                       style={{ width: `${percentage}%`, background: brandGradient }} 
                                     />
                                   </div>
-                                  <span className="w-12 text-right text-gray-500 text-sm">{count}</span>
+                                  <span className="w-8 text-right text-gray-500 text-xs">{count}</span>
                                 </div>
                               )
                             })}
                           </div>
                         </div>
 
-                        <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2">
+                        <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
                           {reviews.map((review) => (
-                            <div key={review.id} className="border-b border-gray-200 pb-5 last:border-0">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                            <div key={review.id} className="border-b border-gray-200 pb-3 last:border-0">
+                              <div className="flex items-center justify-between mb-1">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-6 h-6 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center text-white text-[10px] font-medium">
                                     {review.authorName.charAt(0).toUpperCase()}
                                   </div>
                                   <div>
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-sm font-medium text-gray-800">{review.authorName}</span>
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-xs font-medium text-gray-800">{review.authorName}</span>
                                       {review.verifiedPurchase && (
-                                        <span className="text-[10px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
-                                          Achat vérifié
+                                        <span className="text-[9px] px-1.5 py-0.5 bg-green-100 text-green-700 rounded-full">
+                                          Vérifié
                                         </span>
                                       )}
                                     </div>
-                                    <div className="flex items-center gap-1 mt-0.5">
+                                    <div className="flex items-center gap-0.5 mt-0.5">
                                       {[1, 2, 3, 4, 5].map((star) => (
                                         <Star 
                                           key={star} 
-                                          className={`w-3 h-3 ${
+                                          className={`w-2.5 h-2.5 ${
                                             star <= review.rating 
                                               ? 'fill-yellow-400 text-yellow-400' 
                                               : 'text-gray-200'
@@ -2665,9 +2660,9 @@ export default function ProductPage() {
                                     </div>
                                   </div>
                                 </div>
-                                <span className="text-xs text-gray-400">{formatReviewDate(review.createdAt)}</span>
+                                <span className="text-[10px] text-gray-400">{formatReviewDate(review.createdAt)}</span>
                               </div>
-                              <p className="text-sm text-gray-700 ml-11 leading-relaxed">
+                              <p className="text-xs text-gray-700 ml-8 leading-relaxed">
                                 {review.comment}
                               </p>
                             </div>
@@ -2680,52 +2675,52 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* RELATED PRODUCTS - inchangé */}
-            <div className="mt-8 lg:mt-12">
-              <div className="flex items-center justify-between mb-4 lg:mb-6">
+            {/* ✅ RELATED PRODUCTS - avec marge réduite (mt-6 lg:mt-8 au lieu de mt-8 lg:mt-12) */}
+            <div className="mt-6 lg:mt-8">
+              <div className="flex items-center justify-between mb-3 lg:mb-4">
                 <h2 className="text-base lg:text-lg font-medium">Vous aimerez aussi</h2>
               </div>
               
               {isLoadingRelated ? (
-                <div className="flex justify-center items-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600" />
+                <div className="flex justify-center items-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-600" />
                 </div>
               ) : relatedProducts.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 text-sm">
+                <div className="text-center py-6 text-gray-500 text-sm">
                   Aucune recommandation pour le moment
                 </div>
               ) : (
                 <>
                   <div className="lg:hidden">
-                    <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 shadow-sm">
+                    <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-3 shadow-sm">
                       <div className="relative">
                         <div className="overflow-x-auto overflow-y-hidden hide-scrollbar">
-                          <div className="flex gap-3 w-max">
+                          <div className="flex gap-2 w-max">
                             {relatedProducts.map((p) => (
                               <a 
                                 key={p.id} 
                                 href={`/products/${p.id}`} 
-                                className="group w-[calc((100vw-4rem)/3-0.5rem)] min-w-[calc((100vw-4rem)/3-0.5rem)]"
+                                className="group w-[calc((100vw-3rem)/2.5-0.5rem)] min-w-[130px]"
                               >
-                                <div className="bg-white rounded-lg aspect-square mb-2 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
+                                <div className="bg-white rounded-lg aspect-square mb-1 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
                                   <Image
                                     src={p.image || "/placeholder.svg"}
                                     alt={p.name}
-                                    width={150}
-                                    height={150}
-                                    className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform"
+                                    width={120}
+                                    height={120}
+                                    className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform"
                                   />
                                 </div>
-                                <h3 className="font-medium text-xs mb-0.5 line-clamp-2 text-gray-800">{p.name}</h3>
-                                <div className="flex items-center gap-1 mb-0.5">
+                                <h3 className="font-medium text-[10px] mb-0.5 line-clamp-2 text-gray-800">{p.name}</h3>
+                                <div className="flex items-center gap-0.5 mb-0.5">
                                   <div className="flex">
                                     {[1, 2, 3, 4, 5].map((star) => (
-                                      <Star key={star} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
+                                      <Star key={star} className="w-2 h-2 fill-yellow-400 text-yellow-400" />
                                     ))}
                                   </div>
-                                  <span className="text-[9px] text-gray-500">{p.rating || 4.5}</span>
+                                  <span className="text-[8px] text-gray-500">{p.rating || 4.5}</span>
                                 </div>
-                                <p className="text-sm font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
+                                <p className="text-[10px] font-bold" style={{ color: '#D4372B' }}>
                                   {formatPrice(p.priceUSD)}
                                 </p>
                               </a>
@@ -2739,26 +2734,26 @@ export default function ProductPage() {
                   <div className="hidden lg:block relative">
                     <div 
                       ref={relatedCarouselRef}
-                      className="overflow-x-auto overflow-y-hidden hide-scrollbar pb-4 scroll-smooth"
+                      className="overflow-x-auto overflow-y-hidden hide-scrollbar pb-2 scroll-smooth"
                     >
-                      <div className="flex gap-4 w-max">
+                      <div className="flex gap-3 w-max">
                         {relatedProducts.map((p) => (
                           <a 
                             key={p.id} 
                             href={`/products/${p.id}`} 
-                            className="group w-[calc((1200px-4rem)/6-1rem)] min-w-[160px]"
+                            className="group w-[150px]"
                           >
-                            <div className="bg-white rounded-xl aspect-square mb-3 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
+                            <div className="bg-white rounded-xl aspect-square mb-2 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
                               <Image
                                 src={p.image || "/placeholder.svg"}
                                 alt={p.name}
-                                width={180}
-                                height={180}
-                                className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform"
+                                width={150}
+                                height={150}
+                                className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform"
                               />
                             </div>
-                            <h3 className="font-medium text-xs mb-1 line-clamp-2 text-gray-800">{p.name}</h3>
-                            <div className="flex items-center gap-1 mb-1">
+                            <h3 className="font-medium text-xs mb-0.5 line-clamp-2 text-gray-800">{p.name}</h3>
+                            <div className="flex items-center gap-0.5 mb-0.5">
                               <div className="flex">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                   <Star key={star} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
@@ -2776,15 +2771,15 @@ export default function ProductPage() {
                     
                     <button 
                       onClick={() => scrollRelated("left")}
-                      className="absolute left-0 top-1/3 -translate-y-1/2 -ml-4 w-7 h-7 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+                      className="absolute left-0 top-1/3 -translate-y-1/2 -ml-3 w-6 h-6 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
                     >
-                      <ChevronLeft className="w-3.5 h-3.5 text-gray-600" />
+                      <ChevronLeft className="w-3 h-3 text-gray-600" />
                     </button>
                     <button 
                       onClick={() => scrollRelated("right")}
-                      className="absolute right-0 top-1/3 -translate-y-1/2 -mr-4 w-7 h-7 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+                      className="absolute right-0 top-1/3 -translate-y-1/2 -mr-3 w-6 h-6 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
                     >
-                      <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
+                      <ChevronRight className="w-3 h-3 text-gray-600" />
                     </button>
                   </div>
                 </>
