@@ -1049,1030 +1049,1974 @@ export default function ProductPage() {
   const hasSimpleVariants = Object.keys(simpleVariantQuantities).length > 0
   const hasComplexVariants = Object.keys(complexSelections).length > 0
 
-
-  // ─── Token system ───────────────────────────────────────────
-  // bg:    #0A0A0A   surface: #121212   raised: #1C1C1C
-  // line:  rgba(255,255,255,0.07)
-  // text:  #F5F5F5 / 0.5 / 0.25
-  // red:   #C8392B   red-dim: rgba(200,57,43,0.12)
-  // gold:  #E8B94F  (stars only)
-
   return (
-    <div style={{ minHeight: '100vh', background: '#0A0A0A', color: '#F5F5F5', fontFamily: 'inherit' }}>
+    <div className="min-h-screen bg-white">
+      <div className="hidden lg:block">
+        <Header />
+      </div>
+      <div className="lg:hidden">
+        <MobileHeader />
+      </div>
 
-      {/* ── thin red top line ── */}
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, transparent 0%, #C8392B 40%, #C8392B 60%, transparent 100%)', zIndex: 100, opacity: 0.6 }} />
-
-      <div className="hidden lg:block" style={{ position: 'relative', zIndex: 10 }}><Header /></div>
-      <div className="lg:hidden" style={{ position: 'relative', zIndex: 10 }}><MobileHeader /></div>
-
-      <main style={{ paddingBottom: '88px' }} className="lg:pb-0">
-        <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
-
-          {/* currency mobile */}
-          <div className="lg:hidden" style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+      <main className="pb-24 lg:pb-0">
+        <div className="max-w-[1440px] mx-auto">
+          
+          <div className="lg:hidden px-4 py-3 border-b border-gray-100">
             <CurrencyIndicator />
           </div>
 
-          {/* ════════════════════════════════════════════════════
-              DESKTOP LAYOUT  — split-screen asymétrique
-          ════════════════════════════════════════════════════ */}
-          <div className="hidden lg:flex" style={{ minHeight: '90vh' }}>
-
-            {/* LEFT PANEL — image collée au bord, sticky */}
-            <div style={{ width: '52%', position: 'sticky', top: 0, height: '100vh', background: '#0E0E0E', borderRight: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column' }}>
-
-              {/* breadcrumb dans le panel */}
-              <div style={{ padding: '28px 40px 0', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'rgba(255,255,255,0.25)' }}>
-                <a href="/" style={{ color: 'inherit', textDecoration: 'none', transition: 'color .2s' }} onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')} onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.25)')}>Accueil</a>
-                <span style={{ opacity: 0.3 }}>›</span>
-                <a href="/category/electronique" style={{ color: 'inherit', textDecoration: 'none', transition: 'color .2s' }} onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')} onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.25)')}>Électronique</a>
-                <span style={{ opacity: 0.3 }}>›</span>
-                <span style={{ color: 'rgba(255,255,255,0.5)', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{productName}</span>
-              </div>
-
-              {/* image principale */}
-              <div
-                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 40px', cursor: 'zoom-in', position: 'relative' }}
-                onClick={() => setIsImageModalOpen(true)}
-              >
-                <Image
-                  src={safeImages[selectedImage]}
-                  alt={productName}
-                  width={520} height={520}
-                  style={{ width: '100%', maxWidth: '420px', height: 'auto', objectFit: 'contain', transition: 'transform .6s cubic-bezier(.16,1,.3,1)' }}
-                  onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.03)')}
-                  onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-                  priority
-                />
-
-                {/* wishlist */}
-                <button
-                  onClick={e => { e.stopPropagation(); handleToggleWishlist(); }}
-                  style={{
-                    position: 'absolute', top: '20px', right: '20px',
-                    width: '40px', height: '40px', borderRadius: '50%',
-                    background: isWishlisted ? '#C8392B' : 'rgba(255,255,255,0.06)',
-                    border: `1px solid ${isWishlisted ? '#C8392B' : 'rgba(255,255,255,0.1)'}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer', transition: 'all .2s',
-                  }}
-                  onMouseEnter={e => { if (!isWishlisted) e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
-                  onMouseLeave={e => { if (!isWishlisted) e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
-                >
-                  <Heart style={{ width: '16px', height: '16px', color: '#fff', fill: isWishlisted ? '#fff' : 'none' }} />
-                </button>
-              </div>
-
-              {/* thumbnails — bande horizontale en bas */}
-              {safeImages.length > 1 && (
-                <div style={{ padding: '0 40px 28px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                  {safeImages.map((img, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedImage(idx)}
-                      style={{
-                        flexShrink: 0, width: '56px', height: '56px', borderRadius: '10px',
-                        background: '#181818',
-                        border: `1.5px solid ${selectedImage === idx ? '#C8392B' : 'rgba(255,255,255,0.07)'}`,
-                        overflow: 'hidden', cursor: 'pointer',
-                        opacity: selectedImage === idx ? 1 : 0.45,
-                        transition: 'all .2s',
-                      }}
-                    >
-                      <Image src={img} alt="" width={56} height={56} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '6px' }} />
-                    </button>
-                  ))}
-                </div>
-              )}
+          <div className="px-4 lg:px-8 py-3 lg:py-8">
+            
+            <div className="hidden lg:flex items-center gap-2 text-xs mb-6 text-gray-400">
+              <a href="/" className="hover:text-gray-600">Accueil</a>
+              <ChevronRight className="w-3 h-3" />
+              <a href="/category/electronique" className="hover:text-gray-600">Électronique</a>
+              <ChevronRight className="w-3 h-3" />
+              <span className="text-gray-600">{productName}</span>
             </div>
 
-            {/* RIGHT PANEL — scroll */}
-            <div style={{ width: '48%', overflowY: 'auto', padding: '48px 52px', scrollbarWidth: 'none' }}>
-
-              {/* ── Header produit ── */}
-              <div style={{ marginBottom: '32px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-                  <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#C8392B', padding: '4px 10px', borderRadius: '4px', background: 'rgba(200,57,43,0.1)', border: '1px solid rgba(200,57,43,0.2)' }}>
-                    Top vente
-                  </span>
-                  <span style={{ fontSize: '10px', fontFamily: 'monospace', color: 'rgba(255,255,255,0.18)' }}>#{product.id?.slice(-10)}</span>
-                </div>
-
-                <h1 style={{ fontSize: '22px', fontWeight: 600, lineHeight: 1.35, letterSpacing: '-0.025em', color: '#F5F5F5', marginBottom: '16px' }}>
-                  {productName}
-                </h1>
-
-                {/* rating row */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '13px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    {[1,2,3,4,5].map(s => <Star key={s} style={{ width: '14px', height: '14px', fill: '#E8B94F', color: '#E8B94F' }} />)}
-                    <span style={{ fontWeight: 600, color: '#F5F5F5', marginLeft: '4px' }}>{reviewsStats.averageRating || 0}</span>
+            {/* SECTION MOBILE - Gardée identique car pas de fetch direct */}
+            <div className="lg:hidden">
+              {/* Mobile Gallery */}
+              <div className="mb-4">
+                <div className="relative">
+                  <button
+                    onClick={() => setIsImageModalOpen(true)}
+                    className="w-full aspect-square bg-white flex items-center justify-center overflow-hidden"
+                  >
+                    <Image
+                      src={safeImages[selectedImage]}
+                      alt={productName}
+                      width={400}
+                      height={400}
+                      className="w-full h-full object-contain"
+                      priority
+                    />
+                  </button>
+                  
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+                    <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-white/80 backdrop-blur-sm shadow-md">
+                      <div className="flex gap-1.5">
+                        {safeImages.slice(0, 12).map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setSelectedImage(idx)}
+                            className={`transition-all duration-200 rounded-full ${
+                              selectedImage === idx 
+                                ? 'w-3 h-1 bg-[#D4372B] rounded-full' 
+                                : 'w-1.5 h-1.5 bg-gray-400'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      
+                      {safeImages.length > 12 && (
+                        <div className="flex items-center gap-1 pl-1.5 border-l border-gray-300">
+                          <button
+                            onClick={() => setSelectedImage(Math.max(0, selectedImage - 1))}
+                            className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                          >
+                            <ChevronLeft className="w-3 h-3 text-gray-500" />
+                          </button>
+                          <span className="text-[9px] font-medium text-gray-500 min-w-[32px] text-center">
+                            {selectedImage + 1}/{safeImages.length}
+                          </span>
+                          <button
+                            onClick={() => setSelectedImage(Math.min(safeImages.length - 1, selectedImage + 1))}
+                            className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                          >
+                            <ChevronRight className="w-3 h-3 text-gray-500" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <span style={{ color: 'rgba(255,255,255,0.15)' }}>·</span>
-                  <span style={{ color: 'rgba(255,255,255,0.4)' }}>{reviewsStats.totalReviews} avis</span>
-                  <span style={{ color: 'rgba(255,255,255,0.15)' }}>·</span>
-                  <span style={{ color: 'rgba(255,255,255,0.4)' }}>1 234+ commandes</span>
                 </div>
+
+                {safeImages.length > 1 && (
+                  <div className="flex gap-2 mt-2 overflow-x-auto pb-1 hide-scrollbar">
+                    {safeImages.map((img, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedImage(idx)}
+                        className="flex-shrink-0 w-16 h-16 bg-white rounded-lg overflow-hidden border"
+                        style={{
+                          borderColor: selectedImage === idx ? '#D4372B' : '#ECECEC'
+                        }}
+                      >
+                        <Image
+                          src={img}
+                          alt={`Miniature ${idx + 1}`}
+                          width={64}
+                          height={64}
+                          className="w-full h-full object-contain"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* ── Séparateur ── */}
-              <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '0 0 28px' }} />
+              {/* Mobile Product Info - Gardée identique */}
+              <div className="space-y-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span 
+                        className="text-xs font-medium px-2 py-0.5 rounded-full"
+                        style={{ background: '#D4372B', color: '#fff', fontFamily: "'Poppins', sans-serif" }}
+                      >
+                        Top vente
+                      </span>
+                      <span className="text-xs text-gray-400">SKU: {product.id}</span>
+                    </div>
+                    <h1 className="text-lg font-medium leading-tight">{productName}</h1>
+                  </div>
+                  <button 
+                    onClick={handleToggleWishlist}
+                    className="p-2 -mt-1 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
+                  </button>
+                </div>
 
-              {/* ── Prix ── */}
-              <div style={{ marginBottom: '28px' }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '34px', fontWeight: 900, color: '#F5F5F5', letterSpacing: '-0.04em', lineHeight: 1 }}>
-                    {formatPrice(currentPrice * (grandTotal || 1))}
+                <div className="flex items-center gap-3 text-xs">
+                  <div className="flex items-center gap-1">
+                    <div className="flex">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star key={star} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                    <span className="text-gray-600">{reviewsStats.averageRating || 0}</span>
+                  </div>
+                  <span className="text-gray-300">|</span>
+                  <span className="text-gray-600">{reviewsStats.totalReviews} avis</span>
+                  <span className="text-gray-300">|</span>
+                  <span className="text-gray-600">1.2k ventes</span>
+                </div>
+
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
+                    {formatPrice(currentPrice)} x {grandTotal || 1}
                   </span>
-                  <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.25)', textDecoration: 'line-through' }}>
+                  <span className="text-xs text-gray-400 line-through">
                     {formatPrice(currentPrice * 1.2 * (grandTotal || 1))}
                   </span>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#C8392B', padding: '2px 7px', borderRadius: '4px', background: 'rgba(200,57,43,0.12)', border: '1px solid rgba(200,57,43,0.2)' }}>
-                    −20%
-                  </span>
+                  <span className="text-xs text-white px-1.5 py-0.5 rounded" style={{ background: "#D4372B" }}>-20%</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'rgba(255,255,255,0.35)' }}>
-                  <span>Prix unitaire: <strong style={{ color: 'rgba(255,255,255,0.7)' }}>{formatPrice(currentPrice)}</strong></span>
-                  <span style={{ color: 'rgba(255,255,255,0.12)' }}>·</span>
-                  <span style={{ color: '#C8392B', fontWeight: 600 }}>Direct usine</span>
-                </div>
-              </div>
 
-              {/* ── Variantes desktop ── */}
-              {hasVariants && (
-                <div style={{ marginBottom: '28px' }}>
-                  {hasSimpleVariants && (
-                    <div>
-                      <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: '12px' }}>{primaryAttrName}</p>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                        {Object.entries(simpleVariantQuantities).map(([value, qty]) => {
-                          const hasImg = attributeImages[`${simpleVariantType}:${value}`]
-                          const active = qty > 0
-                          return (
-                            <button key={value} onClick={() => openSimpleVariantModal(value)}
-                              style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', transition: 'all .15s', background: active ? 'rgba(200,57,43,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${active ? 'rgba(200,57,43,0.4)' : 'rgba(255,255,255,0.09)'}`, color: active ? '#C8392B' : 'rgba(255,255,255,0.6)' }}>
-                              {hasImg && <div style={{ width: '18px', height: '18px', borderRadius: '50%', overflow: 'hidden' }}><Image src={attributeImages[`${simpleVariantType}:${value}`]} alt={value} width={18} height={18} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>}
-                              {value}
-                              {active && <span style={{ position: 'absolute', top: '-8px', right: '-8px', width: '18px', height: '18px', borderRadius: '50%', background: '#C8392B', color: '#fff', fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{qty}</span>}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
-                  {hasComplexVariants && (
-                    <>
-                      <div style={{ marginBottom: '16px' }}>
-                        <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: '12px' }}>{primaryAttrName}</p>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                          {Object.keys(complexSelections).map(pv => {
-                            const total = getPrimaryTotal(pv)
-                            const hasImg = attributeImages[`${Object.keys(attributeGroups)[0]}:${pv}`]
+                {/* AFFICHAGE DYNAMIQUE DES VARIANTES - Identique */}
+                {hasVariants && (
+                  <>
+                    {hasSimpleVariants && (
+                      <div className="p-4 rounded-xl mb-4" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
+                        <h3 className="text-sm font-medium text-gray-700 mb-3">
+                          {primaryAttrName}
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.entries(simpleVariantQuantities).map(([value, qty]) => {
+                            const hasImage = attributeImages[`${simpleVariantType}:${value}`]
+                            
                             return (
-                              <button key={pv} onClick={() => openPrimaryModal(pv)}
-                                style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', transition: 'all .15s', background: total > 0 ? 'rgba(200,57,43,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${total > 0 ? 'rgba(200,57,43,0.4)' : 'rgba(255,255,255,0.09)'}`, color: total > 0 ? '#C8392B' : 'rgba(255,255,255,0.6)' }}>
-                                {hasImg && <div style={{ width: '18px', height: '18px', borderRadius: '50%', overflow: 'hidden' }}><Image src={attributeImages[`${Object.keys(attributeGroups)[0]}:${pv}`]} alt={pv} width={18} height={18} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>}
-                                {pv}
-                                {total > 0 && <span style={{ position: 'absolute', top: '-8px', right: '-8px', width: '18px', height: '18px', borderRadius: '50%', background: '#C8392B', color: '#fff', fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{total}</span>}
+                              <button
+                                key={value}
+                                onClick={() => openSimpleVariantModal(value)}
+                                className={`
+                                  px-3 py-1.5 text-xs rounded-md transition-all relative
+                                  ${qty > 0 
+                                    ? 'bg-[#D4372B] text-white font-semibold shadow-sm' 
+                                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                                  }
+                                `}
+                              >
+                                {hasImage ? (
+                                  <div className="flex items-center gap-1">
+                                    <div className="w-4 h-4 rounded-full overflow-hidden">
+                                      <Image
+                                        src={attributeImages[`${simpleVariantType}:${value}`]}
+                                        alt={value}
+                                        width={16}
+                                        height={16}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                    <span>{value}</span>
+                                  </div>
+                                ) : (
+                                  value
+                                )}
+                                {qty > 0 && (
+                                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4372B] text-white text-[8px] rounded-full flex items-center justify-center font-bold">
+                                    {qty}
+                                  </span>
+                                )}
                               </button>
                             )
                           })}
                         </div>
+
+                        {Object.entries(simpleVariantQuantities).map(([value, qty]) => {
+                          if (qty === 0) return null
+                          
+                          return (
+                            <div key={value} className="bg-white p-2 rounded-lg mt-3 border border-gray-200">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  {attributeImages[`${simpleVariantType}:${value}`] && (
+                                    <div className="w-6 h-6 rounded-full overflow-hidden border border-gray-300">
+                                      <Image
+                                        src={attributeImages[`${simpleVariantType}:${value}`]}
+                                        alt={value}
+                                        width={24}
+                                        height={24}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                  )}
+                                  <span className="text-sm font-medium text-gray-700">{value}</span>
+                                  <span className="text-xs text-gray-500">x{qty}</span>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
                       </div>
-                      {secondaryAttrName && (
-                        <div style={{ marginBottom: '16px' }}>
-                          <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: '12px' }}>{secondaryAttrName}</p>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                            {attributeGroups[Object.keys(attributeGroups)[1]]?.values.map(sv => {
-                              const total = getSecondaryTotal(sv)
+                    )}
+
+                    {hasComplexVariants && (
+                      <>
+                        <div className="p-4 rounded-xl mb-4" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
+                          <h3 className="text-sm font-medium text-gray-700 mb-3">
+                            {primaryAttrName}
+                          </h3>
+                          <div className="flex flex-wrap gap-2">
+                            {Object.keys(complexSelections).map((primaryValue) => {
+                              const total = getPrimaryTotal(primaryValue)
+                              const hasImage = attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]
+                              
                               return (
-                                <button key={sv} onClick={() => openSecondaryModal(sv)}
-                                  style={{ position: 'relative', padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', transition: 'all .15s', background: total > 0 ? 'rgba(200,57,43,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${total > 0 ? 'rgba(200,57,43,0.4)' : 'rgba(255,255,255,0.09)'}`, color: total > 0 ? '#C8392B' : 'rgba(255,255,255,0.6)' }}>
-                                  {sv}
-                                  {total > 0 && <span style={{ position: 'absolute', top: '-8px', right: '-8px', width: '18px', height: '18px', borderRadius: '50%', background: '#C8392B', color: '#fff', fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{total}</span>}
+                                <button
+                                  key={primaryValue}
+                                  onClick={() => openPrimaryModal(primaryValue)}
+                                  className={`
+                                    px-3 py-1.5 text-xs rounded-md transition-all relative
+                                    ${total > 0 
+                                      ? 'bg-[#D4372B] text-white font-semibold shadow-sm' 
+                                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                                    }
+                                  `}
+                                >
+                                  {hasImage ? (
+                                    <div className="flex items-center gap-1">
+                                      <div className="w-4 h-4 rounded-full overflow-hidden">
+                                        <Image
+                                          src={attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]}
+                                          alt={primaryValue}
+                                          width={16}
+                                          height={16}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      </div>
+                                      <span>{primaryValue}</span>
+                                    </div>
+                                  ) : (
+                                    primaryValue
+                                  )}
+                                  {total > 0 && (
+                                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4372B] text-white text-[8px] rounded-full flex items-center justify-center font-bold">
+                                      {total}
+                                    </span>
+                                  )}
                                 </button>
                               )
                             })}
                           </div>
                         </div>
-                      )}
-                      {/* résumé sélection */}
-                      {Object.entries(complexSelections).map(([pv, ss]) => {
-                        const nz = Object.entries(ss).filter(([_, q]) => q > 0)
-                        if (!nz.length) return null
-                        return (
-                          <div key={pv} style={{ padding: '12px 16px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', marginBottom: '8px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                              {attributeImages[`${Object.keys(attributeGroups)[0]}:${pv}`] && <div style={{ width: '18px', height: '18px', borderRadius: '50%', overflow: 'hidden' }}><Image src={attributeImages[`${Object.keys(attributeGroups)[0]}:${pv}`]} alt={pv} width={18} height={18} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>}
-                              <span style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>{pv}</span>
-                            </div>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                              {nz.map(([sv, q]) => <span key={sv} style={{ fontSize: '11px', padding: '3px 9px', borderRadius: '6px', background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>{sv} <strong style={{ color: '#C8392B' }}>×{q}</strong></span>)}
+
+                        {secondaryAttrName && (
+                          <div className="p-4 rounded-xl mb-4" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
+                            <h3 className="text-sm font-medium text-gray-700 mb-3">
+                              {secondaryAttrName}
+                            </h3>
+                            <div className="flex flex-wrap gap-2">
+                              {attributeGroups[Object.keys(attributeGroups)[1]]?.values.map((secondaryValue) => {
+                                const total = getSecondaryTotal(secondaryValue)
+                                
+                                return (
+                                  <button
+                                    key={secondaryValue}
+                                    onClick={() => openSecondaryModal(secondaryValue)}
+                                    className={`
+                                      px-3 py-1.5 text-xs rounded-md transition-all relative
+                                      ${total > 0 
+                                        ? 'bg-[#D4372B] text-white font-semibold shadow-sm' 
+                                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                                      }
+                                    `}
+                                  >
+                                    {secondaryValue}
+                                    {total > 0 && (
+                                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4372B] text-white text-[8px] rounded-full flex items-center justify-center font-bold">
+                                        {total}
+                                      </span>
+                                    )}
+                                  </button>
+                                )
+                              })}
                             </div>
                           </div>
-                        )
-                      })}
+                        )}
+
+                        {Object.entries(complexSelections).map(([primaryValue, secondarySelections]) => {
+                          const nonZeroSelections = Object.entries(secondarySelections).filter(([_, qty]) => qty > 0)
+                          if (nonZeroSelections.length === 0) return null
+                          
+                          return (
+                            <div key={primaryValue} className="bg-white p-3 rounded-lg mb-2 border border-gray-200">
+                              <div className="flex items-center gap-2 mb-2">
+                                {attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`] && (
+                                  <div className="w-6 h-6 rounded-full overflow-hidden border border-gray-300">
+                                    <Image
+                                      src={attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]}
+                                      alt={primaryValue}
+                                      width={24}
+                                      height={24}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                )}
+                                <span className="text-sm font-medium text-gray-700">{primaryValue}</span>
+                              </div>
+                              <div className="flex flex-wrap gap-2 pl-2">
+                                {nonZeroSelections.map(([secondaryValue, qty]) => (
+                                  <div key={secondaryValue} className="bg-gray-50 px-2 py-1 rounded border border-gray-200 text-xs">
+                                    <span className="font-medium">{secondaryValue}</span>
+                                    <span className="ml-1 text-[#D4372B] font-bold">x{qty}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </>
+                    )}
+                  </>
+                )}
+
+                {!hasVariants && (
+                  <div className="mb-4">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Quantité</h3>
+                    <div className="flex items-center rounded-xl overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
+                      <button
+                        onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))}
+                        className="p-2.5 transition-colors" style={{ background: "#F4F4F4" }}
+                        disabled={simpleQuantity <= 1}
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <span className="w-12 text-center text-sm font-medium">{simpleQuantity}</span>
+                      <button
+                        onClick={() => setSimpleQuantity(simpleQuantity + 1)}
+                        className="p-2.5 transition-colors" style={{ background: "#F4F4F4" }}
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3 text-xs text-gray-600">
+                  <div className="flex items-center gap-1">
+                    <Package className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
+                    <span>MOQ: {minQuantity}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Check className="w-3.5 h-3.5 text-green-600" />
+                    <span>En stock</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {isLoadingLogistics ? (
+                      <span className="inline-flex items-center text-gray-400">
+                        <span className="w-3 h-3 border-2 border-gray-300 border-t-[#D4372B] rounded-full animate-spin mr-1"></span>
+                        Calcul...
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">
+                        {logisticsData ? `${logisticsData.weight.totalWeight.toFixed(2)} kg total` : '0.00 kg total'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <h3 className="text-xs font-medium text-gray-500 flex items-center justify-between">
+                    <span>Mode de livraison</span>
+                    {selectedPortePorteCost > 0 && (
+                      <span className="text-xs font-medium text-gray-700">
+                        Frais porte-à-porte: <span className="font-bold" style={{ color: '#D4372B' }}>{formatPrice(selectedPortePorteCost)}</span>
+                      </span>
+                    )}
+                  </h3>
+                  {isLoadingLogistics ? (
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="flex flex-col items-center p-2 rounded-lg border border-gray-200 bg-gray-50 animate-pulse">
+                          <div className="w-4 h-4 bg-gray-200 rounded-full mb-1"></div>
+                          <div className="w-8 h-3 bg-gray-200 rounded mb-1"></div>
+                          <div className="w-6 h-2 bg-gray-200 rounded mb-1"></div>
+                          <div className="w-10 h-3 bg-gray-200 rounded"></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : logisticsError ? (
+                    <div className="text-xs text-red-500 p-2 border border-red-200 rounded-lg bg-red-50">
+                      {logisticsError}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[
+                          { mode: "bateau", icon: Ship, label: "Mer" },
+                          { mode: "avion", icon: Sparkles, label: "Air" },
+                          { mode: "express", icon: Zap, label: "Express" }
+                        ].map((item) => {
+                          const shippingMode = item.mode as "bateau" | "avion" | "express"
+                          const isAvailable = logisticsData?.shipping?.[shippingMode]
+                          const days = getShippingDays(shippingMode)
+                          const cost = getShippingCost(shippingMode)
+                          
+                          if (!isAvailable) return null
+                          
+                          return (
+                            <button
+                              key={item.mode}
+                              onClick={() => setSelectedShipping(shippingMode)}
+                              className="flex flex-col items-center p-2 rounded-lg border transition-all hover:shadow-md"
+                              style={{
+                                borderColor: selectedShipping === shippingMode ? brandColor : '#e5e7eb',
+                                background: selectedShipping === shippingMode ? '#D4372B' : '#fff'
+                              }}
+                            >
+                              <item.icon className="w-4 h-4 mb-1" style={{ color: selectedShipping === shippingMode ? 'white' : '#9ca3af' }} />
+                              <span className="text-xs font-medium" style={{ color: selectedShipping === shippingMode ? 'white' : '#374151' }}>
+                                {item.label}
+                              </span>
+                              <span className="text-[10px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#6b7280' }}>
+                                {days}
+                              </span>
+                              <span className="text-xs font-semibold mt-0.5" style={{ color: selectedShipping === shippingMode ? 'white' : '#D4372B' }}>
+                                {formatPrice(cost)}
+                              </span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                      <div className="text-center mt-1">
+                        <span className="text-[10px] text-gray-400">* Frais de porte-à-porte inclus</span>
+                      </div>
                     </>
                   )}
                 </div>
-              )}
 
-              {!hasVariants && (
-                <div style={{ marginBottom: '28px' }}>
-                  <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: '12px' }}>Quantité</p>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}>
-                    <button onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))} disabled={simpleQuantity <= 1} style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', opacity: simpleQuantity <= 1 ? 0.3 : 1 }}>
-                      <Minus style={{ width: '14px', height: '14px' }} />
-                    </button>
-                    <span style={{ width: '48px', textAlign: 'center', fontSize: '15px', fontWeight: 700, color: '#F5F5F5' }}>{simpleQuantity}</span>
-                    <button onClick={() => setSimpleQuantity(simpleQuantity + 1)} style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)' }}>
-                      <Plus style={{ width: '14px', height: '14px' }} />
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* ── Méta ── */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', fontSize: '12px', color: 'rgba(255,255,255,0.35)', marginBottom: '28px', paddingBottom: '28px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Package style={{ width: '13px', height: '13px', color: '#C8392B' }} />MOQ: {minQuantity}</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Check style={{ width: '13px', height: '13px', color: '#4ADE80' }} /><span style={{ color: '#4ADE80' }}>En stock</span></span>
-                {isLoadingLogistics
-                  ? <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '12px', height: '12px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.1)', borderTop: '2px solid #C8392B', animation: 'spin 1s linear infinite', display: 'inline-block' }} />Calcul...</span>
-                  : <span>{logisticsData ? `${logisticsData.weight.totalWeight.toFixed(2)} kg` : '—'}</span>
-                }
-              </div>
-
-              {/* ── Livraison — 3 cartes ── */}
-              <div style={{ marginBottom: '28px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                  <p style={{ fontSize: '13px', fontWeight: 600, color: '#F5F5F5' }}>Livraison vers Abidjan</p>
-                  {selectedPortePorteCost > 0 && <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Porte-à-porte: <strong style={{ color: '#C8392B' }}>{formatPrice(selectedPortePorteCost)}</strong></span>}
-                </div>
-                {isLoadingLogistics ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-                    {[1,2,3].map(i => <div key={i} style={{ height: '90px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', animation: 'pulse 1.5s ease-in-out infinite' }} />)}
-                  </div>
-                ) : logisticsError ? (
-                  <div style={{ fontSize: '12px', padding: '12px', borderRadius: '10px', background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)', color: '#FCA5A5' }}>{logisticsError}</div>
-                ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-                    {([
-                      { mode: 'bateau', icon: Ship, label: 'Mer' },
-                      { mode: 'avion', icon: Sparkles, label: 'Air' },
-                      { mode: 'express', icon: Zap, label: 'Express' },
-                    ] as const).map(item => {
-                      if (!logisticsData?.shipping?.[item.mode]) return null
-                      const active = selectedShipping === item.mode
-                      const cost = getShippingCost(item.mode)
-                      const days = getShippingDays(item.mode)
-                      return (
-                        <button key={item.mode} onClick={() => setSelectedShipping(item.mode)}
-                          style={{ padding: '14px 12px', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', transition: 'all .2s cubic-bezier(.16,1,.3,1)', background: active ? 'rgba(200,57,43,0.1)' : 'rgba(255,255,255,0.03)', border: `1.5px solid ${active ? '#C8392B' : 'rgba(255,255,255,0.07)'}`, transform: active ? 'translateY(-2px)' : 'none' }}>
-                          <item.icon style={{ width: '16px', height: '16px', color: active ? '#C8392B' : 'rgba(255,255,255,0.3)', marginBottom: '8px' }} />
-                          <div style={{ fontSize: '13px', fontWeight: 700, color: active ? '#F5F5F5' : 'rgba(255,255,255,0.6)', marginBottom: '2px' }}>{formatPrice(cost)}</div>
-                          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', lineHeight: 1.4 }}>{item.label} · {days}</div>
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* ── Protection ── */}
-              <button onClick={() => setIsProtectionModalOpen(true)}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 18px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer', textAlign: 'left', marginBottom: '24px', transition: 'border-color .2s' }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.14)'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'}
-              >
-                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(200,57,43,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Shield style={{ width: '17px', height: '17px', color: '#C8392B' }} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: '13px', fontWeight: 600, color: '#F5F5F5', marginBottom: '5px' }}>Protection Adullam</p>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    {['MTN', 'Orange', 'Wave', 'Visa'].map(m => <span key={m} style={{ fontSize: '10px', padding: '2px 7px', borderRadius: '4px', background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.07)' }}>{m}</span>)}
-                  </div>
-                </div>
-                <Info style={{ width: '15px', height: '15px', color: 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
-              </button>
-
-              {/* MOQ */}
-              {!isMOQMet && grandTotal > 0 && (
-                <div style={{ fontSize: '12px', padding: '12px 14px', borderRadius: '10px', background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.15)', color: '#FCD34D', display: 'flex', gap: '8px', alignItems: 'flex-start', marginBottom: '20px' }}>
-                  <span>⚠</span> Quantité minimum non atteinte ({minQuantity} min).
-                </div>
-              )}
-
-              {/* ── CTA ── */}
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '24px' }}>
-                <button
-                  onClick={isMOQMet && grandTotal > 0 ? handleAddToCart : handleContactWhatsApp}
-                  style={{ flex: 1, height: '50px', borderRadius: '10px', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', border: 'none', background: isMOQMet && grandTotal > 0 ? '#C8392B' : 'linear-gradient(135deg,#F59E0B,#FBBF24)', color: '#fff', boxShadow: isMOQMet && grandTotal > 0 ? '0 8px 32px rgba(200,57,43,0.3)' : 'none', transition: 'all .2s', letterSpacing: '-0.01em' }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; if (isMOQMet && grandTotal > 0) e.currentTarget.style.boxShadow = '0 12px 40px rgba(200,57,43,0.4)' }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = 'none'; if (isMOQMet && grandTotal > 0) e.currentTarget.style.boxShadow = '0 8px 32px rgba(200,57,43,0.3)' }}
+                <div 
+                  onClick={() => setIsProtectionModalOpen(true)}
+                  className="rounded-xl p-3 cursor-pointer transition-all hover:shadow-md"
                 >
-                  <ShoppingCart style={{ width: '16px', height: '16px' }} />
-                  {isMOQMet && grandTotal > 0 ? `Ajouter au panier (${grandTotal})` : 'Nous contacter'}
-                </button>
-                <button
-                  onClick={handleBuyNow}
-                  disabled={!isMOQMet || grandTotal === 0}
-                  style={{ flex: 1, height: '50px', borderRadius: '10px', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.07)', color: '#F5F5F5', transition: 'all .2s', letterSpacing: '-0.01em', opacity: !isMOQMet || grandTotal === 0 ? 0.3 : 1 }}
-                  onMouseEnter={e => { if (isMOQMet && grandTotal > 0) { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; e.currentTarget.style.transform = 'translateY(-1px)' }}}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.transform = 'none' }}
-                >
-                  Acheter maintenant
-                </button>
-              </div>
-
-              {/* Trust row */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '40px' }}>
-                {[
-                  { icon: Shield, label: 'Garantie 12 mois' },
-                  { icon: RotateCcw, label: 'Retour 15 jours' },
-                  { icon: Check, label: 'Certifié qualité' },
-                  { icon: Truck, label: 'Suivi en temps réel' },
-                ].map(({ icon: Icon, label }) => (
-                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'rgba(255,255,255,0.35)', padding: '10px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <Icon style={{ width: '13px', height: '13px', color: '#C8392B', flexShrink: 0 }} />
-                    {label}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4" style={{ color: '#D4372B' }} />
+                      <span className="text-xs font-medium text-gray-900">Protection Adullam</span>
+                    </div>
+                    <Info className="w-3.5 h-3.5 text-gray-400" />
                   </div>
-                ))}
-              </div>
-
-              {/* ── Tabs desktop (dans le right panel) ── */}
-              <div>
-                <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)', marginBottom: '28px' }}>
-                  {[
-                    { id: 'description', label: 'Description' },
-                    { id: 'specifications', label: 'Caractéristiques' },
-                    { id: 'avis', label: `Avis (${reviewsStats.totalReviews})` },
-                  ].map(tab => (
-                    <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                      style={{ padding: '12px 20px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', background: 'none', border: 'none', position: 'relative', color: activeTab === tab.id ? '#F5F5F5' : 'rgba(255,255,255,0.3)', transition: 'color .2s' }}>
-                      {tab.label}
-                      {activeTab === tab.id && <span style={{ position: 'absolute', bottom: 0, left: '16px', right: '16px', height: '1px', background: '#C8392B', borderRadius: '1px' }} />}
-                    </button>
-                  ))}
-                </div>
-
-                {activeTab === 'description' && (
-                  <div>
-                    <p style={{ fontSize: '13px', lineHeight: 1.9, color: 'rgba(255,255,255,0.5)', marginBottom: '20px' }}>{product.description || product.cleanedDesc || 'Description non disponible'}</p>
-                    {product.features?.length > 0 && (
-                      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                        {product.features.map((f: string, i: number) => (
-                          <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>
-                            <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#C8392B', flexShrink: 0, marginTop: '8px' }} />
-                            {f}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                )}
-
-                {activeTab === 'specifications' && (
-                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                    {(product.specifications || [
-                      { label: 'Marque', value: 'TechPro' }, { label: 'Modèle', value: 'TP-EB001' },
-                      { label: 'Bluetooth', value: '5.2' }, { label: 'Autonomie', value: '6h (écouteurs)' },
-                      { label: 'Boîtier', value: '24h' }, { label: 'Charge', value: '1h 30min' },
-                      { label: 'Poids', value: '4.5g / oreille' }, { label: 'Garantie', value: '12 mois' },
-                    ]).map((s: any, i: number) => (
-                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.35)' }}>{s.label}</span>
-                        <span style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{s.value}</span>
-                      </div>
+                  
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    {['MTN', 'Orange', 'Wave', 'Visa'].map((method) => (
+                      <span key={method} className="text-xs px-2 py-1 bg-white border border-gray-200 rounded-full text-gray-600 shadow-sm">
+                        {method}
+                      </span>
                     ))}
                   </div>
+                  
+                  <p className="text-xs text-gray-500 flex items-center gap-1">
+                    <Lock className="w-3 h-3 text-gray-400" />
+                    Paiement sécurisé
+                  </p>
+                </div>
+
+                {!isMOQMet && grandTotal > 0 && (
+                  <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800 shadow-sm">
+                    Quantité minimum non atteinte ({minQuantity} min). Contactez-nous pour discuter.
+                  </div>
                 )}
 
-                {activeTab === 'avis' && (
-                  <div>
-                    {!showReviewForm && (
-                      <button onClick={() => setShowReviewForm(true)}
-                        style={{ marginBottom: '24px', padding: '9px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', background: 'rgba(200,57,43,0.08)', border: '1px solid rgba(200,57,43,0.3)', color: '#C8392B' }}>
-                        Écrire un avis
+                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-3 lg:relative lg:border-0 lg:p-0 z-50 shadow-lg">
+                  <div className="flex gap-2 max-w-[1440px] mx-auto">
+                    <button
+                      onClick={isMOQMet && grandTotal > 0 ? handleAddToCart : handleContactWhatsApp}
+                      className="flex-1 py-3 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:shadow-lg"
+                      style={{
+                        background: (isMOQMet && grandTotal > 0) ? brandGradient : 'linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%)',
+                        color: 'white'
+                      }}
+                    >
+                      <ShoppingCart className="w-4 h-4" />
+                      {(isMOQMet && grandTotal > 0) ? `Ajouter (${grandTotal})` : 'Nous contacter'}
+                    </button>
+                    <button
+                      onClick={handleBuyNow}
+                      disabled={!isMOQMet || grandTotal === 0}
+                      className="flex-1 py-3 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:shadow-lg"
+                      style={{
+                        background: 'linear-gradient(135deg, #1A2F3F 0%, #2D3F4F 100%)',
+                        color: 'white',
+                        opacity: (isMOQMet && grandTotal > 0) ? 1 : 0.5
+                      }}
+                    >
+                      Acheter
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 py-3 text-xs border-y border-gray-100 my-2">
+                  <div className="flex items-center gap-1.5">
+                    <Shield className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
+                    <span>Garantie 12 mois</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <RotateCcw className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
+                    <span>Retour 15 jours</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mobile Tabs - Gardé identique */}
+              <div className="mt-6 bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 shadow-sm">
+                <div className="overflow-x-auto hide-scrollbar border-b border-gray-200">
+                  <div className="flex gap-4 min-w-max px-1">
+                    {[
+                      { id: "description", label: "Description" },
+                      { id: "specifications", label: "Caractéristiques" },
+                      { id: "avis", label: `Avis (${reviewsStats.totalReviews})` }
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`py-2.5 px-1 text-sm font-medium border-b-2 transition-all whitespace-nowrap`}
+                        style={{
+                          color: activeTab === tab.id ? brandColor : '#6B7280',
+                          borderBottomColor: activeTab === tab.id ? brandColor : 'transparent',
+                          borderBottomWidth: '2px'
+                        }}
+                      >
+                        {tab.label}
                       </button>
-                    )}
-                    {showReviewForm && (
-                      <div style={{ padding: '20px', borderRadius: '14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '24px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-                          <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#F5F5F5' }}>Votre avis</h3>
-                          <button onClick={() => setShowReviewForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X style={{ width: '16px', height: '16px', color: 'rgba(255,255,255,0.3)' }} /></button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="py-4">
+                  {activeTab === "description" && (
+                    <div className="space-y-3">
+                      <p className="text-sm text-gray-700 leading-relaxed break-words">
+                        {product.description || product.cleanedDesc || "Description non disponible"}
+                      </p>
+                      {product.features && product.features.length > 0 && (
+                        <div className="mt-4">
+                          <h4 className="text-sm font-semibold text-gray-800 mb-2">Points forts :</h4>
+                          <ul className="space-y-2">
+                            {product.features.map((feature: string, i: number) => (
+                              <li key={i} className="flex items-start gap-2 text-sm">
+                                <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-[#D4372B]" />
+                                <span className="text-gray-600 break-words">{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                        <div style={{ marginBottom: '14px' }}>
-                          <label style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', display: 'block', marginBottom: '8px' }}>Note</label>
-                          <div style={{ display: 'flex', gap: '6px' }}>{[1,2,3,4,5].map(s => <button key={s} onClick={() => setNewReview({ ...newReview, rating: s })} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}><Star style={{ width: '24px', height: '24px', fill: s <= newReview.rating ? '#E8B94F' : 'none', color: s <= newReview.rating ? '#E8B94F' : 'rgba(255,255,255,0.2)' }} /></button>)}</div>
-                        </div>
-                        <div style={{ marginBottom: '14px' }}>
-                          <label style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', display: 'block', marginBottom: '8px' }}>Nom</label>
-                          <input type="text" value={newReview.authorName} onChange={e => setNewReview({ ...newReview, authorName: e.target.value })} style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#F5F5F5', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} placeholder="Jean Dupont" />
-                        </div>
-                        <div style={{ marginBottom: '18px' }}>
-                          <label style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', display: 'block', marginBottom: '8px' }}>Commentaire</label>
-                          <textarea value={newReview.comment} rows={4} onChange={e => setNewReview({ ...newReview, comment: e.target.value })} style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#F5F5F5', fontSize: '13px', outline: 'none', resize: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }} placeholder="Partagez votre expérience..." />
-                        </div>
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                          <button onClick={() => setShowReviewForm(false)} style={{ flex: 1, padding: '10px', borderRadius: '8px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}>Annuler</button>
-                          <button onClick={handleSubmitReview} disabled={isSubmittingReview} style={{ flex: 1, padding: '10px', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', background: '#C8392B', border: 'none', color: '#fff', opacity: isSubmittingReview ? 0.5 : 1 }}>{isSubmittingReview ? 'Envoi...' : 'Publier'}</button>
-                        </div>
-                      </div>
-                    )}
-                    {isLoadingReviews ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        {[1,2,3].map(i => <div key={i} style={{ paddingBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}><div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}><div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.07)' }} /><div style={{ height: '14px', width: '120px', borderRadius: '4px', background: 'rgba(255,255,255,0.07)' }} /></div><div style={{ height: '12px', width: '100%', borderRadius: '4px', background: 'rgba(255,255,255,0.05)', marginBottom: '6px' }} /><div style={{ height: '12px', width: '60%', borderRadius: '4px', background: 'rgba(255,255,255,0.04)' }} /></div>)}
-                      </div>
-                    ) : reviews.length === 0 ? (
-                      <div style={{ textAlign: 'center', padding: '48px 0' }}>
-                        <Star style={{ width: '40px', height: '40px', color: 'rgba(255,255,255,0.07)', margin: '0 auto 12px' }} />
-                        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.3)' }}>Aucun avis</p>
-                      </div>
-                    ) : (
-                      <div style={{ display: 'flex', gap: '40px' }}>
-                        <div style={{ flexShrink: 0, width: '140px', textAlign: 'center' }}>
-                          <div style={{ fontSize: '52px', fontWeight: 900, color: '#F5F5F5', lineHeight: 1, marginBottom: '8px' }}>{reviewsStats.averageRating}</div>
-                          <div style={{ display: 'flex', justifyContent: 'center', gap: '2px', marginBottom: '8px' }}>{[1,2,3,4,5].map(s => <Star key={s} style={{ width: '14px', height: '14px', fill: s <= Math.round(reviewsStats.averageRating) ? '#E8B94F' : 'none', color: s <= Math.round(reviewsStats.averageRating) ? '#E8B94F' : 'rgba(255,255,255,0.1)' }} />)}</div>
-                          <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginBottom: '16px' }}>{reviewsStats.totalReviews} avis</p>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            {[5,4,3,2,1].map(r => {
-                              const count = reviewsStats.ratingDistribution[r as keyof typeof reviewsStats.ratingDistribution] || 0
-                              const pct = reviewsStats.totalReviews > 0 ? (count / reviewsStats.totalReviews) * 100 : 0
-                              return (
-                                <div key={r} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px' }}>
-                                  <span style={{ width: '10px', textAlign: 'right', color: 'rgba(255,255,255,0.3)' }}>{r}</span>
-                                  <div style={{ flex: 1, height: '3px', borderRadius: '2px', background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}><div style={{ height: '100%', borderRadius: '2px', background: '#C8392B', width: `${pct}%` }} /></div>
-                                  <span style={{ width: '16px', color: 'rgba(255,255,255,0.25)' }}>{count}</span>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        </div>
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '460px', overflowY: 'auto', paddingRight: '4px' }}>
-                          {reviews.map(review => (
-                            <div key={review.id} style={{ paddingBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                  <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: '#F5F5F5' }}>{review.authorName.charAt(0).toUpperCase()}</div>
-                                  <div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
-                                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#F5F5F5' }}>{review.authorName}</span>
-                                      {review.verifiedPurchase && <span style={{ fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', background: 'rgba(74,222,128,0.1)', color: '#4ADE80' }}>VÉRIFIÉ</span>}
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '2px' }}>{[1,2,3,4,5].map(s => <Star key={s} style={{ width: '11px', height: '11px', fill: s <= review.rating ? '#E8B94F' : 'none', color: s <= review.rating ? '#E8B94F' : 'rgba(255,255,255,0.1)' }} />)}</div>
-                                  </div>
-                                </div>
-                                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)' }}>{formatReviewDate(review.createdAt)}</span>
-                              </div>
-                              <p style={{ fontSize: '13px', lineHeight: 1.7, color: 'rgba(255,255,255,0.5)', paddingLeft: '44px' }}>{review.comment}</p>
+                      )}
+                    </div>
+                  )}
+                  
+                  {activeTab === "specifications" && (
+                    <div className="space-y-3">
+                      {product.specifications ? (
+                        <div className="divide-y divide-gray-100">
+                          {product.specifications.map((spec: any, i: number) => (
+                            <div key={i} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0">
+                              <span className="text-xs text-gray-500">{spec.label}</span>
+                              <span className="text-sm font-medium text-gray-800 break-words">{spec.value}</span>
                             </div>
                           ))}
                         </div>
-                      </div>
+                      ) : (
+                        <div className="grid grid-cols-1 gap-3">
+                          {[
+                            { label: "Marque", value: product.brand || "TechPro" },
+                            { label: "Modèle", value: product.model || "Standard" },
+                            { label: "Poids", value: product.weight ? `${product.weight} kg` : "N/A" },
+                            { label: "Garantie", value: "12 mois" }
+                          ].map((spec, i) => (
+                            <div key={i} className="flex justify-between items-center py-2 border-b border-gray-100">
+                              <span className="text-xs text-gray-500">{spec.label}</span>
+                              <span className="text-sm font-medium text-gray-800 break-words max-w-[60%] text-right">{spec.value}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {activeTab === "avis" && (
+                    <div className="space-y-4">
+                      {!showReviewForm && (
+                        <button
+                          onClick={() => setShowReviewForm(true)}
+                          className="w-full py-3 bg-[#D4372B] text-white rounded-xl text-sm font-medium hover:bg-[#B5271C] transition-colors shadow-sm"
+                        >
+                          ✍️ Donner mon avis
+                        </button>
+                      )}
+                      
+                      {showReviewForm && (
+                        <div className="rounded-xl" style={{ background: "#fff", border: "0.5px solid #ECECEC" }}
+                    className=" p-4 space-y-4 shadow-sm">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-semibold text-gray-900">Votre avis</h4>
+                            <button 
+                              onClick={() => setShowReviewForm(false)}
+                              className="text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                              <X className="w-5 h-5" />
+                            </button>
+                          </div>
+                          
+                          <div>
+                            <label className="text-sm text-gray-600 font-medium">Note</label>
+                            <div className="flex gap-3 mt-2">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                  key={star}
+                                  onClick={() => setNewReview({ ...newReview, rating: star })}
+                                  className="focus:outline-none transition-transform hover:scale-110"
+                                >
+                                  <Star 
+                                    className={`w-8 h-8 ${
+                                      star <= newReview.rating 
+                                        ? 'fill-yellow-400 text-yellow-400' 
+                                        : 'text-gray-300'
+                                    }`} 
+                                  />
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <label className="text-sm text-gray-600 font-medium">Votre nom</label>
+                            <input
+                              type="text"
+                              value={newReview.authorName}
+                              onChange={(e) => setNewReview({ ...newReview, authorName: e.target.value })}
+                              className="w-full mt-1.5 p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#D4372B] transition-all"
+                              placeholder="Jean Dupont"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="text-sm text-gray-600 font-medium">Votre commentaire</label>
+                            <textarea
+                              value={newReview.comment}
+                              onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                              className="w-full mt-1.5 p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#D4372B] resize-none"
+                              rows={4}
+                              placeholder="Partagez votre expérience avec ce produit..."
+                            />
+                          </div>
+                          
+                          <div className="flex gap-3 pt-2">
+                            <button
+                              onClick={() => setShowReviewForm(false)}
+                              className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                            >
+                              Annuler
+                            </button>
+                            <button
+                              onClick={handleSubmitReview}
+                              disabled={isSubmittingReview}
+                              className="flex-1 py-3 bg-[#D4372B] text-white rounded-xl text-sm font-medium hover:bg-[#B5271C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {isSubmittingReview ? "Envoi..." : "Publier"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {isLoadingReviews ? (
+                        <div className="space-y-4">
+                          {[1, 2, 3].map((i) => (
+                            <div key={i} className="animate-pulse">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                <div className="h-3 bg-gray-200 rounded w-20"></div>
+                              </div>
+                              <div className="flex gap-1 mb-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <div key={star} className="w-3 h-3 bg-gray-200 rounded"></div>
+                                ))}
+                              </div>
+                              <div className="h-3 bg-gray-200 rounded w-full mb-1"></div>
+                              <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : reviews.length === 0 ? (
+                        <div className="text-center py-8">
+                          <div className="w-16 h-16 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+                            <Star className="w-8 h-8 text-gray-300" />
+                          </div>
+                          <p className="text-gray-500 text-sm">Aucun avis pour le moment</p>
+                          <p className="text-xs text-gray-400 mt-1">Soyez le premier à donner votre avis</p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-4 pb-3 border-b border-gray-100">
+                            <div className="text-center">
+                              <div className="text-3xl font-black" style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.03em" }}>{reviewsStats.averageRating}</div>
+                              <div className="flex justify-center mt-1">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star 
+                                    key={star} 
+                                    className={`w-3 h-3 ${
+                                      star <= Math.round(reviewsStats.averageRating) 
+                                        ? 'fill-yellow-400 text-yellow-400' 
+                                        : 'text-gray-300'
+                                    }`} 
+                                  />
+                                ))}
+                              </div>
+                              <p className="text-[10px] text-gray-400 mt-1">{reviewsStats.totalReviews} avis</p>
+                            </div>
+                            <div className="flex-1 space-y-1">
+                              {[5, 4, 3, 2, 1].map((rating) => {
+                                const count = reviewsStats.ratingDistribution[rating as keyof typeof reviewsStats.ratingDistribution] || 0
+                                const percentage = reviewsStats.totalReviews > 0 ? (count / reviewsStats.totalReviews) * 100 : 0
+                                return (
+                                  <div key={rating} className="flex items-center gap-2 text-[10px]">
+                                    <span className="w-6">{rating} ★</span>
+                                    <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                      <div 
+                                        className="h-full rounded-full bg-[#D4372B]" 
+                                        style={{ width: `${percentage}%` }} 
+                                      />
+                                    </div>
+                                    <span className="w-8 text-right text-gray-500">{count}</span>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-4 max-h-[400px] overflow-y-auto">
+                            {reviews.map((review) => (
+                              <div key={review.id} className="border-b border-gray-100 pb-3 last:border-0">
+                                <div className="flex items-center justify-between mb-1">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-6 h-6 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                                      {review.authorName.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="text-xs font-medium text-gray-700">{review.authorName}</span>
+                                    {review.verifiedPurchase && (
+                                      <span className="text-[9px] px-1.5 py-0.5 bg-green-100 text-green-700 rounded-full">
+                                        Vérifié
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-[10px] text-gray-400">{formatReviewDate(review.createdAt)}</span>
+                                </div>
+                                <div className="flex items-center gap-0.5 mb-1 ml-8">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star 
+                                      key={star} 
+                                      className={`w-2.5 h-2.5 ${
+                                        star <= review.rating 
+                                          ? 'fill-yellow-400 text-yellow-400' 
+                                          : 'text-gray-200'
+                                      }`} 
+                                    />
+                                  ))}
+                                </div>
+                                <p className="text-xs text-gray-600 leading-relaxed ml-8">
+                                  {review.comment}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION DESKTOP - Gardée identique car pas de fetch direct */}
+            <div className="hidden lg:grid lg:grid-cols-12 gap-6 lg:gap-8 mb-16">
+              
+              <div className="lg:col-span-5">
+                <div className="bg-white mb-2 aspect-square flex items-center justify-center overflow-hidden border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                  <Image
+                    src={safeImages[selectedImage]}
+                    alt={productName}
+                    width={500}
+                    height={500}
+                    className="w-full h-full object-contain p-4"
+                    priority
+                  />
+                </div>
+
+                {safeImages.length > 0 && (
+                  <div className="relative mt-2 w-full">
+                    {safeImages.length > 5 && (
+                      <button
+                        onClick={() => scrollThumbnails("left")}
+                        className="absolute -left-3 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full p-1 shadow-md border hover:bg-gray-50"
+                      >
+                        <ChevronLeft className="w-3 h-3" />
+                      </button>
+                    )}
+
+                    <div
+                      ref={thumbnailRef}
+                      className="flex gap-1.5 overflow-x-hidden scroll-smooth"
+                      style={{
+                        scrollbarWidth: "none",
+                        msOverflowStyle: "none"
+                      }}
+                    >
+                      {safeImages.map((img, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setSelectedImage(idx)}
+                          className="flex-shrink-0 w-1/5 aspect-square bg-white rounded-lg overflow-hidden border transition-all hover:shadow-md"
+                          style={{
+                            flexBasis: "calc(20% - 5px)",
+                            borderColor: selectedImage === idx ? brandColor : '#e5e7eb',
+                            opacity: selectedImage === idx ? 1 : 0.7
+                          }}
+                        >
+                          <Image
+                            src={img || "/placeholder.svg"}
+                            alt={`${productName} ${idx + 1}`}
+                            width={80}
+                            height={80}
+                            className="w-full h-full object-contain p-1"
+                          />
+                        </button>
+                      ))}
+                    </div>
+
+                    {safeImages.length > 5 && (
+                      <button
+                        onClick={() => scrollThumbnails("right")}
+                        className="absolute -right-3 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full p-1 shadow-md border hover:bg-gray-50"
+                      >
+                        <ChevronRight className="w-3 h-3" />
+                      </button>
                     )}
                   </div>
                 )}
               </div>
 
-            </div>
-          </div>
-          {/* END DESKTOP */}
-
-          {/* ════════════════════════════════════════════════════
-              PRODUITS SIMILAIRES  (desktop + mobile)
-          ════════════════════════════════════════════════════ */}
-          <div style={{ padding: '56px 40px 64px', borderTop: '1px solid rgba(255,255,255,0.06)' }} className="hidden lg:block">
-            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '28px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#F5F5F5', letterSpacing: '-0.02em' }}>Vous aimerez aussi</h2>
-            </div>
-            {isLoadingRelated ? (
-              <div style={{ display: 'flex', gap: '14px' }}>
-                {[1,2,3,4,5,6].map(i => <div key={i} style={{ width: '180px', flexShrink: 0 }}><div style={{ aspectRatio: '1/1', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', marginBottom: '10px' }} /><div style={{ height: '12px', borderRadius: '4px', background: 'rgba(255,255,255,0.04)', marginBottom: '6px' }} /><div style={{ height: '12px', borderRadius: '4px', width: '50%', background: 'rgba(255,255,255,0.03)' }} /></div>)}
-              </div>
-            ) : relatedProducts.length === 0 ? null : (
-              <div style={{ position: 'relative' }}>
-                <div ref={relatedCarouselRef} style={{ display: 'flex', gap: '14px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '4px', scrollBehavior: 'smooth' }}>
-                  {relatedProducts.map(p => (
-                    <a key={p.id} href={`/products/${p.id}`} style={{ flexShrink: 0, width: '180px', textDecoration: 'none', display: 'block' }}
-                      onMouseEnter={e => { const el = e.currentTarget.querySelector('.rp-img') as HTMLElement; if (el) el.style.transform = 'scale(1.04)' }}
-                      onMouseLeave={e => { const el = e.currentTarget.querySelector('.rp-img') as HTMLElement; if (el) el.style.transform = 'scale(1)' }}>
-                      <div style={{ aspectRatio: '1/1', borderRadius: '14px', background: '#121212', border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden', marginBottom: '10px' }}>
-                        <Image src={p.image || '/placeholder.svg'} alt={p.name} width={180} height={180} className="rp-img" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '16px', transition: 'transform .4s cubic-bezier(.16,1,.3,1)' }} />
+              <div className="lg:col-span-7">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span 
+                        className="text-xs font-medium px-2 py-0.5 rounded-full"
+                        style={{ background: '#D4372B', color: '#fff', fontFamily: "'Poppins', sans-serif" }}
+                      >
+                        Top vente
+                      </span>
+                      <span className="text-xs text-gray-400">SKU: {product.id}</span>
+                    </div>
+                    <h1 className="text-xl font-medium">{productName}</h1>
+                    
+                    <div className="flex items-center gap-3 text-xs mt-2">
+                      <div className="flex items-center gap-1">
+                        <div className="flex">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star key={star} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                          ))}
+                        </div>
+                        <span className="text-gray-600 ml-1">{reviewsStats.averageRating || 0}</span>
                       </div>
-                      <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.4, marginBottom: '5px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.name}</p>
-                      <div style={{ display: 'flex', gap: '2px', marginBottom: '4px' }}>{[1,2,3,4,5].map(s => <Star key={s} style={{ width: '10px', height: '10px', fill: '#E8B94F', color: '#E8B94F' }} />)}</div>
-                      <p style={{ fontSize: '13px', fontWeight: 700, color: '#C8392B' }}>{formatPrice(p.priceUSD)}</p>
-                    </a>
-                  ))}
-                </div>
-                <button onClick={() => scrollRelated('left')} style={{ position: 'absolute', left: '-18px', top: '35%', width: '36px', height: '36px', borderRadius: '50%', background: '#1C1C1C', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                  <ChevronLeft style={{ width: '15px', height: '15px', color: 'rgba(255,255,255,0.6)' }} />
-                </button>
-                <button onClick={() => scrollRelated('right')} style={{ position: 'absolute', right: '-18px', top: '35%', width: '36px', height: '36px', borderRadius: '50%', background: '#1C1C1C', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                  <ChevronRight style={{ width: '15px', height: '15px', color: 'rgba(255,255,255,0.6)' }} />
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* ════════════════════════════════════════════════════
-              MOBILE LAYOUT
-          ════════════════════════════════════════════════════ */}
-          <div className="lg:hidden" style={{ padding: '0 0 20px' }}>
-
-            {/* Galerie mobile */}
-            <div style={{ position: 'relative', background: '#0E0E0E', marginBottom: '20px' }}>
-              <div style={{ aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '28px', cursor: 'zoom-in' }} onClick={() => setIsImageModalOpen(true)}>
-                <Image src={safeImages[selectedImage]} alt={productName} width={380} height={380} style={{ width: '100%', height: '100%', objectFit: 'contain', transition: 'opacity .3s' }} priority />
-              </div>
-              {/* dots */}
-              <div style={{ position: 'absolute', bottom: '14px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '5px' }}>
-                {safeImages.slice(0, 8).map((_, idx) => (
-                  <button key={idx} onClick={() => setSelectedImage(idx)} style={{ height: '4px', borderRadius: '2px', cursor: 'pointer', border: 'none', transition: 'all .25s', width: selectedImage === idx ? '18px' : '4px', background: selectedImage === idx ? '#C8392B' : 'rgba(255,255,255,0.3)' }} />
-                ))}
-              </div>
-              {/* wishlist */}
-              <button onClick={handleToggleWishlist} style={{ position: 'absolute', top: '14px', right: '14px', width: '36px', height: '36px', borderRadius: '50%', background: isWishlisted ? '#C8392B' : 'rgba(255,255,255,0.07)', border: `1px solid ${isWishlisted ? '#C8392B' : 'rgba(255,255,255,0.1)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                <Heart style={{ width: '15px', height: '15px', color: '#fff', fill: isWishlisted ? '#fff' : 'none' }} />
-              </button>
-              {/* counter */}
-              {safeImages.length > 1 && <div style={{ position: 'absolute', top: '14px', left: '14px', fontSize: '11px', padding: '3px 9px', borderRadius: '20px', background: 'rgba(0,0,0,0.6)', color: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(6px)' }}>{selectedImage + 1}/{safeImages.length}</div>}
-            </div>
-
-            {/* thumbs mobile */}
-            {safeImages.length > 1 && (
-              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '0 16px 16px', scrollbarWidth: 'none' }}>
-                {safeImages.map((img, idx) => (
-                  <button key={idx} onClick={() => setSelectedImage(idx)} style={{ flexShrink: 0, width: '52px', height: '52px', borderRadius: '10px', background: '#161616', border: `1.5px solid ${selectedImage === idx ? '#C8392B' : 'rgba(255,255,255,0.07)'}`, overflow: 'hidden', cursor: 'pointer', opacity: selectedImage === idx ? 1 : 0.45, transition: 'all .2s' }}>
-                    <Image src={img} alt="" width={52} height={52} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '5px' }} />
+                      <span className="text-gray-300">|</span>
+                      <span className="text-gray-600">{reviewsStats.totalReviews} avis</span>
+                      <span className="text-gray-300">|</span>
+                      <span className="text-gray-600">1,234+ commandes</span>
+                    </div>
+                  </div>
+                  
+                  <button 
+                    onClick={handleToggleWishlist}
+                    className="p-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
                   </button>
-                ))}
-              </div>
-            )}
-
-            <div style={{ padding: '0 16px' }}>
-
-              {/* header mobile */}
-              <div style={{ marginBottom: '20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#C8392B', padding: '3px 8px', borderRadius: '4px', background: 'rgba(200,57,43,0.1)', border: '1px solid rgba(200,57,43,0.2)' }}>Top vente</span>
-                  <span style={{ fontSize: '9px', fontFamily: 'monospace', color: 'rgba(255,255,255,0.18)' }}>#{product.id?.slice(-8)}</span>
                 </div>
-                <h1 style={{ fontSize: '19px', fontWeight: 600, lineHeight: 1.35, letterSpacing: '-0.02em', color: '#F5F5F5', marginBottom: '12px' }}>{productName}</h1>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
-                  <div style={{ display: 'flex', gap: '2px' }}>{[1,2,3,4,5].map(s => <Star key={s} style={{ width: '12px', height: '12px', fill: '#E8B94F', color: '#E8B94F' }} />)}</div>
-                  <span style={{ fontWeight: 600, color: '#F5F5F5' }}>{reviewsStats.averageRating || 0}</span>
-                  <span style={{ color: 'rgba(255,255,255,0.15)' }}>·</span>
-                  <span style={{ color: 'rgba(255,255,255,0.4)' }}>{reviewsStats.totalReviews} avis</span>
-                </div>
-              </div>
 
-              {/* prix mobile */}
-              <div style={{ marginBottom: '20px', padding: '16px', borderRadius: '14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '28px', fontWeight: 900, color: '#F5F5F5', letterSpacing: '-0.04em', lineHeight: 1 }}>{formatPrice(currentPrice * (grandTotal || 1))}</span>
-                  <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.25)', textDecoration: 'line-through' }}>{formatPrice(currentPrice * 1.2 * (grandTotal || 1))}</span>
-                  <span style={{ fontSize: '10px', fontWeight: 700, color: '#C8392B', padding: '2px 6px', borderRadius: '4px', background: 'rgba(200,57,43,0.1)', border: '1px solid rgba(200,57,43,0.2)' }}>−20%</span>
-                </div>
-                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>Unitaire: <strong style={{ color: 'rgba(255,255,255,0.6)' }}>{formatPrice(currentPrice)}</strong></p>
-              </div>
-
-              {/* variantes mobile */}
-              {hasVariants && (
-                <div style={{ marginBottom: '20px' }}>
-                  {hasSimpleVariants && (
-                    <div>
-                      <p style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: '10px' }}>{primaryAttrName}</p>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
-                        {Object.entries(simpleVariantQuantities).map(([value, qty]) => {
-                          const hasImg = attributeImages[`${simpleVariantType}:${value}`]
-                          const active = qty > 0
-                          return (
-                            <button key={value} onClick={() => openSimpleVariantModal(value)} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', background: active ? 'rgba(200,57,43,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${active ? 'rgba(200,57,43,0.4)' : 'rgba(255,255,255,0.09)'}`, color: active ? '#C8392B' : 'rgba(255,255,255,0.6)' }}>
-                              {hasImg && <div style={{ width: '16px', height: '16px', borderRadius: '50%', overflow: 'hidden' }}><Image src={attributeImages[`${simpleVariantType}:${value}`]} alt={value} width={16} height={16} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>}
-                              {value}
-                              {active && <span style={{ position: 'absolute', top: '-7px', right: '-7px', width: '16px', height: '16px', borderRadius: '50%', background: '#C8392B', color: '#fff', fontSize: '8px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{qty}</span>}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
-                  {hasComplexVariants && (
+                <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg p-4 mb-4 shadow-sm">
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-2xl font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
+                      {formatPrice(currentPrice)} x {grandTotal || 1}
+                    </span>
+                    <span className="text-xs text-gray-400 line-through">
+                      {formatPrice(currentPrice * 1.2 * (grandTotal || 1))}
+                    </span>
+                    <span className="text-xs text-white px-1.5 py-0.5 rounded" style={{ background: "#D4372B" }}>-20%</span>
+                  </div>
+                  
+                  {hasVariants && (
                     <>
-                      <div style={{ marginBottom: '14px' }}>
-                        <p style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: '10px' }}>{primaryAttrName}</p>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
-                          {Object.keys(complexSelections).map(pv => {
-                            const total = getPrimaryTotal(pv)
-                            const hasImg = attributeImages[`${Object.keys(attributeGroups)[0]}:${pv}`]
-                            return (
-                              <button key={pv} onClick={() => openPrimaryModal(pv)} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', background: total > 0 ? 'rgba(200,57,43,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${total > 0 ? 'rgba(200,57,43,0.4)' : 'rgba(255,255,255,0.09)'}`, color: total > 0 ? '#C8392B' : 'rgba(255,255,255,0.6)' }}>
-                                {hasImg && <div style={{ width: '16px', height: '16px', borderRadius: '50%', overflow: 'hidden' }}><Image src={attributeImages[`${Object.keys(attributeGroups)[0]}:${pv}`]} alt={pv} width={16} height={16} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>}
-                                {pv}
-                                {total > 0 && <span style={{ position: 'absolute', top: '-7px', right: '-7px', width: '16px', height: '16px', borderRadius: '50%', background: '#C8392B', color: '#fff', fontSize: '8px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{total}</span>}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </div>
-                      {secondaryAttrName && (
-                        <div style={{ marginBottom: '14px' }}>
-                          <p style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: '10px' }}>{secondaryAttrName}</p>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
-                            {attributeGroups[Object.keys(attributeGroups)[1]]?.values.map(sv => {
-                              const total = getSecondaryTotal(sv)
+                      {hasSimpleVariants && (
+                        <div className="mb-3">
+                          <div className="text-xs text-gray-500 mb-2">{primaryAttrName}</div>
+                          <div className="flex flex-wrap gap-2">
+                            {Object.entries(simpleVariantQuantities).map(([value, qty]) => {
+                              const hasImage = attributeImages[`${simpleVariantType}:${value}`]
+                              
                               return (
-                                <button key={sv} onClick={() => openSecondaryModal(sv)} style={{ position: 'relative', padding: '7px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', background: total > 0 ? 'rgba(200,57,43,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${total > 0 ? 'rgba(200,57,43,0.4)' : 'rgba(255,255,255,0.09)'}`, color: total > 0 ? '#C8392B' : 'rgba(255,255,255,0.6)' }}>
-                                  {sv}
-                                  {total > 0 && <span style={{ position: 'absolute', top: '-7px', right: '-7px', width: '16px', height: '16px', borderRadius: '50%', background: '#C8392B', color: '#fff', fontSize: '8px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{total}</span>}
+                                <button
+                                  key={value}
+                                  onClick={() => openSimpleVariantModal(value)}
+                                  className={`
+                                    px-3 py-1.5 text-xs border rounded-lg transition-all flex items-center gap-2 hover:shadow-md
+                                    ${qty > 0 
+                                      ? 'border-[#D4372B] text-[#D4372B] font-medium shadow-sm' 
+                                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                                    }
+                                  `}
+                                  style={{
+                                    background: qty > 0 ? '#FFF0F0' : '#fff'
+                                  }}
+                                >
+                                  {hasImage && (
+                                    <div className="w-5 h-5 rounded-full overflow-hidden border border-white shadow-sm">
+                                      <Image
+                                        src={attributeImages[`${simpleVariantType}:${value}`]}
+                                        alt={value}
+                                        width={20}
+                                        height={20}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                  )}
+                                  {value}
+                                  {qty > 0 && (
+                                    <span className="ml-1 text-xs bg-white px-1.5 py-0.5 rounded-full shadow-sm border border-[#D4372B]">
+                                      {qty}
+                                    </span>
+                                  )}
                                 </button>
                               )
                             })}
                           </div>
+
+                          {Object.entries(simpleVariantQuantities).map(([value, qty]) => {
+                            if (qty === 0) return null
+                            
+                            return (
+                              <div key={value} className="bg-gray-50 p-3 rounded-lg mt-2 shadow-sm">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    {attributeImages[`${simpleVariantType}:${value}`] && (
+                                      <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-md">
+                                        <Image
+                                          src={attributeImages[`${simpleVariantType}:${value}`]}
+                                          alt={value}
+                                          width={32}
+                                          height={32}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      </div>
+                                    )}
+                                    <span className="text-sm font-medium text-gray-700">{value}</span>
+                                  </div>
+                                  <span className="text-sm font-bold" style={{ color: '#D4372B' }}>x{qty}</span>
+                                </div>
+                              </div>
+                            )
+                          })}
                         </div>
                       )}
-                      {Object.entries(complexSelections).map(([pv, ss]) => {
-                        const nz = Object.entries(ss).filter(([_, q]) => q > 0)
-                        if (!nz.length) return null
-                        return (
-                          <div key={pv} style={{ padding: '10px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '7px' }}>
-                            <span style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(255,255,255,0.6)', display: 'block', marginBottom: '6px' }}>{pv}</span>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>{nz.map(([sv, q]) => <span key={sv} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '5px', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.45)' }}>{sv} <strong style={{ color: '#C8392B' }}>×{q}</strong></span>)}</div>
+
+                      {hasComplexVariants && (
+                        <>
+                          <div className="mb-3">
+                            <div className="text-xs text-gray-500 mb-2">{primaryAttrName}</div>
+                            <div className="flex flex-wrap gap-2">
+                              {Object.keys(complexSelections).map((primaryValue) => {
+                                const total = getPrimaryTotal(primaryValue)
+                                const hasImage = attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]
+                                
+                                return (
+                                  <button
+                                    key={primaryValue}
+                                    onClick={() => openPrimaryModal(primaryValue)}
+                                    className={`
+                                      px-3 py-1.5 text-xs border rounded-lg transition-all flex items-center gap-2 hover:shadow-md
+                                      ${total > 0 
+                                        ? 'border-[#D4372B] text-[#D4372B] font-medium shadow-sm' 
+                                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                                      }
+                                    `}
+                                    style={{
+                                      background: total > 0 ? '#FFF0F0' : '#fff'
+                                    }}
+                                  >
+                                    {hasImage && (
+                                      <div className="w-5 h-5 rounded-full overflow-hidden border border-white shadow-sm">
+                                        <Image
+                                          src={attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]}
+                                          alt={primaryValue}
+                                          width={20}
+                                          height={20}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      </div>
+                                    )}
+                                    {primaryValue}
+                                    {total > 0 && (
+                                      <span className="ml-1 text-xs bg-white px-1.5 py-0.5 rounded-full shadow-sm border border-[#D4372B]">
+                                        {total}
+                                      </span>
+                                    )}
+                                  </button>
+                                )
+                              })}
+                            </div>
                           </div>
-                        )
-                      })}
+
+                          {secondaryAttrName && (
+                            <div className="mb-3">
+                              <div className="text-xs text-gray-500 mb-2">{secondaryAttrName}</div>
+                              <div className="flex flex-wrap gap-2">
+                                {attributeGroups[Object.keys(attributeGroups)[1]]?.values.map((secondaryValue) => {
+                                  const total = getSecondaryTotal(secondaryValue)
+                                  
+                                  return (
+                                    <button
+                                      key={secondaryValue}
+                                      onClick={() => openSecondaryModal(secondaryValue)}
+                                      className={`
+                                        px-3 py-1.5 text-xs border rounded-lg transition-all relative hover:shadow-md
+                                        ${total > 0 
+                                          ? 'border-[#D4372B] text-[#D4372B] font-medium shadow-sm' 
+                                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                                        }
+                                      `}
+                                      style={{
+                                        background: total > 0 ? '#FFF0F0' : '#fff'
+                                      }}
+                                    >
+                                      {secondaryValue}
+                                      {total > 0 && (
+                                        <span className="absolute -top-2 -right-2 w-4 h-4 bg-[#D4372B] text-white text-[8px] rounded-full flex items-center justify-center shadow-lg">
+                                          {total}
+                                        </span>
+                                      )}
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
                     </>
                   )}
-                </div>
-              )}
 
-              {!hasVariants && (
-                <div style={{ marginBottom: '20px' }}>
-                  <p style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: '10px' }}>Quantité</p>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}>
-                    <button onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))} disabled={simpleQuantity <= 1} style={{ width: '38px', height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: 'none', cursor: 'pointer', opacity: simpleQuantity <= 1 ? 0.3 : 1 }}><Minus style={{ width: '13px', height: '13px', color: 'rgba(255,255,255,0.6)' }} /></button>
-                    <span style={{ width: '44px', textAlign: 'center', fontSize: '15px', fontWeight: 700, color: '#F5F5F5' }}>{simpleQuantity}</span>
-                    <button onClick={() => setSimpleQuantity(simpleQuantity + 1)} style={{ width: '38px', height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: 'none', cursor: 'pointer' }}><Plus style={{ width: '13px', height: '13px', color: 'rgba(255,255,255,0.6)' }} /></button>
-                  </div>
-                </div>
-              )}
-
-              {/* meta mobile */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '11px', marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.4)' }}><Package style={{ width: '12px', height: '12px', color: '#C8392B' }} />MOQ: {minQuantity}</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#4ADE80' }}><Check style={{ width: '12px', height: '12px' }} />En stock</span>
-              </div>
-
-              {/* livraison mobile */}
-              <div style={{ marginBottom: '20px' }}>
-                <p style={{ fontSize: '12px', fontWeight: 600, color: '#F5F5F5', marginBottom: '12px' }}>Livraison</p>
-                {isLoadingLogistics ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>{[1,2,3].map(i => <div key={i} style={{ height: '80px', borderRadius: '10px', background: 'rgba(255,255,255,0.04)', animation: 'pulse 1.5s ease-in-out infinite' }} />)}</div>
-                ) : logisticsError ? (
-                  <div style={{ fontSize: '11px', padding: '10px', borderRadius: '8px', background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.15)', color: '#FCA5A5' }}>{logisticsError}</div>
-                ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-                    {([
-                      { mode: 'bateau', icon: Ship, label: 'Mer' },
-                      { mode: 'avion', icon: Sparkles, label: 'Air' },
-                      { mode: 'express', icon: Zap, label: 'Express' },
-                    ] as const).map(item => {
-                      if (!logisticsData?.shipping?.[item.mode]) return null
-                      const active = selectedShipping === item.mode
-                      return (
-                        <button key={item.mode} onClick={() => setSelectedShipping(item.mode)}
-                          style={{ padding: '12px 8px', borderRadius: '10px', cursor: 'pointer', textAlign: 'left', transition: 'all .2s', background: active ? 'rgba(200,57,43,0.1)' : 'rgba(255,255,255,0.03)', border: `1.5px solid ${active ? '#C8392B' : 'rgba(255,255,255,0.07)'}`, transform: active ? 'translateY(-1px)' : 'none' }}>
-                          <item.icon style={{ width: '14px', height: '14px', color: active ? '#C8392B' : 'rgba(255,255,255,0.3)', marginBottom: '6px' }} />
-                          <div style={{ fontSize: '12px', fontWeight: 700, color: active ? '#F5F5F5' : 'rgba(255,255,255,0.6)', marginBottom: '2px' }}>{formatPrice(getShippingCost(item.mode))}</div>
-                          <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', lineHeight: 1.3 }}>{item.label} · {getShippingDays(item.mode)}</div>
+                  {!hasVariants && (
+                    <div className="mb-3">
+                      <div className="text-xs text-gray-500 mb-2">Quantité</div>
+                      <div className="flex items-center rounded-xl overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
+                        <button
+                          onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))}
+                          className="p-1.5 hover:bg-gray-50 transition-colors"
+                          disabled={simpleQuantity <= 1}
+                        >
+                          <Minus className="w-3.5 h-3.5" />
                         </button>
-                      )
-                    })}
+                        <span className="w-12 text-center text-sm font-medium">{simpleQuantity}</span>
+                        <button
+                          onClick={() => setSimpleQuantity(simpleQuantity + 1)}
+                          className="p-1.5 hover:bg-gray-50 transition-colors"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center gap-2 text-xs mb-2">
+                    <span className="px-2 py-0.5 rounded-full text-white" style={{ background: "#D4372B" }}>Prix direct usine</span>
+                    <span className="text-gray-500">Prix en {getCurrencySymbol()} (USD ${Number(product.price).toFixed(2)})</span>
                   </div>
-                )}
+
+                  <div className="flex items-center gap-4 text-xs">
+                    <div className="flex items-center gap-1 text-gray-600">
+                      <Package className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
+                      <span>MOQ: {minQuantity}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-gray-600">
+                      <Clock className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
+                      <span>Délai: {logisticsData?.recommended.days || '15-20'} jours</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-gray-600">
+                      {isLoadingLogistics ? (
+                        <span className="inline-flex items-center text-gray-500">
+                          <span className="w-3 h-3 border-2 border-gray-300 border-t-[#D4372B] rounded-full animate-spin mr-1"></span>
+                          Calcul...
+                        </span>
+                      ) : (
+                        <span className="text-gray-500">
+                          {logisticsData ? `${logisticsData.weight.totalWeight.toFixed(2)} kg total` : '0.00 kg total'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div 
+                  onClick={() => setIsProtectionModalOpen(true)}
+                  className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg p-4 mb-4 cursor-pointer hover:shadow-md transition-all"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-5 h-5" style={{ color: '#D4372B' }} />
+                      <span className="text-sm font-medium text-gray-900">Protection des achats Adullam</span>
+                    </div>
+                    <Info className="w-4 h-4 text-gray-400" />
+                  </div>
+                  
+                  <div className="flex flex-wrap items-center gap-3 mb-3">
+                    {['MTN', 'Orange', 'Wave', 'Visa'].map((method) => (
+                      <span key={method} className="text-xs px-3 py-1.5 bg-white border border-gray-200 rounded-full text-gray-600 shadow-sm">
+                        {method}
+                      </span>
+                    ))}
+                  </div>
+                  
+                  <p className="text-sm text-gray-500 flex items-center gap-1">
+                    <Lock className="w-4 h-4 text-gray-400" />
+                    Paiement sécurisé - Cliquez pour en savoir plus
+                  </p>
+                </div>
+
+                <div className="mb-4">
+                  <h3 className="text-sm font-medium mb-2 flex items-center justify-between">
+                    <span>Mode de livraison</span>
+                    {selectedPortePorteCost > 0 && (
+                      <span className="text-xs font-medium text-gray-700">
+                        Frais porte-à-porte: <span className="font-bold" style={{ color: '#D4372B' }}>{formatPrice(selectedPortePorteCost)}</span>
+                      </span>
+                    )}
+                  </h3>
+                  {isLoadingLogistics ? (
+                    <div className="grid grid-cols-3 gap-2">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="flex items-center justify-between p-2 rounded-lg border border-gray-200 bg-gray-50 animate-pulse">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
+                            <div>
+                              <div className="w-8 h-3 bg-gray-200 rounded mb-1"></div>
+                              <div className="w-6 h-2 bg-gray-200 rounded"></div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="w-10 h-3 bg-gray-200 rounded mb-1"></div>
+                            <div className="w-8 h-2 bg-gray-200 rounded"></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : logisticsError ? (
+                    <div className="text-xs text-red-500 p-2 border border-red-200 rounded-lg bg-red-50">
+                      {logisticsError}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { mode: "bateau", icon: Ship, label: "Maritime" },
+                        { mode: "avion", icon: Sparkles, label: "Aérien" },
+                        { mode: "express", icon: Zap, label: "Express" }
+                      ].map((item) => {
+                        const shippingMode = item.mode as "bateau" | "avion" | "express"
+                        const isAvailable = logisticsData?.shipping?.[shippingMode]
+                        const days = getShippingDays(shippingMode)
+                        const cost = getShippingCost(shippingMode)
+                        const estimatedDate = getEstimatedDate(shippingMode)
+                        
+                        if (!isAvailable) return null
+                        
+                        return (
+                          <button
+                            key={item.mode}
+                            onClick={() => setSelectedShipping(shippingMode)}
+                            className="flex items-center justify-between p-2 rounded-lg border transition-all text-xs hover:shadow-md"
+                            style={{
+                              borderColor: selectedShipping === shippingMode ? brandColor : '#e5e7eb',
+                              background: selectedShipping === shippingMode ? '#D4372B' : '#fff'
+                            }}
+                          >
+                            <div className="flex items-center gap-1.5">
+                              <item.icon className="w-3.5 h-3.5" style={{ color: selectedShipping === shippingMode ? 'white' : '#9ca3af' }} />
+                              <div className="text-left">
+                                <p className="font-medium text-xs" style={{ color: selectedShipping === shippingMode ? 'white' : '#374151' }}>
+                                  {item.label}
+                                </p>
+                                <p className="text-[10px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#6b7280' }}>
+                                  {days}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold text-xs" style={{ color: selectedShipping === shippingMode ? 'white' : '#D4372B' }}>
+                                {formatPrice(cost)}
+                              </p>
+                              <p className="text-[9px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#9ca3af' }}>
+                                {estimatedDate}
+                              </p>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2 mb-4">
+                  {!isMOQMet && grandTotal > 0 && (
+                    <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-2 text-xs text-yellow-800 shadow-sm">
+                      MOQ non atteint ({minQuantity} min). Contactez-nous.
+                    </div>
+                  )}
+                  
+                  <div className="flex gap-2">
+                    <button
+                      onClick={isMOQMet && grandTotal > 0 ? handleAddToCart : handleContactWhatsApp}
+                      className="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 hover:shadow-lg"
+                      style={{
+                        background: (isMOQMet && grandTotal > 0) ? brandGradient : 'linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%)',
+                        color: 'white'
+                      }}
+                    >
+                      <ShoppingCart className="w-4 h-4" />
+                      {(isMOQMet && grandTotal > 0) ? `Ajouter (${grandTotal})` : "Nous contacter"}
+                    </button>
+
+                    <button
+                      onClick={handleBuyNow}
+                      disabled={!isMOQMet || grandTotal === 0}
+                      className="flex-1 py-2.5 text-sm text-white font-medium rounded-lg transition-all hover:shadow-lg"
+                      style={{
+                        background: 'linear-gradient(135deg, #1A2F3F 0%, #2D3F4F 100%)',
+                        opacity: (isMOQMet && grandTotal > 0) ? 1 : 0.5
+                      }}
+                    >
+                      Acheter
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-4 gap-2 p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg text-xs shadow-sm">
+                  <div className="flex items-center gap-1.5">
+                    <Shield className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
+                    <span>Garantie 12 mois</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <RotateCcw className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
+                    <span>Retour 15j</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
+                    <span>Certifié</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Truck className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
+                    <span>Suivi</span>
+                  </div>
+                </div>
               </div>
+            </div>
 
-              {/* protection mobile */}
-              <button onClick={() => setIsProtectionModalOpen(true)}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer', textAlign: 'left', marginBottom: '20px' }}>
-                <div style={{ width: '34px', height: '34px', borderRadius: '9px', background: 'rgba(200,57,43,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Shield style={{ width: '15px', height: '15px', color: '#C8392B' }} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: '12px', fontWeight: 600, color: '#F5F5F5', marginBottom: '4px' }}>Protection Adullam</p>
-                  <div style={{ display: 'flex', gap: '5px' }}>
-                    {['MTN', 'Orange', 'Wave', 'Visa'].map(m => <span key={m} style={{ fontSize: '9px', padding: '2px 6px', borderRadius: '4px', background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.07)' }}>{m}</span>)}
-                  </div>
-                </div>
-                <Info style={{ width: '14px', height: '14px', color: 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
-              </button>
-
-              {/* MOQ mobile */}
-              {!isMOQMet && grandTotal > 0 && (
-                <div style={{ fontSize: '11px', padding: '10px 12px', borderRadius: '8px', background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.15)', color: '#FCD34D', marginBottom: '16px', display: 'flex', gap: '6px' }}>
-                  <span>⚠</span> Quantité minimum non atteinte ({minQuantity} min).
-                </div>
-              )}
-
-              {/* tabs mobile */}
-              <div style={{ marginTop: '8px' }}>
-                <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)', marginBottom: '20px', overflowX: 'auto' }}>
+            {/* Desktop Tabs - Gardé identique */}
+            <div className="hidden lg:block mt-8 bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 shadow-sm">
+              <div className="border-b border-gray-200 mb-6">
+                <div className="flex gap-6">
                   {[
-                    { id: 'description', label: 'Description' },
-                    { id: 'specifications', label: 'Caractéristiques' },
-                    { id: 'avis', label: `Avis (${reviewsStats.totalReviews})` },
-                  ].map(tab => (
-                    <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                      style={{ flexShrink: 0, padding: '12px 16px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', background: 'none', border: 'none', position: 'relative', color: activeTab === tab.id ? '#F5F5F5' : 'rgba(255,255,255,0.3)', transition: 'color .2s', whiteSpace: 'nowrap' }}>
+                    { id: "description", label: "Description" },
+                    { id: "specifications", label: "Caractéristiques" },
+                    { id: "avis", label: `Avis (${reviewsStats.totalReviews})` }
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`pb-3 px-1 text-sm font-medium transition-colors relative`}
+                      style={{
+                        color: activeTab === tab.id ? brandColor : '#6B7280',
+                        borderBottom: activeTab === tab.id ? `2px solid ${brandColor}` : '2px solid transparent'
+                      }}
+                    >
                       {tab.label}
-                      {activeTab === tab.id && <span style={{ position: 'absolute', bottom: 0, left: '12px', right: '12px', height: '1px', background: '#C8392B', borderRadius: '1px' }} />}
                     </button>
                   ))}
                 </div>
+              </div>
 
-                {activeTab === 'description' && (
+              <div className="text-sm">
+                {activeTab === "description" && (
                   <div>
-                    <p style={{ fontSize: '13px', lineHeight: 1.85, color: 'rgba(255,255,255,0.5)' }}>{product.description || product.cleanedDesc || 'Description non disponible'}</p>
-                    {product.features?.length > 0 && (
-                      <ul style={{ listStyle: 'none', padding: 0, margin: '16px 0 0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        {product.features.map((f: string, i: number) => (
-                          <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>
-                            <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#C8392B', flexShrink: 0, marginTop: '8px' }} />
-                            {f}
-                          </li>
-                        ))}
-                      </ul>
+                    <h3 className="font-medium mb-3 text-gray-900">Description</h3>
+                    <p className="text-gray-700 leading-relaxed">
+                      {product.description || product.cleanedDesc || "Description non disponible"}
+                    </p>
+                    {product.features && product.features.length > 0 && (
+                      <div className="mt-6">
+                        <h3 className="font-medium mb-3 text-gray-900">Caractéristiques principales</h3>
+                        <ul className="space-y-2 text-gray-700">
+                          {product.features.map((feature: string, i: number) => (
+                            <li key={i} className="flex items-start gap-2">
+                              <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#D4372B' }} />
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     )}
                   </div>
                 )}
-
-                {activeTab === 'specifications' && (
-                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                    {(product.specifications || [
-                      { label: 'Marque', value: product.brand || 'N/A' },
-                      { label: 'Poids', value: product.weight ? `${product.weight} kg` : 'N/A' },
-                      { label: 'Garantie', value: '12 mois' },
-                    ]).map((s: any, i: number) => (
-                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '13px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)' }}>{s.label}</span>
-                        <span style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{s.value}</span>
-                      </div>
-                    ))}
+                
+                {activeTab === "specifications" && (
+                  <div className="grid lg:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      {product.specifications ? (
+                        product.specifications.slice(0, 4).map((spec: any, i: number) => (
+                          <div key={i} className="flex justify-between py-2 border-b border-gray-200">
+                            <span className="text-gray-500">{spec.label}</span>
+                            <span className="font-medium text-gray-800">{spec.value}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <>
+                          {[
+                            { label: "Marque", value: "TechPro" },
+                            { label: "Modèle", value: "TP-EB001" },
+                            { label: "Version Bluetooth", value: "5.2" },
+                            { label: "Autonomie (écouteurs)", value: "6 heures" }
+                          ].map((spec, i) => (
+                            <div key={i} className="flex justify-between py-2 border-b border-gray-200">
+                              <span className="text-gray-500">{spec.label}</span>
+                              <span className="font-medium text-gray-800">{spec.value}</span>
+                            </div>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      {product.specifications ? (
+                        product.specifications.slice(4, 8).map((spec: any, i: number) => (
+                          <div key={i} className="flex justify-between py-2 border-b border-gray-200">
+                            <span className="text-gray-500">{spec.label}</span>
+                            <span className="font-medium text-gray-800">{spec.value}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <>
+                          {[
+                            { label: "Autonomie (boîtier)", value: "24 heures" },
+                            { label: "Temps de charge", value: "1.5 heures" },
+                            { label: "Poids", value: "4.5g par écouteur" },
+                            { label: "Garantie", value: "12 mois" }
+                          ].map((spec, i) => (
+                            <div key={i} className="flex justify-between py-2 border-b border-gray-200">
+                              <span className="text-gray-500">{spec.label}</span>
+                              <span className="font-medium text-gray-800">{spec.value}</span>
+                            </div>
+                          ))}
+                        </>
+                      )}
+                    </div>
                   </div>
                 )}
-
-                {activeTab === 'avis' && (
+                
+                {activeTab === "avis" && (
                   <div>
                     {!showReviewForm && (
-                      <button onClick={() => setShowReviewForm(true)} style={{ width: '100%', padding: '11px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', background: 'rgba(200,57,43,0.08)', border: '1px solid rgba(200,57,43,0.25)', color: '#C8392B', marginBottom: '20px' }}>
-                        Écrire un avis
+                      <button
+                        onClick={() => setShowReviewForm(true)}
+                        className="mb-6 px-4 py-2 bg-[#D4372B] text-white rounded-lg text-sm font-medium hover:bg-[#B5271C] transition-colors"
+                      >
+                        ✍️ Donner mon avis
                       </button>
                     )}
+                    
                     {showReviewForm && (
-                      <div style={{ padding: '18px', borderRadius: '14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '20px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                          <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#F5F5F5' }}>Votre avis</h4>
-                          <button onClick={() => setShowReviewForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X style={{ width: '16px', height: '16px', color: 'rgba(255,255,255,0.3)' }} /></button>
+                      <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="font-semibold text-gray-900">Donnez votre avis</h3>
+                          <button 
+                            onClick={() => setShowReviewForm(false)}
+                            className="text-gray-400 hover:text-gray-600"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
                         </div>
-                        <div style={{ marginBottom: '12px' }}>
-                          <label style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', display: 'block', marginBottom: '7px' }}>Note</label>
-                          <div style={{ display: 'flex', gap: '5px' }}>{[1,2,3,4,5].map(s => <button key={s} onClick={() => setNewReview({ ...newReview, rating: s })} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}><Star style={{ width: '22px', height: '22px', fill: s <= newReview.rating ? '#E8B94F' : 'none', color: s <= newReview.rating ? '#E8B94F' : 'rgba(255,255,255,0.2)' }} /></button>)}</div>
+                        
+                        <div className="mb-4">
+                          <label className="text-sm text-gray-600 font-medium">Note</label>
+                          <div className="flex gap-2 mt-2">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                onClick={() => setNewReview({ ...newReview, rating: star })}
+                                className="focus:outline-none"
+                              >
+                                <Star 
+                                  className={`w-8 h-8 ${
+                                    star <= newReview.rating 
+                                      ? 'fill-yellow-400 text-yellow-400' 
+                                      : 'text-gray-300'
+                                  }`} 
+                                />
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                        <input type="text" value={newReview.authorName} onChange={e => setNewReview({ ...newReview, authorName: e.target.value })} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#F5F5F5', fontSize: '13px', outline: 'none', marginBottom: '10px', boxSizing: 'border-box' }} placeholder="Votre nom" />
-                        <textarea value={newReview.comment} rows={3} onChange={e => setNewReview({ ...newReview, comment: e.target.value })} style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#F5F5F5', fontSize: '13px', outline: 'none', resize: 'none', marginBottom: '12px', boxSizing: 'border-box', fontFamily: 'inherit' }} placeholder="Votre expérience..." />
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button onClick={() => setShowReviewForm(false)} style={{ flex: 1, padding: '10px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}>Annuler</button>
-                          <button onClick={handleSubmitReview} disabled={isSubmittingReview} style={{ flex: 1, padding: '10px', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', background: '#C8392B', border: 'none', color: '#fff', opacity: isSubmittingReview ? 0.5 : 1 }}>{isSubmittingReview ? 'Envoi...' : 'Publier'}</button>
+                        
+                        <div className="mb-4">
+                          <label className="text-sm text-gray-600 font-medium">Votre nom</label>
+                          <input
+                            type="text"
+                            value={newReview.authorName}
+                            onChange={(e) => setNewReview({ ...newReview, authorName: e.target.value })}
+                            className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#D4372B]"
+                            placeholder="Jean Dupont"
+                          />
+                        </div>
+                        
+                        <div className="mb-4">
+                          <label className="text-sm text-gray-600 font-medium">Votre commentaire</label>
+                          <textarea
+                            value={newReview.comment}
+                            onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                            className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#D4372B] resize-none"
+                            rows={4}
+                            placeholder="Partagez votre expérience..."
+                          />
+                        </div>
+                        
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => setShowReviewForm(false)}
+                            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50"
+                          >
+                            Annuler
+                          </button>
+                          <button
+                            onClick={handleSubmitReview}
+                            disabled={isSubmittingReview}
+                            className="px-4 py-2 bg-[#D4372B] text-white rounded-lg text-sm font-medium hover:bg-[#B5271C] disabled:opacity-50"
+                          >
+                            {isSubmittingReview ? "Envoi..." : "Publier mon avis"}
+                          </button>
                         </div>
                       </div>
                     )}
+                    
                     {isLoadingReviews ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>{[1,2].map(i => <div key={i} style={{ paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}><div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}><div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(255,255,255,0.07)' }} /><div style={{ height: '12px', width: '100px', borderRadius: '4px', background: 'rgba(255,255,255,0.07)' }} /></div><div style={{ height: '11px', width: '100%', borderRadius: '4px', background: 'rgba(255,255,255,0.05)' }} /></div>)}</div>
+                      <div className="space-y-6">
+                        <div className="flex items-center gap-6 mb-6 animate-pulse">
+                          <div className="text-center">
+                            <div className="w-16 h-8 bg-gray-200 rounded mb-1"></div>
+                            <div className="flex gap-1 mt-1">
+                              {[1,2,3,4,5].map((i) => (
+                                <div key={i} className="w-4 h-4 bg-gray-200 rounded"></div>
+                              ))}
+                            </div>
+                            <div className="w-16 h-3 bg-gray-200 rounded mt-1"></div>
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            {[1,2,3,4,5].map((i) => (
+                              <div key={i} className="flex items-center gap-2">
+                                <div className="w-12 h-3 bg-gray-200 rounded"></div>
+                                <div className="flex-1 h-2 bg-gray-200 rounded"></div>
+                                <div className="w-8 h-3 bg-gray-200 rounded"></div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="space-y-4">
+                          {[1,2,3].map((i) => (
+                            <div key={i} className="border-b border-gray-200 pb-4 animate-pulse">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                                  <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                </div>
+                                <div className="h-3 bg-gray-200 rounded w-20"></div>
+                              </div>
+                              <div className="flex gap-1 ml-10 mb-2">
+                                {[1,2,3,4,5].map((star) => (
+                                  <div key={star} className="w-3 h-3 bg-gray-200 rounded"></div>
+                                ))}
+                              </div>
+                              <div className="ml-10 space-y-1">
+                                <div className="h-3 bg-gray-200 rounded w-full"></div>
+                                <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     ) : reviews.length === 0 ? (
-                      <div style={{ textAlign: 'center', padding: '32px 0' }}>
-                        <Star style={{ width: '32px', height: '32px', color: 'rgba(255,255,255,0.07)', margin: '0 auto 10px' }} />
-                        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.3)' }}>Aucun avis pour le moment</p>
+                      <div className="text-center py-12">
+                        <div className="w-20 h-20 mx-auto mb-4 bg-gray-50 rounded-full flex items-center justify-center">
+                          <Star className="w-10 h-10 text-gray-300" />
+                        </div>
+                        <p className="text-gray-500">Aucun avis pour le moment</p>
+                        <p className="text-sm text-gray-400 mt-1">Soyez le premier à donner votre avis</p>
                       </div>
                     ) : (
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                          <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '40px', fontWeight: 900, color: '#F5F5F5', lineHeight: 1 }}>{reviewsStats.averageRating}</div>
-                            <div style={{ display: 'flex', justifyContent: 'center', gap: '2px', margin: '6px 0' }}>{[1,2,3,4,5].map(s => <Star key={s} style={{ width: '11px', height: '11px', fill: s <= Math.round(reviewsStats.averageRating) ? '#E8B94F' : 'none', color: s <= Math.round(reviewsStats.averageRating) ? '#E8B94F' : 'rgba(255,255,255,0.1)' }} />)}</div>
-                            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)' }}>{reviewsStats.totalReviews}</p>
+                      <>
+                        <div className="flex items-center gap-6 mb-6">
+                          <div className="text-center">
+                            <div className="text-2xl font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
+                              {reviewsStats.averageRating}
+                            </div>
+                            <div className="flex justify-center mt-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star 
+                                  key={star} 
+                                  className={`w-3.5 h-3.5 ${
+                                    star <= Math.round(reviewsStats.averageRating) 
+                                      ? 'fill-yellow-400 text-yellow-400' 
+                                      : 'text-gray-300'
+                                  }`} 
+                                />
+                              ))}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">{reviewsStats.totalReviews} avis</p>
                           </div>
-                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                            {[5,4,3,2,1].map(r => {
-                              const count = reviewsStats.ratingDistribution[r as keyof typeof reviewsStats.ratingDistribution] || 0
-                              const pct = reviewsStats.totalReviews > 0 ? (count / reviewsStats.totalReviews) * 100 : 0
+                          <div className="flex-1 space-y-1">
+                            {[5, 4, 3, 2, 1].map((rating) => {
+                              const count = reviewsStats.ratingDistribution[rating as keyof typeof reviewsStats.ratingDistribution] || 0
+                              const percentage = reviewsStats.totalReviews > 0 ? (count / reviewsStats.totalReviews) * 100 : 0
                               return (
-                                <div key={r} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px' }}>
-                                  <span style={{ width: '10px', textAlign: 'right', color: 'rgba(255,255,255,0.25)' }}>{r}</span>
-                                  <div style={{ flex: 1, height: '3px', borderRadius: '2px', background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}><div style={{ height: '100%', background: '#C8392B', width: `${pct}%`, borderRadius: '2px' }} /></div>
-                                  <span style={{ width: '14px', color: 'rgba(255,255,255,0.25)' }}>{count}</span>
+                                <div key={rating} className="flex items-center gap-3 text-sm">
+                                  <span className="w-12 text-gray-600">{rating} étoiles</span>
+                                  <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                    <div 
+                                      className="h-full rounded-full" 
+                                      style={{ width: `${percentage}%`, background: brandGradient }} 
+                                    />
+                                  </div>
+                                  <span className="w-12 text-right text-gray-500 text-sm">{count}</span>
                                 </div>
                               )
                             })}
                           </div>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-                          {reviews.map(review => (
-                            <div key={review.id} style={{ paddingBottom: '18px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, color: '#F5F5F5' }}>{review.authorName.charAt(0).toUpperCase()}</div>
+
+                        <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2">
+                          {reviews.map((review) => (
+                            <div key={review.id} className="border-b border-gray-200 pb-5 last:border-0">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                    {review.authorName.charAt(0).toUpperCase()}
+                                  </div>
                                   <div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
-                                      <span style={{ fontSize: '12px', fontWeight: 600, color: '#F5F5F5' }}>{review.authorName}</span>
-                                      {review.verifiedPurchase && <span style={{ fontSize: '8px', fontWeight: 700, padding: '1px 5px', borderRadius: '3px', background: 'rgba(74,222,128,0.1)', color: '#4ADE80' }}>✓</span>}
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm font-medium text-gray-800">{review.authorName}</span>
+                                      {review.verifiedPurchase && (
+                                        <span className="text-[10px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+                                          Achat vérifié
+                                        </span>
+                                      )}
                                     </div>
-                                    <div style={{ display: 'flex', gap: '2px' }}>{[1,2,3,4,5].map(s => <Star key={s} style={{ width: '10px', height: '10px', fill: s <= review.rating ? '#E8B94F' : 'none', color: s <= review.rating ? '#E8B94F' : 'rgba(255,255,255,0.1)' }} />)}</div>
+                                    <div className="flex items-center gap-1 mt-0.5">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star 
+                                          key={star} 
+                                          className={`w-3 h-3 ${
+                                            star <= review.rating 
+                                              ? 'fill-yellow-400 text-yellow-400' 
+                                              : 'text-gray-200'
+                                          }`} 
+                                        />
+                                      ))}
+                                    </div>
                                   </div>
                                 </div>
-                                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)' }}>{formatReviewDate(review.createdAt)}</span>
+                                <span className="text-xs text-gray-400">{formatReviewDate(review.createdAt)}</span>
                               </div>
-                              <p style={{ fontSize: '12px', lineHeight: 1.7, color: 'rgba(255,255,255,0.5)' }}>{review.comment}</p>
+                              <p className="text-sm text-gray-700 ml-11 leading-relaxed">
+                                {review.comment}
+                              </p>
                             </div>
                           ))}
                         </div>
-                      </div>
+                      </>
                     )}
                   </div>
                 )}
               </div>
+            </div>
 
-              {/* produits similaires mobile */}
-              <div style={{ marginTop: '36px' }}>
-                <h2 style={{ fontSize: '15px', fontWeight: 600, color: '#F5F5F5', marginBottom: '16px', letterSpacing: '-0.01em' }}>Vous aimerez aussi</h2>
-                {!isLoadingRelated && relatedProducts.length > 0 && (
-                  <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', scrollbarWidth: 'none', margin: '0 -16px', padding: '0 16px 4px' }}>
-                    {relatedProducts.map(p => (
-                      <a key={p.id} href={`/products/${p.id}`} style={{ flexShrink: 0, width: '130px', textDecoration: 'none' }}>
-                        <div style={{ aspectRatio: '1/1', borderRadius: '12px', background: '#121212', border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden', marginBottom: '8px' }}>
-                          <Image src={p.image || '/placeholder.svg'} alt={p.name} width={130} height={130} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '12px' }} />
-                        </div>
-                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.35, marginBottom: '4px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.name}</p>
-                        <p style={{ fontSize: '13px', fontWeight: 700, color: '#C8392B' }}>{formatPrice(p.priceUSD)}</p>
-                      </a>
-                    ))}
-                  </div>
-                )}
+            {/* RELATED PRODUCTS */}
+            <div className="mt-8 lg:mt-12">
+              <div className="flex items-center justify-between mb-4 lg:mb-6">
+                <h2 className="text-base lg:text-lg font-medium">Vous aimerez aussi</h2>
               </div>
+              
+              {isLoadingRelated ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600" />
+                </div>
+              ) : relatedProducts.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 text-sm">
+                  Aucune recommandation pour le moment
+                </div>
+              ) : (
+                <>
+                  <div className="lg:hidden">
+                    <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 shadow-sm">
+                      <div className="relative">
+                        <div className="overflow-x-auto overflow-y-hidden hide-scrollbar">
+                          <div className="flex gap-3 w-max">
+                            {relatedProducts.map((p) => (
+                              <a 
+                                key={p.id} 
+                                href={`/products/${p.id}`} 
+                                className="group w-[calc((100vw-4rem)/3-0.5rem)] min-w-[calc((100vw-4rem)/3-0.5rem)]"
+                              >
+                                <div className="bg-white rounded-lg aspect-square mb-2 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
+                                  <Image
+                                    src={p.image || "/placeholder.svg"}
+                                    alt={p.name}
+                                    width={150}
+                                    height={150}
+                                    className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform"
+                                  />
+                                </div>
+                                <h3 className="font-medium text-xs mb-0.5 line-clamp-2 text-gray-800">{p.name}</h3>
+                                <div className="flex items-center gap-1 mb-0.5">
+                                  <div className="flex">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                      <Star key={star} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
+                                    ))}
+                                  </div>
+                                  <span className="text-[9px] text-gray-500">{p.rating || 4.5}</span>
+                                </div>
+                                <p className="text-sm font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
+                                  {formatPrice(p.priceUSD)}
+                                </p>
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
+                  <div className="hidden lg:block relative">
+                    <div 
+                      ref={relatedCarouselRef}
+                      className="overflow-x-auto overflow-y-hidden hide-scrollbar pb-4 scroll-smooth"
+                    >
+                      <div className="flex gap-4 w-max">
+                        {relatedProducts.map((p) => (
+                          <a 
+                            key={p.id} 
+                            href={`/products/${p.id}`} 
+                            className="group w-[calc((1440px-4rem)/6-1rem)] min-w-[180px]"
+                          >
+                            <div className="bg-white rounded-xl aspect-square mb-3 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
+                              <Image
+                                src={p.image || "/placeholder.svg"}
+                                alt={p.name}
+                                width={200}
+                                height={200}
+                                className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform"
+                              />
+                            </div>
+                            <h3 className="font-medium text-sm mb-1 line-clamp-2 text-gray-800">{p.name}</h3>
+                            <div className="flex items-center gap-1 mb-1">
+                              <div className="flex">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star key={star} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                ))}
+                              </div>
+                              <span className="text-xs text-gray-500">{p.rating || 4.5}</span>
+                            </div>
+                            <p className="text-base font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
+                              {formatPrice(p.priceUSD)}
+                            </p>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <button 
+                      onClick={() => scrollRelated("left")}
+                      className="absolute left-0 top-1/3 -translate-y-1/2 -ml-4 w-8 h-8 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+                    >
+                      <ChevronLeft className="w-4 h-4 text-gray-600" />
+                    </button>
+                    <button 
+                      onClick={() => scrollRelated("right")}
+                      className="absolute right-0 top-1/3 -translate-y-1/2 -mr-4 w-8 h-8 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+                    >
+                      <ChevronRight className="w-4 h-4 text-gray-600" />
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
-          {/* END MOBILE */}
-
         </div>
       </main>
 
-      {/* ── BARRE CTA FIXE MOBILE ── */}
-      <div className="lg:hidden" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50, padding: '12px 16px', background: 'rgba(10,10,10,0.96)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button
-            onClick={isMOQMet && grandTotal > 0 ? handleAddToCart : handleContactWhatsApp}
-            style={{ flex: 1, height: '48px', borderRadius: '10px', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', border: 'none', background: isMOQMet && grandTotal > 0 ? '#C8392B' : 'linear-gradient(135deg,#F59E0B,#FBBF24)', color: '#fff', boxShadow: isMOQMet && grandTotal > 0 ? '0 4px 20px rgba(200,57,43,0.35)' : 'none' }}>
-            <ShoppingCart style={{ width: '16px', height: '16px' }} />
-            {isMOQMet && grandTotal > 0 ? `Ajouter (${grandTotal})` : 'Nous contacter'}
-          </button>
-          <button
-            onClick={handleBuyNow}
-            disabled={!isMOQMet || grandTotal === 0}
-            style={{ flex: 1, height: '48px', borderRadius: '10px', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.07)', color: '#F5F5F5', opacity: !isMOQMet || grandTotal === 0 ? 0.35 : 1 }}>
-            Acheter
-          </button>
-        </div>
-      </div>
-
-      {/* ══════════════════════════
-          MODALS
-      ══════════════════════════ */}
-
-      {/* Image modal */}
-      {isImageModalOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '20px' }} onClick={() => setIsImageModalOpen(false)}>
-          <button onClick={() => setIsImageModalOpen(false)} style={{ position: 'absolute', top: '20px', right: '20px', width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <X style={{ width: '18px', height: '18px', color: 'rgba(255,255,255,0.7)' }} />
-          </button>
-          <div style={{ position: 'relative', maxWidth: '640px', width: '100%', aspectRatio: '1/1' }} onClick={e => e.stopPropagation()}>
-            <Image src={safeImages[selectedImage]} alt={productName} width={640} height={640} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-            {safeImages.length > 1 && <>
-              <button onClick={() => setSelectedImage(Math.max(0, selectedImage - 1))} style={{ position: 'absolute', left: '-20px', top: '50%', transform: 'translateY(-50%)', width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><ChevronLeft style={{ width: '18px', height: '18px', color: 'rgba(255,255,255,0.7)' }} /></button>
-              <button onClick={() => setSelectedImage(Math.min(safeImages.length - 1, selectedImage + 1))} style={{ position: 'absolute', right: '-20px', top: '50%', transform: 'translateY(-50%)', width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><ChevronRight style={{ width: '18px', height: '18px', color: 'rgba(255,255,255,0.7)' }} /></button>
-              <div style={{ position: 'absolute', bottom: '-28px', left: '50%', transform: 'translateX(-50%)', fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>{selectedImage + 1} / {safeImages.length}</div>
-            </>}
-          </div>
-        </div>
-      )}
-
-      {/* Simple variant modal */}
+      {/* MODAL DE SÉLECTION POUR VARIANTES SIMPLES */}
       {isSimpleVariantModalOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }} className="lg:items-center lg:p-4">
-          <div style={{ width: '100%', maxWidth: '400px', borderRadius: '20px 20px 0 0', background: '#111111', border: '1px solid rgba(255,255,255,0.08)' }} className="lg:rounded-2xl">
-            <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                {attributeImages[`${simpleVariantType}:${selectedSimpleValue}`] && <div style={{ width: '38px', height: '38px', borderRadius: '50%', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}><Image src={attributeImages[`${simpleVariantType}:${selectedSimpleValue}`]} alt={selectedSimpleValue} width={38} height={38} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>}
-                <div><p style={{ fontSize: '14px', fontWeight: 600, color: '#F5F5F5' }}>{primaryAttrName} · {selectedSimpleValue}</p><p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)' }}>Sélectionnez la quantité</p></div>
-              </div>
-              <button onClick={() => setIsSimpleVariantModalOpen(false)} style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><X style={{ width: '14px', height: '14px', color: 'rgba(255,255,255,0.5)' }} /></button>
-            </div>
-            <div style={{ padding: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', marginBottom: '16px' }}>
-                <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>Quantité</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <button onClick={decrementSimpleModal} disabled={simpleModalQuantity <= 0} style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', background: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', opacity: simpleModalQuantity <= 0 ? 0.3 : 1 }}><Minus style={{ width: '14px', height: '14px', color: 'rgba(255,255,255,0.6)' }} /></button>
-                  <span style={{ fontSize: '20px', fontWeight: 900, color: '#C8392B', minWidth: '28px', textAlign: 'center' }}>{simpleModalQuantity}</span>
-                  <button onClick={incrementSimpleModal} style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', background: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Plus style={{ width: '14px', height: '14px', color: 'rgba(255,255,255,0.6)' }} /></button>
-                </div>
-              </div>
-              <div style={{ padding: '12px 16px', borderRadius: '10px', background: 'rgba(255,255,255,0.04)', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>Total</span>
-                <span style={{ fontSize: '14px', fontWeight: 700, color: '#F5F5F5' }}>{simpleModalQuantity} article(s)</span>
-              </div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button onClick={() => setIsSimpleVariantModalOpen(false)} style={{ flex: 1, padding: '13px', borderRadius: '10px', fontSize: '14px', cursor: 'pointer', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}>Annuler</button>
-                <button onClick={confirmSimpleVariantSelection} style={{ flex: 1, padding: '13px', borderRadius: '10px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', background: '#C8392B', border: 'none', color: '#fff' }}>Confirmer</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Complex variant modal */}
-      {isVariantModalOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }} className="lg:items-center lg:p-4">
-          <div style={{ width: '100%', maxWidth: '400px', borderRadius: '20px 20px 0 0', background: '#111111', border: '1px solid rgba(255,255,255,0.08)', maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} className="lg:rounded-2xl">
-            <div style={{ padding: '18px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-              <div>
-                <p style={{ fontSize: '14px', fontWeight: 600, color: '#F5F5F5' }}>{modalMode === 'primary' ? `${primaryAttrName} ${modalPrimaryValue}` : `${modalAttrName} ${modalPrimaryValue}`}</p>
-                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)' }}>Sélectionnez les {modalMode === 'primary' ? secondaryAttrName?.toLowerCase() + 's' : primaryAttrName?.toLowerCase() + 's'}</p>
-              </div>
-              <button onClick={() => setIsVariantModalOpen(false)} style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><X style={{ width: '14px', height: '14px', color: 'rgba(255,255,255,0.5)' }} /></button>
-            </div>
-            <div style={{ padding: '16px 20px', overflowY: 'auto', flex: 1 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {modalSecondaryOptions.map(value => (
-                  <div key={value} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 500, color: 'rgba(255,255,255,0.75)' }}>{value}</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <button onClick={() => removeModalQuantity(value)} disabled={!modalQuantities[value]} style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', background: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', opacity: !modalQuantities[value] ? 0.3 : 1 }}><Minus style={{ width: '12px', height: '12px', color: 'rgba(255,255,255,0.6)' }} /></button>
-                      <span style={{ fontSize: '16px', fontWeight: 900, color: '#C8392B', minWidth: '22px', textAlign: 'center' }}>{modalQuantities[value] || 0}</span>
-                      <button onClick={() => addModalQuantity(value)} style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', background: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Plus style={{ width: '12px', height: '12px', color: 'rgba(255,255,255,0.6)' }} /></button>
-                    </div>
+        <div className="fixed inset-0 bg-black/50 flex items-end lg:items-center justify-center z-[100] p-4">
+          <div className="bg-white rounded-t-xl lg:rounded-xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {attributeImages[`${simpleVariantType}:${selectedSimpleValue}`] && (
+                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md">
+                    <Image
+                      src={attributeImages[`${simpleVariantType}:${selectedSimpleValue}`]}
+                      alt={selectedSimpleValue}
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                ))}
+                )}
+                <div>
+                  <h3 className="text-base font-semibold text-gray-900">
+                    {primaryAttrName} {selectedSimpleValue}
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Sélectionnez la quantité
+                  </p>
+                </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.04)', margin: '12px 0', alignItems: 'center' }}>
-                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>Total</span>
-                <span style={{ fontSize: '14px', fontWeight: 700, color: '#F5F5F5' }}>{Object.values(modalQuantities).reduce((a, b) => a + b, 0)} articles</span>
+              <button 
+                onClick={() => setIsSimpleVariantModalOpen(false)}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white rounded-lg shadow-sm mb-4">
+                <span className="text-sm font-medium">Quantité</span>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={decrementSimpleModal}
+                    disabled={simpleModalQuantity <= 0}
+                    className="w-10 h-10 border border-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:shadow-sm disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="w-12 text-center text-lg font-bold" style={{ color: '#D4372B' }}>
+                    {simpleModalQuantity}
+                  </span>
+                  <button
+                    onClick={incrementSimpleModal}
+                    className="w-10 h-10 border border-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:shadow-sm transition-all"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button onClick={() => setIsVariantModalOpen(false)} style={{ flex: 1, padding: '13px', borderRadius: '10px', fontSize: '14px', cursor: 'pointer', background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}>Annuler</button>
-                <button onClick={confirmModalSelection} style={{ flex: 1, padding: '13px', borderRadius: '10px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', background: '#C8392B', border: 'none', color: '#fff' }}>Confirmer</button>
+
+              <div className="mt-4 p-3 rounded-xl" style={{ background: '#0A0A0A' }}>
+                <div className="flex justify-between text-sm font-medium text-white">
+                  <span>Total sélectionné:</span>
+                  <span>{simpleModalQuantity} article(s)</span>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-4">
+                <button
+                  onClick={() => setIsSimpleVariantModalOpen(false)}
+                  className="flex-1 py-3 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:shadow-sm transition-all"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={confirmSimpleVariantSelection}
+                  className="flex-1 py-3 rounded-lg text-sm font-medium text-white hover:shadow-lg transition-all"
+                  style={{ background: "#D4372B" }}
+                >
+                  Confirmer
+                </button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Protection modal */}
-      {isProtectionModalOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(6px)' }}>
-          <div style={{ width: '100%', maxWidth: '480px', borderRadius: '20px', background: '#111111', border: '1px solid rgba(255,255,255,0.08)', maxHeight: '85vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(200,57,43,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Shield style={{ width: '17px', height: '17px', color: '#C8392B' }} /></div>
-                <p style={{ fontSize: '15px', fontWeight: 600, color: '#F5F5F5' }}>Protection Adullam</p>
-              </div>
-              <button onClick={() => setIsProtectionModalOpen(false)} style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><X style={{ width: '14px', height: '14px', color: 'rgba(255,255,255,0.5)' }} /></button>
-            </div>
-            <div style={{ padding: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <div>
-                <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: '12px' }}>Paiement</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '10px' }}>
-                  {[{ icon: Smartphone, label: 'MTN Money' }, { icon: Smartphone, label: 'Orange Money' }, { icon: CreditCard, label: 'Wave' }, { icon: CreditCard, label: 'Visa / MC' }].map(({ icon: Icon, label }) => (
-                    <div key={label} style={{ padding: '12px 8px', borderRadius: '10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', textAlign: 'center' }}>
-                      <Icon style={{ width: '18px', height: '18px', color: 'rgba(255,255,255,0.4)', margin: '0 auto 6px' }} />
-                      <p style={{ fontSize: '9px', fontWeight: 500, color: 'rgba(255,255,255,0.45)', lineHeight: 1.3 }}>{label}</p>
-                    </div>
-                  ))}
+      {/* MODAL DE SÉLECTION POUR VARIANTES MULTIPLES */}
+      {isVariantModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-end lg:items-center justify-center z-[100] p-4">
+          <div className="bg-white rounded-t-xl lg:rounded-xl w-full max-w-md max-h-[80vh] overflow-y-auto shadow-2xl">
+            <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {modalMode === 'primary' && modalPrimaryValue && attributeImages[`${Object.keys(attributeGroups)[0]}:${modalPrimaryValue}`] && (
+                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md">
+                    <Image
+                      src={attributeImages[`${Object.keys(attributeGroups)[0]}:${modalPrimaryValue}`]}
+                      alt={modalPrimaryValue}
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <div>
+                  <h3 className="text-base font-semibold text-gray-900">
+                    {modalMode === 'primary' 
+                      ? `${primaryAttrName} ${modalPrimaryValue}`
+                      : `${modalAttrName} ${modalPrimaryValue}`
+                    }
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Sélectionnez les {modalMode === 'primary' ? secondaryAttrName.toLowerCase() + 's' : primaryAttrName.toLowerCase() + 's'}
+                  </p>
                 </div>
               </div>
+              <button 
+                onClick={() => setIsVariantModalOpen(false)}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+
+            <div className="p-4 space-y-3">
+              {modalSecondaryOptions.map((value) => (
+                <div key={value} className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg shadow-sm">
+                  <span className="text-sm font-medium">{value}</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => removeModalQuantity(value)}
+                      disabled={!modalQuantities[value]}
+                      className="w-8 h-8 border border-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:shadow-sm disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    >
+                      <Minus className="w-3 h-3" />
+                    </button>
+                    <span className="w-8 text-center text-sm font-medium">{modalQuantities[value] || 0}</span>
+                    <button
+                      onClick={() => addModalQuantity(value)}
+                      className="w-8 h-8 border border-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:shadow-sm transition-all"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              <div className="mt-4 p-3 rounded-xl" style={{ background: '#0A0A0A' }}>
+                <div className="flex justify-between text-sm font-medium text-white">
+                  <span>Total sélectionné:</span>
+                  <span>
+                    {Object.values(modalQuantities).reduce((a, b) => a + b, 0)} articles
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setIsVariantModalOpen(false)}
+                  className="flex-1 py-3 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:shadow-sm transition-all"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={confirmModalSelection}
+                  className="flex-1 py-3 rounded-lg text-sm font-medium text-white hover:shadow-lg transition-all"
+                  style={{ background: "#D4372B" }}
+                >
+                  Confirmer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL PROTECTION ADULLAM */}
+      {isProtectionModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Shield className="w-5 h-5" style={{ color: '#D4372B' }} />
+                <h3 className="text-base font-semibold text-gray-900">Protection des achats Adullam</h3>
+              </div>
+              <button 
+                onClick={() => setIsProtectionModalOpen(false)}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
               <div>
-                <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: '12px' }}>Garanties</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {[
-                    { title: 'Paiements sécurisés SSL', desc: 'Chaque transaction est chiffrée de bout en bout.' },
-                    { title: 'Garantie remboursement', desc: "Remboursement complet si votre commande n'est pas expédiée." },
-                  ].map(({ title, desc }) => (
-                    <div key={title} style={{ padding: '14px 16px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                      <p style={{ fontSize: '13px', fontWeight: 600, color: '#F5F5F5', marginBottom: '5px' }}>{title}</p>
-                      <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.6 }}>{desc}</p>
-                    </div>
-                  ))}
+                <h4 className="text-sm font-medium text-gray-900 mb-3">Moyens de paiement acceptés</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-3 text-center shadow-sm">
+                    <Smartphone className="w-5 h-5 text-gray-600 mx-auto mb-1" />
+                    <p className="text-xs font-medium text-gray-700">MTN Money</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-3 text-center shadow-sm">
+                    <Smartphone className="w-5 h-5 text-gray-600 mx-auto mb-1" />
+                    <p className="text-xs font-medium text-gray-700">Orange Money</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-3 text-center shadow-sm">
+                    <CreditCard className="w-5 h-5 text-gray-600 mx-auto mb-1" />
+                    <p className="text-xs font-medium text-gray-700">Wave</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-3 text-center shadow-sm">
+                    <CreditCard className="w-5 h-5 text-gray-600 mx-auto mb-1" />
+                    <p className="text-xs font-medium text-gray-700">Visa/Mastercard</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-medium text-gray-900 mb-3">Protection de votre commande</h4>
+                <div className="space-y-3">
+                  <div className="bg-gradient-to-r from-gray-50 to-white rounded-lg p-4 shadow-sm">
+                    <p className="text-sm font-medium text-gray-900 mb-1">Paiements sécurisés</p>
+                    <p className="text-sm text-gray-600">
+                      Chaque transaction est protégée par un cryptage SSL strict.
+                    </p>
+                  </div>
+                  
+                  <div className="bg-gradient-to-r from-gray-50 to-white rounded-lg p-4 shadow-sm">
+                    <p className="text-sm font-medium text-gray-900 mb-1">Garantie remboursement</p>
+                    <p className="text-sm text-gray-600">
+                      Obtenez un remboursement si votre commande n'est pas expédiée.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2083,10 +3027,13 @@ export default function ProductPage() {
       <Footer />
 
       <style jsx>{`
-        * { scrollbar-width: none; }
-        *::-webkit-scrollbar { display: none; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
       `}</style>
     </div>
   )
