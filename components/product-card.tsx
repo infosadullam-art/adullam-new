@@ -62,16 +62,16 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Link href={`/products/${product.id}`} className="block group">
-      {/* SUPPRESSION de border-gray-100 et border-gray-200 */}
-      <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+      <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all border border-gray-100 hover:border-gray-200">
         
-        {/* IMAGE - SUPPRESSION de bg-gray-50 et p-4 réduit */}
-        <div className="relative aspect-square">
+        {/* IMAGE */}
+        <div className="relative aspect-square bg-gray-50">
           <Image
             src={product.image || "/placeholder.svg"}
             alt={product.name}
-            fill
-            className="object-contain p-3 group-hover:scale-105 transition-transform duration-300"
+            width={200}
+            height={200}
+            className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
           />
           
           {/* BADGE - avec style dynamique */}
@@ -101,7 +101,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
         {/* INFOS */}
         <div className="p-2 lg:p-3">
-          <h3 className="text-xs lg:text-sm font-medium text-gray-900 line-clamp-2 mb-1 min-h-[2.5rem]">
+          <h3 className="text-xs lg:text-sm font-medium text-gray-900 truncate mb-1">
             {product.name}
           </h3>
 
@@ -114,7 +114,7 @@ export function ProductCard({ product }: ProductCardProps) {
                     key={star}
                     className={`w-3 h-3 ${
                       star <= Math.round(product.rating || 0)
-                        ? "text-yellow-400 fill-yellow-400"
+                        ? "text-yellow-400"
                         : "text-gray-200"
                     }`}
                     fill="currentColor"
@@ -132,9 +132,9 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
 
-          {/* PRIX */}
+          {/* PRIX EN ROUGE */}
           <div className="mt-2">
-            <p className="text-sm lg:text-base font-bold" style={{ color: "#D4372B" }}>
+            <p className="text-sm lg:text-base font-bold text-red-500">
               {formattedPrice}
             </p>
           </div>
