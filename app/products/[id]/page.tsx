@@ -1049,350 +1049,263 @@ export default function ProductPage() {
   const hasSimpleVariants = Object.keys(simpleVariantQuantities).length > 0
   const hasComplexVariants = Object.keys(complexSelections).length > 0
 
+
   return (
-    <div className="min-h-screen bg-white">
-      <div className="hidden lg:block">
+    <div className="min-h-screen" style={{ background: '#0C0C0C', color: '#E8E8E8' }}>
+
+      {/* Ambient top glow */}
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[1px] z-0 pointer-events-none" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,55,43,0.4), transparent)' }} />
+
+      <div className="hidden lg:block relative z-10">
         <Header />
       </div>
-      <div className="lg:hidden">
+      <div className="lg:hidden relative z-10">
         <MobileHeader />
       </div>
 
-      <main className="pb-24 lg:pb-0">
+      <main className="pb-28 lg:pb-0 relative z-10">
         <div className="max-w-[1440px] mx-auto">
-          
-          <div className="lg:hidden px-4 py-3 border-b border-gray-100">
+
+          {/* Currency indicator mobile */}
+          <div className="lg:hidden px-4 py-2.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             <CurrencyIndicator />
           </div>
 
-          <div className="px-4 lg:px-8 py-3 lg:py-8">
-            
-            <div className="hidden lg:flex items-center gap-2 text-xs mb-6 text-gray-400">
-              <a href="/" className="hover:text-gray-600">Accueil</a>
-              <ChevronRight className="w-3 h-3" />
-              <a href="/category/electronique" className="hover:text-gray-600">Électronique</a>
-              <ChevronRight className="w-3 h-3" />
-              <span className="text-gray-600">{productName}</span>
-            </div>
+          <div className="px-4 lg:px-10 py-4 lg:py-10">
 
-            {/* SECTION MOBILE - Gardée identique car pas de fetch direct */}
+            {/* Breadcrumb desktop */}
+            <nav className="hidden lg:flex items-center gap-2 text-xs mb-10" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              <a href="/" className="transition-colors hover:text-white/70">Accueil</a>
+              <span style={{ color: 'rgba(255,255,255,0.15)' }}>/</span>
+              <a href="/category/electronique" className="transition-colors hover:text-white/70">Électronique</a>
+              <span style={{ color: 'rgba(255,255,255,0.15)' }}>/</span>
+              <span style={{ color: 'rgba(255,255,255,0.6)' }}>{productName}</span>
+            </nav>
+
+            {/* ═══════════════════════════════════════
+                MOBILE LAYOUT
+            ═══════════════════════════════════════ */}
             <div className="lg:hidden">
+
               {/* Mobile Gallery */}
-              <div className="mb-4">
-                <div className="relative">
+              <div className="mb-6">
+                <div
+                  className="relative overflow-hidden rounded-2xl"
+                  style={{ background: '#161616', aspectRatio: '1/1' }}
+                >
                   <button
                     onClick={() => setIsImageModalOpen(true)}
-                    className="w-full aspect-square bg-white flex items-center justify-center overflow-hidden"
+                    className="w-full h-full flex items-center justify-center"
                   >
                     <Image
                       src={safeImages[selectedImage]}
                       alt={productName}
                       width={400}
                       height={400}
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-contain p-8"
+                      style={{ transition: 'opacity 0.3s ease' }}
                       priority
                     />
                   </button>
-                  
-                  <div className="absolute bottom-4 left-0 right-0 flex justify-center">
-                    <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-white/80 backdrop-blur-sm shadow-md">
-                      <div className="flex gap-1.5">
-                        {safeImages.slice(0, 12).map((_, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => setSelectedImage(idx)}
-                            className={`transition-all duration-200 rounded-full ${
-                              selectedImage === idx 
-                                ? 'w-3 h-1 bg-[#D4372B] rounded-full' 
-                                : 'w-1.5 h-1.5 bg-gray-400'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      
-                      {safeImages.length > 12 && (
-                        <div className="flex items-center gap-1 pl-1.5 border-l border-gray-300">
-                          <button
-                            onClick={() => setSelectedImage(Math.max(0, selectedImage - 1))}
-                            className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-                          >
-                            <ChevronLeft className="w-3 h-3 text-gray-500" />
-                          </button>
-                          <span className="text-[9px] font-medium text-gray-500 min-w-[32px] text-center">
-                            {selectedImage + 1}/{safeImages.length}
-                          </span>
-                          <button
-                            onClick={() => setSelectedImage(Math.min(safeImages.length - 1, selectedImage + 1))}
-                            className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-                          >
-                            <ChevronRight className="w-3 h-3 text-gray-500" />
-                          </button>
-                        </div>
-                      )}
+
+                  {/* Wishlist */}
+                  <button
+                    onClick={handleToggleWishlist}
+                    className="absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all"
+                    style={{
+                      background: isWishlisted ? '#D4372B' : 'rgba(255,255,255,0.08)',
+                      backdropFilter: 'blur(8px)',
+                    }}
+                  >
+                    <Heart className="w-4 h-4" style={{ color: isWishlisted ? '#fff' : 'rgba(255,255,255,0.6)', fill: isWishlisted ? '#fff' : 'none' }} />
+                  </button>
+
+                  {/* Counter pill */}
+                  {safeImages.length > 1 && (
+                    <div
+                      className="absolute bottom-3 right-3 text-xs px-2.5 py-1 rounded-full font-medium"
+                      style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', color: 'rgba(255,255,255,0.7)' }}
+                    >
+                      {selectedImage + 1} / {safeImages.length}
                     </div>
+                  )}
+
+                  {/* Dot indicators */}
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                    {safeImages.slice(0, 8).map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedImage(idx)}
+                        className="rounded-full transition-all duration-300"
+                        style={{
+                          width: selectedImage === idx ? '16px' : '5px',
+                          height: '5px',
+                          background: selectedImage === idx ? '#D4372B' : 'rgba(255,255,255,0.3)',
+                        }}
+                      />
+                    ))}
                   </div>
                 </div>
 
+                {/* Thumbnails */}
                 {safeImages.length > 1 && (
-                  <div className="flex gap-2 mt-2 overflow-x-auto pb-1 hide-scrollbar">
+                  <div className="flex gap-2 mt-3 overflow-x-auto hide-scrollbar pb-1">
                     {safeImages.map((img, idx) => (
                       <button
                         key={idx}
                         onClick={() => setSelectedImage(idx)}
-                        className="flex-shrink-0 w-16 h-16 bg-white rounded-lg overflow-hidden border"
+                        className="flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden transition-all duration-200"
                         style={{
-                          borderColor: selectedImage === idx ? '#D4372B' : '#ECECEC'
+                          background: '#161616',
+                          border: `1.5px solid ${selectedImage === idx ? '#D4372B' : 'rgba(255,255,255,0.08)'}`,
+                          opacity: selectedImage === idx ? 1 : 0.5,
                         }}
                       >
-                        <Image
-                          src={img}
-                          alt={`Miniature ${idx + 1}`}
-                          width={64}
-                          height={64}
-                          className="w-full h-full object-contain"
-                        />
+                        <Image src={img} alt="" width={56} height={56} className="w-full h-full object-contain p-1.5" />
                       </button>
                     ))}
                   </div>
                 )}
               </div>
 
-              {/* Mobile Product Info - Gardée identique */}
-              <div className="space-y-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span 
-                        className="text-xs font-medium px-2 py-0.5 rounded-full"
-                        style={{ background: '#D4372B', color: '#fff', fontFamily: "'Poppins', sans-serif" }}
-                      >
-                        Top vente
-                      </span>
-                      <span className="text-xs text-gray-400">SKU: {product.id}</span>
-                    </div>
-                    <h1 className="text-lg font-medium leading-tight">{productName}</h1>
+              {/* Mobile Product Info */}
+              <div className="space-y-5">
+
+                {/* Title + badges */}
+                <div>
+                  <div className="flex items-center gap-2 mb-2.5">
+                    <span
+                      className="text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-full"
+                      style={{ background: 'rgba(212,55,43,0.15)', color: '#D4372B', border: '1px solid rgba(212,55,43,0.25)' }}
+                    >
+                      Top vente
+                    </span>
+                    <span className="text-[10px] font-mono" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                      #{product.id?.slice(-8)}
+                    </span>
                   </div>
-                  <button 
-                    onClick={handleToggleWishlist}
-                    className="p-2 -mt-1 hover:bg-gray-100 rounded-full transition-colors"
-                  >
-                    <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
-                  </button>
+                  <h1 className="text-xl font-semibold leading-tight" style={{ color: '#F0F0F0', letterSpacing: '-0.02em' }}>
+                    {productName}
+                  </h1>
                 </div>
 
-                <div className="flex items-center gap-3 text-xs">
+                {/* Rating */}
+                <div className="flex items-center gap-2.5 text-xs">
                   <div className="flex items-center gap-1">
-                    <div className="flex">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star key={star} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                      ))}
-                    </div>
-                    <span className="text-gray-600">{reviewsStats.averageRating || 0}</span>
+                    {[1,2,3,4,5].map((s) => (
+                      <Star key={s} className="w-3.5 h-3.5" style={{ fill: '#F59E0B', color: '#F59E0B' }} />
+                    ))}
+                    <span className="ml-1 font-semibold" style={{ color: '#F0F0F0' }}>{reviewsStats.averageRating || 0}</span>
                   </div>
-                  <span className="text-gray-300">|</span>
-                  <span className="text-gray-600">{reviewsStats.totalReviews} avis</span>
-                  <span className="text-gray-300">|</span>
-                  <span className="text-gray-600">1.2k ventes</span>
+                  <span style={{ color: 'rgba(255,255,255,0.15)' }}>·</span>
+                  <span style={{ color: 'rgba(255,255,255,0.4)' }}>{reviewsStats.totalReviews} avis</span>
+                  <span style={{ color: 'rgba(255,255,255,0.15)' }}>·</span>
+                  <span style={{ color: 'rgba(255,255,255,0.4)' }}>1.2k ventes</span>
                 </div>
 
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
-                    {formatPrice(currentPrice)} x {grandTotal || 1}
-                  </span>
-                  <span className="text-xs text-gray-400 line-through">
-                    {formatPrice(currentPrice * 1.2 * (grandTotal || 1))}
-                  </span>
-                  <span className="text-xs text-white px-1.5 py-0.5 rounded" style={{ background: "#D4372B" }}>-20%</span>
+                {/* Price block */}
+                <div
+                  className="rounded-2xl p-4"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+                >
+                  <div className="flex items-baseline gap-2.5 mb-1">
+                    <span className="text-2xl font-black" style={{ color: '#D4372B', letterSpacing: '-0.03em' }}>
+                      {formatPrice(currentPrice)} × {grandTotal || 1}
+                    </span>
+                    <span className="text-sm line-through" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                      {formatPrice(currentPrice * 1.2 * (grandTotal || 1))}
+                    </span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md" style={{ background: '#D4372B', color: '#fff' }}>
+                      −20%
+                    </span>
+                  </div>
+                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    Prix unitaire: <span style={{ color: 'rgba(255,255,255,0.6)' }}>{formatPrice(currentPrice)}</span>
+                  </p>
                 </div>
 
-                {/* AFFICHAGE DYNAMIQUE DES VARIANTES - Identique */}
+                {/* Variants mobile */}
                 {hasVariants && (
                   <>
                     {hasSimpleVariants && (
-                      <div className="p-4 rounded-xl mb-4" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
-                        <h3 className="text-sm font-medium text-gray-700 mb-3">
-                          {primaryAttrName}
-                        </h3>
+                      <div>
+                        <p className="text-[10px] font-bold tracking-widest uppercase mb-2.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{primaryAttrName}</p>
                         <div className="flex flex-wrap gap-2">
                           {Object.entries(simpleVariantQuantities).map(([value, qty]) => {
-                            const hasImage = attributeImages[`${simpleVariantType}:${value}`]
-                            
+                            const hasImg = attributeImages[`${simpleVariantType}:${value}`]
+                            const active = qty > 0
                             return (
                               <button
                                 key={value}
                                 onClick={() => openSimpleVariantModal(value)}
-                                className={`
-                                  px-3 py-1.5 text-xs rounded-md transition-all relative
-                                  ${qty > 0 
-                                    ? 'bg-[#D4372B] text-white font-semibold shadow-sm' 
-                                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
-                                  }
-                                `}
+                                className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all"
+                                style={{
+                                  background: active ? 'rgba(212,55,43,0.15)' : 'rgba(255,255,255,0.05)',
+                                  border: `1px solid ${active ? 'rgba(212,55,43,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                                  color: active ? '#D4372B' : 'rgba(255,255,255,0.6)',
+                                }}
                               >
-                                {hasImage ? (
-                                  <div className="flex items-center gap-1">
-                                    <div className="w-4 h-4 rounded-full overflow-hidden">
-                                      <Image
-                                        src={attributeImages[`${simpleVariantType}:${value}`]}
-                                        alt={value}
-                                        width={16}
-                                        height={16}
-                                        className="w-full h-full object-cover"
-                                      />
-                                    </div>
-                                    <span>{value}</span>
-                                  </div>
-                                ) : (
-                                  value
-                                )}
-                                {qty > 0 && (
-                                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4372B] text-white text-[8px] rounded-full flex items-center justify-center font-bold">
-                                    {qty}
-                                  </span>
-                                )}
+                                {hasImg && <div className="w-4 h-4 rounded-full overflow-hidden"><Image src={attributeImages[`${simpleVariantType}:${value}`]} alt={value} width={16} height={16} className="w-full h-full object-cover" /></div>}
+                                {value}
+                                {active && <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[8px] font-bold flex items-center justify-center" style={{ background: '#D4372B', color: '#fff' }}>{qty}</span>}
                               </button>
                             )
                           })}
                         </div>
-
-                        {Object.entries(simpleVariantQuantities).map(([value, qty]) => {
-                          if (qty === 0) return null
-                          
-                          return (
-                            <div key={value} className="bg-white p-2 rounded-lg mt-3 border border-gray-200">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  {attributeImages[`${simpleVariantType}:${value}`] && (
-                                    <div className="w-6 h-6 rounded-full overflow-hidden border border-gray-300">
-                                      <Image
-                                        src={attributeImages[`${simpleVariantType}:${value}`]}
-                                        alt={value}
-                                        width={24}
-                                        height={24}
-                                        className="w-full h-full object-cover"
-                                      />
-                                    </div>
-                                  )}
-                                  <span className="text-sm font-medium text-gray-700">{value}</span>
-                                  <span className="text-xs text-gray-500">x{qty}</span>
-                                </div>
-                              </div>
-                            </div>
-                          )
-                        })}
                       </div>
                     )}
-
                     {hasComplexVariants && (
                       <>
-                        <div className="p-4 rounded-xl mb-4" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
-                          <h3 className="text-sm font-medium text-gray-700 mb-3">
-                            {primaryAttrName}
-                          </h3>
+                        <div>
+                          <p className="text-[10px] font-bold tracking-widest uppercase mb-2.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{primaryAttrName}</p>
                           <div className="flex flex-wrap gap-2">
                             {Object.keys(complexSelections).map((primaryValue) => {
                               const total = getPrimaryTotal(primaryValue)
-                              const hasImage = attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]
-                              
+                              const hasImg = attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]
                               return (
-                                <button
-                                  key={primaryValue}
-                                  onClick={() => openPrimaryModal(primaryValue)}
-                                  className={`
-                                    px-3 py-1.5 text-xs rounded-md transition-all relative
-                                    ${total > 0 
-                                      ? 'bg-[#D4372B] text-white font-semibold shadow-sm' 
-                                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
-                                    }
-                                  `}
-                                >
-                                  {hasImage ? (
-                                    <div className="flex items-center gap-1">
-                                      <div className="w-4 h-4 rounded-full overflow-hidden">
-                                        <Image
-                                          src={attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]}
-                                          alt={primaryValue}
-                                          width={16}
-                                          height={16}
-                                          className="w-full h-full object-cover"
-                                        />
-                                      </div>
-                                      <span>{primaryValue}</span>
-                                    </div>
-                                  ) : (
-                                    primaryValue
-                                  )}
-                                  {total > 0 && (
-                                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4372B] text-white text-[8px] rounded-full flex items-center justify-center font-bold">
-                                      {total}
-                                    </span>
-                                  )}
+                                <button key={primaryValue} onClick={() => openPrimaryModal(primaryValue)}
+                                  className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all"
+                                  style={{ background: total > 0 ? 'rgba(212,55,43,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${total > 0 ? 'rgba(212,55,43,0.5)' : 'rgba(255,255,255,0.08)'}`, color: total > 0 ? '#D4372B' : 'rgba(255,255,255,0.6)' }}>
+                                  {hasImg && <div className="w-4 h-4 rounded-full overflow-hidden"><Image src={attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]} alt={primaryValue} width={16} height={16} className="w-full h-full object-cover" /></div>}
+                                  {primaryValue}
+                                  {total > 0 && <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[8px] font-bold flex items-center justify-center" style={{ background: '#D4372B', color: '#fff' }}>{total}</span>}
                                 </button>
                               )
                             })}
                           </div>
                         </div>
-
                         {secondaryAttrName && (
-                          <div className="p-4 rounded-xl mb-4" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
-                            <h3 className="text-sm font-medium text-gray-700 mb-3">
-                              {secondaryAttrName}
-                            </h3>
+                          <div>
+                            <p className="text-[10px] font-bold tracking-widest uppercase mb-2.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{secondaryAttrName}</p>
                             <div className="flex flex-wrap gap-2">
                               {attributeGroups[Object.keys(attributeGroups)[1]]?.values.map((secondaryValue) => {
                                 const total = getSecondaryTotal(secondaryValue)
-                                
                                 return (
-                                  <button
-                                    key={secondaryValue}
-                                    onClick={() => openSecondaryModal(secondaryValue)}
-                                    className={`
-                                      px-3 py-1.5 text-xs rounded-md transition-all relative
-                                      ${total > 0 
-                                        ? 'bg-[#D4372B] text-white font-semibold shadow-sm' 
-                                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
-                                      }
-                                    `}
-                                  >
+                                  <button key={secondaryValue} onClick={() => openSecondaryModal(secondaryValue)}
+                                    className="relative px-3 py-1.5 rounded-xl text-xs font-medium transition-all"
+                                    style={{ background: total > 0 ? 'rgba(212,55,43,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${total > 0 ? 'rgba(212,55,43,0.5)' : 'rgba(255,255,255,0.08)'}`, color: total > 0 ? '#D4372B' : 'rgba(255,255,255,0.6)' }}>
                                     {secondaryValue}
-                                    {total > 0 && (
-                                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4372B] text-white text-[8px] rounded-full flex items-center justify-center font-bold">
-                                        {total}
-                                      </span>
-                                    )}
+                                    {total > 0 && <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[8px] font-bold flex items-center justify-center" style={{ background: '#D4372B', color: '#fff' }}>{total}</span>}
                                   </button>
                                 )
                               })}
                             </div>
                           </div>
                         )}
-
                         {Object.entries(complexSelections).map(([primaryValue, secondarySelections]) => {
-                          const nonZeroSelections = Object.entries(secondarySelections).filter(([_, qty]) => qty > 0)
-                          if (nonZeroSelections.length === 0) return null
-                          
+                          const nonZero = Object.entries(secondarySelections).filter(([_, qty]) => qty > 0)
+                          if (nonZero.length === 0) return null
                           return (
-                            <div key={primaryValue} className="bg-white p-3 rounded-lg mb-2 border border-gray-200">
+                            <div key={primaryValue} className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
                               <div className="flex items-center gap-2 mb-2">
-                                {attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`] && (
-                                  <div className="w-6 h-6 rounded-full overflow-hidden border border-gray-300">
-                                    <Image
-                                      src={attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]}
-                                      alt={primaryValue}
-                                      width={24}
-                                      height={24}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  </div>
-                                )}
-                                <span className="text-sm font-medium text-gray-700">{primaryValue}</span>
+                                {attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`] && <div className="w-5 h-5 rounded-full overflow-hidden"><Image src={attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]} alt={primaryValue} width={20} height={20} className="w-full h-full object-cover" /></div>}
+                                <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>{primaryValue}</span>
                               </div>
-                              <div className="flex flex-wrap gap-2 pl-2">
-                                {nonZeroSelections.map(([secondaryValue, qty]) => (
-                                  <div key={secondaryValue} className="bg-gray-50 px-2 py-1 rounded border border-gray-200 text-xs">
-                                    <span className="font-medium">{secondaryValue}</span>
-                                    <span className="ml-1 text-[#D4372B] font-bold">x{qty}</span>
-                                  </div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {nonZero.map(([sec, qty]) => (
+                                  <span key={sec} className="text-xs px-2 py-0.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>
+                                    {sec} <span style={{ color: '#D4372B', fontWeight: 700 }}>×{qty}</span>
+                                  </span>
                                 ))}
                               </div>
                             </div>
@@ -1404,890 +1317,80 @@ export default function ProductPage() {
                 )}
 
                 {!hasVariants && (
-                  <div className="mb-4">
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Quantité</h3>
-                    <div className="flex items-center rounded-xl overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
-                      <button
-                        onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))}
-                        className="p-2.5 transition-colors" style={{ background: "#F4F4F4" }}
-                        disabled={simpleQuantity <= 1}
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <span className="w-12 text-center text-sm font-medium">{simpleQuantity}</span>
-                      <button
-                        onClick={() => setSimpleQuantity(simpleQuantity + 1)}
-                        className="p-2.5 transition-colors" style={{ background: "#F4F4F4" }}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-3 text-xs text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <Package className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
-                    <span>MOQ: {minQuantity}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Check className="w-3.5 h-3.5 text-green-600" />
-                    <span>En stock</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {isLoadingLogistics ? (
-                      <span className="inline-flex items-center text-gray-400">
-                        <span className="w-3 h-3 border-2 border-gray-300 border-t-[#D4372B] rounded-full animate-spin mr-1"></span>
-                        Calcul...
-                      </span>
-                    ) : (
-                      <span className="text-gray-400">
-                        {logisticsData ? `${logisticsData.weight.totalWeight.toFixed(2)} kg total` : '0.00 kg total'}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <h3 className="text-xs font-medium text-gray-500 flex items-center justify-between">
-                    <span>Mode de livraison</span>
-                    {selectedPortePorteCost > 0 && (
-                      <span className="text-xs font-medium text-gray-700">
-                        Frais porte-à-porte: <span className="font-bold" style={{ color: '#D4372B' }}>{formatPrice(selectedPortePorteCost)}</span>
-                      </span>
-                    )}
-                  </h3>
-                  {isLoadingLogistics ? (
-                    <div className="grid grid-cols-3 gap-1.5">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex flex-col items-center p-2 rounded-lg border border-gray-200 bg-gray-50 animate-pulse">
-                          <div className="w-4 h-4 bg-gray-200 rounded-full mb-1"></div>
-                          <div className="w-8 h-3 bg-gray-200 rounded mb-1"></div>
-                          <div className="w-6 h-2 bg-gray-200 rounded mb-1"></div>
-                          <div className="w-10 h-3 bg-gray-200 rounded"></div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : logisticsError ? (
-                    <div className="text-xs text-red-500 p-2 border border-red-200 rounded-lg bg-red-50">
-                      {logisticsError}
-                    </div>
-                  ) : (
-                    <>
-                      <div className="grid grid-cols-3 gap-1.5">
-                        {[
-                          { mode: "bateau", icon: Ship, label: "Mer" },
-                          { mode: "avion", icon: Sparkles, label: "Air" },
-                          { mode: "express", icon: Zap, label: "Express" }
-                        ].map((item) => {
-                          const shippingMode = item.mode as "bateau" | "avion" | "express"
-                          const isAvailable = logisticsData?.shipping?.[shippingMode]
-                          const days = getShippingDays(shippingMode)
-                          const cost = getShippingCost(shippingMode)
-                          
-                          if (!isAvailable) return null
-                          
-                          return (
-                            <button
-                              key={item.mode}
-                              onClick={() => setSelectedShipping(shippingMode)}
-                              className="flex flex-col items-center p-2 rounded-lg border transition-all hover:shadow-md"
-                              style={{
-                                borderColor: selectedShipping === shippingMode ? brandColor : '#e5e7eb',
-                                background: selectedShipping === shippingMode ? '#D4372B' : '#fff'
-                              }}
-                            >
-                              <item.icon className="w-4 h-4 mb-1" style={{ color: selectedShipping === shippingMode ? 'white' : '#9ca3af' }} />
-                              <span className="text-xs font-medium" style={{ color: selectedShipping === shippingMode ? 'white' : '#374151' }}>
-                                {item.label}
-                              </span>
-                              <span className="text-[10px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#6b7280' }}>
-                                {days}
-                              </span>
-                              <span className="text-xs font-semibold mt-0.5" style={{ color: selectedShipping === shippingMode ? 'white' : '#D4372B' }}>
-                                {formatPrice(cost)}
-                              </span>
-                            </button>
-                          )
-                        })}
-                      </div>
-                      <div className="text-center mt-1">
-                        <span className="text-[10px] text-gray-400">* Frais de porte-à-porte inclus</span>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                <div 
-                  onClick={() => setIsProtectionModalOpen(true)}
-                  className="rounded-xl p-3 cursor-pointer transition-all hover:shadow-md"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-4 h-4" style={{ color: '#D4372B' }} />
-                      <span className="text-xs font-medium text-gray-900">Protection Adullam</span>
-                    </div>
-                    <Info className="w-3.5 h-3.5 text-gray-400" />
-                  </div>
-                  
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
-                    {['MTN', 'Orange', 'Wave', 'Visa'].map((method) => (
-                      <span key={method} className="text-xs px-2 py-1 bg-white border border-gray-200 rounded-full text-gray-600 shadow-sm">
-                        {method}
-                      </span>
-                    ))}
-                  </div>
-                  
-                  <p className="text-xs text-gray-500 flex items-center gap-1">
-                    <Lock className="w-3 h-3 text-gray-400" />
-                    Paiement sécurisé
-                  </p>
-                </div>
-
-                {!isMOQMet && grandTotal > 0 && (
-                  <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800 shadow-sm">
-                    Quantité minimum non atteinte ({minQuantity} min). Contactez-nous pour discuter.
-                  </div>
-                )}
-
-                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-3 lg:relative lg:border-0 lg:p-0 z-50 shadow-lg">
-                  <div className="flex gap-2 max-w-[1440px] mx-auto">
-                    <button
-                      onClick={isMOQMet && grandTotal > 0 ? handleAddToCart : handleContactWhatsApp}
-                      className="flex-1 py-3 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:shadow-lg"
-                      style={{
-                        background: (isMOQMet && grandTotal > 0) ? brandGradient : 'linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%)',
-                        color: 'white'
-                      }}
-                    >
-                      <ShoppingCart className="w-4 h-4" />
-                      {(isMOQMet && grandTotal > 0) ? `Ajouter (${grandTotal})` : 'Nous contacter'}
-                    </button>
-                    <button
-                      onClick={handleBuyNow}
-                      disabled={!isMOQMet || grandTotal === 0}
-                      className="flex-1 py-3 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:shadow-lg"
-                      style={{
-                        background: 'linear-gradient(135deg, #1A2F3F 0%, #2D3F4F 100%)',
-                        color: 'white',
-                        opacity: (isMOQMet && grandTotal > 0) ? 1 : 0.5
-                      }}
-                    >
-                      Acheter
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 py-3 text-xs border-y border-gray-100 my-2">
-                  <div className="flex items-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
-                    <span>Garantie 12 mois</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <RotateCcw className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
-                    <span>Retour 15 jours</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Mobile Tabs - Gardé identique */}
-              <div className="mt-6 bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 shadow-sm">
-                <div className="overflow-x-auto hide-scrollbar border-b border-gray-200">
-                  <div className="flex gap-4 min-w-max px-1">
-                    {[
-                      { id: "description", label: "Description" },
-                      { id: "specifications", label: "Caractéristiques" },
-                      { id: "avis", label: `Avis (${reviewsStats.totalReviews})` }
-                    ].map((tab) => (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`py-2.5 px-1 text-sm font-medium border-b-2 transition-all whitespace-nowrap`}
-                        style={{
-                          color: activeTab === tab.id ? brandColor : '#6B7280',
-                          borderBottomColor: activeTab === tab.id ? brandColor : 'transparent',
-                          borderBottomWidth: '2px'
-                        }}
-                      >
-                        {tab.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="py-4">
-                  {activeTab === "description" && (
-                    <div className="space-y-3">
-                      <p className="text-sm text-gray-700 leading-relaxed break-words">
-                        {product.description || product.cleanedDesc || "Description non disponible"}
-                      </p>
-                      {product.features && product.features.length > 0 && (
-                        <div className="mt-4">
-                          <h4 className="text-sm font-semibold text-gray-800 mb-2">Points forts :</h4>
-                          <ul className="space-y-2">
-                            {product.features.map((feature: string, i: number) => (
-                              <li key={i} className="flex items-start gap-2 text-sm">
-                                <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-[#D4372B]" />
-                                <span className="text-gray-600 break-words">{feature}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  
-                  {activeTab === "specifications" && (
-                    <div className="space-y-3">
-                      {product.specifications ? (
-                        <div className="divide-y divide-gray-100">
-                          {product.specifications.map((spec: any, i: number) => (
-                            <div key={i} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0">
-                              <span className="text-xs text-gray-500">{spec.label}</span>
-                              <span className="text-sm font-medium text-gray-800 break-words">{spec.value}</span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 gap-3">
-                          {[
-                            { label: "Marque", value: product.brand || "TechPro" },
-                            { label: "Modèle", value: product.model || "Standard" },
-                            { label: "Poids", value: product.weight ? `${product.weight} kg` : "N/A" },
-                            { label: "Garantie", value: "12 mois" }
-                          ].map((spec, i) => (
-                            <div key={i} className="flex justify-between items-center py-2 border-b border-gray-100">
-                              <span className="text-xs text-gray-500">{spec.label}</span>
-                              <span className="text-sm font-medium text-gray-800 break-words max-w-[60%] text-right">{spec.value}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  
-                  {activeTab === "avis" && (
-                    <div className="space-y-4">
-                      {!showReviewForm && (
-                        <button
-                          onClick={() => setShowReviewForm(true)}
-                          className="w-full py-3 bg-[#D4372B] text-white rounded-xl text-sm font-medium hover:bg-[#B5271C] transition-colors shadow-sm"
-                        >
-                          ✍️ Donner mon avis
-                        </button>
-                      )}
-                      
-                      {showReviewForm && (
-                        <div className="rounded-xl" style={{ background: "#fff", border: "0.5px solid #ECECEC" }}
-                    className=" p-4 space-y-4 shadow-sm">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-semibold text-gray-900">Votre avis</h4>
-                            <button 
-                              onClick={() => setShowReviewForm(false)}
-                              className="text-gray-400 hover:text-gray-600 transition-colors"
-                            >
-                              <X className="w-5 h-5" />
-                            </button>
-                          </div>
-                          
-                          <div>
-                            <label className="text-sm text-gray-600 font-medium">Note</label>
-                            <div className="flex gap-3 mt-2">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <button
-                                  key={star}
-                                  onClick={() => setNewReview({ ...newReview, rating: star })}
-                                  className="focus:outline-none transition-transform hover:scale-110"
-                                >
-                                  <Star 
-                                    className={`w-8 h-8 ${
-                                      star <= newReview.rating 
-                                        ? 'fill-yellow-400 text-yellow-400' 
-                                        : 'text-gray-300'
-                                    }`} 
-                                  />
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <label className="text-sm text-gray-600 font-medium">Votre nom</label>
-                            <input
-                              type="text"
-                              value={newReview.authorName}
-                              onChange={(e) => setNewReview({ ...newReview, authorName: e.target.value })}
-                              className="w-full mt-1.5 p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#D4372B] transition-all"
-                              placeholder="Jean Dupont"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="text-sm text-gray-600 font-medium">Votre commentaire</label>
-                            <textarea
-                              value={newReview.comment}
-                              onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                              className="w-full mt-1.5 p-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#D4372B] resize-none"
-                              rows={4}
-                              placeholder="Partagez votre expérience avec ce produit..."
-                            />
-                          </div>
-                          
-                          <div className="flex gap-3 pt-2">
-                            <button
-                              onClick={() => setShowReviewForm(false)}
-                              className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-                            >
-                              Annuler
-                            </button>
-                            <button
-                              onClick={handleSubmitReview}
-                              disabled={isSubmittingReview}
-                              className="flex-1 py-3 bg-[#D4372B] text-white rounded-xl text-sm font-medium hover:bg-[#B5271C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {isSubmittingReview ? "Envoi..." : "Publier"}
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {isLoadingReviews ? (
-                        <div className="space-y-4">
-                          {[1, 2, 3].map((i) => (
-                            <div key={i} className="animate-pulse">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="h-4 bg-gray-200 rounded w-24"></div>
-                                <div className="h-3 bg-gray-200 rounded w-20"></div>
-                              </div>
-                              <div className="flex gap-1 mb-2">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <div key={star} className="w-3 h-3 bg-gray-200 rounded"></div>
-                                ))}
-                              </div>
-                              <div className="h-3 bg-gray-200 rounded w-full mb-1"></div>
-                              <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : reviews.length === 0 ? (
-                        <div className="text-center py-8">
-                          <div className="w-16 h-16 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
-                            <Star className="w-8 h-8 text-gray-300" />
-                          </div>
-                          <p className="text-gray-500 text-sm">Aucun avis pour le moment</p>
-                          <p className="text-xs text-gray-400 mt-1">Soyez le premier à donner votre avis</p>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="flex items-center gap-4 pb-3 border-b border-gray-100">
-                            <div className="text-center">
-                              <div className="text-3xl font-black" style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.03em" }}>{reviewsStats.averageRating}</div>
-                              <div className="flex justify-center mt-1">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star 
-                                    key={star} 
-                                    className={`w-3 h-3 ${
-                                      star <= Math.round(reviewsStats.averageRating) 
-                                        ? 'fill-yellow-400 text-yellow-400' 
-                                        : 'text-gray-300'
-                                    }`} 
-                                  />
-                                ))}
-                              </div>
-                              <p className="text-[10px] text-gray-400 mt-1">{reviewsStats.totalReviews} avis</p>
-                            </div>
-                            <div className="flex-1 space-y-1">
-                              {[5, 4, 3, 2, 1].map((rating) => {
-                                const count = reviewsStats.ratingDistribution[rating as keyof typeof reviewsStats.ratingDistribution] || 0
-                                const percentage = reviewsStats.totalReviews > 0 ? (count / reviewsStats.totalReviews) * 100 : 0
-                                return (
-                                  <div key={rating} className="flex items-center gap-2 text-[10px]">
-                                    <span className="w-6">{rating} ★</span>
-                                    <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                                      <div 
-                                        className="h-full rounded-full bg-[#D4372B]" 
-                                        style={{ width: `${percentage}%` }} 
-                                      />
-                                    </div>
-                                    <span className="w-8 text-right text-gray-500">{count}</span>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-4 max-h-[400px] overflow-y-auto">
-                            {reviews.map((review) => (
-                              <div key={review.id} className="border-b border-gray-100 pb-3 last:border-0">
-                                <div className="flex items-center justify-between mb-1">
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center text-white text-xs font-medium">
-                                      {review.authorName.charAt(0).toUpperCase()}
-                                    </div>
-                                    <span className="text-xs font-medium text-gray-700">{review.authorName}</span>
-                                    {review.verifiedPurchase && (
-                                      <span className="text-[9px] px-1.5 py-0.5 bg-green-100 text-green-700 rounded-full">
-                                        Vérifié
-                                      </span>
-                                    )}
-                                  </div>
-                                  <span className="text-[10px] text-gray-400">{formatReviewDate(review.createdAt)}</span>
-                                </div>
-                                <div className="flex items-center gap-0.5 mb-1 ml-8">
-                                  {[1, 2, 3, 4, 5].map((star) => (
-                                    <Star 
-                                      key={star} 
-                                      className={`w-2.5 h-2.5 ${
-                                        star <= review.rating 
-                                          ? 'fill-yellow-400 text-yellow-400' 
-                                          : 'text-gray-200'
-                                      }`} 
-                                    />
-                                  ))}
-                                </div>
-                                <p className="text-xs text-gray-600 leading-relaxed ml-8">
-                                  {review.comment}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* SECTION DESKTOP - Gardée identique car pas de fetch direct */}
-            <div className="hidden lg:grid lg:grid-cols-12 gap-6 lg:gap-8 mb-16">
-              
-              <div className="lg:col-span-5">
-                <div className="bg-white mb-2 aspect-square flex items-center justify-center overflow-hidden border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                  <Image
-                    src={safeImages[selectedImage]}
-                    alt={productName}
-                    width={500}
-                    height={500}
-                    className="w-full h-full object-contain p-4"
-                    priority
-                  />
-                </div>
-
-                {safeImages.length > 0 && (
-                  <div className="relative mt-2 w-full">
-                    {safeImages.length > 5 && (
-                      <button
-                        onClick={() => scrollThumbnails("left")}
-                        className="absolute -left-3 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full p-1 shadow-md border hover:bg-gray-50"
-                      >
-                        <ChevronLeft className="w-3 h-3" />
-                      </button>
-                    )}
-
-                    <div
-                      ref={thumbnailRef}
-                      className="flex gap-1.5 overflow-x-hidden scroll-smooth"
-                      style={{
-                        scrollbarWidth: "none",
-                        msOverflowStyle: "none"
-                      }}
-                    >
-                      {safeImages.map((img, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setSelectedImage(idx)}
-                          className="flex-shrink-0 w-1/5 aspect-square bg-white rounded-lg overflow-hidden border transition-all hover:shadow-md"
-                          style={{
-                            flexBasis: "calc(20% - 5px)",
-                            borderColor: selectedImage === idx ? brandColor : '#e5e7eb',
-                            opacity: selectedImage === idx ? 1 : 0.7
-                          }}
-                        >
-                          <Image
-                            src={img || "/placeholder.svg"}
-                            alt={`${productName} ${idx + 1}`}
-                            width={80}
-                            height={80}
-                            className="w-full h-full object-contain p-1"
-                          />
-                        </button>
-                      ))}
-                    </div>
-
-                    {safeImages.length > 5 && (
-                      <button
-                        onClick={() => scrollThumbnails("right")}
-                        className="absolute -right-3 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full p-1 shadow-md border hover:bg-gray-50"
-                      >
-                        <ChevronRight className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="lg:col-span-7">
-                <div className="flex items-start justify-between mb-3">
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span 
-                        className="text-xs font-medium px-2 py-0.5 rounded-full"
-                        style={{ background: '#D4372B', color: '#fff', fontFamily: "'Poppins', sans-serif" }}
-                      >
-                        Top vente
-                      </span>
-                      <span className="text-xs text-gray-400">SKU: {product.id}</span>
-                    </div>
-                    <h1 className="text-xl font-medium">{productName}</h1>
-                    
-                    <div className="flex items-center gap-3 text-xs mt-2">
-                      <div className="flex items-center gap-1">
-                        <div className="flex">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star key={star} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                          ))}
-                        </div>
-                        <span className="text-gray-600 ml-1">{reviewsStats.averageRating || 0}</span>
-                      </div>
-                      <span className="text-gray-300">|</span>
-                      <span className="text-gray-600">{reviewsStats.totalReviews} avis</span>
-                      <span className="text-gray-300">|</span>
-                      <span className="text-gray-600">1,234+ commandes</span>
+                    <p className="text-[10px] font-bold tracking-widest uppercase mb-2.5" style={{ color: 'rgba(255,255,255,0.3)' }}>Quantité</p>
+                    <div className="inline-flex items-center rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <button onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))} disabled={simpleQuantity <= 1} className="p-2.5 transition-colors disabled:opacity-30" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                        <Minus className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.6)' }} />
+                      </button>
+                      <span className="w-12 text-center text-sm font-bold" style={{ color: '#F0F0F0' }}>{simpleQuantity}</span>
+                      <button onClick={() => setSimpleQuantity(simpleQuantity + 1)} className="p-2.5 transition-colors" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                        <Plus className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.6)' }} />
+                      </button>
                     </div>
                   </div>
-                  
-                  <button 
-                    onClick={handleToggleWishlist}
-                    className="p-1.5 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
-                  </button>
+                )}
+
+                {/* Meta infos */}
+                <div className="flex flex-wrap gap-3 text-xs">
+                  {[
+                    { icon: Package, label: `MOQ: ${minQuantity}` },
+                    { icon: Check, label: 'En stock', green: true },
+                  ].map(({ icon: Icon, label, green }) => (
+                    <span key={label} className="flex items-center gap-1.5" style={{ color: green ? '#4ADE80' : 'rgba(255,255,255,0.4)' }}>
+                      <Icon className="w-3.5 h-3.5" style={{ color: green ? '#4ADE80' : '#D4372B' }} />
+                      {label}
+                    </span>
+                  ))}
+                  {isLoadingLogistics ? (
+                    <span className="flex items-center gap-1.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                      <span className="w-3 h-3 rounded-full border-2 border-t-[#D4372B] animate-spin" style={{ borderColor: 'rgba(255,255,255,0.1)', borderTopColor: '#D4372B' }} />
+                      Calcul...
+                    </span>
+                  ) : (
+                    <span style={{ color: 'rgba(255,255,255,0.3)' }}>{logisticsData ? `${logisticsData.weight.totalWeight.toFixed(2)} kg` : '— kg'}</span>
+                  )}
                 </div>
 
-                <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg p-4 mb-4 shadow-sm">
-                  <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
-                      {formatPrice(currentPrice)} x {grandTotal || 1}
-                    </span>
-                    <span className="text-xs text-gray-400 line-through">
-                      {formatPrice(currentPrice * 1.2 * (grandTotal || 1))}
-                    </span>
-                    <span className="text-xs text-white px-1.5 py-0.5 rounded" style={{ background: "#D4372B" }}>-20%</span>
-                  </div>
-                  
-                  {hasVariants && (
-                    <>
-                      {hasSimpleVariants && (
-                        <div className="mb-3">
-                          <div className="text-xs text-gray-500 mb-2">{primaryAttrName}</div>
-                          <div className="flex flex-wrap gap-2">
-                            {Object.entries(simpleVariantQuantities).map(([value, qty]) => {
-                              const hasImage = attributeImages[`${simpleVariantType}:${value}`]
-                              
-                              return (
-                                <button
-                                  key={value}
-                                  onClick={() => openSimpleVariantModal(value)}
-                                  className={`
-                                    px-3 py-1.5 text-xs border rounded-lg transition-all flex items-center gap-2 hover:shadow-md
-                                    ${qty > 0 
-                                      ? 'border-[#D4372B] text-[#D4372B] font-medium shadow-sm' 
-                                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                                    }
-                                  `}
-                                  style={{
-                                    background: qty > 0 ? '#FFF0F0' : '#fff'
-                                  }}
-                                >
-                                  {hasImage && (
-                                    <div className="w-5 h-5 rounded-full overflow-hidden border border-white shadow-sm">
-                                      <Image
-                                        src={attributeImages[`${simpleVariantType}:${value}`]}
-                                        alt={value}
-                                        width={20}
-                                        height={20}
-                                        className="w-full h-full object-cover"
-                                      />
-                                    </div>
-                                  )}
-                                  {value}
-                                  {qty > 0 && (
-                                    <span className="ml-1 text-xs bg-white px-1.5 py-0.5 rounded-full shadow-sm border border-[#D4372B]">
-                                      {qty}
-                                    </span>
-                                  )}
-                                </button>
-                              )
-                            })}
-                          </div>
-
-                          {Object.entries(simpleVariantQuantities).map(([value, qty]) => {
-                            if (qty === 0) return null
-                            
-                            return (
-                              <div key={value} className="bg-gray-50 p-3 rounded-lg mt-2 shadow-sm">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    {attributeImages[`${simpleVariantType}:${value}`] && (
-                                      <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-md">
-                                        <Image
-                                          src={attributeImages[`${simpleVariantType}:${value}`]}
-                                          alt={value}
-                                          width={32}
-                                          height={32}
-                                          className="w-full h-full object-cover"
-                                        />
-                                      </div>
-                                    )}
-                                    <span className="text-sm font-medium text-gray-700">{value}</span>
-                                  </div>
-                                  <span className="text-sm font-bold" style={{ color: '#D4372B' }}>x{qty}</span>
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      )}
-
-                      {hasComplexVariants && (
-                        <>
-                          <div className="mb-3">
-                            <div className="text-xs text-gray-500 mb-2">{primaryAttrName}</div>
-                            <div className="flex flex-wrap gap-2">
-                              {Object.keys(complexSelections).map((primaryValue) => {
-                                const total = getPrimaryTotal(primaryValue)
-                                const hasImage = attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]
-                                
-                                return (
-                                  <button
-                                    key={primaryValue}
-                                    onClick={() => openPrimaryModal(primaryValue)}
-                                    className={`
-                                      px-3 py-1.5 text-xs border rounded-lg transition-all flex items-center gap-2 hover:shadow-md
-                                      ${total > 0 
-                                        ? 'border-[#D4372B] text-[#D4372B] font-medium shadow-sm' 
-                                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                                      }
-                                    `}
-                                    style={{
-                                      background: total > 0 ? '#FFF0F0' : '#fff'
-                                    }}
-                                  >
-                                    {hasImage && (
-                                      <div className="w-5 h-5 rounded-full overflow-hidden border border-white shadow-sm">
-                                        <Image
-                                          src={attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]}
-                                          alt={primaryValue}
-                                          width={20}
-                                          height={20}
-                                          className="w-full h-full object-cover"
-                                        />
-                                      </div>
-                                    )}
-                                    {primaryValue}
-                                    {total > 0 && (
-                                      <span className="ml-1 text-xs bg-white px-1.5 py-0.5 rounded-full shadow-sm border border-[#D4372B]">
-                                        {total}
-                                      </span>
-                                    )}
-                                  </button>
-                                )
-                              })}
-                            </div>
-                          </div>
-
-                          {secondaryAttrName && (
-                            <div className="mb-3">
-                              <div className="text-xs text-gray-500 mb-2">{secondaryAttrName}</div>
-                              <div className="flex flex-wrap gap-2">
-                                {attributeGroups[Object.keys(attributeGroups)[1]]?.values.map((secondaryValue) => {
-                                  const total = getSecondaryTotal(secondaryValue)
-                                  
-                                  return (
-                                    <button
-                                      key={secondaryValue}
-                                      onClick={() => openSecondaryModal(secondaryValue)}
-                                      className={`
-                                        px-3 py-1.5 text-xs border rounded-lg transition-all relative hover:shadow-md
-                                        ${total > 0 
-                                          ? 'border-[#D4372B] text-[#D4372B] font-medium shadow-sm' 
-                                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                                        }
-                                      `}
-                                      style={{
-                                        background: total > 0 ? '#FFF0F0' : '#fff'
-                                      }}
-                                    >
-                                      {secondaryValue}
-                                      {total > 0 && (
-                                        <span className="absolute -top-2 -right-2 w-4 h-4 bg-[#D4372B] text-white text-[8px] rounded-full flex items-center justify-center shadow-lg">
-                                          {total}
-                                        </span>
-                                      )}
-                                    </button>
-                                  )
-                                })}
-                              </div>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </>
-                  )}
-
-                  {!hasVariants && (
-                    <div className="mb-3">
-                      <div className="text-xs text-gray-500 mb-2">Quantité</div>
-                      <div className="flex items-center rounded-xl overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
-                        <button
-                          onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))}
-                          className="p-1.5 hover:bg-gray-50 transition-colors"
-                          disabled={simpleQuantity <= 1}
-                        >
-                          <Minus className="w-3.5 h-3.5" />
-                        </button>
-                        <span className="w-12 text-center text-sm font-medium">{simpleQuantity}</span>
-                        <button
-                          onClick={() => setSimpleQuantity(simpleQuantity + 1)}
-                          className="p-1.5 hover:bg-gray-50 transition-colors"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center gap-2 text-xs mb-2">
-                    <span className="px-2 py-0.5 rounded-full text-white" style={{ background: "#D4372B" }}>Prix direct usine</span>
-                    <span className="text-gray-500">Prix en {getCurrencySymbol()} (USD ${Number(product.price).toFixed(2)})</span>
-                  </div>
-
-                  <div className="flex items-center gap-4 text-xs">
-                    <div className="flex items-center gap-1 text-gray-600">
-                      <Package className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
-                      <span>MOQ: {minQuantity}</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-gray-600">
-                      <Clock className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
-                      <span>Délai: {logisticsData?.recommended.days || '15-20'} jours</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-gray-600">
-                      {isLoadingLogistics ? (
-                        <span className="inline-flex items-center text-gray-500">
-                          <span className="w-3 h-3 border-2 border-gray-300 border-t-[#D4372B] rounded-full animate-spin mr-1"></span>
-                          Calcul...
-                        </span>
-                      ) : (
-                        <span className="text-gray-500">
-                          {logisticsData ? `${logisticsData.weight.totalWeight.toFixed(2)} kg total` : '0.00 kg total'}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div 
-                  onClick={() => setIsProtectionModalOpen(true)}
-                  className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg p-4 mb-4 cursor-pointer hover:shadow-md transition-all"
-                >
+                {/* Shipping */}
+                <div>
                   <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-5 h-5" style={{ color: '#D4372B' }} />
-                      <span className="text-sm font-medium text-gray-900">Protection des achats Adullam</span>
-                    </div>
-                    <Info className="w-4 h-4 text-gray-400" />
-                  </div>
-                  
-                  <div className="flex flex-wrap items-center gap-3 mb-3">
-                    {['MTN', 'Orange', 'Wave', 'Visa'].map((method) => (
-                      <span key={method} className="text-xs px-3 py-1.5 bg-white border border-gray-200 rounded-full text-gray-600 shadow-sm">
-                        {method}
-                      </span>
-                    ))}
-                  </div>
-                  
-                  <p className="text-sm text-gray-500 flex items-center gap-1">
-                    <Lock className="w-4 h-4 text-gray-400" />
-                    Paiement sécurisé - Cliquez pour en savoir plus
-                  </p>
-                </div>
-
-                <div className="mb-4">
-                  <h3 className="text-sm font-medium mb-2 flex items-center justify-between">
-                    <span>Mode de livraison</span>
+                    <p className="text-[10px] font-bold tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.3)' }}>Livraison</p>
                     {selectedPortePorteCost > 0 && (
-                      <span className="text-xs font-medium text-gray-700">
-                        Frais porte-à-porte: <span className="font-bold" style={{ color: '#D4372B' }}>{formatPrice(selectedPortePorteCost)}</span>
-                      </span>
+                      <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Porte-à-porte: <span style={{ color: '#D4372B', fontWeight: 700 }}>{formatPrice(selectedPortePorteCost)}</span></span>
                     )}
-                  </h3>
+                  </div>
                   {isLoadingLogistics ? (
                     <div className="grid grid-cols-3 gap-2">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex items-center justify-between p-2 rounded-lg border border-gray-200 bg-gray-50 animate-pulse">
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
-                            <div>
-                              <div className="w-8 h-3 bg-gray-200 rounded mb-1"></div>
-                              <div className="w-6 h-2 bg-gray-200 rounded"></div>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="w-10 h-3 bg-gray-200 rounded mb-1"></div>
-                            <div className="w-8 h-2 bg-gray-200 rounded"></div>
-                          </div>
-                        </div>
-                      ))}
+                      {[1,2,3].map(i => <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'rgba(255,255,255,0.05)' }} />)}
                     </div>
                   ) : logisticsError ? (
-                    <div className="text-xs text-red-500 p-2 border border-red-200 rounded-lg bg-red-50">
-                      {logisticsError}
-                    </div>
+                    <div className="text-xs rounded-xl p-3" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#FCA5A5' }}>{logisticsError}</div>
                   ) : (
                     <div className="grid grid-cols-3 gap-2">
-                      {[
-                        { mode: "bateau", icon: Ship, label: "Maritime" },
-                        { mode: "avion", icon: Sparkles, label: "Aérien" },
-                        { mode: "express", icon: Zap, label: "Express" }
-                      ].map((item) => {
-                        const shippingMode = item.mode as "bateau" | "avion" | "express"
-                        const isAvailable = logisticsData?.shipping?.[shippingMode]
-                        const days = getShippingDays(shippingMode)
-                        const cost = getShippingCost(shippingMode)
-                        const estimatedDate = getEstimatedDate(shippingMode)
-                        
+                      {([
+                        { mode: 'bateau', icon: Ship, label: 'Mer' },
+                        { mode: 'avion', icon: Sparkles, label: 'Air' },
+                        { mode: 'express', icon: Zap, label: 'Express' },
+                      ] as const).map((item) => {
+                        const isAvailable = logisticsData?.shipping?.[item.mode]
                         if (!isAvailable) return null
-                        
+                        const active = selectedShipping === item.mode
                         return (
                           <button
                             key={item.mode}
-                            onClick={() => setSelectedShipping(shippingMode)}
-                            className="flex items-center justify-between p-2 rounded-lg border transition-all text-xs hover:shadow-md"
+                            onClick={() => setSelectedShipping(item.mode)}
+                            className="flex flex-col items-center gap-1 py-3 rounded-xl transition-all duration-200"
                             style={{
-                              borderColor: selectedShipping === shippingMode ? brandColor : '#e5e7eb',
-                              background: selectedShipping === shippingMode ? '#D4372B' : '#fff'
+                              background: active ? '#D4372B' : 'rgba(255,255,255,0.04)',
+                              border: `1px solid ${active ? '#D4372B' : 'rgba(255,255,255,0.08)'}`,
+                              transform: active ? 'translateY(-1px)' : 'none',
                             }}
                           >
-                            <div className="flex items-center gap-1.5">
-                              <item.icon className="w-3.5 h-3.5" style={{ color: selectedShipping === shippingMode ? 'white' : '#9ca3af' }} />
-                              <div className="text-left">
-                                <p className="font-medium text-xs" style={{ color: selectedShipping === shippingMode ? 'white' : '#374151' }}>
-                                  {item.label}
-                                </p>
-                                <p className="text-[10px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#6b7280' }}>
-                                  {days}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-semibold text-xs" style={{ color: selectedShipping === shippingMode ? 'white' : '#D4372B' }}>
-                                {formatPrice(cost)}
-                              </p>
-                              <p className="text-[9px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#9ca3af' }}>
-                                {estimatedDate}
-                              </p>
-                            </div>
+                            <item.icon className="w-4 h-4" style={{ color: active ? '#fff' : 'rgba(255,255,255,0.4)' }} />
+                            <span className="text-[11px] font-semibold" style={{ color: active ? '#fff' : 'rgba(255,255,255,0.7)' }}>{item.label}</span>
+                            <span className="text-[10px]" style={{ color: active ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.3)' }}>{getShippingDays(item.mode)}</span>
+                            <span className="text-[11px] font-bold" style={{ color: active ? '#fff' : '#D4372B' }}>{formatPrice(getShippingCost(item.mode))}</span>
                           </button>
                         )
                       })}
@@ -2295,728 +1398,969 @@ export default function ProductPage() {
                   )}
                 </div>
 
-                <div className="space-y-2 mb-4">
-                  {!isMOQMet && grandTotal > 0 && (
-                    <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-2 text-xs text-yellow-800 shadow-sm">
-                      MOQ non atteint ({minQuantity} min). Contactez-nous.
+                {/* Protection */}
+                <button
+                  onClick={() => setIsProtectionModalOpen(true)}
+                  className="w-full flex items-center gap-3 p-4 rounded-2xl text-left transition-all"
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+                >
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(212,55,43,0.12)' }}>
+                    <Shield className="w-4 h-4" style={{ color: '#D4372B' }} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold mb-1" style={{ color: '#F0F0F0' }}>Protection Adullam</p>
+                    <div className="flex gap-1.5">
+                      {['MTN', 'Orange', 'Wave', 'Visa'].map(m => (
+                        <span key={m} className="text-[9px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}>{m}</span>
+                      ))}
                     </div>
-                  )}
-                  
-                  <div className="flex gap-2">
+                  </div>
+                  <Info className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.2)' }} />
+                </button>
+
+                {/* MOQ warning */}
+                {!isMOQMet && grandTotal > 0 && (
+                  <div className="text-xs rounded-xl p-3 flex items-start gap-2" style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', color: '#FCD34D' }}>
+                    <span>⚠</span> Quantité minimum non atteinte ({minQuantity} min). Contactez-nous.
+                  </div>
+                )}
+
+                {/* Mobile CTA bar */}
+                <div className="fixed bottom-0 left-0 right-0 z-50 px-4 py-4" style={{ background: 'rgba(12,12,12,0.95)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="flex gap-2.5 max-w-[1440px] mx-auto">
                     <button
                       onClick={isMOQMet && grandTotal > 0 ? handleAddToCart : handleContactWhatsApp}
-                      className="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 hover:shadow-lg"
-                      style={{
-                        background: (isMOQMet && grandTotal > 0) ? brandGradient : 'linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%)',
-                        color: 'white'
-                      }}
+                      className="flex-1 h-12 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.97]"
+                      style={{ background: isMOQMet && grandTotal > 0 ? '#D4372B' : 'linear-gradient(135deg,#F59E0B,#FBBF24)', color: '#fff' }}
                     >
                       <ShoppingCart className="w-4 h-4" />
-                      {(isMOQMet && grandTotal > 0) ? `Ajouter (${grandTotal})` : "Nous contacter"}
+                      {isMOQMet && grandTotal > 0 ? `Ajouter (${grandTotal})` : 'Nous contacter'}
                     </button>
-
                     <button
                       onClick={handleBuyNow}
                       disabled={!isMOQMet || grandTotal === 0}
-                      className="flex-1 py-2.5 text-sm text-white font-medium rounded-lg transition-all hover:shadow-lg"
-                      style={{
-                        background: 'linear-gradient(135deg, #1A2F3F 0%, #2D3F4F 100%)',
-                        opacity: (isMOQMet && grandTotal > 0) ? 1 : 0.5
-                      }}
+                      className="flex-1 h-12 rounded-xl font-semibold text-sm flex items-center justify-center transition-all active:scale-[0.97] disabled:opacity-30"
+                      style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.12)', color: '#F0F0F0' }}
                     >
                       Acheter
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg text-xs shadow-sm">
-                  <div className="flex items-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
-                    <span>Garantie 12 mois</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <RotateCcw className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
-                    <span>Retour 15j</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
-                    <span>Certifié</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Truck className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
-                    <span>Suivi</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Desktop Tabs - Gardé identique */}
-            <div className="hidden lg:block mt-8 bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 shadow-sm">
-              <div className="border-b border-gray-200 mb-6">
-                <div className="flex gap-6">
+                {/* Trust row */}
+                <div className="grid grid-cols-2 gap-2 pt-2 pb-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                   {[
-                    { id: "description", label: "Description" },
-                    { id: "specifications", label: "Caractéristiques" },
-                    { id: "avis", label: `Avis (${reviewsStats.totalReviews})` }
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`pb-3 px-1 text-sm font-medium transition-colors relative`}
-                      style={{
-                        color: activeTab === tab.id ? brandColor : '#6B7280',
-                        borderBottom: activeTab === tab.id ? `2px solid ${brandColor}` : '2px solid transparent'
-                      }}
-                    >
-                      {tab.label}
-                    </button>
+                    { icon: Shield, label: 'Garantie 12 mois' },
+                    { icon: RotateCcw, label: 'Retour 15 jours' },
+                  ].map(({ icon: Icon, label }) => (
+                    <div key={label} className="flex items-center gap-2 text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                      <Icon className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
+                      {label}
+                    </div>
                   ))}
                 </div>
               </div>
 
-              <div className="text-sm">
-                {activeTab === "description" && (
-                  <div>
-                    <h3 className="font-medium mb-3 text-gray-900">Description</h3>
-                    <p className="text-gray-700 leading-relaxed">
-                      {product.description || product.cleanedDesc || "Description non disponible"}
-                    </p>
-                    {product.features && product.features.length > 0 && (
-                      <div className="mt-6">
-                        <h3 className="font-medium mb-3 text-gray-900">Caractéristiques principales</h3>
-                        <ul className="space-y-2 text-gray-700">
-                          {product.features.map((feature: string, i: number) => (
-                            <li key={i} className="flex items-start gap-2">
-                              <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#D4372B' }} />
-                              <span>{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {activeTab === "specifications" && (
-                  <div className="grid lg:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      {product.specifications ? (
-                        product.specifications.slice(0, 4).map((spec: any, i: number) => (
-                          <div key={i} className="flex justify-between py-2 border-b border-gray-200">
-                            <span className="text-gray-500">{spec.label}</span>
-                            <span className="font-medium text-gray-800">{spec.value}</span>
+              {/* Mobile Tabs */}
+              <div className="mt-6">
+                <div className="flex overflow-x-auto hide-scrollbar" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                  {[
+                    { id: 'description', label: 'Description' },
+                    { id: 'specifications', label: 'Caractéristiques' },
+                    { id: 'avis', label: `Avis (${reviewsStats.totalReviews})` },
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className="flex-shrink-0 px-4 py-3.5 text-sm font-medium relative transition-colors"
+                      style={{ color: activeTab === tab.id ? '#F0F0F0' : 'rgba(255,255,255,0.3)' }}
+                    >
+                      {tab.label}
+                      {activeTab === tab.id && (
+                        <span className="absolute bottom-0 left-3 right-3 h-px rounded-full" style={{ background: '#D4372B' }} />
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="py-6">
+                  {activeTab === 'description' && (
+                    <div className="space-y-4">
+                      <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)', lineHeight: '1.8' }}>
+                        {product.description || product.cleanedDesc || 'Description non disponible'}
+                      </p>
+                      {product.features?.length > 0 && (
+                        <div>
+                          <h4 className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Points forts</h4>
+                          <ul className="space-y-2.5">
+                            {product.features.map((f: string, i: number) => (
+                              <li key={i} className="flex items-start gap-3 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                                <span className="w-1 h-1 rounded-full flex-shrink-0 mt-2" style={{ background: '#D4372B' }} />
+                                {f}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {activeTab === 'specifications' && (
+                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                      {(product.specifications || [
+                        { label: 'Marque', value: product.brand || 'N/A' },
+                        { label: 'Poids', value: product.weight ? `${product.weight} kg` : 'N/A' },
+                        { label: 'Garantie', value: '12 mois' },
+                      ]).map((s: any, i: number) => (
+                        <div key={i} className="flex justify-between items-center py-3.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                          <span className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.3)' }}>{s.label}</span>
+                          <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.8)' }}>{s.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {activeTab === 'avis' && (
+                    <div className="space-y-5">
+                      {!showReviewForm && (
+                        <button
+                          onClick={() => setShowReviewForm(true)}
+                          className="w-full py-3 rounded-xl text-sm font-semibold transition-colors"
+                          style={{ border: '1px solid rgba(212,55,43,0.4)', color: '#D4372B', background: 'rgba(212,55,43,0.05)' }}
+                        >
+                          Donner mon avis
+                        </button>
+                      )}
+                      {showReviewForm && (
+                        <div className="rounded-2xl p-5 space-y-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-semibold text-sm" style={{ color: '#F0F0F0' }}>Votre avis</h4>
+                            <button onClick={() => setShowReviewForm(false)}><X className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.3)' }} /></button>
                           </div>
-                        ))
+                          <div>
+                            <label className="text-[10px] font-bold tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.3)' }}>Note</label>
+                            <div className="flex gap-2 mt-2">
+                              {[1,2,3,4,5].map(s => (
+                                <button key={s} onClick={() => setNewReview({ ...newReview, rating: s })}>
+                                  <Star className="w-6 h-6 transition-colors" style={{ fill: s <= newReview.rating ? '#F59E0B' : 'none', color: s <= newReview.rating ? '#F59E0B' : 'rgba(255,255,255,0.2)' }} />
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.3)' }}>Nom</label>
+                            <input
+                              type="text" value={newReview.authorName}
+                              onChange={e => setNewReview({ ...newReview, authorName: e.target.value })}
+                              className="w-full mt-1.5 px-3 py-2.5 text-sm rounded-xl outline-none transition-colors"
+                              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0F0' }}
+                              placeholder="Jean Dupont"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.3)' }}>Commentaire</label>
+                            <textarea
+                              value={newReview.comment} rows={3}
+                              onChange={e => setNewReview({ ...newReview, comment: e.target.value })}
+                              className="w-full mt-1.5 px-3 py-2.5 text-sm rounded-xl outline-none resize-none transition-colors"
+                              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0F0' }}
+                              placeholder="Partagez votre expérience..."
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <button onClick={() => setShowReviewForm(false)} className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>Annuler</button>
+                            <button onClick={handleSubmitReview} disabled={isSubmittingReview} className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50" style={{ background: '#D4372B', color: '#fff' }}>
+                              {isSubmittingReview ? 'Envoi...' : 'Publier'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      {isLoadingReviews ? (
+                        <div className="space-y-4">
+                          {[1,2].map(i => <div key={i} className="animate-pulse space-y-2"><div className="flex gap-2"><div className="w-7 h-7 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }} /><div className="h-3 rounded w-24" style={{ background: 'rgba(255,255,255,0.08)' }} /></div><div className="h-3 rounded w-full" style={{ background: 'rgba(255,255,255,0.05)' }} /><div className="h-3 rounded w-2/3" style={{ background: 'rgba(255,255,255,0.05)' }} /></div>)}
+                        </div>
+                      ) : reviews.length === 0 ? (
+                        <div className="text-center py-10">
+                          <Star className="w-8 h-8 mx-auto mb-2" style={{ color: 'rgba(255,255,255,0.1)' }} />
+                          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>Aucun avis pour le moment</p>
+                        </div>
                       ) : (
                         <>
-                          {[
-                            { label: "Marque", value: "TechPro" },
-                            { label: "Modèle", value: "TP-EB001" },
-                            { label: "Version Bluetooth", value: "5.2" },
-                            { label: "Autonomie (écouteurs)", value: "6 heures" }
-                          ].map((spec, i) => (
-                            <div key={i} className="flex justify-between py-2 border-b border-gray-200">
-                              <span className="text-gray-500">{spec.label}</span>
-                              <span className="font-medium text-gray-800">{spec.value}</span>
+                          <div className="flex items-center gap-4 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                            <div className="text-center">
+                              <div className="text-3xl font-black" style={{ color: '#D4372B' }}>{reviewsStats.averageRating}</div>
+                              <div className="flex justify-center mt-1">{[1,2,3,4,5].map(s => <Star key={s} className="w-3 h-3" style={{ fill: s <= Math.round(reviewsStats.averageRating) ? '#F59E0B' : 'none', color: s <= Math.round(reviewsStats.averageRating) ? '#F59E0B' : 'rgba(255,255,255,0.15)' }} />)}</div>
+                              <p className="text-[10px] mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>{reviewsStats.totalReviews} avis</p>
                             </div>
-                          ))}
+                            <div className="flex-1 space-y-1.5">
+                              {[5,4,3,2,1].map(r => {
+                                const count = reviewsStats.ratingDistribution[r as keyof typeof reviewsStats.ratingDistribution] || 0
+                                const pct = reviewsStats.totalReviews > 0 ? (count / reviewsStats.totalReviews) * 100 : 0
+                                return (
+                                  <div key={r} className="flex items-center gap-2 text-[10px]">
+                                    <span style={{ color: 'rgba(255,255,255,0.25)', width: '12px' }}>{r}</span>
+                                    <div className="flex-1 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}><div className="h-full rounded-full" style={{ width: `${pct}%`, background: '#D4372B' }} /></div>
+                                    <span style={{ color: 'rgba(255,255,255,0.25)', width: '12px' }}>{count}</span>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </div>
+                          <div className="space-y-4">
+                            {reviews.map(review => (
+                              <div key={review.id} className="pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'rgba(255,255,255,0.1)', color: '#F0F0F0' }}>{review.authorName.charAt(0).toUpperCase()}</div>
+                                    <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.8)' }}>{review.authorName}</span>
+                                    {review.verifiedPurchase && <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: 'rgba(74,222,128,0.1)', color: '#4ADE80' }}>Vérifié</span>}
+                                  </div>
+                                  <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{formatReviewDate(review.createdAt)}</span>
+                                </div>
+                                <div className="flex gap-0.5 mb-1.5">{[1,2,3,4,5].map(s => <Star key={s} className="w-2.5 h-2.5" style={{ fill: s <= review.rating ? '#F59E0B' : 'none', color: s <= review.rating ? '#F59E0B' : 'rgba(255,255,255,0.1)' }} />)}</div>
+                                <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>{review.comment}</p>
+                              </div>
+                            ))}
+                          </div>
                         </>
                       )}
                     </div>
-                    <div className="space-y-2">
-                      {product.specifications ? (
-                        product.specifications.slice(4, 8).map((spec: any, i: number) => (
-                          <div key={i} className="flex justify-between py-2 border-b border-gray-200">
-                            <span className="text-gray-500">{spec.label}</span>
-                            <span className="font-medium text-gray-800">{spec.value}</span>
-                          </div>
-                        ))
-                      ) : (
-                        <>
-                          {[
-                            { label: "Autonomie (boîtier)", value: "24 heures" },
-                            { label: "Temps de charge", value: "1.5 heures" },
-                            { label: "Poids", value: "4.5g par écouteur" },
-                            { label: "Garantie", value: "12 mois" }
-                          ].map((spec, i) => (
-                            <div key={i} className="flex justify-between py-2 border-b border-gray-200">
-                              <span className="text-gray-500">{spec.label}</span>
-                              <span className="font-medium text-gray-800">{spec.value}</span>
-                            </div>
-                          ))}
-                        </>
-                      )}
+                  )}
+                </div>
+              </div>
+            </div>
+            {/* END MOBILE */}
+
+            {/* ═══════════════════════════════════════
+                DESKTOP LAYOUT
+            ═══════════════════════════════════════ */}
+            <div className="hidden lg:grid lg:grid-cols-12 gap-12 mb-16">
+
+              {/* Left: Gallery */}
+              <div className="lg:col-span-5">
+                {/* Main image */}
+                <div
+                  className="relative rounded-2xl overflow-hidden mb-3 group cursor-zoom-in"
+                  style={{ background: '#141414', aspectRatio: '1/1', border: '1px solid rgba(255,255,255,0.06)' }}
+                  onClick={() => setIsImageModalOpen(true)}
+                >
+                  <Image
+                    src={safeImages[selectedImage]}
+                    alt={productName}
+                    width={560} height={560}
+                    className="w-full h-full object-contain p-10"
+                    style={{ transition: 'transform 0.5s ease', transform: 'scale(1)' }}
+                    priority
+                  />
+
+                  {/* Wishlist */}
+                  <button
+                    onClick={e => { e.stopPropagation(); handleToggleWishlist(); }}
+                    className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center transition-all"
+                    style={{
+                      background: isWishlisted ? '#D4372B' : 'rgba(255,255,255,0.06)',
+                      backdropFilter: 'blur(12px)',
+                      border: `1px solid ${isWishlisted ? '#D4372B' : 'rgba(255,255,255,0.1)'}`,
+                    }}
+                  >
+                    <Heart className="w-4 h-4" style={{ color: '#fff', fill: isWishlisted ? '#fff' : 'none' }} />
+                  </button>
+
+                  {safeImages.length > 1 && (
+                    <div className="absolute bottom-4 right-4 text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', color: 'rgba(255,255,255,0.6)' }}>
+                      {selectedImage + 1} / {safeImages.length}
                     </div>
-                  </div>
-                )}
-                
-                {activeTab === "avis" && (
-                  <div>
-                    {!showReviewForm && (
-                      <button
-                        onClick={() => setShowReviewForm(true)}
-                        className="mb-6 px-4 py-2 bg-[#D4372B] text-white rounded-lg text-sm font-medium hover:bg-[#B5271C] transition-colors"
-                      >
-                        ✍️ Donner mon avis
+                  )}
+                </div>
+
+                {/* Thumbnails */}
+                {safeImages.length > 1 && (
+                  <div className="relative">
+                    {safeImages.length > 5 && (
+                      <button onClick={() => scrollThumbnails('left')} className="absolute -left-3 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <ChevronLeft className="w-3.5 h-3.5" style={{ color: 'rgba(255,255,255,0.6)' }} />
                       </button>
                     )}
-                    
-                    {showReviewForm && (
-                      <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-semibold text-gray-900">Donnez votre avis</h3>
-                          <button 
-                            onClick={() => setShowReviewForm(false)}
-                            className="text-gray-400 hover:text-gray-600"
-                          >
-                            <X className="w-5 h-5" />
-                          </button>
-                        </div>
-                        
-                        <div className="mb-4">
-                          <label className="text-sm text-gray-600 font-medium">Note</label>
-                          <div className="flex gap-2 mt-2">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <button
-                                key={star}
-                                onClick={() => setNewReview({ ...newReview, rating: star })}
-                                className="focus:outline-none"
-                              >
-                                <Star 
-                                  className={`w-8 h-8 ${
-                                    star <= newReview.rating 
-                                      ? 'fill-yellow-400 text-yellow-400' 
-                                      : 'text-gray-300'
-                                  }`} 
-                                />
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        
-                        <div className="mb-4">
-                          <label className="text-sm text-gray-600 font-medium">Votre nom</label>
-                          <input
-                            type="text"
-                            value={newReview.authorName}
-                            onChange={(e) => setNewReview({ ...newReview, authorName: e.target.value })}
-                            className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#D4372B]"
-                            placeholder="Jean Dupont"
-                          />
-                        </div>
-                        
-                        <div className="mb-4">
-                          <label className="text-sm text-gray-600 font-medium">Votre commentaire</label>
-                          <textarea
-                            value={newReview.comment}
-                            onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                            className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#D4372B] resize-none"
-                            rows={4}
-                            placeholder="Partagez votre expérience..."
-                          />
-                        </div>
-                        
-                        <div className="flex gap-3">
-                          <button
-                            onClick={() => setShowReviewForm(false)}
-                            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50"
-                          >
-                            Annuler
-                          </button>
-                          <button
-                            onClick={handleSubmitReview}
-                            disabled={isSubmittingReview}
-                            className="px-4 py-2 bg-[#D4372B] text-white rounded-lg text-sm font-medium hover:bg-[#B5271C] disabled:opacity-50"
-                          >
-                            {isSubmittingReview ? "Envoi..." : "Publier mon avis"}
-                          </button>
-                        </div>
-                      </div>
+                    <div ref={thumbnailRef} className="flex gap-2 overflow-x-hidden scroll-smooth" style={{ scrollbarWidth: 'none' }}>
+                      {safeImages.map((img, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setSelectedImage(idx)}
+                          className="flex-shrink-0 rounded-xl overflow-hidden transition-all duration-200"
+                          style={{
+                            width: 'calc(20% - 8px)',
+                            aspectRatio: '1/1',
+                            background: '#141414',
+                            border: `1.5px solid ${selectedImage === idx ? '#D4372B' : 'rgba(255,255,255,0.07)'}`,
+                            opacity: selectedImage === idx ? 1 : 0.45,
+                          }}
+                        >
+                          <Image src={img} alt="" width={80} height={80} className="w-full h-full object-contain p-2" />
+                        </button>
+                      ))}
+                    </div>
+                    {safeImages.length > 5 && (
+                      <button onClick={() => scrollThumbnails('right')} className="absolute -right-3 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <ChevronRight className="w-3.5 h-3.5" style={{ color: 'rgba(255,255,255,0.6)' }} />
+                      </button>
                     )}
-                    
-                    {isLoadingReviews ? (
-                      <div className="space-y-6">
-                        <div className="flex items-center gap-6 mb-6 animate-pulse">
-                          <div className="text-center">
-                            <div className="w-16 h-8 bg-gray-200 rounded mb-1"></div>
-                            <div className="flex gap-1 mt-1">
-                              {[1,2,3,4,5].map((i) => (
-                                <div key={i} className="w-4 h-4 bg-gray-200 rounded"></div>
-                              ))}
-                            </div>
-                            <div className="w-16 h-3 bg-gray-200 rounded mt-1"></div>
-                          </div>
-                          <div className="flex-1 space-y-2">
-                            {[1,2,3,4,5].map((i) => (
-                              <div key={i} className="flex items-center gap-2">
-                                <div className="w-12 h-3 bg-gray-200 rounded"></div>
-                                <div className="flex-1 h-2 bg-gray-200 rounded"></div>
-                                <div className="w-8 h-3 bg-gray-200 rounded"></div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="space-y-4">
-                          {[1,2,3].map((i) => (
-                            <div key={i} className="border-b border-gray-200 pb-4 animate-pulse">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-                                  <div className="h-4 bg-gray-200 rounded w-24"></div>
-                                </div>
-                                <div className="h-3 bg-gray-200 rounded w-20"></div>
-                              </div>
-                              <div className="flex gap-1 ml-10 mb-2">
-                                {[1,2,3,4,5].map((star) => (
-                                  <div key={star} className="w-3 h-3 bg-gray-200 rounded"></div>
-                                ))}
-                              </div>
-                              <div className="ml-10 space-y-1">
-                                <div className="h-3 bg-gray-200 rounded w-full"></div>
-                                <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ) : reviews.length === 0 ? (
-                      <div className="text-center py-12">
-                        <div className="w-20 h-20 mx-auto mb-4 bg-gray-50 rounded-full flex items-center justify-center">
-                          <Star className="w-10 h-10 text-gray-300" />
-                        </div>
-                        <p className="text-gray-500">Aucun avis pour le moment</p>
-                        <p className="text-sm text-gray-400 mt-1">Soyez le premier à donner votre avis</p>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="flex items-center gap-6 mb-6">
-                          <div className="text-center">
-                            <div className="text-2xl font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
-                              {reviewsStats.averageRating}
-                            </div>
-                            <div className="flex justify-center mt-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star 
-                                  key={star} 
-                                  className={`w-3.5 h-3.5 ${
-                                    star <= Math.round(reviewsStats.averageRating) 
-                                      ? 'fill-yellow-400 text-yellow-400' 
-                                      : 'text-gray-300'
-                                  }`} 
-                                />
-                              ))}
-                            </div>
-                            <p className="text-xs text-gray-500 mt-1">{reviewsStats.totalReviews} avis</p>
-                          </div>
-                          <div className="flex-1 space-y-1">
-                            {[5, 4, 3, 2, 1].map((rating) => {
-                              const count = reviewsStats.ratingDistribution[rating as keyof typeof reviewsStats.ratingDistribution] || 0
-                              const percentage = reviewsStats.totalReviews > 0 ? (count / reviewsStats.totalReviews) * 100 : 0
+                  </div>
+                )}
+              </div>
+
+              {/* Right: Product Info */}
+              <div className="lg:col-span-7 flex flex-col gap-6">
+
+                {/* Header */}
+                <div>
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <span className="text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-full" style={{ background: 'rgba(212,55,43,0.12)', color: '#D4372B', border: '1px solid rgba(212,55,43,0.2)' }}>
+                      Top vente
+                    </span>
+                    <span className="text-xs font-mono" style={{ color: 'rgba(255,255,255,0.18)' }}>#{product.id?.slice(-10)}</span>
+                  </div>
+                  <h1 className="text-2xl font-semibold leading-tight mb-3" style={{ color: '#F2F2F2', letterSpacing: '-0.025em' }}>{productName}</h1>
+                  <div className="flex items-center gap-3 text-sm">
+                    <div className="flex items-center gap-1.5">
+                      {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4" style={{ fill: '#F59E0B', color: '#F59E0B' }} />)}
+                      <span className="font-semibold ml-1" style={{ color: '#F2F2F2' }}>{reviewsStats.averageRating || 0}</span>
+                    </div>
+                    <span style={{ color: 'rgba(255,255,255,0.15)' }}>·</span>
+                    <span style={{ color: 'rgba(255,255,255,0.4)' }}>{reviewsStats.totalReviews} avis</span>
+                    <span style={{ color: 'rgba(255,255,255,0.15)' }}>·</span>
+                    <span style={{ color: 'rgba(255,255,255,0.4)' }}>1,234+ commandes</span>
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)' }} />
+
+                {/* Price + Variants */}
+                <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <div className="flex items-baseline gap-3 mb-1">
+                    <span className="text-3xl font-black" style={{ color: '#D4372B', letterSpacing: '-0.03em' }}>
+                      {formatPrice(currentPrice)} × {grandTotal || 1}
+                    </span>
+                    <span className="text-sm line-through" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                      {formatPrice(currentPrice * 1.2 * (grandTotal || 1))}
+                    </span>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-md" style={{ background: '#D4372B', color: '#fff' }}>−20%</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs mb-5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    <span className="px-2 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(212,55,43,0.1)', color: '#D4372B', border: '1px solid rgba(212,55,43,0.2)' }}>Prix direct usine</span>
+                    <span>USD ${Number(product.price).toFixed(2)} / unité</span>
+                  </div>
+
+                  {/* Variants desktop */}
+                  {hasVariants && (
+                    <>
+                      {hasSimpleVariants && (
+                        <div className="mb-4">
+                          <p className="text-[10px] font-bold tracking-widest uppercase mb-2.5" style={{ color: 'rgba(255,255,255,0.25)' }}>{primaryAttrName}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {Object.entries(simpleVariantQuantities).map(([value, qty]) => {
+                              const hasImg = attributeImages[`${simpleVariantType}:${value}`]
+                              const active = qty > 0
                               return (
-                                <div key={rating} className="flex items-center gap-3 text-sm">
-                                  <span className="w-12 text-gray-600">{rating} étoiles</span>
-                                  <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                    <div 
-                                      className="h-full rounded-full" 
-                                      style={{ width: `${percentage}%`, background: brandGradient }} 
-                                    />
-                                  </div>
-                                  <span className="w-12 text-right text-gray-500 text-sm">{count}</span>
-                                </div>
+                                <button key={value} onClick={() => openSimpleVariantModal(value)}
+                                  className="relative flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium transition-all"
+                                  style={{ background: active ? 'rgba(212,55,43,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${active ? 'rgba(212,55,43,0.4)' : 'rgba(255,255,255,0.08)'}`, color: active ? '#D4372B' : 'rgba(255,255,255,0.55)' }}>
+                                  {hasImg && <div className="w-5 h-5 rounded-full overflow-hidden"><Image src={attributeImages[`${simpleVariantType}:${value}`]} alt={value} width={20} height={20} className="w-full h-full object-cover" /></div>}
+                                  {value}
+                                  {active && <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full text-[9px] font-bold flex items-center justify-center" style={{ background: '#D4372B', color: '#fff' }}>{qty}</span>}
+                                </button>
                               )
                             })}
                           </div>
-                        </div>
-
-                        <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2">
-                          {reviews.map((review) => (
-                            <div key={review.id} className="border-b border-gray-200 pb-5 last:border-0">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                                    {review.authorName.charAt(0).toUpperCase()}
-                                  </div>
-                                  <div>
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-sm font-medium text-gray-800">{review.authorName}</span>
-                                      {review.verifiedPurchase && (
-                                        <span className="text-[10px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
-                                          Achat vérifié
-                                        </span>
-                                      )}
-                                    </div>
-                                    <div className="flex items-center gap-1 mt-0.5">
-                                      {[1, 2, 3, 4, 5].map((star) => (
-                                        <Star 
-                                          key={star} 
-                                          className={`w-3 h-3 ${
-                                            star <= review.rating 
-                                              ? 'fill-yellow-400 text-yellow-400' 
-                                              : 'text-gray-200'
-                                          }`} 
-                                        />
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
-                                <span className="text-xs text-gray-400">{formatReviewDate(review.createdAt)}</span>
-                              </div>
-                              <p className="text-sm text-gray-700 ml-11 leading-relaxed">
-                                {review.comment}
-                              </p>
+                          {Object.entries(simpleVariantQuantities).filter(([_, q]) => q > 0).map(([value, qty]) => (
+                            <div key={value} className="flex items-center gap-2 mt-2 text-xs px-3 py-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}>
+                              {attributeImages[`${simpleVariantType}:${value}`] && <div className="w-5 h-5 rounded-full overflow-hidden"><Image src={attributeImages[`${simpleVariantType}:${value}`]} alt={value} width={20} height={20} className="w-full h-full object-cover" /></div>}
+                              <span className="font-medium">{value}</span>
+                              <span style={{ color: '#D4372B', fontWeight: 700 }}>×{qty}</span>
                             </div>
                           ))}
                         </div>
-                      </>
+                      )}
+                      {hasComplexVariants && (
+                        <>
+                          <div className="mb-4">
+                            <p className="text-[10px] font-bold tracking-widest uppercase mb-2.5" style={{ color: 'rgba(255,255,255,0.25)' }}>{primaryAttrName}</p>
+                            <div className="flex flex-wrap gap-2">
+                              {Object.keys(complexSelections).map(primaryValue => {
+                                const total = getPrimaryTotal(primaryValue)
+                                const hasImg = attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]
+                                return (
+                                  <button key={primaryValue} onClick={() => openPrimaryModal(primaryValue)}
+                                    className="relative flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium transition-all"
+                                    style={{ background: total > 0 ? 'rgba(212,55,43,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${total > 0 ? 'rgba(212,55,43,0.4)' : 'rgba(255,255,255,0.08)'}`, color: total > 0 ? '#D4372B' : 'rgba(255,255,255,0.55)' }}>
+                                    {hasImg && <div className="w-5 h-5 rounded-full overflow-hidden"><Image src={attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]} alt={primaryValue} width={20} height={20} className="w-full h-full object-cover" /></div>}
+                                    {primaryValue}
+                                    {total > 0 && <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full text-[9px] font-bold flex items-center justify-center" style={{ background: '#D4372B', color: '#fff' }}>{total}</span>}
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          </div>
+                          {secondaryAttrName && (
+                            <div className="mb-4">
+                              <p className="text-[10px] font-bold tracking-widest uppercase mb-2.5" style={{ color: 'rgba(255,255,255,0.25)' }}>{secondaryAttrName}</p>
+                              <div className="flex flex-wrap gap-2">
+                                {attributeGroups[Object.keys(attributeGroups)[1]]?.values.map(secondaryValue => {
+                                  const total = getSecondaryTotal(secondaryValue)
+                                  return (
+                                    <button key={secondaryValue} onClick={() => openSecondaryModal(secondaryValue)}
+                                      className="relative px-3.5 py-2 rounded-xl text-xs font-medium transition-all"
+                                      style={{ background: total > 0 ? 'rgba(212,55,43,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${total > 0 ? 'rgba(212,55,43,0.4)' : 'rgba(255,255,255,0.08)'}`, color: total > 0 ? '#D4372B' : 'rgba(255,255,255,0.55)' }}>
+                                      {secondaryValue}
+                                      {total > 0 && <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full text-[9px] font-bold flex items-center justify-center" style={{ background: '#D4372B', color: '#fff' }}>{total}</span>}
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          )}
+                          {Object.entries(complexSelections).map(([primaryValue, secondarySelections]) => {
+                            const nonZero = Object.entries(secondarySelections).filter(([_, qty]) => qty > 0)
+                            if (nonZero.length === 0) return null
+                            return (
+                              <div key={primaryValue} className="rounded-xl p-3 mb-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                                <div className="flex items-center gap-2 mb-2">
+                                  {attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`] && <div className="w-5 h-5 rounded-full overflow-hidden"><Image src={attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]} alt={primaryValue} width={20} height={20} className="w-full h-full object-cover" /></div>}
+                                  <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>{primaryValue}</span>
+                                </div>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {nonZero.map(([sec, qty]) => (
+                                    <span key={sec} className="text-xs px-2.5 py-1 rounded-lg" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>
+                                      {sec} <span style={{ color: '#D4372B', fontWeight: 700 }}>×{qty}</span>
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  {!hasVariants && (
+                    <div className="mb-3">
+                      <p className="text-[10px] font-bold tracking-widest uppercase mb-2.5" style={{ color: 'rgba(255,255,255,0.25)' }}>Quantité</p>
+                      <div className="inline-flex items-center rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <button onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))} disabled={simpleQuantity <= 1} className="p-2.5 transition-colors disabled:opacity-30" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                          <Minus className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.6)' }} />
+                        </button>
+                        <span className="w-12 text-center text-sm font-bold" style={{ color: '#F0F0F0' }}>{simpleQuantity}</span>
+                        <button onClick={() => setSimpleQuantity(simpleQuantity + 1)} className="p-2.5 transition-colors" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                          <Plus className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.6)' }} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Meta row */}
+                  <div className="flex items-center gap-5 text-xs pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.4)' }}>
+                    <span className="flex items-center gap-1.5"><Package className="w-3.5 h-3.5" style={{ color: '#D4372B' }} /> MOQ: {minQuantity}</span>
+                    <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" style={{ color: '#D4372B' }} /> {logisticsData?.recommended?.days || '15–20'} jours</span>
+                    {isLoadingLogistics
+                      ? <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full border-2 animate-spin" style={{ borderColor: 'rgba(255,255,255,0.1)', borderTopColor: '#D4372B' }} /> Calcul...</span>
+                      : <span>{logisticsData ? `${logisticsData.weight.totalWeight.toFixed(2)} kg` : '— kg'}</span>
+                    }
+                  </div>
+                </div>
+
+                {/* Protection */}
+                <button
+                  onClick={() => setIsProtectionModalOpen(true)}
+                  className="flex items-center gap-4 p-4 rounded-2xl text-left w-full transition-all"
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+                >
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(212,55,43,0.1)' }}>
+                    <Shield className="w-5 h-5" style={{ color: '#D4372B' }} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold mb-1.5" style={{ color: '#F0F0F0' }}>Protection des achats Adullam</p>
+                    <div className="flex items-center gap-2">
+                      {['MTN', 'Orange', 'Wave', 'Visa'].map(m => (
+                        <span key={m} className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.07)' }}>{m}</span>
+                      ))}
+                      <span className="ml-auto text-xs flex items-center gap-1" style={{ color: 'rgba(255,255,255,0.25)' }}><Lock className="w-3 h-3" /> SSL</span>
+                    </div>
+                  </div>
+                  <Info className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.2)' }} />
+                </button>
+
+                {/* Shipping desktop */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-semibold" style={{ color: '#F0F0F0' }}>Mode de livraison</p>
+                    {selectedPortePorteCost > 0 && (
+                      <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Porte-à-porte: <span style={{ color: '#D4372B', fontWeight: 700 }}>{formatPrice(selectedPortePorteCost)}</span></span>
                     )}
                   </div>
+                  {isLoadingLogistics ? (
+                    <div className="grid grid-cols-3 gap-3">{[1,2,3].map(i => <div key={i} className="h-20 rounded-xl animate-pulse" style={{ background: 'rgba(255,255,255,0.05)' }} />)}</div>
+                  ) : logisticsError ? (
+                    <div className="text-xs rounded-xl p-3" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#FCA5A5' }}>{logisticsError}</div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-3">
+                      {([
+                        { mode: 'bateau', icon: Ship, label: 'Maritime' },
+                        { mode: 'avion', icon: Sparkles, label: 'Aérien' },
+                        { mode: 'express', icon: Zap, label: 'Express' },
+                      ] as const).map(item => {
+                        const isAvailable = logisticsData?.shipping?.[item.mode]
+                        if (!isAvailable) return null
+                        const active = selectedShipping === item.mode
+                        const days = getShippingDays(item.mode)
+                        const cost = getShippingCost(item.mode)
+                        const estimatedDate = getEstimatedDate(item.mode)
+                        return (
+                          <button
+                            key={item.mode}
+                            onClick={() => setSelectedShipping(item.mode)}
+                            className="p-3.5 rounded-xl text-left transition-all duration-200"
+                            style={{
+                              background: active ? 'rgba(212,55,43,0.15)' : 'rgba(255,255,255,0.04)',
+                              border: `1.5px solid ${active ? '#D4372B' : 'rgba(255,255,255,0.08)'}`,
+                              transform: active ? 'translateY(-2px)' : 'none',
+                            }}
+                          >
+                            <div className="flex items-center gap-2 mb-2.5">
+                              <item.icon className="w-4 h-4" style={{ color: active ? '#D4372B' : 'rgba(255,255,255,0.35)' }} />
+                              <span className="text-xs font-bold" style={{ color: active ? '#F0F0F0' : 'rgba(255,255,255,0.6)' }}>{item.label}</span>
+                            </div>
+                            <p className="text-sm font-black" style={{ color: active ? '#D4372B' : 'rgba(255,255,255,0.7)' }}>{formatPrice(cost)}</p>
+                            <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.25)' }}>{days} · {estimatedDate}</p>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* MOQ warning */}
+                {!isMOQMet && grandTotal > 0 && (
+                  <div className="text-sm rounded-xl p-3 flex items-start gap-2" style={{ background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.15)', color: '#FCD34D' }}>
+                    <span>⚠</span> Quantité minimum non atteinte ({minQuantity} min). Contactez-nous.
+                  </div>
                 )}
+
+                {/* CTA buttons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={isMOQMet && grandTotal > 0 ? handleAddToCart : handleContactWhatsApp}
+                    className="flex-1 py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                    style={{
+                      background: isMOQMet && grandTotal > 0 ? '#D4372B' : 'linear-gradient(135deg,#F59E0B,#FBBF24)',
+                      color: '#fff',
+                      boxShadow: isMOQMet && grandTotal > 0 ? '0 4px 24px rgba(212,55,43,0.25)' : 'none',
+                    }}
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                    {isMOQMet && grandTotal > 0 ? `Ajouter au panier (${grandTotal})` : 'Nous contacter'}
+                  </button>
+                  <button
+                    onClick={handleBuyNow}
+                    disabled={!isMOQMet || grandTotal === 0}
+                    className="flex-1 py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center transition-all active:scale-[0.98] disabled:opacity-30"
+                    style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#F0F0F0' }}
+                  >
+                    Acheter maintenant
+                  </button>
+                </div>
+
+                {/* Trust badges */}
+                <div className="grid grid-cols-4 gap-4">
+                  {[
+                    { icon: Shield, label: 'Garantie 12 mois' },
+                    { icon: RotateCcw, label: 'Retour 15 jours' },
+                    { icon: Check, label: 'Certifié qualité' },
+                    { icon: Truck, label: 'Suivi en temps réel' },
+                  ].map(({ icon: Icon, label }) => (
+                    <div key={label} className="flex items-center gap-2 text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                      <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#D4372B' }} />
+                      {label}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
+            {/* END DESKTOP GRID */}
 
-            {/* RELATED PRODUCTS */}
-            <div className="mt-8 lg:mt-12">
-              <div className="flex items-center justify-between mb-4 lg:mb-6">
-                <h2 className="text-base lg:text-lg font-medium">Vous aimerez aussi</h2>
+            {/* ═══════════════════════════════════════
+                DESKTOP TABS
+            ═══════════════════════════════════════ */}
+            <div className="hidden lg:block mb-12">
+              <div className="flex gap-1 mb-8" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                {[
+                  { id: 'description', label: 'Description' },
+                  { id: 'specifications', label: 'Caractéristiques' },
+                  { id: 'avis', label: `Avis (${reviewsStats.totalReviews})` },
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className="px-5 py-4 text-sm font-medium relative transition-colors"
+                    style={{ color: activeTab === tab.id ? '#F0F0F0' : 'rgba(255,255,255,0.3)' }}
+                  >
+                    {tab.label}
+                    {activeTab === tab.id && <span className="absolute bottom-0 left-4 right-4 h-px rounded-full" style={{ background: '#D4372B' }} />}
+                  </button>
+                ))}
               </div>
-              
-              {isLoadingRelated ? (
-                <div className="flex justify-center items-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600" />
+
+              {activeTab === 'description' && (
+                <div className="max-w-3xl">
+                  <p className="text-sm leading-relaxed mb-6" style={{ color: 'rgba(255,255,255,0.5)', lineHeight: '1.9' }}>
+                    {product.description || product.cleanedDesc || 'Description non disponible'}
+                  </p>
+                  {product.features?.length > 0 && (
+                    <div>
+                      <h3 className="text-[10px] font-bold tracking-widest uppercase mb-4" style={{ color: 'rgba(255,255,255,0.25)' }}>Points forts</h3>
+                      <ul className="grid grid-cols-2 gap-3">
+                        {product.features.map((f: string, i: number) => (
+                          <li key={i} className="flex items-start gap-3 text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                            <span className="w-1 h-1 rounded-full flex-shrink-0 mt-2" style={{ background: '#D4372B' }} />
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
-              ) : relatedProducts.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 text-sm">
-                  Aucune recommandation pour le moment
+              )}
+
+              {activeTab === 'specifications' && (
+                <div className="max-w-2xl" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  {(product.specifications || [
+                    { label: 'Marque', value: 'TechPro' }, { label: 'Modèle', value: 'TP-EB001' },
+                    { label: 'Bluetooth', value: '5.2' }, { label: 'Autonomie écouteurs', value: '6 heures' },
+                    { label: 'Autonomie boîtier', value: '24 heures' }, { label: 'Charge', value: '1.5 heures' },
+                    { label: 'Poids', value: '4.5g / écouteur' }, { label: 'Garantie', value: '12 mois' },
+                  ]).map((s: any, i: number) => (
+                    <div key={i} className="flex justify-between items-center py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <span className="text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>{s.label}</span>
+                      <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.8)' }}>{s.value}</span>
+                    </div>
+                  ))}
                 </div>
-              ) : (
-                <>
-                  <div className="lg:hidden">
-                    <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 shadow-sm">
-                      <div className="relative">
-                        <div className="overflow-x-auto overflow-y-hidden hide-scrollbar">
-                          <div className="flex gap-3 w-max">
-                            {relatedProducts.map((p) => (
-                              <a 
-                                key={p.id} 
-                                href={`/products/${p.id}`} 
-                                className="group w-[calc((100vw-4rem)/3-0.5rem)] min-w-[calc((100vw-4rem)/3-0.5rem)]"
-                              >
-                                <div className="bg-white rounded-lg aspect-square mb-2 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
-                                  <Image
-                                    src={p.image || "/placeholder.svg"}
-                                    alt={p.name}
-                                    width={150}
-                                    height={150}
-                                    className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform"
-                                  />
-                                </div>
-                                <h3 className="font-medium text-xs mb-0.5 line-clamp-2 text-gray-800">{p.name}</h3>
-                                <div className="flex items-center gap-1 mb-0.5">
-                                  <div className="flex">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                      <Star key={star} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
-                                    ))}
-                                  </div>
-                                  <span className="text-[9px] text-gray-500">{p.rating || 4.5}</span>
-                                </div>
-                                <p className="text-sm font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
-                                  {formatPrice(p.priceUSD)}
-                                </p>
-                              </a>
-                            ))}
-                          </div>
+              )}
+
+              {activeTab === 'avis' && (
+                <div>
+                  {!showReviewForm && (
+                    <button onClick={() => setShowReviewForm(true)} className="mb-8 px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors" style={{ border: '1px solid rgba(212,55,43,0.35)', color: '#D4372B', background: 'rgba(212,55,43,0.07)' }}>
+                      Donner mon avis
+                    </button>
+                  )}
+                  {showReviewForm && (
+                    <div className="rounded-2xl p-6 mb-8 max-w-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div className="flex items-center justify-between mb-5">
+                        <h3 className="font-semibold text-sm" style={{ color: '#F0F0F0' }}>Donnez votre avis</h3>
+                        <button onClick={() => setShowReviewForm(false)}><X className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.3)' }} /></button>
+                      </div>
+                      <div className="mb-4">
+                        <label className="text-[10px] font-bold tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.25)' }}>Note</label>
+                        <div className="flex gap-2 mt-2">{[1,2,3,4,5].map(s => <button key={s} onClick={() => setNewReview({ ...newReview, rating: s })}><Star className="w-7 h-7 transition-colors" style={{ fill: s <= newReview.rating ? '#F59E0B' : 'none', color: s <= newReview.rating ? '#F59E0B' : 'rgba(255,255,255,0.15)' }} /></button>)}</div>
+                      </div>
+                      <div className="mb-4">
+                        <label className="text-[10px] font-bold tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.25)' }}>Nom</label>
+                        <input type="text" value={newReview.authorName} onChange={e => setNewReview({ ...newReview, authorName: e.target.value })} className="w-full mt-1.5 px-4 py-2.5 text-sm rounded-xl outline-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0F0' }} placeholder="Jean Dupont" />
+                      </div>
+                      <div className="mb-5">
+                        <label className="text-[10px] font-bold tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.25)' }}>Commentaire</label>
+                        <textarea value={newReview.comment} rows={4} onChange={e => setNewReview({ ...newReview, comment: e.target.value })} className="w-full mt-1.5 px-4 py-2.5 text-sm rounded-xl outline-none resize-none" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0F0' }} placeholder="Partagez votre expérience..." />
+                      </div>
+                      <div className="flex gap-3">
+                        <button onClick={() => setShowReviewForm(false)} className="px-5 py-2.5 rounded-xl text-sm font-medium" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}>Annuler</button>
+                        <button onClick={handleSubmitReview} disabled={isSubmittingReview} className="px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50 transition-colors" style={{ background: '#D4372B', color: '#fff' }}>
+                          {isSubmittingReview ? 'Envoi...' : 'Publier mon avis'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {isLoadingReviews ? (
+                    <div className="space-y-6">{[1,2,3].map(i => <div key={i} className="animate-pulse pb-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}><div className="flex gap-3 mb-3"><div className="w-9 h-9 rounded-full" style={{ background: 'rgba(255,255,255,0.07)' }} /><div className="h-4 rounded w-32" style={{ background: 'rgba(255,255,255,0.07)' }} /></div><div className="h-3 rounded w-full mb-1.5" style={{ background: 'rgba(255,255,255,0.05)' }} /><div className="h-3 rounded w-2/3" style={{ background: 'rgba(255,255,255,0.05)' }} /></div>)}</div>
+                  ) : reviews.length === 0 ? (
+                    <div className="text-center py-16">
+                      <Star className="w-12 h-12 mx-auto mb-3" style={{ color: 'rgba(255,255,255,0.07)' }} />
+                      <p className="text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>Aucun avis pour le moment</p>
+                    </div>
+                  ) : (
+                    <div className="flex gap-14">
+                      <div className="flex-shrink-0 w-44 text-center">
+                        <div className="text-5xl font-black mb-2" style={{ color: '#D4372B' }}>{reviewsStats.averageRating}</div>
+                        <div className="flex justify-center gap-0.5 mb-2">{[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4" style={{ fill: s <= Math.round(reviewsStats.averageRating) ? '#F59E0B' : 'none', color: s <= Math.round(reviewsStats.averageRating) ? '#F59E0B' : 'rgba(255,255,255,0.1)' }} />)}</div>
+                        <p className="text-xs mb-5" style={{ color: 'rgba(255,255,255,0.3)' }}>{reviewsStats.totalReviews} avis</p>
+                        <div className="space-y-2">
+                          {[5,4,3,2,1].map(r => {
+                            const count = reviewsStats.ratingDistribution[r as keyof typeof reviewsStats.ratingDistribution] || 0
+                            const pct = reviewsStats.totalReviews > 0 ? (count / reviewsStats.totalReviews) * 100 : 0
+                            return (
+                              <div key={r} className="flex items-center gap-2 text-xs">
+                                <span className="w-3 text-right" style={{ color: 'rgba(255,255,255,0.25)' }}>{r}</span>
+                                <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}><div className="h-full rounded-full" style={{ width: `${pct}%`, background: '#D4372B' }} /></div>
+                                <span className="w-3" style={{ color: 'rgba(255,255,255,0.25)' }}>{count}</span>
+                              </div>
+                            )
+                          })}
                         </div>
                       </div>
+                      <div className="flex-1 space-y-6 max-h-[520px] overflow-y-auto pr-2">
+                        {reviews.map(review => (
+                          <div key={review.id} className="pb-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0" style={{ background: 'rgba(255,255,255,0.08)', color: '#F0F0F0' }}>{review.authorName.charAt(0).toUpperCase()}</div>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm font-semibold" style={{ color: '#F0F0F0' }}>{review.authorName}</span>
+                                    {review.verifiedPurchase && <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(74,222,128,0.1)', color: '#4ADE80' }}>Achat vérifié</span>}
+                                  </div>
+                                  <div className="flex gap-0.5 mt-1">{[1,2,3,4,5].map(s => <Star key={s} className="w-3 h-3" style={{ fill: s <= review.rating ? '#F59E0B' : 'none', color: s <= review.rating ? '#F59E0B' : 'rgba(255,255,255,0.1)' }} />)}</div>
+                                </div>
+                              </div>
+                              <span className="text-xs flex-shrink-0" style={{ color: 'rgba(255,255,255,0.25)' }}>{formatReviewDate(review.createdAt)}</span>
+                            </div>
+                            <p className="text-sm leading-relaxed ml-12" style={{ color: 'rgba(255,255,255,0.5)' }}>{review.comment}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* ═══════════════════════════════════════
+                RELATED PRODUCTS
+            ═══════════════════════════════════════ */}
+            <div className="mt-4 lg:mt-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-base lg:text-lg font-semibold" style={{ color: '#F0F0F0', letterSpacing: '-0.01em' }}>Vous aimerez aussi</h2>
+              </div>
+
+              {isLoadingRelated ? (
+                <div className="flex gap-4 overflow-hidden">
+                  {[1,2,3,4,5].map(i => (
+                    <div key={i} className="flex-shrink-0 w-40 lg:w-48">
+                      <div className="aspect-square rounded-xl animate-pulse mb-2.5" style={{ background: 'rgba(255,255,255,0.05)' }} />
+                      <div className="h-3 rounded animate-pulse mb-1.5" style={{ background: 'rgba(255,255,255,0.05)' }} />
+                      <div className="h-3 rounded animate-pulse w-1/2" style={{ background: 'rgba(255,255,255,0.04)' }} />
+                    </div>
+                  ))}
+                </div>
+              ) : relatedProducts.length === 0 ? (
+                <p className="text-sm py-8 text-center" style={{ color: 'rgba(255,255,255,0.25)' }}>Aucune recommandation disponible</p>
+              ) : (
+                <>
+                  {/* Mobile related */}
+                  <div className="lg:hidden overflow-x-auto hide-scrollbar -mx-4 px-4">
+                    <div className="flex gap-3 w-max">
+                      {relatedProducts.map(p => (
+                        <a key={p.id} href={`/products/${p.id}`} className="group" style={{ width: 'calc((100vw - 4rem) / 2.5)' }}>
+                          <div className="aspect-square rounded-xl overflow-hidden mb-2 transition-all" style={{ background: '#141414', border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <Image src={p.image || '/placeholder.svg'} alt={p.name} width={150} height={150} className="w-full h-full object-contain p-3" />
+                          </div>
+                          <h3 className="text-xs font-medium line-clamp-2 mb-1" style={{ color: 'rgba(255,255,255,0.65)' }}>{p.name}</h3>
+                          <p className="text-sm font-bold" style={{ color: '#D4372B' }}>{formatPrice(p.priceUSD)}</p>
+                        </a>
+                      ))}
                     </div>
                   </div>
 
+                  {/* Desktop related */}
                   <div className="hidden lg:block relative">
-                    <div 
-                      ref={relatedCarouselRef}
-                      className="overflow-x-auto overflow-y-hidden hide-scrollbar pb-4 scroll-smooth"
-                    >
+                    <div ref={relatedCarouselRef} className="overflow-x-auto hide-scrollbar pb-2 scroll-smooth">
                       <div className="flex gap-4 w-max">
-                        {relatedProducts.map((p) => (
-                          <a 
-                            key={p.id} 
-                            href={`/products/${p.id}`} 
-                            className="group w-[calc((1440px-4rem)/6-1rem)] min-w-[180px]"
-                          >
-                            <div className="bg-white rounded-xl aspect-square mb-3 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
-                              <Image
-                                src={p.image || "/placeholder.svg"}
-                                alt={p.name}
-                                width={200}
-                                height={200}
-                                className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform"
-                              />
+                        {relatedProducts.map(p => (
+                          <a key={p.id} href={`/products/${p.id}`} className="group" style={{ width: '180px' }}>
+                            <div className="aspect-square rounded-xl overflow-hidden mb-3 transition-all" style={{ background: '#141414', border: '1px solid rgba(255,255,255,0.06)' }}>
+                              <Image src={p.image || '/placeholder.svg'} alt={p.name} width={200} height={200} className="w-full h-full object-contain p-4" />
                             </div>
-                            <h3 className="font-medium text-sm mb-1 line-clamp-2 text-gray-800">{p.name}</h3>
-                            <div className="flex items-center gap-1 mb-1">
-                              <div className="flex">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star key={star} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                ))}
-                              </div>
-                              <span className="text-xs text-gray-500">{p.rating || 4.5}</span>
-                            </div>
-                            <p className="text-base font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
-                              {formatPrice(p.priceUSD)}
-                            </p>
+                            <h3 className="text-sm font-medium line-clamp-2 mb-1" style={{ color: 'rgba(255,255,255,0.65)' }}>{p.name}</h3>
+                            <div className="flex items-center gap-1 mb-1">{[1,2,3,4,5].map(s => <Star key={s} className="w-2.5 h-2.5" style={{ fill: '#F59E0B', color: '#F59E0B' }} />)}<span className="text-xs ml-1" style={{ color: 'rgba(255,255,255,0.3)' }}>{p.rating || 4.5}</span></div>
+                            <p className="text-sm font-bold" style={{ color: '#D4372B' }}>{formatPrice(p.priceUSD)}</p>
                           </a>
                         ))}
                       </div>
                     </div>
-                    
-                    <button 
-                      onClick={() => scrollRelated("left")}
-                      className="absolute left-0 top-1/3 -translate-y-1/2 -ml-4 w-8 h-8 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
-                    >
-                      <ChevronLeft className="w-4 h-4 text-gray-600" />
+                    <button onClick={() => scrollRelated('left')} className="absolute left-0 top-[40%] -translate-y-1/2 -ml-4 w-9 h-9 rounded-full flex items-center justify-center z-10 transition-colors" style={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <ChevronLeft className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.6)' }} />
                     </button>
-                    <button 
-                      onClick={() => scrollRelated("right")}
-                      className="absolute right-0 top-1/3 -translate-y-1/2 -mr-4 w-8 h-8 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
-                    >
-                      <ChevronRight className="w-4 h-4 text-gray-600" />
+                    <button onClick={() => scrollRelated('right')} className="absolute right-0 top-[40%] -translate-y-1/2 -mr-4 w-9 h-9 rounded-full flex items-center justify-center z-10 transition-colors" style={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <ChevronRight className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.6)' }} />
                     </button>
                   </div>
                 </>
               )}
             </div>
+
           </div>
         </div>
       </main>
 
-      {/* MODAL DE SÉLECTION POUR VARIANTES SIMPLES */}
+      {/* ═══════════════════════════════════════
+          IMAGE MODAL
+      ═══════════════════════════════════════ */}
+      {isImageModalOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.95)' }} onClick={() => setIsImageModalOpen(false)}>
+          <button className="absolute top-5 right-5 w-10 h-10 rounded-full flex items-center justify-center transition-colors" style={{ background: 'rgba(255,255,255,0.08)' }}>
+            <X className="w-5 h-5" style={{ color: 'rgba(255,255,255,0.7)' }} />
+          </button>
+          <div className="relative max-w-2xl w-full aspect-square" onClick={e => e.stopPropagation()}>
+            <Image src={safeImages[selectedImage]} alt={productName} width={700} height={700} className="w-full h-full object-contain" />
+            {safeImages.length > 1 && (
+              <>
+                <button onClick={() => setSelectedImage(Math.max(0, selectedImage - 1))} className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.08)' }}><ChevronLeft className="w-5 h-5" style={{ color: 'rgba(255,255,255,0.7)' }} /></button>
+                <button onClick={() => setSelectedImage(Math.min(safeImages.length - 1, selectedImage + 1))} className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.08)' }}><ChevronRight className="w-5 h-5" style={{ color: 'rgba(255,255,255,0.7)' }} /></button>
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{selectedImage + 1} / {safeImages.length}</div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════
+          SIMPLE VARIANT MODAL
+      ═══════════════════════════════════════ */}
       {isSimpleVariantModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-end lg:items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-t-xl lg:rounded-xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
+        <div className="fixed inset-0 z-[100] flex items-end lg:items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
+          <div className="w-full max-w-sm rounded-t-2xl lg:rounded-2xl overflow-hidden" style={{ background: '#111111', border: '1px solid rgba(255,255,255,0.09)' }}>
+            <div className="p-5 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+              <div className="flex items-center gap-3">
                 {attributeImages[`${simpleVariantType}:${selectedSimpleValue}`] && (
-                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md">
-                    <Image
-                      src={attributeImages[`${simpleVariantType}:${selectedSimpleValue}`]}
-                      alt={selectedSimpleValue}
-                      width={40}
-                      height={40}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-10 h-10 rounded-full overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <Image src={attributeImages[`${simpleVariantType}:${selectedSimpleValue}`]} alt={selectedSimpleValue} width={40} height={40} className="w-full h-full object-cover" />
                   </div>
                 )}
                 <div>
-                  <h3 className="text-base font-semibold text-gray-900">
-                    {primaryAttrName} {selectedSimpleValue}
-                  </h3>
-                  <p className="text-xs text-gray-500">
-                    Sélectionnez la quantité
-                  </p>
+                  <h3 className="font-semibold text-sm" style={{ color: '#F0F0F0' }}>{primaryAttrName} {selectedSimpleValue}</h3>
+                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Sélectionnez la quantité</p>
                 </div>
               </div>
-              <button 
-                onClick={() => setIsSimpleVariantModalOpen(false)}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5 text-gray-400" />
+              <button onClick={() => setIsSimpleVariantModalOpen(false)} className="p-1.5 rounded-full transition-colors" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <X className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.5)' }} />
               </button>
             </div>
-
-            <div className="p-6">
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white rounded-lg shadow-sm mb-4">
-                <span className="text-sm font-medium">Quantité</span>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={decrementSimpleModal}
-                    disabled={simpleModalQuantity <= 0}
-                    className="w-10 h-10 border border-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:shadow-sm disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                  >
-                    <Minus className="w-4 h-4" />
+            <div className="p-5">
+              <div className="flex items-center justify-between rounded-xl p-4 mb-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>Quantité</span>
+                <div className="flex items-center gap-4">
+                  <button onClick={decrementSimpleModal} disabled={simpleModalQuantity <= 0} className="w-9 h-9 rounded-full flex items-center justify-center transition-all disabled:opacity-30" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <Minus className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.6)' }} />
                   </button>
-                  <span className="w-12 text-center text-lg font-bold" style={{ color: '#D4372B' }}>
-                    {simpleModalQuantity}
-                  </span>
-                  <button
-                    onClick={incrementSimpleModal}
-                    className="w-10 h-10 border border-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:shadow-sm transition-all"
-                  >
-                    <Plus className="w-4 h-4" />
+                  <span className="w-8 text-center text-lg font-black" style={{ color: '#D4372B' }}>{simpleModalQuantity}</span>
+                  <button onClick={incrementSimpleModal} className="w-9 h-9 rounded-full flex items-center justify-center transition-all" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <Plus className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.6)' }} />
                   </button>
                 </div>
               </div>
-
-              <div className="mt-4 p-3 rounded-xl" style={{ background: '#0A0A0A' }}>
-                <div className="flex justify-between text-sm font-medium text-white">
-                  <span>Total sélectionné:</span>
-                  <span>{simpleModalQuantity} article(s)</span>
-                </div>
+              <div className="rounded-xl p-3 mb-4 flex justify-between items-center" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                <span className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>Total sélectionné</span>
+                <span className="font-bold text-sm" style={{ color: '#F0F0F0' }}>{simpleModalQuantity} article(s)</span>
               </div>
-
-              <div className="flex gap-3 mt-4">
-                <button
-                  onClick={() => setIsSimpleVariantModalOpen(false)}
-                  className="flex-1 py-3 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:shadow-sm transition-all"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={confirmSimpleVariantSelection}
-                  className="flex-1 py-3 rounded-lg text-sm font-medium text-white hover:shadow-lg transition-all"
-                  style={{ background: "#D4372B" }}
-                >
-                  Confirmer
-                </button>
+              <div className="flex gap-2.5">
+                <button onClick={() => setIsSimpleVariantModalOpen(false)} className="flex-1 py-3 rounded-xl text-sm font-medium transition-colors" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}>Annuler</button>
+                <button onClick={confirmSimpleVariantSelection} className="flex-1 py-3 rounded-xl text-sm font-semibold transition-colors" style={{ background: '#D4372B', color: '#fff' }}>Confirmer</button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL DE SÉLECTION POUR VARIANTES MULTIPLES */}
+      {/* ═══════════════════════════════════════
+          COMPLEX VARIANT MODAL
+      ═══════════════════════════════════════ */}
       {isVariantModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-end lg:items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-t-xl lg:rounded-xl w-full max-w-md max-h-[80vh] overflow-y-auto shadow-2xl">
-            <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
+        <div className="fixed inset-0 z-[100] flex items-end lg:items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
+          <div className="w-full max-w-sm rounded-t-2xl lg:rounded-2xl overflow-hidden max-h-[80vh] overflow-y-auto" style={{ background: '#111111', border: '1px solid rgba(255,255,255,0.09)' }}>
+            <div className="sticky top-0 p-4 flex items-center justify-between z-10" style={{ background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+              <div className="flex items-center gap-2.5">
                 {modalMode === 'primary' && modalPrimaryValue && attributeImages[`${Object.keys(attributeGroups)[0]}:${modalPrimaryValue}`] && (
-                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md">
-                    <Image
-                      src={attributeImages[`${Object.keys(attributeGroups)[0]}:${modalPrimaryValue}`]}
-                      alt={modalPrimaryValue}
-                      width={40}
-                      height={40}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-10 h-10 rounded-full overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <Image src={attributeImages[`${Object.keys(attributeGroups)[0]}:${modalPrimaryValue}`]} alt={modalPrimaryValue} width={40} height={40} className="w-full h-full object-cover" />
                   </div>
                 )}
                 <div>
-                  <h3 className="text-base font-semibold text-gray-900">
-                    {modalMode === 'primary' 
-                      ? `${primaryAttrName} ${modalPrimaryValue}`
-                      : `${modalAttrName} ${modalPrimaryValue}`
-                    }
-                  </h3>
-                  <p className="text-xs text-gray-500">
-                    Sélectionnez les {modalMode === 'primary' ? secondaryAttrName.toLowerCase() + 's' : primaryAttrName.toLowerCase() + 's'}
-                  </p>
+                  <h3 className="text-sm font-semibold" style={{ color: '#F0F0F0' }}>{modalMode === 'primary' ? `${primaryAttrName} ${modalPrimaryValue}` : `${modalAttrName} ${modalPrimaryValue}`}</h3>
+                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Sélectionnez les {modalMode === 'primary' ? secondaryAttrName.toLowerCase() + 's' : primaryAttrName.toLowerCase() + 's'}</p>
                 </div>
               </div>
-              <button 
-                onClick={() => setIsVariantModalOpen(false)}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5 text-gray-400" />
+              <button onClick={() => setIsVariantModalOpen(false)} className="p-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <X className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.5)' }} />
               </button>
             </div>
-
-            <div className="p-4 space-y-3">
-              {modalSecondaryOptions.map((value) => (
-                <div key={value} className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg shadow-sm">
-                  <span className="text-sm font-medium">{value}</span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => removeModalQuantity(value)}
-                      disabled={!modalQuantities[value]}
-                      className="w-8 h-8 border border-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:shadow-sm disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                    >
-                      <Minus className="w-3 h-3" />
+            <div className="p-4 space-y-2">
+              {modalSecondaryOptions.map(value => (
+                <div key={value} className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>{value}</span>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => removeModalQuantity(value)} disabled={!modalQuantities[value]} className="w-8 h-8 rounded-full flex items-center justify-center transition-all disabled:opacity-30" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <Minus className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.6)' }} />
                     </button>
-                    <span className="w-8 text-center text-sm font-medium">{modalQuantities[value] || 0}</span>
-                    <button
-                      onClick={() => addModalQuantity(value)}
-                      className="w-8 h-8 border border-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:shadow-sm transition-all"
-                    >
-                      <Plus className="w-3 h-3" />
+                    <span className="w-7 text-center text-sm font-bold" style={{ color: '#D4372B' }}>{modalQuantities[value] || 0}</span>
+                    <button onClick={() => addModalQuantity(value)} className="w-8 h-8 rounded-full flex items-center justify-center transition-all" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <Plus className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.6)' }} />
                     </button>
                   </div>
                 </div>
               ))}
-
-              <div className="mt-4 p-3 rounded-xl" style={{ background: '#0A0A0A' }}>
-                <div className="flex justify-between text-sm font-medium text-white">
-                  <span>Total sélectionné:</span>
-                  <span>
-                    {Object.values(modalQuantities).reduce((a, b) => a + b, 0)} articles
-                  </span>
-                </div>
+              <div className="rounded-xl p-3 mt-1 flex justify-between items-center" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                <span className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>Total</span>
+                <span className="font-bold text-sm" style={{ color: '#F0F0F0' }}>{Object.values(modalQuantities).reduce((a, b) => a + b, 0)} articles</span>
               </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => setIsVariantModalOpen(false)}
-                  className="flex-1 py-3 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:shadow-sm transition-all"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={confirmModalSelection}
-                  className="flex-1 py-3 rounded-lg text-sm font-medium text-white hover:shadow-lg transition-all"
-                  style={{ background: "#D4372B" }}
-                >
-                  Confirmer
-                </button>
+              <div className="flex gap-2.5 pt-1">
+                <button onClick={() => setIsVariantModalOpen(false)} className="flex-1 py-3 rounded-xl text-sm font-medium" style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}>Annuler</button>
+                <button onClick={confirmModalSelection} className="flex-1 py-3 rounded-xl text-sm font-semibold" style={{ background: '#D4372B', color: '#fff' }}>Confirmer</button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL PROTECTION ADULLAM */}
+      {/* ═══════════════════════════════════════
+          PROTECTION MODAL
+      ═══════════════════════════════════════ */}
       {isProtectionModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5" style={{ color: '#D4372B' }} />
-                <h3 className="text-base font-semibold text-gray-900">Protection des achats Adullam</h3>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}>
+          <div className="w-full max-w-lg rounded-2xl max-h-[85vh] overflow-y-auto" style={{ background: '#111111', border: '1px solid rgba(255,255,255,0.09)' }}>
+            <div className="sticky top-0 p-5 flex items-center justify-between" style={{ background: '#111111', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(212,55,43,0.1)' }}>
+                  <Shield className="w-4 h-4" style={{ color: '#D4372B' }} />
+                </div>
+                <h3 className="font-semibold text-sm" style={{ color: '#F0F0F0' }}>Protection des achats Adullam</h3>
               </div>
-              <button 
-                onClick={() => setIsProtectionModalOpen(false)}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5 text-gray-400" />
+              <button onClick={() => setIsProtectionModalOpen(false)} className="p-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <X className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.5)' }} />
               </button>
             </div>
-
             <div className="p-6 space-y-6">
               <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-3">Moyens de paiement acceptés</h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-3 text-center shadow-sm">
-                    <Smartphone className="w-5 h-5 text-gray-600 mx-auto mb-1" />
-                    <p className="text-xs font-medium text-gray-700">MTN Money</p>
-                  </div>
-                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-3 text-center shadow-sm">
-                    <Smartphone className="w-5 h-5 text-gray-600 mx-auto mb-1" />
-                    <p className="text-xs font-medium text-gray-700">Orange Money</p>
-                  </div>
-                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-3 text-center shadow-sm">
-                    <CreditCard className="w-5 h-5 text-gray-600 mx-auto mb-1" />
-                    <p className="text-xs font-medium text-gray-700">Wave</p>
-                  </div>
-                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-3 text-center shadow-sm">
-                    <CreditCard className="w-5 h-5 text-gray-600 mx-auto mb-1" />
-                    <p className="text-xs font-medium text-gray-700">Visa/Mastercard</p>
-                  </div>
+                <h4 className="text-[10px] font-bold tracking-widest uppercase mb-3" style={{ color: 'rgba(255,255,255,0.25)' }}>Moyens de paiement</h4>
+                <div className="grid grid-cols-4 gap-2.5">
+                  {[{ icon: Smartphone, label: 'MTN Money' }, { icon: Smartphone, label: 'Orange Money' }, { icon: CreditCard, label: 'Wave' }, { icon: CreditCard, label: 'Visa / MC' }].map(({ icon: Icon, label }) => (
+                    <div key={label} className="rounded-xl p-3 text-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <Icon className="w-5 h-5 mx-auto mb-1.5" style={{ color: 'rgba(255,255,255,0.4)' }} />
+                      <p className="text-[10px] font-medium leading-tight" style={{ color: 'rgba(255,255,255,0.5)' }}>{label}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-
               <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-3">Protection de votre commande</h4>
-                <div className="space-y-3">
-                  <div className="bg-gradient-to-r from-gray-50 to-white rounded-lg p-4 shadow-sm">
-                    <p className="text-sm font-medium text-gray-900 mb-1">Paiements sécurisés</p>
-                    <p className="text-sm text-gray-600">
-                      Chaque transaction est protégée par un cryptage SSL strict.
-                    </p>
-                  </div>
-                  
-                  <div className="bg-gradient-to-r from-gray-50 to-white rounded-lg p-4 shadow-sm">
-                    <p className="text-sm font-medium text-gray-900 mb-1">Garantie remboursement</p>
-                    <p className="text-sm text-gray-600">
-                      Obtenez un remboursement si votre commande n'est pas expédiée.
-                    </p>
-                  </div>
+                <h4 className="text-[10px] font-bold tracking-widest uppercase mb-3" style={{ color: 'rgba(255,255,255,0.25)' }}>Garanties</h4>
+                <div className="space-y-2.5">
+                  {[
+                    { title: 'Paiements sécurisés', desc: 'Chaque transaction est protégée par un cryptage SSL strict.' },
+                    { title: 'Garantie remboursement', desc: "Obtenez un remboursement si votre commande n'est pas expédiée." },
+                  ].map(({ title, desc }) => (
+                    <div key={title} className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <p className="text-sm font-semibold mb-1" style={{ color: '#F0F0F0' }}>{title}</p>
+                      <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>{desc}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -3027,13 +2371,8 @@ export default function ProductPage() {
       <Footer />
 
       <style jsx>{`
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .hide-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
     </div>
   )
