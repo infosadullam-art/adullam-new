@@ -1063,7 +1063,6 @@ export default function ProductPage() {
       </div>
 
       <main className="pb-24 lg:pb-0">
-        {/* ✅ Modification 1 : Largeur max réduite de 1440px à 1200px */}
         <div className="max-w-[1200px] mx-auto">
           
           <div className="lg:hidden px-4 py-3 border-b border-gray-100">
@@ -1864,13 +1863,11 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* ✅ SECTION DESKTOP - 50/50 avec hauteur réduite */}
-            {/* ✅ Modification 2 : hauteur fixe pour l'image (400px) */}
-            {/* ✅ Modification 3 : hauteur max pour la colonne infos avec scroll */}
-            <div className="hidden lg:grid lg:grid-cols-2 gap-8 mb-16">
+            {/* ✅ SECTION DESKTOP CORRIGÉE */}
+            <div className="hidden lg:grid lg:grid-cols-2 gap-8 mb-16 items-start">
               
-              {/* PARTIE GAUCHE - IMAGE (hauteur réduite à 400px) */}
-              <div>
+              {/* PARTIE GAUCHE - IMAGE (sticky + hauteur fixe 400px) */}
+              <div className="sticky top-24">
                 <div className="bg-white mb-2 h-[400px] flex items-center justify-center overflow-hidden border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow">
                   <Image
                     src={safeImages[selectedImage]}
@@ -1935,8 +1932,8 @@ export default function ProductPage() {
                 )}
               </div>
 
-              {/* PARTIE DROITE - INFOS PRODUIT (hauteur max avec scroll) */}
-              <div className="max-h-[500px] overflow-y-auto pr-2">
+              {/* PARTIE DROITE - INFOS PRODUIT (pas de scroll interne) */}
+              <div>
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
