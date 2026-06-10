@@ -1025,9 +1025,13 @@ export default function ProductPage() {
     return logisticsData.shipping[mode]?.estimatedDate || ""
   }
 
+  // ✅ CORRECTION 1 : getShippingDays corrigé pour Express (10j au lieu de 10-10j)
   const getShippingDays = (mode: "bateau" | "avion" | "express"): string => {
     if (!logisticsData?.shipping || !logisticsData.shipping[mode]) return ""
     const shipping = logisticsData.shipping[mode]
+    if (shipping?.minDays === shipping?.maxDays) {
+      return `${shipping.minDays}j`
+    }
     return `${shipping?.minDays || 0}-${shipping?.maxDays || 0}j`
   }
 
@@ -1075,7 +1079,7 @@ export default function ProductPage() {
               <span className="text-gray-600">{productName}</span>
             </div>
 
-            {/* SECTION MOBILE - Gardée identique car pas de fetch direct */}
+            {/* SECTION MOBILE - inchangée */}
             <div className="lg:hidden">
               {/* Mobile Gallery */}
               <div className="mb-4">
@@ -1157,7 +1161,7 @@ export default function ProductPage() {
                 )}
               </div>
 
-              {/* Mobile Product Info - Gardée identique */}
+              {/* Mobile Product Info - inchangée */}
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
@@ -1205,7 +1209,7 @@ export default function ProductPage() {
                   <span className="text-xs text-white px-1.5 py-0.5 rounded" style={{ background: "#D4372B" }}>-20%</span>
                 </div>
 
-                {/* AFFICHAGE DYNAMIQUE DES VARIANTES - Identique */}
+                {/* AFFICHAGE DYNAMIQUE DES VARIANTES - inchangé */}
                 {hasVariants && (
                   <>
                     {hasSimpleVariants && (
@@ -1590,7 +1594,7 @@ export default function ProductPage() {
                 </div>
               </div>
 
-              {/* Mobile Tabs - Gardé identique */}
+              {/* Mobile Tabs - inchangé */}
               <div className="mt-6 bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 shadow-sm">
                 <div className="overflow-x-auto hide-scrollbar border-b border-gray-200">
                   <div className="flex gap-4 min-w-max px-1">
@@ -1859,10 +1863,11 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* SECTION DESKTOP - Gardée identique car pas de fetch direct */}
-            <div className="hidden lg:grid lg:grid-cols-12 gap-6 lg:gap-8 mb-16">
+            {/* ✅ CORRECTION 2 : SECTION DESKTOP - 50/50 avec grid-cols-2 */}
+            <div className="hidden lg:grid lg:grid-cols-2 gap-8 mb-16">
               
-              <div className="lg:col-span-5">
+              {/* PARTIE GAUCHE - IMAGE */}
+              <div>
                 <div className="bg-white mb-2 aspect-square flex items-center justify-center overflow-hidden border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow">
                   <Image
                     src={safeImages[selectedImage]}
@@ -1927,7 +1932,8 @@ export default function ProductPage() {
                 )}
               </div>
 
-              <div className="lg:col-span-7">
+              {/* PARTIE DROITE - INFOS PRODUIT */}
+              <div>
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -2350,7 +2356,7 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* Desktop Tabs - Gardé identique */}
+            {/* Desktop Tabs - inchangé */}
             <div className="hidden lg:block mt-8 bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 shadow-sm">
               <div className="border-b border-gray-200 mb-6">
                 <div className="flex gap-6">
@@ -2674,7 +2680,7 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* RELATED PRODUCTS */}
+            {/* RELATED PRODUCTS - inchangé */}
             <div className="mt-8 lg:mt-12">
               <div className="flex items-center justify-between mb-4 lg:mb-6">
                 <h2 className="text-base lg:text-lg font-medium">Vous aimerez aussi</h2>
