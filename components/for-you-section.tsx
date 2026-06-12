@@ -39,7 +39,6 @@ const TITLES = [
   { main: "Sélections",      sub: "pour votre style" },
 ]
 
-// 🔑 Clé pour sauvegarder l'état dans sessionStorage
 const STORAGE_KEY = "foryou_state"
 
 interface SavedState {
@@ -71,29 +70,33 @@ export function ForYouSection() {
   const hasMoreRef         = useRef(true)
   const viewedProducts     = useRef<Set<string>>(new Set())
   const trackQueueRef      = useRef<Set<string>>(new Set())
-  const containerRef       = useRef<HTMLElement | null>(null)
+  const saveTimeoutRef     = useRef<NodeJS.Timeout>()
+  const lastSavedScrollRef = useRef(0)
 
-  // 💾 Sauvegarder l'état dans sessionStorage
   const saveState = useCallback(() => {
     if (!sessionId) return
+    if (productsRef.current.length === 0) return
+    
+    const scrollY = window.scrollY
+    if (scrollY < 0) return
     
     const state: SavedState = {
       products: productsRef.current,
       page: pageRef.current,
       hasMore: hasMoreRef.current,
-      scrollPosition: window.scrollY,
+      scrollPosition: scrollY,
       timestamp: Date.now()
     }
     
     try {
       sessionStorage.setItem(`${STORAGE_KEY}_${sessionId}`, JSON.stringify(state))
-      console.log(`💾 État sauvegardé pour ${sessionId}: page ${pageRef.current}, ${productsRef.current.length} produits`)
+      lastSavedScrollRef.current = scrollY
+      console.log(`💾 Position sauvegardée: ${scrollY}px, page ${pageRef.current}`)
     } catch (e) {
       console.error("Erreur sauvegarde état:", e)
     }
   }, [sessionId])
 
-  // 📥 Restaurer l'état depuis sessionStorage
   const restoreState = useCallback((): SavedState | null => {
     if (!sessionId) return null
     
@@ -104,14 +107,13 @@ export function ForYouSection() {
       const state: SavedState = JSON.parse(saved)
       const age = Date.now() - state.timestamp
       
-      // Ne restaurer que si la session a moins de 30 minutes
       if (age > 30 * 60 * 1000) {
         console.log(`⏰ État expiré (${Math.round(age / 60000)} min)`)
         sessionStorage.removeItem(`${STORAGE_KEY}_${sessionId}`)
         return null
       }
       
-      console.log(`📥 État restauré pour ${sessionId}: page ${state.page}, ${state.products.length} produits`)
+      console.log(`📥 État restauré: page ${state.page}, ${state.products.length} produits, scroll ${state.scrollPosition}px`)
       return state
     } catch (e) {
       console.error("Erreur restauration état:", e)
@@ -119,7 +121,7 @@ export function ForYouSection() {
     }
   }, [sessionId])
 
-  // 🎯 Restaurer la position de scroll après chargement
+  // Restauration du scroll après chargement
   useEffect(() => {
     if (initialized && products.length > 0) {
       const saved = restoreState()
@@ -130,10 +132,20 @@ export function ForYouSection() {
     }
   }, [initialized, products.length, restoreState])
 
-  // 💾 Sauvegarder au défilement, avant de quitter, et quand les produits changent
+  // Sauvegarde avec debounce (seulement après que l'utilisateur a fini de scroller)
   useEffect(() => {
     const handleScroll = () => {
-      saveState()
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+      
+      saveTimeoutRef.current = setTimeout(() => {
+        const currentScroll = window.scrollY
+        // Ne sauvegarder que si la position a changé de plus de 100px
+        if (Math.abs(currentScroll - lastSavedScrollRef.current) > 100) {
+          saveState()
+        }
+      }, 500)
     }
     
     const handleBeforeUnload = () => {
@@ -146,6 +158,7 @@ export function ForYouSection() {
     return () => {
       window.removeEventListener("scroll", handleScroll)
       window.removeEventListener("beforeunload", handleBeforeUnload)
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
     }
   }, [saveState])
 
@@ -278,7 +291,6 @@ export function ForYouSection() {
       productsRef.current = [...productsRef.current, ...newProducts]
       setProducts([...productsRef.current])
       
-      // 💾 Sauvegarder après ajout de nouveaux produits
       saveState()
 
       const more = json.meta?.hasMore ?? false
@@ -299,12 +311,10 @@ export function ForYouSection() {
     }
   }, [sessionId, fetchWithAuth, saveState])
 
-  // 🔄 Premier chargement : essayer de restaurer l'état
   useEffect(() => {
     if (!initialFetchDone.current && sessionId) {
       initialFetchDone.current = true
       
-      // Essayer de restaurer l'état sauvegardé
       const savedState = restoreState()
       if (savedState && savedState.products.length > 0) {
         console.log(`🔄 Restauration de ${savedState.products.length} produits sauvegardés`)
