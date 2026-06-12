@@ -5,7 +5,6 @@ import { useEffect, useRef, useState, useCallback } from "react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useApi } from "@/hooks/useApi"
 
-// Police Amazon Ember
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
 interface Product {
@@ -40,33 +39,43 @@ const TITLES = [
   { main: "Sélections",      sub: "pour votre style" },
 ]
 
+// Nombre maximum de pages — cohérent avec MAX_PAGES dans route.ts et main.py
+const MAX_PAGES = 10
+
 export function ForYouSection() {
   const { formatPrice } = useCurrencyFormatter()
   const { fetchWithAuth } = useApi()
 
-  const [products, setProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
+  const [products, setProducts]     = useState<Product[]>([])
+  const [isLoading, setIsLoading]   = useState(false)
+  const [hasMore, setHasMore]       = useState(true)
   const [initialized, setInitialized] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError]           = useState<string | null>(null)
   const [titleIndex, setTitleIndex] = useState(0)
-  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [sessionId, setSessionId]   = useState<string | null>(null)
 
   const observerRef        = useRef<HTMLDivElement | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
-  const initialFetchDone   = useRef(false)
-  const isFetchingRef      = useRef(false)
-  const pageRef            = useRef(1)
-  const productsRef        = useRef<Product[]>([])
-  const hasMoreRef         = useRef(true)
-  const viewedProducts     = useRef<Set<string>>(new Set())
-  const trackQueueRef      = useRef<Set<string>>(new Set())
 
+  // FIX StrictMode : un seul flag de déclenchement initial
+  const initialFetchDone = useRef(false)
+  const isFetchingRef    = useRef(false)
+
+  // FIX pagination : page s'incrémente TOUJOURS après un fetch réussi
+  const pageRef        = useRef(1)
+  const productsRef    = useRef<Product[]>([])
+  const hasMoreRef     = useRef(true)
+
+  const viewedProducts = useRef<Set<string>>(new Set())
+  const trackQueueRef  = useRef<Set<string>>(new Set())
+
+  // ── Titre rotatif
   useEffect(() => {
     const i = setInterval(() => setTitleIndex(p => (p + 1) % TITLES.length), 5000)
     return () => clearInterval(i)
   }, [])
 
+  // ── Session ID (une seule fois)
   useEffect(() => {
     let stored = localStorage.getItem("adullam_session_id")
     if (!stored) {
@@ -77,9 +86,10 @@ export function ForYouSection() {
     document.cookie = `sessionId=${stored}; path=/; max-age=86400; SameSite=Lax`
   }, [])
 
+  // ── Tracking interactions
   const trackInteraction = useCallback(async (
     productId: string,
-    type: "VIEW" | "CLICK"
+    type: "VIEW" | "CLICK" | "ADD_TO_CART" | "PURCHASE"
   ) => {
     if (!sessionId) return
     const key = `${type}-${productId}`
@@ -87,19 +97,20 @@ export function ForYouSection() {
     trackQueueRef.current.add(key)
 
     try {
+      // FIX B1 : await pour que le cache soit invalidé AVANT le prochain fetch
       await fetchWithAuth("/api/track", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId, type, context: "FOR_YOU", sessionId }),
       })
     } catch {
-      // Silencieux
+      // Silencieux — le produit sera quand même affiché
     }
   }, [sessionId, fetchWithAuth])
 
+  // ── IntersectionObserver pour le tracking des vues
   useEffect(() => {
     if (!products.length) return
-
     const observer = new IntersectionObserver(entries => {
       entries.forEach(e => {
         if (e.isIntersecting) {
@@ -116,8 +127,17 @@ export function ForYouSection() {
     return () => observer.disconnect()
   }, [products, trackInteraction])
 
+  // ── Fetch principal
   const fetchForYou = useCallback(async () => {
-    if (isFetchingRef.current || !hasMoreRef.current || !sessionId) return
+    // Guards : évite les doubles appels et respecte les limites
+    if (isFetchingRef.current) return
+    if (!hasMoreRef.current) return
+    if (!sessionId) return
+    if (pageRef.current > MAX_PAGES) {
+      hasMoreRef.current = false
+      setHasMore(false)
+      return
+    }
 
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
@@ -129,14 +149,21 @@ export function ForYouSection() {
     setError(null)
 
     try {
+      // seenIds = tous les produits déjà affichés → le Realtime ne les re-propose pas
       const seenIds = productsRef.current.map(p => p.id).join(",")
       let url = `/api/graph/recommendations/for-you?page=${pageRef.current}&limit=24&sessionId=${sessionId}`
       if (seenIds) url += `&seenIds=${seenIds}`
 
       const res = await fetchWithAuth(url, { signal: abortControllerRef.current.signal })
 
+      if (res.status === 401) {
+        hasMoreRef.current = false
+        setHasMore(false)
+        return
+      }
+
       const text = await res.text()
-      if (!text || text.trim() === "") {
+      if (!text?.trim()) {
         hasMoreRef.current = false
         setHasMore(false)
         return
@@ -151,12 +178,6 @@ export function ForYouSection() {
         return
       }
 
-      if (res.status === 401) {
-        hasMoreRef.current = false
-        setHasMore(false)
-        return
-      }
-
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
       if (!json.success || !Array.isArray(json.data) || json.data.length === 0) {
@@ -165,13 +186,14 @@ export function ForYouSection() {
         return
       }
 
+      // Déduplication côté front (garde-fou)
       const existingIds = new Set(productsRef.current.map(p => p.id))
       const newProducts: Product[] = json.data
         .filter((p: any) => !existingIds.has(p.id))
-        .map((p: any) => ({
+        .map((p: any): Product => ({
           id:          p.id,
           name:        p.name || p.title || "Produit",
-          priceUSD:    p.price || p.priceUSD || 0,
+          priceUSD:    p.priceUSD ?? p.price ?? 0,
           image:       p.image || "/placeholder.jpg",
           status:      p.status || "active",
           isSeed:      p.isSeed || false,
@@ -183,6 +205,7 @@ export function ForYouSection() {
         }))
 
       if (newProducts.length === 0) {
+        // Aucun nouveau produit après dédup → stop
         hasMoreRef.current = false
         setHasMore(false)
         return
@@ -191,17 +214,25 @@ export function ForYouSection() {
       productsRef.current = [...productsRef.current, ...newProducts]
       setProducts([...productsRef.current])
 
-      const more = json.meta?.hasMore ?? false
+      // FIX B3 : page s'incrémente TOUJOURS après un fetch réussi
+      pageRef.current += 1
+
+      // hasMore vient du serveur — on fait confiance au Realtime
+      // Garde-fou : si on a dépassé MAX_PAGES on s'arrête
+      const serverHasMore = json.meta?.hasMore ?? true
+      const more = serverHasMore && pageRef.current <= MAX_PAGES
       hasMoreRef.current = more
       setHasMore(more)
-      if (more) pageRef.current += 1
 
     } catch (err: any) {
       if (err?.name === "AbortError") return
       console.error("[ForYou] Erreur fetch:", err.message)
       setError(err.message)
-      hasMoreRef.current = false
-      setHasMore(false)
+      // En cas d'erreur réseau, on ne bloque pas définitivement le scroll
+      // L'utilisateur peut re-scroller pour réessayer
+      isFetchingRef.current = false
+      setIsLoading(false)
+      return
     } finally {
       isFetchingRef.current = false
       setIsLoading(false)
@@ -209,13 +240,14 @@ export function ForYouSection() {
     }
   }, [sessionId, fetchWithAuth])
 
+  // ── Premier chargement (protégé contre StrictMode double-call)
   useEffect(() => {
-    if (!initialFetchDone.current && sessionId) {
-      initialFetchDone.current = true
-      fetchForYou()
-    }
-  }, [fetchForYou, sessionId])
+    if (initialFetchDone.current || !sessionId) return
+    initialFetchDone.current = true
+    fetchForYou()
+  }, [sessionId]) // intentionnellement sans fetchForYou dans les dépendances
 
+  // ── Infinite scroll
   useEffect(() => {
     if (!initialized) return
 
@@ -229,6 +261,7 @@ export function ForYouSection() {
     return () => observer.disconnect()
   }, [initialized, fetchForYou])
 
+  // ── Rendu grille 6 produits par row / 3 blocs de 2
   const rows: Product[][] = []
   for (let i = 0; i < products.length; i += 6) {
     rows.push(products.slice(i, i + 6))
@@ -275,7 +308,7 @@ export function ForYouSection() {
         <div className="space-y-3">
           {error && (
             <div className="text-center py-4" style={{ color: "#D4372B", fontSize: "12px", fontFamily: amazonFont }}>
-              Erreur de chargement — réessai au prochain scroll
+              Erreur de chargement — continuez de scroller pour réessayer
             </div>
           )}
 
@@ -315,13 +348,12 @@ export function ForYouSection() {
                               {badge.label}
                             </span>
                           )}
-                          {/* WRAPPER POUR RÉDUIRE L'ESPACE TITRE/PRIX */}
                           <div className="[&_.p-2]:!p-1 [&_.mb-1]:!mb-0 [&_.mt-2]:!mt-0.5">
                             <ProductCard product={{
-                              id: product.id,
-                              name: product.name,
+                              id:       product.id,
+                              name:     product.name,
                               priceUSD: product.priceUSD,
-                              image: product.image,
+                              image:    product.image,
                             }} />
                           </div>
                         </div>
@@ -333,7 +365,7 @@ export function ForYouSection() {
             </div>
           ))}
 
-          {/* Sentinel infinite scroll + loader */}
+          {/* Sentinel infinite scroll */}
           <div ref={observerRef} className="flex justify-center py-4">
             {isLoading && (
               <div className="flex flex-col items-center gap-1.5">
@@ -341,9 +373,7 @@ export function ForYouSection() {
                   <div className="absolute inset-0 rounded-full" style={{ border: "1.5px solid #ECECEC" }} />
                   <div className="absolute inset-0 rounded-full animate-spin" style={{ border: "1.5px solid #D4372B", borderTopColor: "transparent" }} />
                 </div>
-                <span style={{ fontSize: "10px", color: "#AAAAAA", fontFamily: amazonFont }}>
-                  Chargement...
-                </span>
+                <span style={{ fontSize: "10px", color: "#AAAAAA", fontFamily: amazonFont }}>Chargement...</span>
               </div>
             )}
             {!hasMore && products.length > 0 && !isLoading && (
