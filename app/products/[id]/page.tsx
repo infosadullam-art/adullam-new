@@ -1085,7 +1085,7 @@ export default function ProductPage() {
                 <div className="relative">
                   <button
                     onClick={() => setIsImageModalOpen(true)}
-                    className="w-full aspect-square bg-white flex items-center justify-center overflow-hidden rounded-lg"
+                    className="w-full aspect-square bg-white flex items-center justify-center overflow-hidden rounded"
                   >
                     <Image
                       src={safeImages[selectedImage]}
@@ -1142,7 +1142,7 @@ export default function ProductPage() {
                       <button
                         key={idx}
                         onClick={() => setSelectedImage(idx)}
-                        className="flex-shrink-0 w-16 h-16 bg-white rounded-lg overflow-hidden border"
+                        className="flex-shrink-0 w-16 h-16 bg-white rounded overflow-hidden border"
                         style={{
                           borderColor: selectedImage === idx ? '#D4372B' : '#ECECEC'
                         }}
@@ -1166,7 +1166,7 @@ export default function ProductPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1.5">
                       <span 
-                        className="text-xs font-medium px-2 py-0.5 rounded-full"
+                        className="text-xs font-medium px-2 py-0.5 rounded"
                         style={{ background: '#D4372B', color: '#fff', fontFamily: "'Poppins', sans-serif" }}
                       >
                         Top vente
@@ -1212,7 +1212,7 @@ export default function ProductPage() {
                 {hasVariants && (
                   <>
                     {hasSimpleVariants && (
-                      <div className="p-4 rounded-lg mb-4" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
+                      <div className="p-4 rounded mb-4" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
                         <h3 className="text-sm font-medium text-gray-700 mb-3">
                           {primaryAttrName}
                         </h3>
@@ -1225,7 +1225,7 @@ export default function ProductPage() {
                                 key={value}
                                 onClick={() => openSimpleVariantModal(value)}
                                 className={`
-                                  px-3 py-1.5 text-xs rounded-md transition-all relative
+                                  px-3 py-1.5 text-xs rounded transition-all relative
                                   ${qty > 0 
                                     ? 'bg-[#D4372B] text-white font-semibold shadow-sm' 
                                     : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
@@ -1262,7 +1262,7 @@ export default function ProductPage() {
                           if (qty === 0) return null
                           
                           return (
-                            <div key={value} className="bg-white p-2 rounded-lg mt-3 border border-gray-200">
+                            <div key={value} className="bg-white p-2 rounded mt-3 border border-gray-200">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   {attributeImages[`${simpleVariantType}:${value}`] && (
@@ -1288,7 +1288,7 @@ export default function ProductPage() {
 
                     {hasComplexVariants && (
                       <>
-                        <div className="p-4 rounded-lg mb-4" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
+                        <div className="p-4 rounded mb-4" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
                           <h3 className="text-sm font-medium text-gray-700 mb-3">
                             {primaryAttrName}
                           </h3>
@@ -1302,7 +1302,7 @@ export default function ProductPage() {
                                   key={primaryValue}
                                   onClick={() => openPrimaryModal(primaryValue)}
                                   className={`
-                                    px-3 py-1.5 text-xs rounded-md transition-all relative
+                                    px-3 py-1.5 text-xs rounded transition-all relative
                                     ${total > 0 
                                       ? 'bg-[#D4372B] text-white font-semibold shadow-sm' 
                                       : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
@@ -1337,7 +1337,7 @@ export default function ProductPage() {
                         </div>
 
                         {secondaryAttrName && (
-                          <div className="p-4 rounded-lg mb-4" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
+                          <div className="p-4 rounded mb-4" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
                             <h3 className="text-sm font-medium text-gray-700 mb-3">
                               {secondaryAttrName}
                             </h3>
@@ -1350,7 +1350,7 @@ export default function ProductPage() {
                                     key={secondaryValue}
                                     onClick={() => openSecondaryModal(secondaryValue)}
                                     className={`
-                                      px-3 py-1.5 text-xs rounded-md transition-all relative
+                                      px-3 py-1.5 text-xs rounded transition-all relative
                                       ${total > 0 
                                         ? 'bg-[#D4372B] text-white font-semibold shadow-sm' 
                                         : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
@@ -1375,7 +1375,7 @@ export default function ProductPage() {
                           if (nonZeroSelections.length === 0) return null
                           
                           return (
-                            <div key={primaryValue} className="bg-white p-3 rounded-lg mb-2 border border-gray-200">
+                            <div key={primaryValue} className="bg-white p-3 rounded mb-2 border border-gray-200">
                               <div className="flex items-center gap-2 mb-2">
                                 {attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`] && (
                                   <div className="w-6 h-6 rounded-full overflow-hidden border border-gray-300">
@@ -1409,7 +1409,7 @@ export default function ProductPage() {
                 {!hasVariants && (
                   <div className="mb-4">
                     <h3 className="text-sm font-medium text-gray-700 mb-2">Quantité</h3>
-                    <div className="flex items-center rounded-lg overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
+                    <div className="flex items-center rounded overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
                       <button
                         onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))}
                         className="p-2.5 transition-colors" style={{ background: "#F4F4F4" }}
@@ -1463,7 +1463,7 @@ export default function ProductPage() {
                   {isLoadingLogistics ? (
                     <div className="grid grid-cols-3 gap-1.5">
                       {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex flex-col items-center p-2 rounded-lg border border-gray-200 bg-gray-50 animate-pulse">
+                        <div key={i} className="flex flex-col items-center p-2 rounded border border-gray-200 bg-gray-50 animate-pulse">
                           <div className="w-4 h-4 bg-gray-200 rounded-full mb-1"></div>
                           <div className="w-8 h-3 bg-gray-200 rounded mb-1"></div>
                           <div className="w-6 h-2 bg-gray-200 rounded mb-1"></div>
@@ -1472,7 +1472,7 @@ export default function ProductPage() {
                       ))}
                     </div>
                   ) : logisticsError ? (
-                    <div className="text-xs text-red-500 p-2 border border-red-200 rounded-lg bg-red-50">
+                    <div className="text-xs text-red-500 p-2 border border-red-200 rounded bg-red-50">
                       {logisticsError}
                     </div>
                   ) : (
@@ -1494,7 +1494,7 @@ export default function ProductPage() {
                             <button
                               key={item.mode}
                               onClick={() => setSelectedShipping(shippingMode)}
-                              className="flex flex-col items-center p-2 rounded-lg border transition-all hover:shadow-sm"
+                              className="flex flex-col items-center p-2 rounded border transition-all hover:shadow-sm"
                               style={{
                                 borderColor: selectedShipping === shippingMode ? brandColor : '#e5e7eb',
                                 background: selectedShipping === shippingMode ? '#D4372B' : '#fff'
@@ -1523,7 +1523,7 @@ export default function ProductPage() {
 
                 <div 
                   onClick={() => setIsProtectionModalOpen(true)}
-                  className="rounded-lg p-3 cursor-pointer transition-all hover:shadow-sm"
+                  className="rounded p-3 cursor-pointer transition-all hover:shadow-sm"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -1535,7 +1535,7 @@ export default function ProductPage() {
                   
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     {['MTN', 'Orange', 'Wave', 'Visa'].map((method) => (
-                      <span key={method} className="text-xs px-2 py-1 bg-white border border-gray-200 rounded-full text-gray-600 shadow-sm">
+                      <span key={method} className="text-xs px-2 py-1 bg-white border border-gray-200 rounded text-gray-600 shadow-sm">
                         {method}
                       </span>
                     ))}
@@ -1548,7 +1548,7 @@ export default function ProductPage() {
                 </div>
 
                 {!isMOQMet && grandTotal > 0 && (
-                  <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800 shadow-sm">
+                  <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded p-3 text-sm text-yellow-800 shadow-sm">
                     Quantité minimum non atteinte ({minQuantity} min). Contactez-nous pour discuter.
                   </div>
                 )}
@@ -1557,7 +1557,7 @@ export default function ProductPage() {
                   <div className="flex gap-2 max-w-[1440px] mx-auto">
                     <button
                       onClick={isMOQMet && grandTotal > 0 ? handleAddToCart : handleContactWhatsApp}
-                      className="flex-1 py-3 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:shadow-md"
+                      className="flex-1 py-3 rounded font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:shadow-md"
                       style={{
                         background: (isMOQMet && grandTotal > 0) ? brandGradient : 'linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%)',
                         color: 'white'
@@ -1569,7 +1569,7 @@ export default function ProductPage() {
                     <button
                       onClick={handleBuyNow}
                       disabled={!isMOQMet || grandTotal === 0}
-                      className="flex-1 py-3 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:shadow-md"
+                      className="flex-1 py-3 rounded font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:shadow-md"
                       style={{
                         background: 'linear-gradient(135deg, #1A2F3F 0%, #2D3F4F 100%)',
                         color: 'white',
@@ -1594,7 +1594,7 @@ export default function ProductPage() {
               </div>
 
               {/* Mobile Tabs */}
-              <div className="mt-6 bg-gradient-to-br from-gray-50 to-white rounded-lg p-4 shadow-sm">
+              <div className="mt-6 bg-gradient-to-br from-gray-50 to-white rounded p-4 shadow-sm">
                 <div className="overflow-x-auto hide-scrollbar border-b border-gray-200">
                   <div className="flex gap-4 min-w-max px-1">
                     {[
@@ -1681,15 +1681,14 @@ export default function ProductPage() {
                       {!showReviewForm && (
                         <button
                           onClick={() => setShowReviewForm(true)}
-                          className="w-full py-3 bg-[#D4372B] text-white rounded-lg text-sm font-medium hover:bg-[#B5271C] transition-colors shadow-sm"
+                          className="w-full py-3 bg-[#D4372B] text-white rounded text-sm font-medium hover:bg-[#B5271C] transition-colors shadow-sm"
                         >
                           ✍️ Donner mon avis
                         </button>
                       )}
                       
                       {showReviewForm && (
-                        <div className="rounded-lg" style={{ background: "#fff", border: "0.5px solid #ECECEC" }}
-                    className=" p-4 space-y-4 shadow-sm">
+                        <div className="rounded p-4 space-y-4 shadow-sm" style={{ background: "#fff", border: "0.5px solid #ECECEC" }}>
                           <div className="flex items-center justify-between">
                             <h4 className="font-semibold text-gray-900">Votre avis</h4>
                             <button 
@@ -1727,7 +1726,7 @@ export default function ProductPage() {
                               type="text"
                               value={newReview.authorName}
                               onChange={(e) => setNewReview({ ...newReview, authorName: e.target.value })}
-                              className="w-full mt-1.5 p-3 border border-gray-200 rounded-lg focus:outline-none focus:border-[#D4372B] transition-all"
+                              className="w-full mt-1.5 p-3 border border-gray-200 rounded focus:outline-none focus:border-[#D4372B] transition-all"
                               placeholder="Jean Dupont"
                             />
                           </div>
@@ -1737,7 +1736,7 @@ export default function ProductPage() {
                             <textarea
                               value={newReview.comment}
                               onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                              className="w-full mt-1.5 p-3 border border-gray-200 rounded-lg focus:outline-none focus:border-[#D4372B] resize-none"
+                              className="w-full mt-1.5 p-3 border border-gray-200 rounded focus:outline-none focus:border-[#D4372B] resize-none"
                               rows={4}
                               placeholder="Partagez votre expérience avec ce produit..."
                             />
@@ -1746,14 +1745,14 @@ export default function ProductPage() {
                           <div className="flex gap-3 pt-2">
                             <button
                               onClick={() => setShowReviewForm(false)}
-                              className="flex-1 py-3 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                              className="flex-1 py-3 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
                             >
                               Annuler
                             </button>
                             <button
                               onClick={handleSubmitReview}
                               disabled={isSubmittingReview}
-                              className="flex-1 py-3 bg-[#D4372B] text-white rounded-lg text-sm font-medium hover:bg-[#B5271C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="flex-1 py-3 bg-[#D4372B] text-white rounded text-sm font-medium hover:bg-[#B5271C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {isSubmittingReview ? "Envoi..." : "Publier"}
                             </button>
@@ -1874,7 +1873,7 @@ export default function ProductPage() {
               
               {/* PARTIE GAUCHE - IMAGE (sticky + hauteur fixe 400px) */}
               <div className="sticky top-24">
-                <div className="bg-white mb-2 h-[400px] flex items-center justify-center overflow-hidden border border-gray-100 rounded-lg shadow-sm hover:shadow transition-all">
+                <div className="bg-white mb-2 h-[400px] flex items-center justify-center overflow-hidden border border-gray-100 rounded shadow-sm hover:shadow transition-all">
                   <Image
                     src={safeImages[selectedImage]}
                     alt={productName}
@@ -1908,7 +1907,7 @@ export default function ProductPage() {
                         <button
                           key={idx}
                           onClick={() => setSelectedImage(idx)}
-                          className="flex-shrink-0 w-1/5 aspect-square bg-white rounded-lg overflow-hidden border transition-all hover:shadow-sm"
+                          className="flex-shrink-0 w-1/5 aspect-square bg-white rounded overflow-hidden border transition-all hover:shadow-sm"
                           style={{
                             flexBasis: "calc(20% - 5px)",
                             borderColor: selectedImage === idx ? brandColor : '#e5e7eb',
@@ -1944,7 +1943,7 @@ export default function ProductPage() {
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <span 
-                        className="text-xs font-medium px-2 py-0.5 rounded-full"
+                        className="text-xs font-medium px-2 py-0.5 rounded"
                         style={{ background: '#D4372B', color: '#fff', fontFamily: "'Poppins', sans-serif" }}
                       >
                         Top vente
@@ -1971,13 +1970,13 @@ export default function ProductPage() {
                   
                   <button 
                     onClick={handleToggleWishlist}
-                    className="p-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="p-1.5 rounded hover:bg-gray-50 transition-colors"
                   >
                     <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
                   </button>
                 </div>
 
-                <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg p-4 mb-4 shadow-sm">
+                <div className="bg-gradient-to-br from-gray-50 to-white rounded p-4 mb-4 shadow-sm">
                   <div className="flex items-baseline gap-2 mb-1">
                     <span className="text-2xl font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
                       {formatPrice(currentPrice)} x {grandTotal || 1}
@@ -2002,7 +2001,7 @@ export default function ProductPage() {
                                   key={value}
                                   onClick={() => openSimpleVariantModal(value)}
                                   className={`
-                                    px-3 py-1.5 text-xs border rounded-lg transition-all flex items-center gap-2 hover:shadow-sm
+                                    px-3 py-1.5 text-xs border rounded transition-all flex items-center gap-2 hover:shadow-sm
                                     ${qty > 0 
                                       ? 'border-[#D4372B] text-[#D4372B] font-medium shadow-sm' 
                                       : 'border-gray-200 text-gray-600 hover:border-gray-300'
@@ -2025,7 +2024,7 @@ export default function ProductPage() {
                                   )}
                                   {value}
                                   {qty > 0 && (
-                                    <span className="ml-1 text-xs bg-white px-1.5 py-0.5 rounded-full shadow-sm border border-[#D4372B]">
+                                    <span className="ml-1 text-xs bg-white px-1.5 py-0.5 rounded shadow-sm border border-[#D4372B]">
                                       {qty}
                                     </span>
                                   )}
@@ -2038,7 +2037,7 @@ export default function ProductPage() {
                             if (qty === 0) return null
                             
                             return (
-                              <div key={value} className="bg-gray-50 p-3 rounded-lg mt-2 shadow-sm">
+                              <div key={value} className="bg-gray-50 p-3 rounded mt-2 shadow-sm">
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-2">
                                     {attributeImages[`${simpleVariantType}:${value}`] && (
@@ -2076,7 +2075,7 @@ export default function ProductPage() {
                                     key={primaryValue}
                                     onClick={() => openPrimaryModal(primaryValue)}
                                     className={`
-                                      px-3 py-1.5 text-xs border rounded-lg transition-all flex items-center gap-2 hover:shadow-sm
+                                      px-3 py-1.5 text-xs border rounded transition-all flex items-center gap-2 hover:shadow-sm
                                       ${total > 0 
                                         ? 'border-[#D4372B] text-[#D4372B] font-medium shadow-sm' 
                                         : 'border-gray-200 text-gray-600 hover:border-gray-300'
@@ -2099,7 +2098,7 @@ export default function ProductPage() {
                                     )}
                                     {primaryValue}
                                     {total > 0 && (
-                                      <span className="ml-1 text-xs bg-white px-1.5 py-0.5 rounded-full shadow-sm border border-[#D4372B]">
+                                      <span className="ml-1 text-xs bg-white px-1.5 py-0.5 rounded shadow-sm border border-[#D4372B]">
                                         {total}
                                       </span>
                                     )}
@@ -2121,7 +2120,7 @@ export default function ProductPage() {
                                       key={secondaryValue}
                                       onClick={() => openSecondaryModal(secondaryValue)}
                                       className={`
-                                        px-3 py-1.5 text-xs border rounded-lg transition-all relative hover:shadow-sm
+                                        px-3 py-1.5 text-xs border rounded transition-all relative hover:shadow-sm
                                         ${total > 0 
                                           ? 'border-[#D4372B] text-[#D4372B] font-medium shadow-sm' 
                                           : 'border-gray-200 text-gray-600 hover:border-gray-300'
@@ -2151,7 +2150,7 @@ export default function ProductPage() {
                   {!hasVariants && (
                     <div className="mb-3">
                       <div className="text-xs text-gray-500 mb-2">Quantité</div>
-                      <div className="flex items-center rounded-lg overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
+                      <div className="flex items-center rounded overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
                         <button
                           onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))}
                           className="p-1.5 hover:bg-gray-50 transition-colors"
@@ -2171,7 +2170,7 @@ export default function ProductPage() {
                   )}
                   
                   <div className="flex items-center gap-2 text-xs mb-2">
-                    <span className="px-2 py-0.5 rounded-full text-white" style={{ background: "#D4372B" }}>Prix direct usine</span>
+                    <span className="px-2 py-0.5 rounded text-white" style={{ background: "#D4372B" }}>Prix direct usine</span>
                     <span className="text-gray-500">Prix en {getCurrencySymbol()} (USD ${Number(product.price).toFixed(2)})</span>
                   </div>
 
@@ -2201,7 +2200,7 @@ export default function ProductPage() {
 
                 <div 
                   onClick={() => setIsProtectionModalOpen(true)}
-                  className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg p-4 mb-4 cursor-pointer hover:shadow-sm transition-all"
+                  className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded p-4 mb-4 cursor-pointer hover:shadow-sm transition-all"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -2213,7 +2212,7 @@ export default function ProductPage() {
                   
                   <div className="flex flex-wrap items-center gap-3 mb-3">
                     {['MTN', 'Orange', 'Wave', 'Visa'].map((method) => (
-                      <span key={method} className="text-xs px-3 py-1.5 bg-white border border-gray-200 rounded-full text-gray-600 shadow-sm">
+                      <span key={method} className="text-xs px-3 py-1.5 bg-white border border-gray-200 rounded text-gray-600 shadow-sm">
                         {method}
                       </span>
                     ))}
@@ -2237,7 +2236,7 @@ export default function ProductPage() {
                   {isLoadingLogistics ? (
                     <div className="grid grid-cols-3 gap-2">
                       {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex items-center justify-between p-2 rounded-lg border border-gray-200 bg-gray-50 animate-pulse">
+                        <div key={i} className="flex items-center justify-between p-2 rounded border border-gray-200 bg-gray-50 animate-pulse">
                           <div className="flex items-center gap-1.5">
                             <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
                             <div>
@@ -2253,7 +2252,7 @@ export default function ProductPage() {
                       ))}
                     </div>
                   ) : logisticsError ? (
-                    <div className="text-xs text-red-500 p-2 border border-red-200 rounded-lg bg-red-50">
+                    <div className="text-xs text-red-500 p-2 border border-red-200 rounded bg-red-50">
                       {logisticsError}
                     </div>
                   ) : (
@@ -2275,7 +2274,7 @@ export default function ProductPage() {
                           <button
                             key={item.mode}
                             onClick={() => setSelectedShipping(shippingMode)}
-                            className="flex items-center justify-between p-2 rounded-lg border transition-all text-xs hover:shadow-sm"
+                            className="flex items-center justify-between p-2 rounded border transition-all text-xs hover:shadow-sm"
                             style={{
                               borderColor: selectedShipping === shippingMode ? brandColor : '#e5e7eb',
                               background: selectedShipping === shippingMode ? '#D4372B' : '#fff'
@@ -2309,7 +2308,7 @@ export default function ProductPage() {
 
                 <div className="space-y-2 mb-4">
                   {!isMOQMet && grandTotal > 0 && (
-                    <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-2 text-xs text-yellow-800 shadow-sm">
+                    <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded p-2 text-xs text-yellow-800 shadow-sm">
                       MOQ non atteint ({minQuantity} min). Contactez-nous.
                     </div>
                   )}
@@ -2317,7 +2316,7 @@ export default function ProductPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={isMOQMet && grandTotal > 0 ? handleAddToCart : handleContactWhatsApp}
-                      className="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 hover:shadow-md"
+                      className="flex-1 py-2.5 text-sm font-medium rounded transition-all flex items-center justify-center gap-1.5 hover:shadow-md"
                       style={{
                         background: (isMOQMet && grandTotal > 0) ? brandGradient : 'linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%)',
                         color: 'white'
@@ -2330,7 +2329,7 @@ export default function ProductPage() {
                     <button
                       onClick={handleBuyNow}
                       disabled={!isMOQMet || grandTotal === 0}
-                      className="flex-1 py-2.5 text-sm text-white font-medium rounded-lg transition-all hover:shadow-md"
+                      className="flex-1 py-2.5 text-sm text-white font-medium rounded transition-all hover:shadow-md"
                       style={{
                         background: 'linear-gradient(135deg, #1A2F3F 0%, #2D3F4F 100%)',
                         opacity: (isMOQMet && grandTotal > 0) ? 1 : 0.5
@@ -2341,7 +2340,7 @@ export default function ProductPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg text-xs shadow-sm">
+                <div className="grid grid-cols-4 gap-2 p-3 bg-gradient-to-r from-gray-50 to-white rounded text-xs shadow-sm">
                   <div className="flex items-center gap-1.5">
                     <Shield className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
                     <span>Garantie 12 mois</span>
@@ -2363,7 +2362,7 @@ export default function ProductPage() {
             </div>
 
             {/* Desktop Tabs */}
-            <div className="hidden lg:block mt-8 bg-gradient-to-br from-gray-50 to-white rounded-lg p-6 shadow-sm">
+            <div className="hidden lg:block mt-8 bg-gradient-to-br from-gray-50 to-white rounded p-6 shadow-sm">
               <div className="border-b border-gray-200 mb-6">
                 <div className="flex gap-6">
                   {[
@@ -2450,14 +2449,14 @@ export default function ProductPage() {
                     {!showReviewForm && (
                       <button
                         onClick={() => setShowReviewForm(true)}
-                        className="mb-6 px-4 py-2 bg-[#D4372B] text-white rounded-lg text-sm font-medium hover:bg-[#B5271C] transition-colors"
+                        className="mb-6 px-4 py-2 bg-[#D4372B] text-white rounded text-sm font-medium hover:bg-[#B5271C] transition-colors"
                       >
                         ✍️ Donner mon avis
                       </button>
                     )}
                     
                     {showReviewForm && (
-                      <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
+                      <div className="bg-white border border-gray-200 rounded p-6 mb-6 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
                           <h3 className="font-semibold text-gray-900">Donnez votre avis</h3>
                           <button 
@@ -2495,7 +2494,7 @@ export default function ProductPage() {
                             type="text"
                             value={newReview.authorName}
                             onChange={(e) => setNewReview({ ...newReview, authorName: e.target.value })}
-                            className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#D4372B]"
+                            className="w-full mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-[#D4372B]"
                             placeholder="Jean Dupont"
                           />
                         </div>
@@ -2505,7 +2504,7 @@ export default function ProductPage() {
                           <textarea
                             value={newReview.comment}
                             onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                            className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#D4372B] resize-none"
+                            className="w-full mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-[#D4372B] resize-none"
                             rows={4}
                             placeholder="Partagez votre expérience..."
                           />
@@ -2514,14 +2513,14 @@ export default function ProductPage() {
                         <div className="flex gap-3">
                           <button
                             onClick={() => setShowReviewForm(false)}
-                            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50"
+                            className="px-4 py-2 border border-gray-300 rounded text-sm font-medium text-gray-600 hover:bg-gray-50"
                           >
                             Annuler
                           </button>
                           <button
                             onClick={handleSubmitReview}
                             disabled={isSubmittingReview}
-                            className="px-4 py-2 bg-[#D4372B] text-white rounded-lg text-sm font-medium hover:bg-[#B5271C] disabled:opacity-50"
+                            className="px-4 py-2 bg-[#D4372B] text-white rounded text-sm font-medium hover:bg-[#B5271C] disabled:opacity-50"
                           >
                             {isSubmittingReview ? "Envoi..." : "Publier mon avis"}
                           </button>
@@ -2686,7 +2685,7 @@ export default function ProductPage() {
               ) : (
                 <>
                   <div className="lg:hidden">
-                    <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg p-4 shadow-sm">
+                    <div className="bg-gradient-to-br from-gray-50 to-white rounded p-4 shadow-sm">
                       <div className="relative">
                         <div className="overflow-x-auto overflow-y-hidden hide-scrollbar">
                           <div className="flex gap-3 w-max">
@@ -2696,7 +2695,7 @@ export default function ProductPage() {
                                 href={`/products/${p.id}`} 
                                 className="group w-[calc((100vw-4rem)/3-0.5rem)] min-w-[calc((100vw-4rem)/3-0.5rem)]"
                               >
-                                <div className="bg-white rounded-lg aspect-square mb-2 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow transition-all">
+                                <div className="bg-white rounded aspect-square mb-2 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow transition-all">
                                   <Image
                                     src={p.image || "/placeholder.svg"}
                                     alt={p.name}
@@ -2737,7 +2736,7 @@ export default function ProductPage() {
                             href={`/products/${p.id}`} 
                             className="group w-[calc((1200px-4rem)/6-1rem)] min-w-[160px]"
                           >
-                            <div className="bg-white rounded-lg aspect-square mb-3 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow transition-all">
+                            <div className="bg-white rounded aspect-square mb-3 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow transition-all">
                               <Image
                                 src={p.image || "/placeholder.svg"}
                                 alt={p.name}
@@ -2818,7 +2817,7 @@ export default function ProductPage() {
             </div>
 
             <div className="p-6">
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white rounded-lg shadow-sm mb-4">
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white rounded shadow-sm mb-4">
                 <span className="text-sm font-medium">Quantité</span>
                 <div className="flex items-center gap-3">
                   <button
@@ -2840,7 +2839,7 @@ export default function ProductPage() {
                 </div>
               </div>
 
-              <div className="mt-4 p-3 rounded-lg" style={{ background: '#0A0A0A' }}>
+              <div className="mt-4 p-3 rounded" style={{ background: '#0A0A0A' }}>
                 <div className="flex justify-between text-sm font-medium text-white">
                   <span>Total sélectionné:</span>
                   <span>{simpleModalQuantity} article(s)</span>
@@ -2850,13 +2849,13 @@ export default function ProductPage() {
               <div className="flex gap-3 mt-4">
                 <button
                   onClick={() => setIsSimpleVariantModalOpen(false)}
-                  className="flex-1 py-3 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:shadow-sm transition-all"
+                  className="flex-1 py-3 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 hover:shadow-sm transition-all"
                 >
                   Annuler
                 </button>
                 <button
                   onClick={confirmSimpleVariantSelection}
-                  className="flex-1 py-3 rounded-lg text-sm font-medium text-white hover:shadow-md transition-all"
+                  className="flex-1 py-3 rounded text-sm font-medium text-white hover:shadow-md transition-all"
                   style={{ background: "#D4372B" }}
                 >
                   Confirmer
@@ -2906,7 +2905,7 @@ export default function ProductPage() {
 
             <div className="p-4 space-y-3">
               {modalSecondaryOptions.map((value) => (
-                <div key={value} className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg shadow-sm">
+                <div key={value} className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-white rounded shadow-sm">
                   <span className="text-sm font-medium">{value}</span>
                   <div className="flex items-center gap-2">
                     <button
@@ -2927,7 +2926,7 @@ export default function ProductPage() {
                 </div>
               ))}
 
-              <div className="mt-4 p-3 rounded-lg" style={{ background: '#0A0A0A' }}>
+              <div className="mt-4 p-3 rounded" style={{ background: '#0A0A0A' }}>
                 <div className="flex justify-between text-sm font-medium text-white">
                   <span>Total sélectionné:</span>
                   <span>
@@ -2939,13 +2938,13 @@ export default function ProductPage() {
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setIsVariantModalOpen(false)}
-                  className="flex-1 py-3 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:shadow-sm transition-all"
+                  className="flex-1 py-3 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 hover:shadow-sm transition-all"
                 >
                   Annuler
                 </button>
                 <button
                   onClick={confirmModalSelection}
-                  className="flex-1 py-3 rounded-lg text-sm font-medium text-white hover:shadow-md transition-all"
+                  className="flex-1 py-3 rounded text-sm font-medium text-white hover:shadow-md transition-all"
                   style={{ background: "#D4372B" }}
                 >
                   Confirmer
@@ -2977,19 +2976,19 @@ export default function ProductPage() {
               <div>
                 <h4 className="text-sm font-medium text-gray-900 mb-3">Moyens de paiement acceptés</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-3 text-center shadow-sm">
+                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded p-3 text-center shadow-sm">
                     <Smartphone className="w-5 h-5 text-gray-600 mx-auto mb-1" />
                     <p className="text-xs font-medium text-gray-700">MTN Money</p>
                   </div>
-                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-3 text-center shadow-sm">
+                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded p-3 text-center shadow-sm">
                     <Smartphone className="w-5 h-5 text-gray-600 mx-auto mb-1" />
                     <p className="text-xs font-medium text-gray-700">Orange Money</p>
                   </div>
-                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-3 text-center shadow-sm">
+                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded p-3 text-center shadow-sm">
                     <CreditCard className="w-5 h-5 text-gray-600 mx-auto mb-1" />
                     <p className="text-xs font-medium text-gray-700">Wave</p>
                   </div>
-                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-3 text-center shadow-sm">
+                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded p-3 text-center shadow-sm">
                     <CreditCard className="w-5 h-5 text-gray-600 mx-auto mb-1" />
                     <p className="text-xs font-medium text-gray-700">Visa/Mastercard</p>
                   </div>
@@ -2999,14 +2998,14 @@ export default function ProductPage() {
               <div>
                 <h4 className="text-sm font-medium text-gray-900 mb-3">Protection de votre commande</h4>
                 <div className="space-y-3">
-                  <div className="bg-gradient-to-r from-gray-50 to-white rounded-lg p-4 shadow-sm">
+                  <div className="bg-gradient-to-r from-gray-50 to-white rounded p-4 shadow-sm">
                     <p className="text-sm font-medium text-gray-900 mb-1">Paiements sécurisés</p>
                     <p className="text-sm text-gray-600">
                       Chaque transaction est protégée par un cryptage SSL strict.
                     </p>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-gray-50 to-white rounded-lg p-4 shadow-sm">
+                  <div className="bg-gradient-to-r from-gray-50 to-white rounded p-4 shadow-sm">
                     <p className="text-sm font-medium text-gray-900 mb-1">Garantie remboursement</p>
                     <p className="text-sm text-gray-600">
                       Obtenez un remboursement si votre commande n'est pas expédiée.
