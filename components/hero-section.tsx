@@ -280,10 +280,11 @@ export function HeroSection() {
             >
               Achetez direct
               <br />
-              <span style={{ color: "#D4372B" }}>des usines du monde</span>
+              <span style={{ fontSize: "52px", fontWeight: 900, color: "#D4372B", fontFamily: amazonFont }}>
+                des usines du monde
+              </span>
             </h1>
 
-            {/* ✅ DESCRIPTION CORRIGÉE : texte plus visible */}
             <p style={{ 
               fontSize: "16px", 
               color: "#D0D0D0", 
