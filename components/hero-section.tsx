@@ -105,7 +105,6 @@ const suppliers = [
   { flag: "🇪🇺", label: "Europe" },
 ]
 
-// Police Amazon Ember
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
 export function HeroSection() {
@@ -137,9 +136,9 @@ export function HeroSection() {
     <div 
       className="lg:hidden relative overflow-hidden"
       style={{ 
-        height: "220px",
+        height: "240px",
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(15px)',
+        transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
         transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
       }}
     >
@@ -150,12 +149,12 @@ export function HeroSection() {
           style={{ opacity: index === currentSlide ? 1 : 0, zIndex: index === currentSlide ? 10 : 0 }}
         >
           <Image src={slide.image} alt={slide.title} fill className="object-cover" priority={index === 0} />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.2) 70%, transparent 100%)" }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.35) 70%, transparent 100%)" }} />
 
           <div className="absolute inset-0 flex flex-col justify-center px-5 z-20">
             <div
-              className="flex items-center gap-1.5 w-fit px-2.5 py-1 rounded-full mb-3"
-              style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(6px)", border: "0.5px solid rgba(255,255,255,0.3)" }}
+              className="flex items-center gap-1.5 w-fit px-2.5 py-1 mb-3"
+              style={{ background: "rgba(0,0,0,0.5)", borderRadius: "4px" }}
             >
               <MapPin className="w-3 h-3 text-white" />
               <span style={{ fontSize: "10px", fontWeight: 500, color: "#fff", fontFamily: amazonFont }}>
@@ -164,16 +163,16 @@ export function HeroSection() {
             </div>
 
             <span
-              className="w-fit px-2 py-0.5 rounded-md mb-1.5 text-white"
-              style={{ background: "#D4372B", fontSize: "10px", fontWeight: 700, fontFamily: amazonFont }}
+              className="w-fit px-2 py-0.5 mb-1.5 text-white"
+              style={{ background: "#D4372B", borderRadius: "2px", fontSize: "10px", fontWeight: 700, fontFamily: amazonFont }}
             >
               {slide.badge}
             </span>
 
-            <h1 style={{ fontSize: "22px", fontWeight: 900, color: "#fff", lineHeight: 1.1, letterSpacing: "-0.03em", fontFamily: amazonFont, marginBottom: "4px" }}>
+            <h1 style={{ fontSize: "24px", fontWeight: 900, color: "#fff", lineHeight: 1.15, letterSpacing: "-0.03em", fontFamily: amazonFont, marginBottom: "6px", textShadow: "0 1px 2px rgba(0,0,0,0.2)" }}>
               {slide.title}
             </h1>
-            <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", fontFamily: amazonFont, marginBottom: "14px" }}>
+            <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.85)", fontFamily: amazonFont, marginBottom: "16px", textShadow: "0 1px 1px rgba(0,0,0,0.1)" }}>
               {slide.subtitle}
             </p>
 
@@ -183,8 +182,8 @@ export function HeroSection() {
               style={{
                 background: "#fff",
                 color: "#0A0A0A",
-                borderRadius: "8px",
-                padding: "7px 14px",
+                borderRadius: "6px",
+                padding: "8px 16px",
                 fontSize: "12px",
                 fontWeight: 700,
                 fontFamily: amazonFont,
@@ -203,9 +202,9 @@ export function HeroSection() {
             key={i}
             onClick={() => setCurrentSlide(i)}
             style={{
-              height: "3px",
-              width: i === currentSlide ? "24px" : "8px",
-              borderRadius: "2px",
+              height: "2px",
+              width: i === currentSlide ? "20px" : "6px",
+              borderRadius: "1px",
               background: i === currentSlide ? "#fff" : "rgba(255,255,255,0.4)",
               transition: "all 0.3s ease",
               border: "none",
@@ -218,12 +217,12 @@ export function HeroSection() {
 
       <div
         className="absolute top-4 right-4 z-30 flex flex-col items-center justify-center"
-        style={{ background: "#D4372B", borderRadius: "10px", width: "52px", height: "52px" }}
+        style={{ background: "#D4372B", borderRadius: "6px", width: "48px", height: "48px" }}
       >
-        <span style={{ fontSize: "15px", fontWeight: 900, color: "#fff", lineHeight: 1, fontFamily: amazonFont }}>
+        <span style={{ fontSize: "14px", fontWeight: 900, color: "#fff", lineHeight: 1, fontFamily: amazonFont }}>
           {heroSlides[currentSlide].offre}
         </span>
-        <span style={{ fontSize: "8px", color: "rgba(255,255,255,0.8)", fontFamily: amazonFont }}>
+        <span style={{ fontSize: "7px", color: "rgba(255,255,255,0.8)", fontFamily: amazonFont }}>
           offre
         </span>
       </div>
@@ -236,12 +235,12 @@ export function HeroSection() {
       style={{ 
         background: "#0A0A0A",
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(15px)',
+        transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
         transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
       }}
     >
-      <div className="max-w-7xl mx-auto px-8 py-6">
-        <div className="grid grid-cols-2 gap-14 items-center">
+      <div className="max-w-7xl mx-auto px-8 py-8">
+        <div className="grid grid-cols-2 gap-12 items-center">
 
           {/* Gauche — Texte */}
           <div>
@@ -253,7 +252,7 @@ export function HeroSection() {
                   style={{
                     background: "rgba(255,255,255,0.07)",
                     border: "0.5px solid rgba(255,255,255,0.12)",
-                    borderRadius: "100px",
+                    borderRadius: "40px",
                     padding: "4px 12px",
                     fontSize: "12px",
                     color: "#fff",
@@ -267,15 +266,16 @@ export function HeroSection() {
               ))}
             </div>
 
+            {/* ✅ TITRE CORRIGÉ : même taille pour les deux lignes */}
             <h1
               style={{
-                fontSize: "48px",
+                fontSize: "52px",
                 fontWeight: 900,
                 color: "#fff",
-                lineHeight: 1.05,
-                letterSpacing: "-0.04em",
+                lineHeight: 1.1,
+                letterSpacing: "-0.03em",
                 fontFamily: amazonFont,
-                marginBottom: "16px",
+                marginBottom: "20px",
               }}
             >
               Achetez direct
@@ -283,7 +283,16 @@ export function HeroSection() {
               <span style={{ color: "#D4372B" }}>des usines du monde</span>
             </h1>
 
-            <p style={{ fontSize: "16px", color: "#AAAAAA", lineHeight: 1.6, fontFamily: amazonFont, maxWidth: "420px", marginBottom: "32px" }}>
+            {/* ✅ DESCRIPTION CORRIGÉE : texte plus visible */}
+            <p style={{ 
+              fontSize: "16px", 
+              color: "#D0D0D0", 
+              lineHeight: 1.6, 
+              fontFamily: amazonFont, 
+              maxWidth: "460px", 
+              marginBottom: "32px",
+              fontWeight: 400,
+            }}>
               Adullam connecte les acheteurs africains aux meilleurs fournisseurs de Chine, Dubaï, Turquie, USA et Europe.
             </p>
 
@@ -294,8 +303,8 @@ export function HeroSection() {
                 style={{
                   background: "#D4372B",
                   color: "#fff",
-                  borderRadius: "12px",
-                  padding: "13px 28px",
+                  borderRadius: "8px",
+                  padding: "12px 28px",
                   fontSize: "14px",
                   fontWeight: 700,
                   fontFamily: amazonFont,
@@ -311,10 +320,10 @@ export function HeroSection() {
                 href="/boutique-noel"
                 className="transition-all duration-200 hover:border-[#D4372B] hover:-translate-y-0.5"
                 style={{
-                  border: "1.5px solid rgba(255,255,255,0.2)",
+                  border: "1px solid rgba(255,255,255,0.25)",
                   color: "#fff",
-                  borderRadius: "12px",
-                  padding: "12px 24px",
+                  borderRadius: "8px",
+                  padding: "11px 24px",
                   fontSize: "14px",
                   fontWeight: 600,
                   fontFamily: amazonFont,
@@ -333,7 +342,7 @@ export function HeroSection() {
                 className="absolute inset-0 transition-all duration-700"
                 style={{ 
                   opacity: index === currentSlide ? 1 : 0, 
-                  borderRadius: "16px", 
+                  borderRadius: "12px", 
                   overflow: "hidden",
                 }}
               >
@@ -347,7 +356,7 @@ export function HeroSection() {
                     style={{
                       background: "#fff",
                       color: "#0A0A0A",
-                      borderRadius: "8px",
+                      borderRadius: "6px",
                       padding: "6px 12px",
                       fontSize: "11px",
                       fontWeight: 700,
@@ -368,7 +377,7 @@ export function HeroSection() {
                     className="flex flex-col items-center"
                     style={{
                       background: "#D4372B",
-                      borderRadius: "10px",
+                      borderRadius: "8px",
                       padding: "8px 14px",
                     }}
                   >
@@ -385,9 +394,9 @@ export function HeroSection() {
                   key={i}
                   onClick={() => setCurrentSlide(i)}
                   style={{
-                    height: "3px",
-                    width: i === currentSlide ? "24px" : "8px",
-                    borderRadius: "2px",
+                    height: "2px",
+                    width: i === currentSlide ? "20px" : "6px",
+                    borderRadius: "1px",
                     background: i === currentSlide ? "#D4372B" : "rgba(255,255,255,0.3)",
                     transition: "all 0.3s ease",
                     border: "none",
@@ -416,8 +425,8 @@ export function HeroSection() {
               }}
             >
               <div 
-                className="rounded-lg p-2 transition-all duration-300 group-hover:scale-110"
-                style={{ background: "rgba(212,55,43,0.15)" }}
+                className="p-2 transition-all duration-300 group-hover:scale-110"
+                style={{ background: "rgba(212,55,43,0.15)", borderRadius: "8px" }}
               >
                 <Icon className="w-5 h-5" style={{ color: "#D4372B" }} />
               </div>
