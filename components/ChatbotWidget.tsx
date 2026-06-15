@@ -42,8 +42,8 @@ interface ChatbotWidgetProps {
 const TRIGGER_CHECK_INTERVAL = 15000   // 15s
 const INACTIVITY_THRESHOLD   = 15      // 15s sans action → trigger
 
-// URLs du backend chatbot (port 8002)
-const CHAT_API_URL = process.env.NEXT_PUBLIC_CHATBOT_URL || 'http://localhost:8002'
+// URL du backend Next.js (API Route) sur VPS
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.adullamarket.com'
 
 // ============================================================
 // COMPOSANT PRINCIPAL
@@ -65,7 +65,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
   const triggerTimerRef = useRef<NodeJS.Timeout>()
   const viewCountRef    = useRef(0)
 
-  // ── Scroll vers le bas ────────────────────────────────────
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
@@ -74,7 +73,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
     scrollToBottom()
   }, [messages, scrollToBottom])
 
-  // ── Tracker l'activité utilisateur ───────────────────────
   useEffect(() => {
     const trackActivity = () => {
       lastActionRef.current = Date.now()
@@ -95,7 +93,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
 
     const loadHistory = async () => {
       try {
-        const url = `${CHAT_API_URL}/chat/history/${sessionId}${userId ? `?user_id=${userId}` : ''}`
+        // ✅ URL CORRIGÉE : /api/chat?sessionId=...
+        const url = `${API_BASE_URL}/api/chat?sessionId=${sessionId}${userId ? `&userId=${userId}` : ''}`
         const res = await fetch(url)
         const data = await res.json()
 
@@ -109,12 +108,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
           setMessages(loaded)
         }
 
-        // Message de bienvenue pour les utilisateurs de retour
         if (data.welcome_back_message) {
           setProactiveMessage(data.welcome_back_message)
           setHasUnread(true)
         } else if (messages.length === 0) {
-          // Premier message pour les nouveaux utilisateurs
           const welcomes = {
             fr: "Salut ! 👋 Je suis Adu, ton assistant Adullam. Dis-moi ce que tu cherches, je suis là pour t'aider !",
             en: "Hey! 👋 I'm Adu, your Adullam assistant. Tell me what you're looking for!",
@@ -142,7 +139,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
       if (inactivitySeconds < INACTIVITY_THRESHOLD) return
 
       try {
-        const res = await fetch(`${CHAT_API_URL}/chat/trigger-check`, {
+        // ✅ URL CORRIGÉE : /api/chat/trigger
+        const res = await fetch(`${API_BASE_URL}/api/chat/trigger`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -215,7 +213,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
     lastActionRef.current = Date.now()
 
     try {
-      const res = await fetch(`${CHAT_API_URL}/chat/message`, {
+      const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -239,9 +237,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
 
         addAssistantMessage(data.response, formattedProducts)
 
-        // ✅ Envoyer l'interaction au tracker
         try {
-          await fetch('/api/track', {
+          await fetch(`${API_BASE_URL}/api/track`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
