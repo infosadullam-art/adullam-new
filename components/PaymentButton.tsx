@@ -30,7 +30,6 @@ export function PaymentButton({
   const handlePayment = async () => {
     setLoading(true);
     try {
-      // ✅ Utilise apiFetch au lieu de fetch
       const response = await apiFetch('/api/payment/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -47,7 +46,7 @@ export function PaymentButton({
 
       if (data.success && data.authorization_url) {
         window.location.href = data.authorization_url;
-        onSuccess?.();
+        // ✅ onSuccess SUPPRIMÉ - plus de flash !
       } else {
         onError?.(data.error || 'Erreur d\'initialisation du paiement');
       }
