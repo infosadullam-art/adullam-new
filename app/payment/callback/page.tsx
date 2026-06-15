@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { apiFetch } from '@/lib/api';  // ✅ AJOUTE CET IMPORT
 
 const brandColor = "#2B4F3C";
 const brandGradient = "linear-gradient(135deg, #2B4F3C 0%, #3A6B4E 100%)";
@@ -29,14 +30,14 @@ function PaymentCallbackContent() {
     const verifyPayment = async () => {
       try {
         const ref = reference || trxref;
-        const response = await fetch(`/api/payment/verify?reference=${ref}`);
+        // ✅ REMPLACE fetch par apiFetch
+        const response = await apiFetch(`/api/payment/verify?reference=${ref}`);
         const data = await response.json();
 
         if (data.success && data.status === 'success') {
           setStatus('success');
           setMessage('Votre paiement a été confirmé avec succès !');
           
-          // Récupérer l'ID de commande depuis la réponse
           if (data.orderId) {
             setOrderId(data.orderId);
           }
