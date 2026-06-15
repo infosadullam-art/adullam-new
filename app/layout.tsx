@@ -9,6 +9,7 @@ import { AuthProvider } from "@/lib/admin/auth-context"
 import { Toaster } from "react-hot-toast"
 import * as Sentry from "@sentry/nextjs"
 import SplashScreen from "@/components/SplashScreen"
+import { ChatbotProvider } from "@/components/chatbot-provider"
 
 const poppins = Poppins({ 
   subsets: ["latin"],
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Adullam Marketplace - Achetez direct des usines du monde entier",
     description: "Achetez direct des usines du monde entier",
-    url: "https://www.adullamarket.com",  // ✅ CORRIGÉ
+    url: "https://www.adullamarket.com",
     siteName: "Adullam Marketplace",
     images: [
       {
@@ -136,6 +137,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       },
                     }}
                   />
+                  {/* ✅ Chatbot Adu - disponible sur toutes les pages */}
+                  <ChatbotProvider />
                 </CartProvider>
               </LocaleProvider>
             </AuthProvider>
