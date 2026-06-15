@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Adullam Marketplace - Achetez direct des usines du monde entier",
     description: "Achetez direct des usines du monde entier",
-    url: "https://adullam.com",
+    url: "https://www.adullamarket.com",  // ✅ CORRIGÉ
     siteName: "Adullam Marketplace",
     images: [
       {
