@@ -13,34 +13,45 @@ type ApiResponse<T = any> = {
   message?: string
 }
 
-// 🔹 URL de base pour toutes les routes auth du frontend
 const API_BASE = "/api/auth"
 
 // ===============================
-// ACCESS TOKEN (frontend memory)
+// ACCESS TOKEN (persistant dans localStorage)
 // ===============================
 
-let accessToken: string | null = null
+const TOKEN_KEY = 'adullam_token'
 
 export function getAccessToken(): string | null {
-  return accessToken
+  // ✅ Priorité au localStorage (persistant)
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem(TOKEN_KEY)
+    if (token) return token
+  }
+  // Fallback vers la mémoire pour ne pas casser
+  return accessTokenFallback
 }
 
+// Garder la variable mémoire comme fallback (ne casse rien)
+let accessTokenFallback: string | null = null
+
 export function setAccessToken(token: string) {
-  accessToken = token
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(TOKEN_KEY, token)
+  }
+  accessTokenFallback = token
 }
 
 export function clearAccessToken() {
-  accessToken = null
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(TOKEN_KEY)
+  }
+  accessTokenFallback = null
 }
 
 // ===============================
-// AUTH API
+// AUTH API (inchangé)
 // ===============================
 
-/**
- * Login
- */
 export async function login(email: string, password: string): Promise<ApiResponse<User & { accessToken?: string }>> {
   const res = await fetch(`${API_BASE}/login`, {
     method: "POST",
@@ -56,7 +67,6 @@ export async function login(email: string, password: string): Promise<ApiRespons
 
   const data = await res.json()
 
-  // 🔑 si le backend renvoie un accessToken
   if (data?.accessToken) {
     setAccessToken(data.accessToken)
   }
@@ -64,9 +74,6 @@ export async function login(email: string, password: string): Promise<ApiRespons
   return data
 }
 
-/**
- * Récupère l'utilisateur connecté
- */
 export async function me(): Promise<ApiResponse<User>> {
   const res = await fetch(`${API_BASE}/me`, {
     method: "GET",
@@ -82,9 +89,6 @@ export async function me(): Promise<ApiResponse<User>> {
   return res.json()
 }
 
-/**
- * Rafraîchit le token
- */
 export async function refresh(): Promise<ApiResponse<{ accessToken?: string }>> {
   const res = await fetch(`${API_BASE}/refresh`, {
     method: "POST",
@@ -106,9 +110,6 @@ export async function refresh(): Promise<ApiResponse<{ accessToken?: string }>> 
   return data
 }
 
-/**
- * Logout
- */
 export async function logout(): Promise<ApiResponse> {
   await fetch(`${API_BASE}/logout`, {
     method: "POST",
@@ -120,9 +121,6 @@ export async function logout(): Promise<ApiResponse> {
   return { success: true }
 }
 
-/**
- * Register
- */
 export async function register(
   name: string,
   email: string,
@@ -143,9 +141,6 @@ export async function register(
   return res.json()
 }
 
-/**
- * Vérifie un token
- */
 export async function verify(token: string): Promise<ApiResponse> {
   const res = await fetch(`${API_BASE}/verify`, {
     method: "POST",
