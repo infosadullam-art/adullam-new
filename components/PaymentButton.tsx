@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { apiFetch } from '@/lib/api';
 
 interface PaymentButtonProps {
   email: string;
@@ -29,7 +30,8 @@ export function PaymentButton({
   const handlePayment = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/payment/initialize', {
+      // ✅ Utilise apiFetch au lieu de fetch
+      const response = await apiFetch('/api/payment/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
