@@ -133,7 +133,6 @@ export default function CheckoutPage() {
   // États
   const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   
@@ -197,10 +196,10 @@ export default function CheckoutPage() {
 
   // Redirection si panier vide
   useEffect(() => {
-    if (cart.length === 0 && !isSuccess && user) {
+    if (cart.length === 0 && user) {
       router.push("/cart");
     }
-  }, [cart, router, isSuccess, user]);
+  }, [cart, router, user]);
 
   // Pré-remplissage
   useEffect(() => {
@@ -380,10 +379,6 @@ export default function CheckoutPage() {
     return firstName && lastName && email && phone && address && quartier && city;
   };
 
-  const handlePaymentSuccess = () => {
-    setIsSuccess(true);
-  };
-
   const handlePaymentError = (paymentError: string) => {
     console.error('❌ Erreur paiement:', paymentError);
     setError(paymentError);
@@ -405,58 +400,6 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#D4372B' }} />
-      </div>
-    );
-  }
-
-  // ==================== SUCCÈS ====================
-  if (isSuccess) {
-    const displayTotal = lastOrderTotal || finalTotal;
-    const displayRef = lastOrderRef || Math.random().toString(36).substring(2, 8).toUpperCase();
-    
-    return (
-      <div className="min-h-screen" style={{ backgroundColor: '#FAFAFA' }}>
-        <div className="hidden lg:block"><Header /></div>
-        <div className="lg:hidden"><MobileHeader /></div>
-        
-        <main className="py-8 px-4">
-          <div className="max-w-md mx-auto">
-            <div className="bg-white rounded-xl shadow-sm border-0 p-6 text-center">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#FFF0F0' }}>
-                <svg className="w-8 h-8" style={{ color: '#D4372B' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              
-              <h2 className="text-lg font-medium mb-2">Commande confirmée</h2>
-              <p className="text-sm text-gray-500 mb-6">
-                Merci pour votre commande. Un email de confirmation vous a été envoyé.
-              </p>
-              
-              <div className="rounded-xl p-4 mb-6 text-left" style={{ background: '#FAFAFA', border: '0.5px solid #ECECEC' }}>
-                <p className="text-xs text-gray-500 mb-2">Récapitulatif</p>
-                <p className="text-sm font-medium">#{displayRef}</p>
-                <div className="flex justify-between mt-2 text-sm">
-                  <span className="text-gray-500">Total</span>
-                  <span className="font-medium" style={{ color: '#D4372B' }}>
-                    {formatPrice(displayTotal)}
-                  </span>
-                </div>
-              </div>
-              
-              <Link
-                href="/account/orders"
-                className="inline-block w-full px-4 py-3 text-sm font-bold text-white rounded-xl transition-colors"
-                style={{ background: '#D4372B' }}
-              >
-                Voir mes commandes
-              </Link>
-            </div>
-          </div>
-        </main>
-        
-        <Footer />
-        <div className="lg:hidden"><MobileNav /></div>
       </div>
     );
   }
@@ -879,7 +822,7 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* ÉTAPE 3 - CONFIRMATION Desktop (ancienne étape 4 sans choix de paiement) */}
+              {/* ÉTAPE 3 - CONFIRMATION Desktop - onSuccess SUPPRIMÉ */}
               {step === 3 && (
                 <div className="bg-white rounded-xl border-0 p-4 lg:p-6">
                   <h2 className="text-sm lg:text-base font-medium mb-3 lg:mb-4">Confirmation</h2>
@@ -949,13 +892,13 @@ export default function CheckoutPage() {
                       >
                         Retour
                       </button>
+                      {/* ✅ onSuccess SUPPRIMÉ */}
                       <PaymentButton
                         email={shippingInfo.email || user?.email || ""}
                         amount={finalTotal}
                         orderId={lastOrderRef}
                         couponCode={appliedCoupon?.code}
                         couponDiscount={discountAmount}
-                        onSuccess={handlePaymentSuccess}
                         onError={handlePaymentError}
                       >
                         Payer {formatPrice(finalTotal)}
@@ -966,7 +909,7 @@ export default function CheckoutPage() {
               )}
             </div>
 
-            {/* Desktop: Résumé à droite */}
+            {/* Desktop: Résumé à droite - inchangé */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-xl border-0 p-4 lg:p-5 sticky lg:top-24">
                 <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
@@ -1055,7 +998,7 @@ export default function CheckoutPage() {
           <div className="lg:hidden">
             <div className="space-y-4">
               
-              {/* ÉTAPE 1 - LIVRAISON Mobile */}
+              {/* ÉTAPE 1 - LIVRAISON Mobile - inchangé */}
               {step === 1 && (
                 <div className="bg-white rounded-xl border-0 p-4">
                   <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
@@ -1162,7 +1105,7 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* ÉTAPE 2 - EXPÉDITION Mobile */}
+              {/* ÉTAPE 2 - EXPÉDITION Mobile - inchangé */}
               {step === 2 && (
                 <>
                   <div className="bg-white rounded-xl border-0 p-4">
@@ -1332,7 +1275,7 @@ export default function CheckoutPage() {
                 </>
               )}
 
-              {/* ÉTAPE 3 - CONFIRMATION Mobile (ancienne étape 4 sans choix de paiement) */}
+              {/* ÉTAPE 3 - CONFIRMATION Mobile - onSuccess SUPPRIMÉ */}
               {step === 3 && (
                 <div className="bg-white rounded-xl border-0 p-4">
                   <h2 className="text-sm font-medium mb-3">Confirmation</h2>
@@ -1374,13 +1317,13 @@ export default function CheckoutPage() {
 
                     <div className="flex gap-2 pt-2">
                       <button onClick={() => setStep(2)} className="flex-1 py-2 text-sm border rounded-lg">Retour</button>
+                      {/* ✅ onSuccess SUPPRIMÉ */}
                       <PaymentButton
                         email={shippingInfo.email || user?.email || ""}
                         amount={finalTotal}
                         orderId={lastOrderRef}
                         couponCode={appliedCoupon?.code}
                         couponDiscount={discountAmount}
-                        onSuccess={handlePaymentSuccess}
                         onError={handlePaymentError}
                       >
                         Payer {formatPrice(finalTotal)}
