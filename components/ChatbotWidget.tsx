@@ -39,7 +39,7 @@ interface ChatbotWidgetProps {
 // CONSTANTES
 // ============================================================
 
-const TRIGGER_CHECK_INTERVAL = 15000   // 15s
+const TRIGGER_CHECK_INTERVAL = 30000   // 30s
 const INACTIVITY_THRESHOLD   = 15      // 15s sans action → trigger
 
 // URL du backend Next.js (API Route) sur VPS
