@@ -58,12 +58,23 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
   const [hasUnread, setHasUnread] = useState(false)
   const [proactiveMessage, setProactiveMessage] = useState<string | null>(null)
   const [isFirstOpen, setIsFirstOpen] = useState(true)
+  const [isMobile, setIsMobile] = useState(false)
 
   const messagesEndRef  = useRef<HTMLDivElement>(null)
   const inputRef        = useRef<HTMLInputElement>(null)
   const lastActionRef   = useRef<number>(Date.now())
   const triggerTimerRef = useRef<NodeJS.Timeout>()
   const viewCountRef    = useRef(0)
+
+  // ✅ Détecter mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -93,7 +104,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
 
     const loadHistory = async () => {
       try {
-        // ✅ URL CORRIGÉE : /api/chat?sessionId=...
         const url = `${API_BASE_URL}/api/chat?sessionId=${sessionId}${userId ? `&userId=${userId}` : ''}`
         const res = await fetch(url)
         const data = await res.json()
@@ -139,7 +149,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
       if (inactivitySeconds < INACTIVITY_THRESHOLD) return
 
       try {
-        // ✅ URL CORRIGÉE : /api/chat/trigger
         const res = await fetch(`${API_BASE_URL}/api/chat/trigger`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -279,6 +288,15 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
   // RENDU
   // ============================================================
 
+  // ✅ Styles adaptatifs mobile
+  const buttonSize = isMobile ? 48 : 56
+  const buttonFontSize = isMobile ? 20 : 24
+  const bottomPosition = isMobile ? 80 : 24  // ✅ Remonté sur mobile
+  const rightPosition = isMobile ? 12 : 24
+  const widgetWidth = isMobile ? 'calc(100vw - 24px)' : '380px'
+  const widgetHeight = isMobile ? '480px' : '520px'
+  const widgetMaxWidth = isMobile ? 'calc(100vw - 24px)' : 'calc(100vw - 32px)'
+
   return (
     <>
       {!isOpen && (
@@ -287,10 +305,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
           aria-label="Ouvrir Adu, votre assistant"
           style={{
             position: 'fixed',
-            bottom: '24px',
-            right: '24px',
-            width: '56px',
-            height: '56px',
+            bottom: bottomPosition,
+            right: rightPosition,
+            width: buttonSize,
+            height: buttonSize,
             borderRadius: '50%',
             background: '#D4372B',
             border: 'none',
@@ -301,7 +319,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
             boxShadow: '0 4px 20px rgba(212,55,43,0.4)',
             zIndex: 1000,
             transition: 'transform 0.2s ease',
-            fontSize: '24px',
+            fontSize: buttonFontSize,
           }}
           onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
           onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
@@ -333,16 +351,16 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
           onClick={openChat}
           style={{
             position: 'fixed',
-            bottom: '88px',
-            right: '24px',
-            maxWidth: '260px',
+            bottom: bottomPosition + buttonSize + 8,
+            right: rightPosition,
+            maxWidth: isMobile ? '220px' : '260px',
             background: '#fff',
             borderRadius: '12px',
-            padding: '12px 14px',
+            padding: '10px 12px',
             boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
             zIndex: 999,
             cursor: 'pointer',
-            fontSize: '13px',
+            fontSize: isMobile ? '12px' : '13px',
             color: '#0A0A0A',
             fontFamily: "'Poppins', sans-serif",
             lineHeight: 1.4,
@@ -367,11 +385,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
       {isOpen && (
         <div style={{
           position: 'fixed',
-          bottom: '24px',
-          right: '24px',
-          width: '380px',
-          maxWidth: 'calc(100vw - 32px)',
-          height: isMinimized ? '52px' : '520px',
+          bottom: bottomPosition,
+          right: rightPosition,
+          width: widgetWidth,
+          maxWidth: widgetMaxWidth,
+          height: isMinimized ? '52px' : widgetHeight,
           maxHeight: 'calc(100vh - 48px)',
           background: '#fff',
           borderRadius: '16px',
@@ -425,44 +443,49 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
               <div style={{
                 flex: 1,
                 overflowY: 'auto',
-                padding: '12px',
+                padding: isMobile ? '8px' : '12px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '8px',
+                gap: '6px',
               }}>
                 {messages.map(msg => (
                   <div key={msg.id} style={{
                     display: 'flex',
                     justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                    gap: '6px',
+                    gap: '4px',
                     alignItems: 'flex-end',
                   }}>
                     {msg.role === 'assistant' && (
                       <div style={{
-                        width: '24px', height: '24px', borderRadius: '50%',
-                        background: '#FFF0F0', fontSize: '12px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        width: isMobile ? '20px' : '24px',
+                        height: isMobile ? '20px' : '24px',
+                        borderRadius: '50%',
+                        background: '#FFF0F0',
+                        fontSize: isMobile ? '10px' : '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         flexShrink: 0,
                       }}>🤖</div>
                     )}
                     <div style={{
-                      maxWidth: '78%',
-                      padding: '8px 12px',
+                      maxWidth: isMobile ? '85%' : '78%',
+                      padding: isMobile ? '6px 10px' : '8px 12px',
                       borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
                       background: msg.role === 'user' ? '#D4372B' : '#F5F5F5',
                       color: msg.role === 'user' ? '#fff' : '#0A0A0A',
-                      fontSize: '12px',
-                      lineHeight: 1.5,
+                      fontSize: isMobile ? '11px' : '12px',
+                      lineHeight: 1.4,
                     }}>
                       {msg.content}
                       {msg.products && msg.products.length > 0 && (
-                        <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          {msg.products.slice(0, 3).map(p => (
+                        <div style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          {msg.products.slice(0, isMobile ? 2 : 3).map(p => (
                             <div key={p.id} style={{
-                              padding: '6px 8px',
+                              padding: '4px 8px',
                               background: 'rgba(255,255,255,0.15)',
-                              borderRadius: '6px',
-                              fontSize: '11px',
+                              borderRadius: '4px',
+                              fontSize: isMobile ? '10px' : '11px',
                               cursor: 'pointer',
                             }}
                               onClick={() => window.location.href = `/products/${p.id}`}
@@ -476,21 +499,30 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
                   </div>
                 ))}
                 {isTyping && (
-                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
                     <div style={{
-                      width: '24px', height: '24px', borderRadius: '50%',
-                      background: '#FFF0F0', fontSize: '12px',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: isMobile ? '20px' : '24px',
+                      height: isMobile ? '20px' : '24px',
+                      borderRadius: '50%',
+                      background: '#FFF0F0',
+                      fontSize: isMobile ? '10px' : '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}>🤖</div>
                     <div style={{
-                      padding: '8px 14px',
+                      padding: '6px 12px',
                       background: '#F5F5F5',
                       borderRadius: '12px 12px 12px 2px',
-                      display: 'flex', gap: '4px', alignItems: 'center',
+                      display: 'flex',
+                      gap: '3px',
+                      alignItems: 'center',
                     }}>
                       {[0, 1, 2].map(i => (
                         <div key={i} style={{
-                          width: '6px', height: '6px', borderRadius: '50%',
+                          width: isMobile ? '5px' : '6px',
+                          height: isMobile ? '5px' : '6px',
+                          borderRadius: '50%',
                           background: '#AAAAAA',
                           animation: `bounce 1.2s ${i * 0.2}s infinite`,
                         }} />
@@ -502,10 +534,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
               </div>
 
               <div style={{
-                padding: '10px 12px',
+                padding: isMobile ? '6px 10px' : '10px 12px',
                 borderTop: '0.5px solid #ECECEC',
                 display: 'flex',
-                gap: '8px',
+                gap: '6px',
                 alignItems: 'center',
                 flexShrink: 0,
               }}>
@@ -520,8 +552,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
                     flex: 1,
                     border: '0.5px solid #ECECEC',
                     borderRadius: '20px',
-                    padding: '8px 14px',
-                    fontSize: '12px',
+                    padding: isMobile ? '6px 12px' : '8px 14px',
+                    fontSize: isMobile ? '11px' : '12px',
                     fontFamily: "'Poppins', sans-serif",
                     outline: 'none',
                     background: '#FAFAFA',
@@ -532,12 +564,16 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
                   onClick={sendMessage}
                   disabled={!input.trim() || isTyping}
                   style={{
-                    width: '34px', height: '34px', borderRadius: '50%',
+                    width: isMobile ? '30px' : '34px',
+                    height: isMobile ? '30px' : '34px',
+                    borderRadius: '50%',
                     background: input.trim() && !isTyping ? '#D4372B' : '#ECECEC',
                     border: 'none',
                     cursor: input.trim() && !isTyping ? 'pointer' : 'default',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: isMobile ? '12px' : '14px',
                     flexShrink: 0,
                     transition: 'background 0.2s',
                   }}
