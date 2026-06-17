@@ -2,7 +2,7 @@
 
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// Proactif, mémorant, adapté mobile
+// Proactif, mémorant, adapté mobile + MODE VOCAL 🎤
 
 import { useState, useEffect, useRef, useCallback } from "react"
 
@@ -59,12 +59,19 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
   const [proactiveMessage, setProactiveMessage] = useState<string | null>(null)
   const [isFirstOpen, setIsFirstOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
+  
+  // 🎤 État vocal
+  const [isRecording, setIsRecording] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
+  const [voiceSupported, setVoiceSupported] = useState(true)
 
   const messagesEndRef  = useRef<HTMLDivElement>(null)
   const inputRef        = useRef<HTMLInputElement>(null)
   const lastActionRef   = useRef<number>(Date.now())
   const triggerTimerRef = useRef<NodeJS.Timeout>()
   const viewCountRef    = useRef(0)
+  const recognitionRef  = useRef<any>(null)
+  const speechSynthRef  = useRef<SpeechSynthesis | null>(null)
 
   // ✅ Détecter mobile
   useEffect(() => {
@@ -74,6 +81,18 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // ✅ Vérifier support vocal
+  useEffect(() => {
+    const hasSpeechRecognition = !!(
+      window.SpeechRecognition || window.webkitSpeechRecognition
+    )
+    const hasSpeechSynthesis = !!window.speechSynthesis
+    setVoiceSupported(hasSpeechRecognition && hasSpeechSynthesis)
+    if (window.speechSynthesis) {
+      speechSynthRef.current = window.speechSynthesis
+    }
   }, [])
 
   const scrollToBottom = useCallback(() => {
@@ -190,7 +209,20 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
       products,
     }
     setMessages(prev => [...prev, msg])
-  }, [])
+    
+    // 🔊 Lire la réponse à voix haute
+    if (voiceSupported && speechSynthRef.current) {
+      const utterance = new SpeechSynthesisUtterance(content)
+      utterance.lang = language === 'fr' ? 'fr-FR' : language === 'pt' ? 'pt-PT' : 'en-US'
+      utterance.rate = 0.9
+      utterance.pitch = 1.1
+      utterance.volume = 1
+      setIsSpeaking(true)
+      utterance.onend = () => setIsSpeaking(false)
+      utterance.onerror = () => setIsSpeaking(false)
+      speechSynthRef.current.speak(utterance)
+    }
+  }, [language, voiceSupported])
 
   const openChat = useCallback(() => {
     setIsOpen(true)
@@ -206,6 +238,82 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
     setTimeout(() => inputRef.current?.focus(), 100)
   }, [proactiveMessage, isFirstOpen, addAssistantMessage])
 
+  // 🎤 Reconnaissance vocale
+  const startVoiceRecognition = useCallback(() => {
+    if (isRecording) {
+      // Arrêter l'enregistrement
+      if (recognitionRef.current) {
+        recognitionRef.current.stop()
+        recognitionRef.current = null
+      }
+      setIsRecording(false)
+      return
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      console.warn("Reconnaissance vocale non supportée")
+      return
+    }
+
+    const recognition = new SpeechRecognition()
+    recognitionRef.current = recognition
+
+    recognition.lang = language === 'fr' ? 'fr-FR' : language === 'pt' ? 'pt-PT' : 'en-US'
+    recognition.continuous = false
+    recognition.interimResults = false
+    recognition.maxAlternatives = 1
+
+    setIsRecording(true)
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript
+      setInput(transcript)
+      setIsRecording(false)
+      recognitionRef.current = null
+      
+      // Envoyer automatiquement le message après un court délai
+      setTimeout(() => {
+        if (transcript.trim()) {
+          // Déclencher l'envoi
+          const sendEvent = new Event('send-voice-message')
+          window.dispatchEvent(sendEvent)
+        }
+      }, 500)
+    }
+
+    recognition.onerror = (event: any) => {
+      console.error("Erreur reconnaissance vocale:", event.error)
+      setIsRecording(false)
+      recognitionRef.current = null
+      
+      if (event.error === 'not-allowed') {
+        alert("Veuillez autoriser l'accès au microphone pour utiliser la voix.")
+      }
+    }
+
+    recognition.onend = () => {
+      setIsRecording(false)
+      recognitionRef.current = null
+    }
+
+    try {
+      recognition.start()
+    } catch (e) {
+      console.error("Erreur démarrage reconnaissance:", e)
+      setIsRecording(false)
+    }
+  }, [language, isRecording])
+
+  // 🔊 Arrêter la lecture vocale
+  const stopSpeaking = useCallback(() => {
+    if (speechSynthRef.current) {
+      speechSynthRef.current.cancel()
+      setIsSpeaking(false)
+    }
+  }, [])
+
+  // 📨 Envoyer un message
   const sendMessage = async () => {
     const text = input.trim()
     if (!text || isTyping) return
@@ -277,6 +385,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
     }
   }
 
+  // Écouter l'événement déclenché par la voix
+  useEffect(() => {
+    const handleVoiceSend = () => sendMessage()
+    window.addEventListener('send-voice-message' as any, handleVoiceSend)
+    return () => window.removeEventListener('send-voice-message' as any, handleVoiceSend)
+  }, [input])
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -288,10 +403,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
   // RENDU
   // ============================================================
 
-  // ✅ Styles adaptatifs mobile
   const buttonSize = isMobile ? 48 : 56
   const buttonFontSize = isMobile ? 20 : 24
-  const bottomPosition = isMobile ? 80 : 24  // ✅ Remonté sur mobile
+  const bottomPosition = isMobile ? 80 : 24
   const rightPosition = isMobile ? 12 : 24
   const widgetWidth = isMobile ? 'calc(100vw - 24px)' : '380px'
   const widgetHeight = isMobile ? '480px' : '520px'
@@ -419,10 +533,22 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
               fontSize: '16px',
             }}>🤖</div>
             <div style={{ flex: 1 }}>
-              <p style={{ margin: 0, color: '#fff', fontWeight: 700, fontSize: '13px' }}>Adu</p>
-              <p style={{ margin: 0, color: 'rgba(255,255,255,0.8)', fontSize: '10px' }}>Votre assistant Adullam</p>
+              <p style={{ margin: 0, color: '#fff', fontWeight: 700, fontSize: '13px' }}>
+                Adu {isSpeaking && '🔊'}
+              </p>
+              <p style={{ margin: 0, color: 'rgba(255,255,255,0.8)', fontSize: '10px' }}>
+                {isRecording ? '🎤 Écoute...' : 'Votre assistant Adullam'}
+              </p>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
+              {isSpeaking && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); stopSpeaking() }}
+                  style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '14px', padding: '2px' }}
+                >
+                  ⏹
+                </button>
+              )}
               <button
                 onClick={e => { e.stopPropagation(); setIsMinimized(!isMinimized) }}
                 style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '16px', padding: '2px' }}
@@ -546,8 +672,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Dis-moi ce que tu cherches..."
-                  disabled={isTyping}
+                  placeholder={isRecording ? "🎤 Écoute en cours..." : "Dis-moi ce que tu cherches..."}
+                  disabled={isTyping || isRecording}
                   style={{
                     flex: 1,
                     border: '0.5px solid #ECECEC',
@@ -556,10 +682,36 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
                     fontSize: isMobile ? '11px' : '12px',
                     fontFamily: "'Poppins', sans-serif",
                     outline: 'none',
-                    background: '#FAFAFA',
+                    background: isRecording ? '#FFF8E1' : '#FAFAFA',
                     color: '#0A0A0A',
                   }}
                 />
+                
+                {/* 🎤 Bouton microphone */}
+                {voiceSupported && (
+                  <button
+                    onClick={startVoiceRecognition}
+                    disabled={isTyping}
+                    style={{
+                      width: isMobile ? '30px' : '34px',
+                      height: isMobile ? '30px' : '34px',
+                      borderRadius: '50%',
+                      background: isRecording ? '#E67700' : '#ECECEC',
+                      border: 'none',
+                      cursor: isTyping ? 'default' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: isMobile ? '12px' : '14px',
+                      flexShrink: 0,
+                      transition: 'all 0.2s',
+                      boxShadow: isRecording ? '0 0 20px rgba(230,119,0,0.4)' : 'none',
+                    }}
+                  >
+                    {isRecording ? '⏹' : '🎤'}
+                  </button>
+                )}
+                
                 <button
                   onClick={sendMessage}
                   disabled={!input.trim() || isTyping}
