@@ -1,7 +1,7 @@
 "use client"
 
 import { ProductCard } from "@/components/product-card"
-import { useEffect, useRef, useState, useCallback } from "react"
+import { useEffect, useRef, useState, useCallback, useLayoutEffect } from "react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useApi } from "@/hooks/useApi"
 
@@ -49,29 +49,68 @@ interface SavedState {
   timestamp: number
 }
 
+// ✅ Lecture synchrone du sessionId, AVANT le premier rendu React.
+// Avant : sessionId n'était connu qu'après un useEffect, donc products
+// restait vide au premier rendu et affichait "Chargement..." même quand
+// un état sauvegardé existait, créant le flash visible au retour arrière.
+function getOrCreateSessionId(): string | null {
+  if (typeof window === "undefined") return null
+  let stored = localStorage.getItem("adullam_session_id")
+  if (!stored) {
+    stored = crypto.randomUUID()
+    localStorage.setItem("adullam_session_id", stored)
+  }
+  return stored
+}
+
+function readSavedState(sessionId: string | null): SavedState | null {
+  if (!sessionId || typeof window === "undefined") return null
+  try {
+    const saved = sessionStorage.getItem(`${STORAGE_KEY}_${sessionId}`)
+    if (!saved) return null
+    const state: SavedState = JSON.parse(saved)
+    const age = Date.now() - state.timestamp
+    if (age > 30 * 60 * 1000) {
+      sessionStorage.removeItem(`${STORAGE_KEY}_${sessionId}`)
+      return null
+    }
+    return state
+  } catch {
+    return null
+  }
+}
+
 export function ForYouSection() {
   const { formatPrice } = useCurrencyFormatter()
   const { fetchWithAuth } = useApi()
 
-  const [products, setProducts] = useState<Product[]>([])
+  // sessionId connu dès le premier rendu (plus de round-trip useEffect)
+  const [sessionId] = useState<string | null>(() => getOrCreateSessionId())
+  // état sauvegardé lu une seule fois, de façon synchrone, à la création du composant
+  const [initialSavedState] = useState<SavedState | null>(() => readSavedState(sessionId))
+
+  const [products, setProducts] = useState<Product[]>(initialSavedState?.products ?? [])
   const [isLoading, setIsLoading] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
-  const [initialized, setInitialized] = useState(false)
+  const [hasMore, setHasMore] = useState(initialSavedState?.hasMore ?? true)
+  const [initialized, setInitialized] = useState(Boolean(initialSavedState && initialSavedState.products.length > 0))
   const [error, setError] = useState<string | null>(null)
   const [titleIndex, setTitleIndex] = useState(0)
-  const [sessionId, setSessionId] = useState<string | null>(null)
 
   const observerRef        = useRef<HTMLDivElement | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
   const initialFetchDone   = useRef(false)
   const isFetchingRef      = useRef(false)
-  const pageRef            = useRef(1)
-  const productsRef        = useRef<Product[]>([])
-  const hasMoreRef         = useRef(true)
+  const pageRef            = useRef(initialSavedState?.page ?? 1)
+  const productsRef        = useRef<Product[]>(initialSavedState?.products ?? [])
+  const hasMoreRef         = useRef(initialSavedState?.hasMore ?? true)
   const viewedProducts     = useRef<Set<string>>(new Set())
   const trackQueueRef      = useRef<Set<string>>(new Set())
   const saveTimeoutRef     = useRef<NodeJS.Timeout>()
   const lastSavedScrollRef = useRef(0)
+  // Si on a restauré un état au montage, on applique le scroll dès la
+  // première peinture (layout effect), avant que le navigateur n'affiche
+  // quoi que ce soit d'autre — donc aucun flash de "Chargement...".
+  const pendingScrollRestoreRef = useRef<number | null>(initialSavedState?.scrollPosition ?? null)
 
   const saveState = useCallback(() => {
     if (!sessionId) return
@@ -91,46 +130,21 @@ export function ForYouSection() {
     try {
       sessionStorage.setItem(`${STORAGE_KEY}_${sessionId}`, JSON.stringify(state))
       lastSavedScrollRef.current = scrollY
-      console.log(`💾 Position sauvegardée: ${scrollY}px, page ${pageRef.current}`)
     } catch (e) {
       console.error("Erreur sauvegarde état:", e)
     }
   }, [sessionId])
 
-  const restoreState = useCallback((): SavedState | null => {
-    if (!sessionId) return null
-    
-    try {
-      const saved = sessionStorage.getItem(`${STORAGE_KEY}_${sessionId}`)
-      if (!saved) return null
-      
-      const state: SavedState = JSON.parse(saved)
-      const age = Date.now() - state.timestamp
-      
-      if (age > 30 * 60 * 1000) {
-        console.log(`⏰ État expiré (${Math.round(age / 60000)} min)`)
-        sessionStorage.removeItem(`${STORAGE_KEY}_${sessionId}`)
-        return null
-      }
-      
-      console.log(`📥 État restauré: page ${state.page}, ${state.products.length} produits, scroll ${state.scrollPosition}px`)
-      return state
-    } catch (e) {
-      console.error("Erreur restauration état:", e)
-      return null
+  // Applique le scroll restauré dès que possible, avant peinture visible.
+  // useLayoutEffect s'exécute de façon synchrone après le DOM mis à jour
+  // mais avant que le navigateur ne peigne l'écran.
+  useLayoutEffect(() => {
+    if (pendingScrollRestoreRef.current !== null && pendingScrollRestoreRef.current > 0) {
+      window.scrollTo({ top: pendingScrollRestoreRef.current, behavior: "instant" })
+      lastSavedScrollRef.current = pendingScrollRestoreRef.current
+      pendingScrollRestoreRef.current = null
     }
-  }, [sessionId])
-
-  // Restauration du scroll après chargement
-  useEffect(() => {
-    if (initialized && products.length > 0) {
-      const saved = restoreState()
-      if (saved?.scrollPosition && saved.scrollPosition > 0) {
-        window.scrollTo({ top: saved.scrollPosition, behavior: "instant" })
-        console.log(`📍 Scroll restauré à ${saved.scrollPosition}px`)
-      }
-    }
-  }, [initialized, products.length, restoreState])
+  }, [])
 
   // Sauvegarde avec debounce (seulement après que l'utilisateur a fini de scroller)
   useEffect(() => {
@@ -168,14 +182,9 @@ export function ForYouSection() {
   }, [])
 
   useEffect(() => {
-    let stored = localStorage.getItem("adullam_session_id")
-    if (!stored) {
-      stored = crypto.randomUUID()
-      localStorage.setItem("adullam_session_id", stored)
-    }
-    setSessionId(stored)
-    document.cookie = `sessionId=${stored}; path=/; max-age=86400; SameSite=Lax`
-  }, [])
+    if (!sessionId) return
+    document.cookie = `sessionId=${sessionId}; path=/; max-age=86400; SameSite=Lax`
+  }, [sessionId])
 
   const trackInteraction = useCallback(async (
     productId: string,
@@ -311,24 +320,18 @@ export function ForYouSection() {
     }
   }, [sessionId, fetchWithAuth, saveState])
 
+  // L'état (s'il existait) a déjà été restauré de façon synchrone à la
+  // création du composant, via initialSavedState. Ici on ne déclenche le
+  // premier fetch réseau QUE si rien n'a été restauré — sinon le scroll
+  // infini reprend directement via l'IntersectionObserver plus bas.
   useEffect(() => {
     if (!initialFetchDone.current && sessionId) {
       initialFetchDone.current = true
-      
-      const savedState = restoreState()
-      if (savedState && savedState.products.length > 0) {
-        console.log(`🔄 Restauration de ${savedState.products.length} produits sauvegardés`)
-        productsRef.current = savedState.products
-        setProducts(savedState.products)
-        pageRef.current = savedState.page
-        hasMoreRef.current = savedState.hasMore
-        setHasMore(savedState.hasMore)
-        setInitialized(true)
-      } else {
+      if (!initialSavedState || initialSavedState.products.length === 0) {
         fetchForYou()
       }
     }
-  }, [sessionId, fetchForYou, restoreState])
+  }, [sessionId, fetchForYou, initialSavedState])
 
   useEffect(() => {
     if (!initialized) return
