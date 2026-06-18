@@ -6,6 +6,7 @@
 // Mode vocal, cartes produits, offres, compte à rebours, scroll infini
 
 import { useState, useEffect, useRef, useCallback } from "react"
+import { OfferBanner } from "@/components/OfferBanner"
 
 // ============================================================
 // TYPES
@@ -87,7 +88,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const viewCountRef    = useRef(0)
   const recognitionRef  = useRef<any>(null)
   const speechSynthRef  = useRef<SpeechSynthesis | null>(null)
-  const offerIntervalRef = useRef<NodeJS.Timeout>()
 
   // ✅ Détecter mobile
   useEffect(() => {
@@ -136,20 +136,17 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   // ── Compte à rebours de l'offre ──
   useEffect(() => {
     if (offerTimer > 0 && showOfferBanner) {
-      offerIntervalRef.current = setInterval(() => {
+      const interval = setInterval(() => {
         setOfferTimer(prev => {
           if (prev <= 1) {
             setShowOfferBanner(false)
             setActiveOffer(null)
-            clearInterval(offerIntervalRef.current)
             return 0
           }
           return prev - 1
         })
       }, 1000)
-    }
-    return () => {
-      if (offerIntervalRef.current) clearInterval(offerIntervalRef.current)
+      return () => clearInterval(interval)
     }
   }, [offerTimer, showOfferBanner])
 
@@ -212,7 +209,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             user_id: userId || null,
             inactivity_seconds: inactivitySeconds,
             viewed_count: viewCountRef.current,
-            // ✅ Détection améliorée
             has_added_to_cart: checkCartStatus(),
             has_visited_checkout: checkCheckoutStatus(),
             has_come_back: true,
@@ -225,7 +221,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           setProactiveMessage(data.message)
           setHasUnread(true)
           
-          // ✅ Si c'est une offre, l'activer
           if (data.trigger_type === 'hesitation_strong' || data.trigger_type === 'abandoned_cart') {
             const offer: Offer = {
               type: 'risky',
@@ -233,9 +228,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               discount_2: 10,
               time_limit: 20,
               urgency_message: data.message,
+              taunt_message: data.message,
             }
             setActiveOffer(offer)
-            setOfferTimer(20 * 60) // 20 minutes en secondes
+            setOfferTimer(20 * 60)
             setShowOfferBanner(true)
           }
         }
@@ -250,16 +246,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [sessionId, userId, isOpen])
 
-  // ── Helper check panier ──
   const checkCartStatus = () => {
-    // Vérifie si des produits sont dans le panier
-    return messages.some(m => 
-      m.products && m.products.length > 0 && m.role === 'assistant'
-    )
+    return messages.some(m => m.products && m.products.length > 0 && m.role === 'assistant')
   }
 
   const checkCheckoutStatus = () => {
-    // Simulation : si l'utilisateur a cliqué sur un produit
     return localStorage.getItem('checkout_visited') === 'true'
   }
 
@@ -278,14 +269,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
     setMessages(prev => [...prev, msg])
     
-    // 🔥 Si l'offre est présente, l'activer
     if (offer && offer.type !== 'none') {
       setActiveOffer(offer)
       setOfferTimer(offer.time_limit * 60)
       setShowOfferBanner(true)
     }
     
-    // 🔊 Lire la réponse à voix haute
     if (voiceSupported && speechSynthRef.current) {
       const utterance = new SpeechSynthesisUtterance(content)
       utterance.lang = language === 'fr' ? 'fr-FR' : language === 'pt' ? 'pt-PT' : 'en-US'
@@ -312,7 +301,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     setTimeout(() => inputRef.current?.focus(), 100)
   }, [proactiveMessage, isFirstOpen, addAssistantMessage])
 
-  // 🎤 Reconnaissance vocale
   const startVoiceRecognition = useCallback(() => {
     if (isRecording) {
       if (recognitionRef.current) {
@@ -376,7 +364,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [language, isRecording])
 
-  // 🔊 Arrêter la lecture vocale
   const stopSpeaking = useCallback(() => {
     if (speechSynthRef.current) {
       speechSynthRef.current.cancel()
@@ -384,18 +371,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
-  // 🎴 Gestion du clic sur un produit
   const handleProductClick = useCallback(async (product: Product, messageId: string) => {
-    // 1. Scroll vers le produit
     const productElement = document.getElementById(`product-${product.id}`)
     if (productElement) {
       productElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
 
-    // 2. Marquer checkout visité
     localStorage.setItem('checkout_visited', 'true')
 
-    // 3. Envoyer l'interaction
     try {
       await fetch(`${API_BASE_URL}/api/track`, {
         method: 'POST',
@@ -415,7 +398,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       })
     } catch (e) {}
 
-    // 4. Recalcul avec poids fort
     try {
       const response = await fetch(`${API_BASE_URL}/api/chat/recommend`, {
         method: 'POST',
@@ -441,7 +423,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [sessionId, userId, addAssistantMessage])
 
-  // 📨 Envoyer un message
   const sendMessage = async () => {
     const text = input.trim()
     if (!text || isTyping) return
@@ -481,9 +462,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           reason: p.reason,
         })) || []
 
-        // ✅ Récupérer l'offre si présente
         const offer = data.offer || null
-
         addAssistantMessage(data.response, formattedProducts, offer)
 
         try {
@@ -520,7 +499,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }
 
-  // 📦 Charger plus de produits
   const loadMoreProducts = useCallback(async (query: string, categories: string[] = []) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/chat/more`, {
@@ -542,7 +520,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           `Voici d'autres produits qui pourraient te plaire ! 👀`,
           data.products
         )
-        // Scroll vers les nouveaux produits
         setTimeout(scrollToBottom, 300)
       } else {
         addAssistantMessage("Je n'ai pas trouvé d'autres produits pour le moment. Tu veux essayer un autre mot-clé ?")
@@ -577,7 +554,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const rightPosition = isMobile ? 12 : 24
   const widgetWidth = isMobile ? 'calc(100vw - 24px)' : '380px'
   const widgetHeight = isMobile ? '500px' : '540px'
-  const widgetMaxWidth = isMobile ? 'calc(100vw - 24px)' : 'calc(100vw - 32px)'
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -587,6 +563,25 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
   return (
     <>
+      {/* OFFER BANNER - affiché en dehors du widget */}
+      {showOfferBanner && activeOffer && offerTimer > 0 && (
+        <OfferBanner
+          discount={activeOffer.discount_2}
+          timeLimit={offerTimer}
+          message={activeOffer.taunt_message || `-${activeOffer.discount_2}% si vous validez maintenant !`}
+          variant={activeOffer.type === 'risky' ? 'risky' : 'safe'}
+          onAccept={() => {
+            setShowOfferBanner(false)
+            setActiveOffer(null)
+            window.location.href = '/cart'
+          }}
+          onDecline={() => {
+            setShowOfferBanner(false)
+            setActiveOffer(null)
+          }}
+        />
+      )}
+
       {!isOpen && (
         <button
           onClick={openChat}
@@ -676,7 +671,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           bottom: bottomPosition,
           right: rightPosition,
           width: widgetWidth,
-          maxWidth: widgetMaxWidth,
+          maxWidth: 'calc(100vw - 32px)',
           height: isMinimized ? '52px' : widgetHeight,
           maxHeight: 'calc(100vh - 48px)',
           background: '#fff',
@@ -741,38 +736,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
           {!isMinimized && (
             <>
-              {/* BANNIÈRE OFFRE */}
-              {showOfferBanner && activeOffer && offerTimer > 0 && (
-                <div style={{
-                  background: 'linear-gradient(135deg, #FF6B35, #D4372B)',
-                  color: '#fff',
-                  padding: '10px 14px',
-                  textAlign: 'center',
-                  fontSize: isMobile ? '11px' : '13px',
-                  fontWeight: 600,
-                  flexShrink: 0,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: '8px',
-                  flexWrap: 'wrap',
-                }}>
-                  <span style={{ flex: 1 }}>
-                    🔥 {activeOffer.taunt_message || 'Offre spéciale !'}
-                  </span>
-                  <span style={{
-                    background: 'rgba(255,255,255,0.2)',
-                    padding: '2px 10px',
-                    borderRadius: '12px',
-                    fontSize: isMobile ? '12px' : '14px',
-                    fontWeight: 700,
-                    fontVariantNumeric: 'tabular-nums',
-                  }}>
-                    ⏱️ {formatTime(offerTimer)}
-                  </span>
-                </div>
-              )}
-
               {/* MESSAGES */}
               <div style={{
                 flex: 1,
