@@ -15,7 +15,11 @@ const badgeConfig: Record<string, { label: string; bg: string; color: string }> 
   popular: { label: "Populaire", bg: "#FFF4E6", color: "#E67700" },
   abandoned_cart: { label: "Panier", bg: "#FFE4E1", color: "#D4372B" },
   cache: { label: "Pour vous", bg: "#F0F4FF", color: "#3B5BDB" },
-  fallback_total: { label: "Nouveauté", bg: "#F3F0FF", color: "#7048E8" }
+  fallback_total: { label: "Nouveauté", bg: "#F3F0FF", color: "#7048E8" },
+  // ✅ NOUVEAUX BADGES POUR LE CHAT
+  chat: { label: "💬 Adu", bg: "#FFF0F0", color: "#D4372B" },
+  chat_category: { label: "💬 Catégorie", bg: "#F0F4FF", color: "#3B5BDB" },
+  selected_product: { label: "🔍 Similaire", bg: "#EBFBEE", color: "#2F9E44" },
 }
 
 interface ProductCardProps {
@@ -30,10 +34,14 @@ interface ProductCardProps {
     flag?: string
     rating?: number
     reviews?: number
+    reason?: string       // ✅ Pourquoi ce produit
+    isSelected?: boolean  // ✅ Poids fort
   }
+  onClick?: () => void   // ✅ Pour le chat
+  size?: 'sm' | 'md' | 'lg'
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, onClick, size = 'md' }: ProductCardProps) {
   const { formatPrice, getCurrencySymbol } = useCurrencyFormatter()
   
   // ✅ Protection si priceUSD est undefined ou null
@@ -60,12 +68,46 @@ export function ProductCard({ product }: ProductCardProps) {
     ? `🔥 ${product.viewers} regardent`
     : null
 
+  // ✅ Taille du composant
+  const sizeClasses = {
+    sm: {
+      image: 'aspect-[3/4]',
+      padding: 'p-2',
+      name: 'text-xs',
+      price: 'text-sm',
+      badge: 'text-[8px] px-1.5 py-0.5',
+    },
+    md: {
+      image: 'aspect-square',
+      padding: 'p-2 lg:p-3',
+      name: 'text-xs lg:text-sm',
+      price: 'text-sm lg:text-base',
+      badge: 'text-[10px] px-2 py-1',
+    },
+    lg: {
+      image: 'aspect-square',
+      padding: 'p-3 lg:p-4',
+      name: 'text-sm lg:text-base',
+      price: 'text-base lg:text-lg',
+      badge: 'text-[10px] px-2 py-1',
+    },
+  }
+
+  const classes = sizeClasses[size] || sizeClasses.md
+
+  // ✅ Si onClick est fourni, on utilise un div (pour le chat)
+  // Sinon, un Link (pour le catalogue)
+  const Wrapper = onClick ? 'div' : Link
+  const wrapperProps = onClick 
+    ? { onClick, className: "block cursor-pointer" }
+    : { href: `/products/${product.id}`, className: "block group" }
+
   return (
-    <Link href={`/products/${product.id}`} className="block group">
-      <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all border border-gray-100 hover:border-gray-200">
+    <Wrapper {...wrapperProps}>
+      <div className={`bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all border ${product.isSelected ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-100 hover:border-gray-200'}`}>
         
         {/* IMAGE */}
-        <div className="relative aspect-square bg-gray-50">
+        <div className={`relative ${classes.image} bg-gray-50`}>
           <Image
             src={product.image || "/placeholder.svg"}
             alt={product.name}
@@ -77,7 +119,7 @@ export function ProductCard({ product }: ProductCardProps) {
           {/* BADGE - avec style dynamique */}
           {badgeLabel && (
             <span 
-              className="absolute top-2 left-2 text-[10px] px-2 py-1 rounded-full font-medium z-10"
+              className={`absolute top-2 left-2 rounded-full font-medium z-10 ${classes.badge}`}
               style={badgeStyle}
             >
               {badgeLabel}
@@ -97,13 +139,27 @@ export function ProductCard({ product }: ProductCardProps) {
               {viewersText}
             </span>
           )}
+
+          {/* ✅ BADGE "SÉLECTIONNÉ" (poids fort) */}
+          {product.isSelected && (
+            <span className="absolute bottom-2 right-2 text-[10px] bg-red-500 text-white px-2 py-0.5 rounded-full z-10">
+              🔥 Sélectionné
+            </span>
+          )}
         </div>
 
         {/* INFOS */}
-        <div className="p-2 lg:p-3">
-          <h3 className="text-xs lg:text-sm font-medium text-gray-900 truncate mb-1">
+        <div className={classes.padding}>
+          <h3 className={`${classes.name} font-medium text-gray-900 truncate mb-1`}>
             {product.name}
           </h3>
+
+          {/* ✅ RAISON (pour le chat) */}
+          {product.reason && (
+            <p className="text-[10px] text-gray-500 mb-1 truncate">
+              💡 {product.reason}
+            </p>
+          )}
 
           {/* RATING */}
           {product.rating && (
@@ -134,12 +190,12 @@ export function ProductCard({ product }: ProductCardProps) {
 
           {/* PRIX EN ROUGE */}
           <div className="mt-2">
-            <p className="text-sm lg:text-base font-bold text-red-500">
+            <p className={`${classes.price} font-bold text-red-500`}>
               {formattedPrice}
             </p>
           </div>
         </div>
       </div>
-    </Link>
+    </Wrapper>
   )
 }
