@@ -52,8 +52,8 @@ interface ChatbotWidgetProps {
 // CONSTANTES
 // ============================================================
 
-const TRIGGER_CHECK_INTERVAL = 30000   // 30s
-const INACTIVITY_THRESHOLD   = 15      // 15s sans action → trigger
+const TRIGGER_CHECK_INTERVAL = 30000
+const INACTIVITY_THRESHOLD   = 15
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.adullamarket.com'
 
 // ============================================================
@@ -72,12 +72,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const [isMobile, setIsMobile] = useState(false)
   const [loadOffset, setLoadOffset] = useState(3)
   
-  // 🎤 État vocal
   const [isRecording, setIsRecording] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(true)
 
-  // 🏷️ État offres
   const [activeOffer, setActiveOffer] = useState<Offer | null>(null)
   const [offerTimer, setOfferTimer] = useState<number>(0)
   const [showOfferBanner, setShowOfferBanner] = useState(false)
@@ -90,7 +88,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const recognitionRef  = useRef<any>(null)
   const speechSynthRef  = useRef<SpeechSynthesis | null>(null)
 
-  // ✅ Détecter mobile
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
@@ -100,7 +97,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // ✅ Vérifier support vocal
   useEffect(() => {
     const hasSpeechRecognition = !!(
       window.SpeechRecognition || window.webkitSpeechRecognition
@@ -134,7 +130,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
-  // ── Compte à rebours de l'offre ──
   useEffect(() => {
     if (offerTimer > 0 && showOfferBanner) {
       const interval = setInterval(() => {
@@ -151,7 +146,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [offerTimer, showOfferBanner])
 
-  // ── Charger historique au montage ──
   useEffect(() => {
     if (!sessionId) return
 
@@ -191,7 +185,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     loadHistory()
   }, [sessionId, userId, language])
 
-  // ── Trigger proactif avec détection améliorée ──
   useEffect(() => {
     if (!sessionId) return
 
@@ -254,10 +247,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const checkCheckoutStatus = () => {
     return localStorage.getItem('checkout_visited') === 'true'
   }
-
-  // ============================================================
-  // ACTIONS
-  // ============================================================
 
   const addAssistantMessage = useCallback((content: string, products?: Product[], offer?: Offer) => {
     const msg: Message = {
@@ -372,7 +361,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
+  // ✅ Clic sur un produit
   const handleProductClick = useCallback(async (product: Product, messageId: string) => {
+    // Scroll vers le produit
     const productElement = document.getElementById(`product-${product.id}`)
     if (productElement) {
       productElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -500,10 +491,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }
 
-  // ✅ loadMoreProducts avec offset dynamique ET seen_ids
+  // ✅ loadMoreProducts avec seen_ids pour éviter les doublons
   const loadMoreProducts = useCallback(async (query: string, categories: string[] = []) => {
     try {
-      // ✅ Récupérer les IDs déjà vus pour éviter les doublons
       const seenIds = messages
         .flatMap(m => m.products?.map(p => p.id) || [])
         .filter(Boolean)
@@ -518,7 +508,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           query: query,
           categories: categories,
           limit: 12,
-          offset: loadOffset,
           seen_ids: seenIds,
         }),
       })
@@ -538,9 +527,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       console.error("Erreur chargement plus:", error)
       addAssistantMessage("Oups, erreur de chargement. Réessaie !")
     }
-  }, [sessionId, userId, loadOffset, addAssistantMessage, scrollToBottom, messages])
+  }, [sessionId, userId, addAssistantMessage, scrollToBottom, messages])
 
-  // Écouter l'événement déclenché par la voix
   useEffect(() => {
     const handleVoiceSend = () => sendMessage()
     window.addEventListener('send-voice-message' as any, handleVoiceSend)
@@ -553,10 +541,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       sendMessage()
     }
   }
-
-  // ============================================================
-  // RENDU
-  // ============================================================
 
   const buttonSize = isMobile ? 48 : 56
   const buttonFontSize = isMobile ? 20 : 24
@@ -573,7 +557,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
   return (
     <>
-      {/* OFFER BANNER - affiché en dehors du widget */}
       {showOfferBanner && activeOffer && offerTimer > 0 && (
         <OfferBanner
           discount={activeOffer.discount_2}
@@ -614,7 +597,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             transition: 'transform 0.2s ease',
             fontSize: buttonFontSize,
           }}
-          onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
+          onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
           onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
         >
           🤖
@@ -694,26 +677,29 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             flexDirection: 'column',
             overflow: 'hidden',
             fontFamily: "'Poppins', sans-serif",
-            transition: 'height 0.25s ease, opacity 0.3s ease, transform 0.3s ease',
-            animation: 'slideUp 0.3s ease-out',
+            transition: 'height 0.3s ease',
           }}
         >
-          {/* HEADER */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            padding: '12px 14px',
-            background: '#D4372B',
-            cursor: 'pointer',
-            flexShrink: 0,
-          }}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '12px 14px',
+              background: '#D4372B',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
             onClick={() => setIsMinimized(!isMinimized)}
           >
             <div style={{
-              width: '32px', height: '32px', borderRadius: '50%',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
               background: 'rgba(255,255,255,0.2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               fontSize: '16px',
             }}>🤖</div>
             <div style={{ flex: 1 }}>
@@ -750,7 +736,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
           {!isMinimized && (
             <>
-              {/* MESSAGES */}
               <div style={{
                 flex: 1,
                 overflowY: 'auto',
@@ -767,8 +752,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                       justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
                       gap: '4px',
                       alignItems: 'flex-end',
-                      animation: 'fadeIn 0.3s ease-out',
-                      animationDelay: `${idx * 0.05}s`,
+                      animation: 'fadeIn 0.4s ease-out',
+                      animationDelay: `${idx * 0.04}s`,
                       opacity: 0,
                       animationFillMode: 'forwards',
                     }}
@@ -797,7 +782,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                     }}>
                       {msg.content}
                       
-                      {/* 🎴 CARTES PRODUITS */}
                       {msg.products && msg.products.length > 0 && (
                         <div style={{
                           marginTop: '8px',
@@ -815,31 +799,30 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                                 display: 'flex',
                                 gap: '10px',
                                 background: '#fff',
-                                borderRadius: '10px',
+                                borderRadius: '8px',
                                 padding: '8px 10px',
                                 border: '1px solid #F0F0F0',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s ease',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
                                 alignItems: 'center',
-                                animation: `fadeIn 0.3s ease ${index * 0.1}s both`,
+                                animation: `fadeIn 0.3s ease ${index * 0.08}s both`,
                               }}
                               onMouseEnter={e => {
                                 e.currentTarget.style.borderColor = '#D4372B'
-                                e.currentTarget.style.boxShadow = '0 4px 16px rgba(212,55,43,0.12)'
-                                e.currentTarget.style.transform = 'translateY(-2px)'
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(212,55,43,0.08)'
+                                e.currentTarget.style.transform = 'translateY(-1px)'
                               }}
                               onMouseLeave={e => {
                                 e.currentTarget.style.borderColor = '#F0F0F0'
-                                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'
+                                e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.03)'
                                 e.currentTarget.style.transform = 'translateY(0)'
                               }}
                             >
-                              {/* Image */}
                               <div style={{
                                 width: '50px',
                                 height: '50px',
-                                borderRadius: '8px',
+                                borderRadius: '6px',
                                 background: '#F8F8F8',
                                 flexShrink: 0,
                                 overflow: 'hidden',
@@ -858,12 +841,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                                 )}
                               </div>
                               
-                              {/* Infos */}
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <p style={{
                                   margin: 0,
                                   fontSize: isMobile ? '11px' : '12px',
-                                  fontWeight: 600,
+                                  fontWeight: 500,
                                   color: '#0A0A0A',
                                   whiteSpace: 'nowrap',
                                   overflow: 'hidden',
@@ -876,7 +858,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                                     margin: '2px 0 0 0',
                                     fontSize: isMobile ? '11px' : '12px',
                                     color: '#D4372B',
-                                    fontWeight: 700,
+                                    fontWeight: 600,
                                   }}>
                                     {p.price} FCFA
                                   </p>
@@ -884,19 +866,18 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                                 <p style={{
                                   margin: '1px 0 0 0',
                                   fontSize: isMobile ? '8px' : '9px',
-                                  color: '#888',
+                                  color: '#999',
                                 }}>
                                   💡 {p.reason || 'Recommandé pour vous'}
                                 </p>
                               </div>
                               
-                              {/* Badge */}
                               <div style={{
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 padding: '0 8px',
-                                background: index === 0 ? '#D4372B' : index === 1 ? '#E67700' : '#888',
+                                background: index === 0 ? '#D4372B' : index === 1 ? '#E67700' : '#999',
                                 borderRadius: '10px',
                                 color: '#fff',
                                 fontSize: '8px',
@@ -909,7 +890,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                             </div>
                           ))}
                           
-                          {/* Bouton Voir plus */}
                           {msg.products.length > (isMobile ? 2 : 3) && (
                             <button
                               onClick={() => {
@@ -928,7 +908,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                                 transition: 'all 0.2s',
                               }}
                               onMouseEnter={e => {
-                                e.currentTarget.style.background = '#FFF0F0'
+                                e.currentTarget.style.background = '#FFF5F3'
                                 e.currentTarget.style.borderColor = '#D4372B'
                               }}
                               onMouseLeave={e => {
@@ -985,7 +965,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* INPUT */}
               <div style={{
                 padding: isMobile ? '6px 10px' : '10px 12px',
                 borderTop: '0.5px solid #ECECEC',
@@ -993,10 +972,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 gap: '6px',
                 alignItems: 'center',
                 flexShrink: 0,
-                animation: 'fadeIn 0.3s ease-out',
-                animationDelay: '0.2s',
-                opacity: 0,
-                animationFillMode: 'forwards',
               }}>
                 <input
                   ref={inputRef}
@@ -1018,7 +993,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                   }}
                 />
                 
-                {/* 🎤 Bouton microphone */}
                 {voiceSupported && (
                   <button
                     onClick={startVoiceRecognition}
@@ -1036,7 +1010,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                       fontSize: isMobile ? '12px' : '14px',
                       flexShrink: 0,
                       transition: 'all 0.2s',
-                      boxShadow: isRecording ? '0 0 20px rgba(230,119,0,0.4)' : 'none',
+                      boxShadow: isRecording ? '0 0 20px rgba(230,119,0,0.3)' : 'none',
                     }}
                   >
                     {isRecording ? '⏹' : '🎤'}
@@ -1072,18 +1046,18 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       <style>{`
         @keyframes bounce {
           0%, 60%, 100% { transform: translateY(0); }
-          30% { transform: translateY(-6px); }
+          30% { transform: translateY(-5px); }
         }
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: translateY(0); }
         }
         @keyframes slideUp {
-          from { opacity: 0; transform: translateY(20px) scale(0.95); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
+          from { opacity: 0; transform: translateY(16px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         @keyframes slideIn {
-          from { opacity: 0; transform: translateX(-10px); }
+          from { opacity: 0; transform: translateX(-8px); }
           to { opacity: 1; transform: translateX(0); }
         }
         .chatbot-container {
