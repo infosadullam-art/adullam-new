@@ -2,7 +2,8 @@
 
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// Proactif, mémorant, adapté mobile + MODE VOCAL 🎤
+// VENDEUR ULTIME - Version 4.0
+// Mode vocal, cartes produits, offres, compte à rebours, scroll infini
 
 import { useState, useEffect, useRef, useCallback } from "react"
 
@@ -16,6 +17,7 @@ interface Message {
   content: string
   timestamp: Date
   products?: Product[]
+  offer?: Offer
 }
 
 interface Product {
@@ -29,10 +31,20 @@ interface Product {
   reason?: string
 }
 
+interface Offer {
+  type: 'safe' | 'risky' | 'none'
+  discount_1: number
+  discount_2: number
+  time_limit: number
+  urgency_message?: string
+  taunt_message?: string
+}
+
 interface ChatbotWidgetProps {
   sessionId: string
   userId?: string
   language?: 'fr' | 'en' | 'pt'
+  token?: string
 }
 
 // ============================================================
@@ -41,15 +53,13 @@ interface ChatbotWidgetProps {
 
 const TRIGGER_CHECK_INTERVAL = 30000   // 30s
 const INACTIVITY_THRESHOLD   = 15      // 15s sans action → trigger
-
-// URL du backend Next.js (API Route) sur VPS
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.adullamarket.com'
 
 // ============================================================
 // COMPOSANT PRINCIPAL
 // ============================================================
 
-export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWidgetProps) {
+export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: ChatbotWidgetProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
@@ -65,6 +75,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(true)
 
+  // 🏷️ État offres
+  const [activeOffer, setActiveOffer] = useState<Offer | null>(null)
+  const [offerTimer, setOfferTimer] = useState<number>(0)
+  const [showOfferBanner, setShowOfferBanner] = useState(false)
+
   const messagesEndRef  = useRef<HTMLDivElement>(null)
   const inputRef        = useRef<HTMLInputElement>(null)
   const lastActionRef   = useRef<number>(Date.now())
@@ -72,6 +87,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
   const viewCountRef    = useRef(0)
   const recognitionRef  = useRef<any>(null)
   const speechSynthRef  = useRef<SpeechSynthesis | null>(null)
+  const offerIntervalRef = useRef<NodeJS.Timeout>()
 
   // ✅ Détecter mobile
   useEffect(() => {
@@ -117,7 +133,27 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
     }
   }, [])
 
-  // ── Charger historique au montage ─────────────────────────
+  // ── Compte à rebours de l'offre ──
+  useEffect(() => {
+    if (offerTimer > 0 && showOfferBanner) {
+      offerIntervalRef.current = setInterval(() => {
+        setOfferTimer(prev => {
+          if (prev <= 1) {
+            setShowOfferBanner(false)
+            setActiveOffer(null)
+            clearInterval(offerIntervalRef.current)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    }
+    return () => {
+      if (offerIntervalRef.current) clearInterval(offerIntervalRef.current)
+    }
+  }, [offerTimer, showOfferBanner])
+
+  // ── Charger historique au montage ──
   useEffect(() => {
     if (!sessionId) return
 
@@ -142,22 +178,22 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
           setHasUnread(true)
         } else if (messages.length === 0) {
           const welcomes = {
-            fr: "Salut ! 👋 Je suis Adu, ton assistant Adullam. Dis-moi ce que tu cherches, je suis là pour t'aider !",
-            en: "Hey! 👋 I'm Adu, your Adullam assistant. Tell me what you're looking for!",
-            pt: "Oi! 👋 Sou o Adu, seu assistente Adullam. Me diz o que você procura!",
+            fr: "Salut ! 👋 Je suis Adu, ton vendeur Adullam. Dis-moi ce que tu cherches, je suis là pour t'aider !",
+            en: "Hey! 👋 I'm Adu, your Adullam seller. Tell me what you're looking for!",
+            pt: "Oi! 👋 Sou o Adu, seu vendedor Adullam. Me diz o que você procura!",
           }
           addAssistantMessage(welcomes[language] || welcomes.fr)
         }
       } catch (error) {
         console.error("Erreur chargement historique:", error)
-        addAssistantMessage("Salut ! 👋 Je suis Adu, ton assistant Adullam. Comment puis-je t'aider ?")
+        addAssistantMessage("Salut ! 👋 Je suis Adu, ton vendeur Adullam. Comment puis-je t'aider ?")
       }
     }
 
     loadHistory()
   }, [sessionId, userId, language])
 
-  // ── Trigger proactif ──────────────────────────────────────
+  // ── Trigger proactif avec détection améliorée ──
   useEffect(() => {
     if (!sessionId) return
 
@@ -176,6 +212,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
             user_id: userId || null,
             inactivity_seconds: inactivitySeconds,
             viewed_count: viewCountRef.current,
+            // ✅ Détection améliorée
+            has_added_to_cart: checkCartStatus(),
+            has_visited_checkout: checkCheckoutStatus(),
+            has_come_back: true,
           }),
         })
 
@@ -184,6 +224,20 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
         if (data.should_trigger && data.message) {
           setProactiveMessage(data.message)
           setHasUnread(true)
+          
+          // ✅ Si c'est une offre, l'activer
+          if (data.trigger_type === 'hesitation_strong' || data.trigger_type === 'abandoned_cart') {
+            const offer: Offer = {
+              type: 'risky',
+              discount_1: 5,
+              discount_2: 10,
+              time_limit: 20,
+              urgency_message: data.message,
+            }
+            setActiveOffer(offer)
+            setOfferTimer(20 * 60) // 20 minutes en secondes
+            setShowOfferBanner(true)
+          }
         }
       } catch (error) {
         console.error("Erreur trigger:", error)
@@ -196,19 +250,40 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
     }
   }, [sessionId, userId, isOpen])
 
+  // ── Helper check panier ──
+  const checkCartStatus = () => {
+    // Vérifie si des produits sont dans le panier
+    return messages.some(m => 
+      m.products && m.products.length > 0 && m.role === 'assistant'
+    )
+  }
+
+  const checkCheckoutStatus = () => {
+    // Simulation : si l'utilisateur a cliqué sur un produit
+    return localStorage.getItem('checkout_visited') === 'true'
+  }
+
   // ============================================================
   // ACTIONS
   // ============================================================
 
-  const addAssistantMessage = useCallback((content: string, products?: Product[]) => {
+  const addAssistantMessage = useCallback((content: string, products?: Product[], offer?: Offer) => {
     const msg: Message = {
       id: `msg_${Date.now()}`,
       role: 'assistant',
       content,
       timestamp: new Date(),
       products,
+      offer,
     }
     setMessages(prev => [...prev, msg])
+    
+    // 🔥 Si l'offre est présente, l'activer
+    if (offer && offer.type !== 'none') {
+      setActiveOffer(offer)
+      setOfferTimer(offer.time_limit * 60)
+      setShowOfferBanner(true)
+    }
     
     // 🔊 Lire la réponse à voix haute
     if (voiceSupported && speechSynthRef.current) {
@@ -216,7 +291,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
       utterance.lang = language === 'fr' ? 'fr-FR' : language === 'pt' ? 'pt-PT' : 'en-US'
       utterance.rate = 0.9
       utterance.pitch = 1.1
-      utterance.volume = 1
       setIsSpeaking(true)
       utterance.onend = () => setIsSpeaking(false)
       utterance.onerror = () => setIsSpeaking(false)
@@ -241,7 +315,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
   // 🎤 Reconnaissance vocale
   const startVoiceRecognition = useCallback(() => {
     if (isRecording) {
-      // Arrêter l'enregistrement
       if (recognitionRef.current) {
         recognitionRef.current.stop()
         recognitionRef.current = null
@@ -272,10 +345,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
       setIsRecording(false)
       recognitionRef.current = null
       
-      // Envoyer automatiquement le message après un court délai
       setTimeout(() => {
         if (transcript.trim()) {
-          // Déclencher l'envoi
           const sendEvent = new Event('send-voice-message')
           window.dispatchEvent(sendEvent)
         }
@@ -313,6 +384,63 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
     }
   }, [])
 
+  // 🎴 Gestion du clic sur un produit
+  const handleProductClick = useCallback(async (product: Product, messageId: string) => {
+    // 1. Scroll vers le produit
+    const productElement = document.getElementById(`product-${product.id}`)
+    if (productElement) {
+      productElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+
+    // 2. Marquer checkout visité
+    localStorage.setItem('checkout_visited', 'true')
+
+    // 3. Envoyer l'interaction
+    try {
+      await fetch(`${API_BASE_URL}/api/track`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId: product.id,
+          type: 'CLICK',
+          context: 'CHATBOT',
+          sessionId: sessionId,
+          userId: userId || null,
+          metadata: {
+            message_id: messageId,
+            source: 'chatbot_recommendation',
+            reason: product.reason,
+          }
+        })
+      })
+    } catch (e) {}
+
+    // 4. Recalcul avec poids fort
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/chat/recommend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: sessionId,
+          user_id: userId || null,
+          product_id: product.id,
+          weight: 5.0,
+          limit: 3,
+        })
+      })
+
+      const data = await response.json()
+      if (data.success && data.products?.length > 0) {
+        addAssistantMessage(
+          `Ah, excellent choix ! Puisque tu aimes celui-ci, je te montre des produits qui vont super bien avec 👀`,
+          data.products
+        )
+      }
+    } catch (error) {
+      console.error("Erreur recalcul:", error)
+    }
+  }, [sessionId, userId, addAssistantMessage])
+
   // 📨 Envoyer un message
   const sendMessage = async () => {
     const text = input.trim()
@@ -338,6 +466,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
           session_id: sessionId,
           user_id: userId || null,
           language: language,
+          token: token || null,
         }),
       })
 
@@ -352,7 +481,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
           reason: p.reason,
         })) || []
 
-        addAssistantMessage(data.response, formattedProducts)
+        // ✅ Récupérer l'offre si présente
+        const offer = data.offer || null
+
+        addAssistantMessage(data.response, formattedProducts, offer)
 
         try {
           await fetch(`${API_BASE_URL}/api/track`, {
@@ -363,11 +495,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
               type: 'CHAT_CONVERSATION',
               context: 'CHATBOT',
               sessionId: sessionId,
+              userId: userId || null,
               metadata: {
                 user_message: text.slice(0, 500),
                 assistant_message: data.response.slice(0, 500),
                 intent: data.intent,
-                language: language
+                language: language,
+                user_type: data.user_context?.user_type || 'particular',
+                business_name: data.user_context?.business_name || null,
               }
             })
           })
@@ -385,12 +520,45 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
     }
   }
 
+  // 📦 Charger plus de produits
+  const loadMoreProducts = useCallback(async (query: string, categories: string[] = []) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/chat/more`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: sessionId,
+          user_id: userId || null,
+          query: query,
+          categories: categories,
+          limit: 12,
+          offset: 3,
+        }),
+      })
+
+      const data = await res.json()
+      if (data.success && data.products?.length > 0) {
+        addAssistantMessage(
+          `Voici d'autres produits qui pourraient te plaire ! 👀`,
+          data.products
+        )
+        // Scroll vers les nouveaux produits
+        setTimeout(scrollToBottom, 300)
+      } else {
+        addAssistantMessage("Je n'ai pas trouvé d'autres produits pour le moment. Tu veux essayer un autre mot-clé ?")
+      }
+    } catch (error) {
+      console.error("Erreur chargement plus:", error)
+      addAssistantMessage("Oups, erreur de chargement. Réessaie !")
+    }
+  }, [sessionId, userId, addAssistantMessage, scrollToBottom])
+
   // Écouter l'événement déclenché par la voix
   useEffect(() => {
     const handleVoiceSend = () => sendMessage()
     window.addEventListener('send-voice-message' as any, handleVoiceSend)
     return () => window.removeEventListener('send-voice-message' as any, handleVoiceSend)
-  }, [input])
+  }, [input, sendMessage])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -408,15 +576,21 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
   const bottomPosition = isMobile ? 80 : 24
   const rightPosition = isMobile ? 12 : 24
   const widgetWidth = isMobile ? 'calc(100vw - 24px)' : '380px'
-  const widgetHeight = isMobile ? '480px' : '520px'
+  const widgetHeight = isMobile ? '500px' : '540px'
   const widgetMaxWidth = isMobile ? 'calc(100vw - 24px)' : 'calc(100vw - 32px)'
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
 
   return (
     <>
       {!isOpen && (
         <button
           onClick={openChat}
-          aria-label="Ouvrir Adu, votre assistant"
+          aria-label="Ouvrir Adu, votre vendeur"
           style={{
             position: 'fixed',
             bottom: bottomPosition,
@@ -515,6 +689,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
           fontFamily: "'Poppins', sans-serif",
           transition: 'height 0.25s ease',
         }}>
+          {/* HEADER */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -537,7 +712,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
                 Adu {isSpeaking && '🔊'}
               </p>
               <p style={{ margin: 0, color: 'rgba(255,255,255,0.8)', fontSize: '10px' }}>
-                {isRecording ? '🎤 Écoute...' : 'Votre assistant Adullam'}
+                {isRecording ? '🎤 Écoute...' : 'Votre vendeur Adullam'}
               </p>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -566,6 +741,39 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
 
           {!isMinimized && (
             <>
+              {/* BANNIÈRE OFFRE */}
+              {showOfferBanner && activeOffer && offerTimer > 0 && (
+                <div style={{
+                  background: 'linear-gradient(135deg, #FF6B35, #D4372B)',
+                  color: '#fff',
+                  padding: '10px 14px',
+                  textAlign: 'center',
+                  fontSize: isMobile ? '11px' : '13px',
+                  fontWeight: 600,
+                  flexShrink: 0,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '8px',
+                  flexWrap: 'wrap',
+                }}>
+                  <span style={{ flex: 1 }}>
+                    🔥 {activeOffer.taunt_message || 'Offre spéciale !'}
+                  </span>
+                  <span style={{
+                    background: 'rgba(255,255,255,0.2)',
+                    padding: '2px 10px',
+                    borderRadius: '12px',
+                    fontSize: isMobile ? '12px' : '14px',
+                    fontWeight: 700,
+                    fontVariantNumeric: 'tabular-nums',
+                  }}>
+                    ⏱️ {formatTime(offerTimer)}
+                  </span>
+                </div>
+              )}
+
+              {/* MESSAGES */}
               <div style={{
                 flex: 1,
                 overflowY: 'auto',
@@ -604,26 +812,155 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
                       lineHeight: 1.4,
                     }}>
                       {msg.content}
+                      
+                      {/* 🎴 CARTES PRODUITS */}
                       {msg.products && msg.products.length > 0 && (
-                        <div style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          {msg.products.slice(0, isMobile ? 2 : 3).map(p => (
-                            <div key={p.id} style={{
-                              padding: '4px 8px',
-                              background: 'rgba(255,255,255,0.15)',
-                              borderRadius: '4px',
-                              fontSize: isMobile ? '10px' : '11px',
-                              cursor: 'pointer',
-                            }}
-                              onClick={() => window.location.href = `/products/${p.id}`}
+                        <div style={{
+                          marginTop: '8px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '6px',
+                          width: '100%',
+                        }}>
+                          {msg.products.slice(0, isMobile ? 2 : 3).map((p, index) => (
+                            <div
+                              key={p.id}
+                              id={`product-${p.id}`}
+                              onClick={() => handleProductClick(p, msg.id)}
+                              style={{
+                                display: 'flex',
+                                gap: '10px',
+                                background: '#fff',
+                                borderRadius: '10px',
+                                padding: '8px 10px',
+                                border: '1px solid #F0F0F0',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                alignItems: 'center',
+                                animation: `fadeInUp 0.3s ease ${index * 0.1}s both`,
+                              }}
+                              onMouseEnter={e => {
+                                e.currentTarget.style.borderColor = '#D4372B'
+                                e.currentTarget.style.boxShadow = '0 4px 16px rgba(212,55,43,0.12)'
+                                e.currentTarget.style.transform = 'translateY(-2px)'
+                              }}
+                              onMouseLeave={e => {
+                                e.currentTarget.style.borderColor = '#F0F0F0'
+                                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'
+                                e.currentTarget.style.transform = 'translateY(0)'
+                              }}
                             >
-                              🛍️ {p.reason || p.title || 'Produit recommandé'}
+                              {/* Image */}
+                              <div style={{
+                                width: '50px',
+                                height: '50px',
+                                borderRadius: '8px',
+                                background: '#F8F8F8',
+                                flexShrink: 0,
+                                overflow: 'hidden',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}>
+                                {p.image ? (
+                                  <img
+                                    src={p.image}
+                                    alt={p.title || p.name || 'Produit'}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                  />
+                                ) : (
+                                  <span style={{ fontSize: '24px' }}>📦</span>
+                                )}
+                              </div>
+                              
+                              {/* Infos */}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p style={{
+                                  margin: 0,
+                                  fontSize: isMobile ? '11px' : '12px',
+                                  fontWeight: 600,
+                                  color: '#0A0A0A',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}>
+                                  {p.title || p.name || 'Produit'}
+                                </p>
+                                {p.price && (
+                                  <p style={{
+                                    margin: '2px 0 0 0',
+                                    fontSize: isMobile ? '11px' : '12px',
+                                    color: '#D4372B',
+                                    fontWeight: 700,
+                                  }}>
+                                    {p.price} FCFA
+                                  </p>
+                                )}
+                                <p style={{
+                                  margin: '1px 0 0 0',
+                                  fontSize: isMobile ? '8px' : '9px',
+                                  color: '#888',
+                                }}>
+                                  💡 {p.reason || 'Recommandé pour vous'}
+                                </p>
+                              </div>
+                              
+                              {/* Badge */}
+                              <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '0 8px',
+                                background: index === 0 ? '#D4372B' : index === 1 ? '#E67700' : '#888',
+                                borderRadius: '10px',
+                                color: '#fff',
+                                fontSize: '8px',
+                                fontWeight: 600,
+                                height: '16px',
+                                flexShrink: 0,
+                              }}>
+                                {index === 0 ? 'TOP' : index === 1 ? '⭐' : '👍'}
+                              </div>
                             </div>
                           ))}
+                          
+                          {/* Bouton Voir plus */}
+                          {msg.products.length > (isMobile ? 2 : 3) && (
+                            <button
+                              onClick={() => {
+                                const query = msg.products.map(p => p.title || p.name).filter(Boolean).join(' ')
+                                loadMoreProducts(query, [])
+                              }}
+                              style={{
+                                padding: '6px 12px',
+                                background: 'transparent',
+                                border: '1px dashed #D4372B',
+                                borderRadius: '20px',
+                                color: '#D4372B',
+                                fontSize: isMobile ? '10px' : '11px',
+                                cursor: 'pointer',
+                                width: '100%',
+                                transition: 'all 0.2s',
+                              }}
+                              onMouseEnter={e => {
+                                e.currentTarget.style.background = '#FFF0F0'
+                                e.currentTarget.style.borderColor = '#D4372B'
+                              }}
+                              onMouseLeave={e => {
+                                e.currentTarget.style.background = 'transparent'
+                                e.currentTarget.style.borderColor = '#D4372B'
+                              }}
+                            >
+                              Voir plus de produits →
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
                   </div>
                 ))}
+                
                 {isTyping && (
                   <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
                     <div style={{
@@ -659,6 +996,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
                 <div ref={messagesEndRef} />
               </div>
 
+              {/* INPUT */}
               <div style={{
                 padding: isMobile ? '6px 10px' : '10px 12px',
                 borderTop: '0.5px solid #ECECEC',
@@ -742,6 +1080,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr' }: ChatbotWid
         @keyframes bounce {
           0%, 60%, 100% { transform: translateY(0); }
           30% { transform: translateY(-6px); }
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateX(-10px); }
+          to { opacity: 1; transform: translateX(0); }
         }
       `}</style>
     </>
