@@ -70,6 +70,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const [proactiveMessage, setProactiveMessage] = useState<string | null>(null)
   const [isFirstOpen, setIsFirstOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
+  const [loadOffset, setLoadOffset] = useState(3) // ✅ Pour suivre le nombre de produits déjà chargés
   
   // 🎤 État vocal
   const [isRecording, setIsRecording] = useState(false)
@@ -499,6 +500,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }
 
+  // ✅ loadMoreProducts avec offset dynamique
   const loadMoreProducts = useCallback(async (query: string, categories: string[] = []) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/chat/more`, {
@@ -510,12 +512,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           query: query,
           categories: categories,
           limit: 12,
-          offset: 3,
+          offset: loadOffset, // ✅ Utilise l'offset actuel
         }),
       })
 
       const data = await res.json()
       if (data.success && data.products?.length > 0) {
+        setLoadOffset(prev => prev + 12) // ✅ Incrémente l'offset pour la prochaine fois
         addAssistantMessage(
           `Voici d'autres produits qui pourraient te plaire ! 👀`,
           data.products
@@ -528,7 +531,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       console.error("Erreur chargement plus:", error)
       addAssistantMessage("Oups, erreur de chargement. Réessaie !")
     }
-  }, [sessionId, userId, addAssistantMessage, scrollToBottom])
+  }, [sessionId, userId, loadOffset, addAssistantMessage, scrollToBottom])
 
   // Écouter l'événement déclenché par la voix
   useEffect(() => {
@@ -666,24 +669,28 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       )}
 
       {isOpen && (
-        <div style={{
-          position: 'fixed',
-          bottom: bottomPosition,
-          right: rightPosition,
-          width: widgetWidth,
-          maxWidth: 'calc(100vw - 32px)',
-          height: isMinimized ? '52px' : widgetHeight,
-          maxHeight: 'calc(100vh - 48px)',
-          background: '#fff',
-          borderRadius: '16px',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
-          zIndex: 1000,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          fontFamily: "'Poppins', sans-serif",
-          transition: 'height 0.25s ease',
-        }}>
+        <div
+          className="chatbot-container"
+          style={{
+            position: 'fixed',
+            bottom: bottomPosition,
+            right: rightPosition,
+            width: widgetWidth,
+            maxWidth: 'calc(100vw - 32px)',
+            height: isMinimized ? '52px' : widgetHeight,
+            maxHeight: 'calc(100vh - 48px)',
+            background: '#fff',
+            borderRadius: '16px',
+            boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
+            zIndex: 1000,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            fontFamily: "'Poppins', sans-serif",
+            transition: 'height 0.25s ease, opacity 0.3s ease, transform 0.3s ease',
+            animation: 'slideUp 0.3s ease-out',
+          }}
+        >
           {/* HEADER */}
           <div style={{
             display: 'flex',
@@ -745,13 +752,20 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 flexDirection: 'column',
                 gap: '6px',
               }}>
-                {messages.map(msg => (
-                  <div key={msg.id} style={{
-                    display: 'flex',
-                    justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                    gap: '4px',
-                    alignItems: 'flex-end',
-                  }}>
+                {messages.map((msg, idx) => (
+                  <div
+                    key={msg.id}
+                    style={{
+                      display: 'flex',
+                      justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                      gap: '4px',
+                      alignItems: 'flex-end',
+                      animation: 'fadeIn 0.3s ease-out',
+                      animationDelay: `${idx * 0.05}s`,
+                      opacity: 0,
+                      animationFillMode: 'forwards',
+                    }}
+                  >
                     {msg.role === 'assistant' && (
                       <div style={{
                         width: isMobile ? '20px' : '24px',
@@ -801,7 +815,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                                 transition: 'all 0.2s ease',
                                 boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                                 alignItems: 'center',
-                                animation: `fadeInUp 0.3s ease ${index * 0.1}s both`,
+                                animation: `fadeIn 0.3s ease ${index * 0.1}s both`,
                               }}
                               onMouseEnter={e => {
                                 e.currentTarget.style.borderColor = '#D4372B'
@@ -925,7 +939,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 ))}
                 
                 {isTyping && (
-                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    gap: '4px',
+                    animation: 'fadeIn 0.3s ease-out',
+                  }}>
                     <div style={{
                       width: isMobile ? '20px' : '24px',
                       height: isMobile ? '20px' : '24px',
@@ -967,6 +986,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 gap: '6px',
                 alignItems: 'center',
                 flexShrink: 0,
+                animation: 'fadeIn 0.3s ease-out',
+                animationDelay: '0.2s',
+                opacity: 0,
+                animationFillMode: 'forwards',
               }}>
                 <input
                   ref={inputRef}
@@ -1044,13 +1067,20 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           0%, 60%, 100% { transform: translateY(0); }
           30% { transform: translateY(-6px); }
         }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(10px); }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(20px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes slideIn {
           from { opacity: 0; transform: translateX(-10px); }
           to { opacity: 1; transform: translateX(0); }
+        }
+        .chatbot-container {
+          animation: slideUp 0.3s ease-out;
         }
       `}</style>
     </>
