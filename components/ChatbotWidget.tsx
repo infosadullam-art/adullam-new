@@ -7,7 +7,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { OfferBanner } from "@/components/OfferBanner"
-import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter" // ✅ AJOUT
+import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { useLocale } from "@/context/LocaleProvider"
 
 // ============================================================
 // TYPES
@@ -64,6 +65,8 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.adullamarke
 export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: ChatbotWidgetProps) {
   // ✅ Hook pour la devise dynamique
   const { formatPrice, getCurrencySymbol } = useCurrencyFormatter()
+  // ✅ Hook pour la localisation
+  const { country, currency, locale } = useLocale()
 
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
@@ -365,9 +368,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
-  // ✅ Clic sur un produit
+  // ✅ Clic sur un produit AVEC REDIRECTION
   const handleProductClick = useCallback(async (product: Product, messageId: string) => {
-    // Scroll vers le produit
     const productElement = document.getElementById(`product-${product.id}`)
     if (productElement) {
       productElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -406,7 +408,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           limit: 3,
         })
       })
-
       const data = await response.json()
       if (data.success && data.products?.length > 0) {
         addAssistantMessage(
@@ -417,6 +418,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     } catch (error) {
       console.error("Erreur recalcul:", error)
     }
+
+    // ✅ REDIRECTION VERS LA PAGE PRODUIT
+    window.location.href = `/products/${product.id}`
   }, [sessionId, userId, addAssistantMessage])
 
   const sendMessage = async () => {
@@ -495,7 +499,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }
 
-  // ✅ loadMoreProducts avec seen_ids pour éviter les doublons
+  // ✅ loadMoreProducts avec seen_ids
   const loadMoreProducts = useCallback(async (query: string, categories: string[] = []) => {
     try {
       const seenIds = messages
@@ -861,7 +865,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                                   <p style={{
                                     margin: '2px 0 0 0',
                                     fontSize: isMobile ? '11px' : '12px',
-                                    // ✅ Formatage dynamique avec formatPrice
                                     color: '#D4372B',
                                     fontWeight: 600,
                                   }}>
