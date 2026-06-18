@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { OfferBanner } from "@/components/OfferBanner"
+import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter" // ✅ AJOUT
 
 // ============================================================
 // TYPES
@@ -61,6 +62,9 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.adullamarke
 // ============================================================
 
 export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: ChatbotWidgetProps) {
+  // ✅ Hook pour la devise dynamique
+  const { formatPrice, getCurrencySymbol } = useCurrencyFormatter()
+
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
@@ -857,10 +861,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                                   <p style={{
                                     margin: '2px 0 0 0',
                                     fontSize: isMobile ? '11px' : '12px',
+                                    // ✅ Formatage dynamique avec formatPrice
                                     color: '#D4372B',
                                     fontWeight: 600,
                                   }}>
-                                    {p.price} FCFA
+                                    {formatPrice(p.price)}
                                   </p>
                                 )}
                                 <p style={{
