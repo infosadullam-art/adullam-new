@@ -70,7 +70,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const [proactiveMessage, setProactiveMessage] = useState<string | null>(null)
   const [isFirstOpen, setIsFirstOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
-  const [loadOffset, setLoadOffset] = useState(3) // ✅ Pour suivre le nombre de produits déjà chargés
+  const [loadOffset, setLoadOffset] = useState(3)
   
   // 🎤 État vocal
   const [isRecording, setIsRecording] = useState(false)
@@ -500,9 +500,15 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }
 
-  // ✅ loadMoreProducts avec offset dynamique
+  // ✅ loadMoreProducts avec offset dynamique ET seen_ids
   const loadMoreProducts = useCallback(async (query: string, categories: string[] = []) => {
     try {
+      // ✅ Récupérer les IDs déjà vus pour éviter les doublons
+      const seenIds = messages
+        .flatMap(m => m.products?.map(p => p.id) || [])
+        .filter(Boolean)
+        .join(',')
+
       const res = await fetch(`${API_BASE_URL}/api/chat/more`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -512,13 +518,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           query: query,
           categories: categories,
           limit: 12,
-          offset: loadOffset, // ✅ Utilise l'offset actuel
+          offset: loadOffset,
+          seen_ids: seenIds,
         }),
       })
 
       const data = await res.json()
       if (data.success && data.products?.length > 0) {
-        setLoadOffset(prev => prev + 12) // ✅ Incrémente l'offset pour la prochaine fois
+        setLoadOffset(prev => prev + 12)
         addAssistantMessage(
           `Voici d'autres produits qui pourraient te plaire ! 👀`,
           data.products
@@ -531,7 +538,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       console.error("Erreur chargement plus:", error)
       addAssistantMessage("Oups, erreur de chargement. Réessaie !")
     }
-  }, [sessionId, userId, loadOffset, addAssistantMessage, scrollToBottom])
+  }, [sessionId, userId, loadOffset, addAssistantMessage, scrollToBottom, messages])
 
   // Écouter l'événement déclenché par la voix
   useEffect(() => {
