@@ -206,7 +206,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           setMessages(loaded)
         }
 
-        if (data.welcome_back_message) {
+        // ✅ Ne pas afficher "Content de te revoir" si on vient de cliquer sur un produit
+        const justClickedProduct = sessionStorage.getItem('just_clicked_product') === 'true'
+        
+        if (data.welcome_back_message && !justClickedProduct) {
           setProactiveMessage(data.welcome_back_message)
           setHasUnread(true)
         } else if (messages.length === 0) {
@@ -216,6 +219,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             pt: "Oi! 👋 Sou o Adu, seu vendedor Adullam. Me diz o que você procura!",
           }
           addAssistantMessage(welcomes[language] || welcomes.fr)
+        }
+        
+        if (justClickedProduct) {
+          sessionStorage.removeItem('just_clicked_product')
         }
       } catch (error) {
         console.error("Erreur chargement historique:", error)
@@ -497,11 +504,30 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         setShowCouponBanner(true)
         setCouponTimer(data.coupon.time_limit * 60)
         
-        // ✅ Adu confirme dans le chat
-        addAssistantMessage(
-          `🎉 Top ! J'ai généré un coupon spécial pour toi : **${data.coupon.code}**\n` +
-          `Tu as **${data.coupon.discount}%** de réduction valable **${data.coupon.time_limit}min** ! ⏱️`
-        )
+        const couponMessage = `🎉 Top ! J'ai généré un coupon spécial pour toi : **${data.coupon.code}**\nTu as **${data.coupon.discount}%** de réduction valable **${data.coupon.time_limit}min** ! ⏱️`
+        
+        // ✅ Sauvegarder le message de coupon dans l'historique
+        await fetch(`${API_BASE_URL}/api/track`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productId: null,
+            type: 'CHAT_CONVERSATION',
+            context: 'CHATBOT',
+            sessionId: sessionId,
+            userId: userId || null,
+            metadata: {
+              user_message: `coupon_offer_${data.coupon.code}`,
+              assistant_message: couponMessage,
+              intent: { categories: [], coupon: data.coupon },
+              language: language,
+              user_type: 'particular',
+            }
+          })
+        })
+        
+        // ✅ Ajouter au chat localement
+        addAssistantMessage(couponMessage)
       } else {
         addAssistantMessage("Désolé, je n'ai pas pu générer le coupon. Réessaie ! 🙏")
       }
@@ -509,7 +535,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       console.error("Erreur génération coupon:", error)
       addAssistantMessage("Oups, erreur technique. Réessaie dans un instant !")
     }
-  }, [sessionId, userId, addAssistantMessage])
+  }, [sessionId, userId, addAssistantMessage, language])
 
   // ✅ Proposer une offre dans le chat
   const proposeOffer = useCallback((product: Product) => {
