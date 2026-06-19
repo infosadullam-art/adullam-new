@@ -2,8 +2,8 @@
 
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// VENDEUR ULTIME - Version 5.0
-// POSITION FIXE - Pas de drag
+// VENDEUR ULTIME - Version 4.0
+// Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { OfferBanner } from "@/components/OfferBanner"
@@ -108,7 +108,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const speechSynthRef  = useRef<SpeechSynthesis | null>(null)
 
   // ============================================================
-  // DÉTECTION MOBILE
+  // HOOKS & EFFETS
   // ============================================================
 
   useEffect(() => {
@@ -119,10 +119,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
-
-  // ============================================================
-  // VOCAL
-  // ============================================================
 
   useEffect(() => {
     const hasSpeechRecognition = !!(
@@ -220,6 +216,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           }
         })
       })
+      console.log('✅ Message assistant sauvegardé')
     } catch (e) {
       console.debug('⚠️ Erreur sauvegarde message:', e)
     }
@@ -249,29 +246,21 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           }))
           setMessages(loaded)
           
-          // Restaurer le coupon depuis l'historique
+          // ✅ Vérifier si un coupon actif existe dans l'historique
           const lastCoupon = loaded.find(m => 
             m.content.includes('coupon spécial') && 
             m.content.includes('ADU-')
           )
-          
-          if (lastCoupon && !activeCoupon && !showCouponBanner) {
+          if (lastCoupon) {
             const codeMatch = lastCoupon.content.match(/ADU-[A-Z0-9-]+/)
-            const discountMatch = lastCoupon.content.match(/(\d+)%/)
-            
             if (codeMatch) {
-              setActiveCoupon({
-                code: codeMatch[0],
-                discount: discountMatch ? parseInt(discountMatch[1]) : 8,
-                expires_at: new Date(Date.now() + 20 * 60 * 1000),
-                time_limit: 20
-              })
-              setShowCouponBanner(true)
-              setCouponTimer(20 * 60)
+              // On pourrait restaurer le coupon ici
+              console.log('🔍 Coupon trouvé dans l\'historique:', codeMatch[0])
             }
           }
         }
 
+        // ✅ Ne pas afficher "Content de te revoir" si on vient de cliquer sur un produit
         const justClickedProduct = sessionStorage.getItem('just_clicked_product') === 'true'
         
         if (data.welcome_back_message && !justClickedProduct && messages.length === 0) {
@@ -379,6 +368,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
     setMessages(prev => [...prev, msg])
     
+    // ✅ Sauvegarder dans l'historique
     if (content.length > 5 && !content.includes('...')) {
       saveMessageToHistory(content, products, offer)
     }
@@ -574,7 +564,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         
         const couponMessage = `🎉 Top ! J'ai généré un coupon spécial pour toi : **${data.coupon.code}**\nTu as **${data.coupon.discount}%** de réduction valable **${data.coupon.time_limit}min** ! ⏱️`
         
+        // ✅ Sauvegarder le message dans l'historique
         await saveMessageToHistory(couponMessage, undefined, undefined, data.coupon.code)
+        
+        // ✅ Ajouter au chat localement
         addAssistantMessage(couponMessage)
       } else {
         addAssistantMessage("Désolé, je n'ai pas pu générer le coupon. Réessaie ! 🙏")
@@ -586,6 +579,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   }, [sessionId, userId, addAssistantMessage, saveMessageToHistory])
 
   const proposeOffer = useCallback((product: Product) => {
+    // ✅ Ne proposer qu'une seule fois
     if (hasBeenOffered || activeCoupon) {
       return
     }
@@ -758,6 +752,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
   const buttonSize = isMobile ? 48 : 56
   const buttonFontSize = isMobile ? 20 : 24
+  const bottomPosition = isMobile ? 80 : 24
+  const rightPosition = isMobile ? 12 : 24
   const widgetWidth = isMobile ? 'calc(100vw - 24px)' : '380px'
   const widgetHeight = isMobile ? '500px' : '540px'
 
@@ -767,17 +763,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
-  // ✅ Position fixe (pas de drag)
-  const widgetStyle = {
-    position: 'fixed' as const,
-    bottom: isMobile ? 80 : 24,
-    right: isMobile ? 12 : 24,
-    zIndex: 1000,
-  }
-
   return (
-    <div style={widgetStyle} className="chatbot-wrapper">
-      {/* BANNIÈRE OFFRE */}
+    <>
       {showOfferBanner && activeOffer && offerTimer > 0 && (
         <OfferBanner
           discount={activeOffer.discount_2}
@@ -796,7 +783,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         />
       )}
 
-      {/* 🎫 BANNIÈRE COUPON */}
       {showCouponBanner && activeCoupon && couponTimer > 0 && (
         <div style={{
           position: 'fixed',
@@ -885,12 +871,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         </div>
       )}
 
-      {/* BOUTON CHAT */}
       {!isOpen && (
         <button
           onClick={openChat}
           aria-label="Ouvrir Adu, votre vendeur"
           style={{
+            position: 'fixed',
+            bottom: bottomPosition,
+            right: rightPosition,
             width: buttonSize,
             height: buttonSize,
             borderRadius: '50%',
@@ -901,6 +889,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             alignItems: 'center',
             justifyContent: 'center',
             boxShadow: '0 4px 20px rgba(212,55,43,0.4)',
+            zIndex: 1000,
             transition: 'transform 0.2s ease',
             fontSize: buttonFontSize,
           }}
@@ -929,26 +918,25 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         </button>
       )}
 
-      {/* MESSAGE PROACTIF */}
       {!isOpen && proactiveMessage && (
         <div
           onClick={openChat}
           style={{
+            position: 'fixed',
+            bottom: bottomPosition + buttonSize + 8,
+            right: rightPosition,
             maxWidth: isMobile ? '220px' : '260px',
             background: '#fff',
             borderRadius: '12px',
             padding: '10px 12px',
             boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+            zIndex: 999,
             cursor: 'pointer',
             fontSize: isMobile ? '12px' : '13px',
             color: '#0A0A0A',
             fontFamily: "'Poppins', sans-serif",
             lineHeight: 1.4,
             border: '0.5px solid #ECECEC',
-            marginTop: '8px',
-            position: 'absolute',
-            bottom: '70px',
-            right: '0',
           }}
         >
           <span style={{ fontWeight: 600, color: '#D4372B' }}>Adu · </span>
@@ -966,11 +954,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         </div>
       )}
 
-      {/* FENÊTRE CHAT */}
       {isOpen && (
         <div
           className="chatbot-container"
           style={{
+            position: 'fixed',
+            bottom: bottomPosition,
+            right: rightPosition,
             width: widgetWidth,
             maxWidth: 'calc(100vw - 32px)',
             height: isMinimized ? '52px' : widgetHeight,
@@ -978,14 +968,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             background: '#fff',
             borderRadius: '16px',
             boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
+            zIndex: 1000,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
             fontFamily: "'Poppins', sans-serif",
-            transition: 'height 0.3s ease, box-shadow 0.3s ease',
+            transition: 'height 0.3s ease',
           }}
         >
-          {/* HEADER */}
           <div
             style={{
               display: 'flex',
@@ -993,8 +983,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               gap: '10px',
               padding: '12px 14px',
               background: '#D4372B',
+              cursor: 'pointer',
               flexShrink: 0,
             }}
+            onClick={() => setIsMinimized(!isMinimized)}
           >
             <div style={{
               width: '32px',
@@ -1038,7 +1030,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             </div>
           </div>
 
-          {/* MESSAGES */}
           {!isMinimized && (
             <>
               <div style={{
@@ -1270,7 +1261,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* INPUT */}
               <div style={{
                 padding: isMobile ? '6px 10px' : '10px 12px',
                 borderTop: '0.5px solid #ECECEC',
@@ -1362,10 +1352,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }
         }
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateX(-8px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
         .chatbot-container {
           animation: slideUp 0.3s ease-out;
         }
       `}</style>
-    </div>
+    </>
   )
 }
