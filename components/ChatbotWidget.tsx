@@ -3,7 +3,7 @@
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
 // VENDEUR ULTIME - Version 4.0
-// Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫, DRAGGABLE 🔥
+// DRAGGABLE comme Messenger
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { OfferBanner } from "@/components/OfferBanner"
@@ -57,7 +57,7 @@ interface ChatbotWidgetProps {
 const TRIGGER_CHECK_INTERVAL = 30000
 const INACTIVITY_THRESHOLD   = 15
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.adullamarket.com'
-const SNAP_MARGIN = 20 // Distance des bords pour le snap
+const SNAP_MARGIN = 20
 
 // ============================================================
 // COMPOSANT PRINCIPAL
@@ -99,11 +99,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const [waitingForOfferResponse, setWaitingForOfferResponse] = useState(false)
   const [hasBeenOffered, setHasBeenOffered] = useState(false)
 
-  // 🎯 Position du widget (drag & drop)
+  // 🎯 Position du widget (drag & drop comme Messenger)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+  const [dragPos, setDragPos] = useState({ x: 0, y: 0 })
   const widgetRef = useRef<HTMLDivElement>(null)
+  const dragRef = useRef<HTMLDivElement>(null)
 
   // Refs
   const messagesEndRef  = useRef<HTMLDivElement>(null)
@@ -115,23 +117,22 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const speechSynthRef  = useRef<SpeechSynthesis | null>(null)
 
   // ============================================================
-  // DRAG & DROP
+  // DRAG & DROP (comme Messenger)
   // ============================================================
 
   const handleDragStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     if (!widgetRef.current) return
     
-    setIsDragging(true)
-    
-    const rect = widgetRef.current.getBoundingClientRect()
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
     
-    setDragOffset({
-      x: clientX - rect.left,
-      y: clientY - rect.top
-    })
-  }, [])
+    setIsDragging(true)
+    setDragStart({ x: clientX, y: clientY })
+    setDragPos({ x: position.x, y: position.y })
+    
+    // Empêcher le texte d'être sélectionné pendant le drag
+    document.body.style.userSelect = 'none'
+  }, [position])
 
   const handleDragMove = useCallback((e: MouseEvent | TouchEvent) => {
     if (!isDragging || !widgetRef.current) return
@@ -139,25 +140,29 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     const clientX = 'touches' in e ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX
     const clientY = 'touches' in e ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY
     
+    const deltaX = clientX - dragStart.x
+    const deltaY = clientY - dragStart.y
+    
     const windowWidth = window.innerWidth
     const windowHeight = window.innerHeight
     const widgetWidth = widgetRef.current.offsetWidth || 380
     const widgetHeight = widgetRef.current.offsetHeight || 540
     
-    let newX = clientX - dragOffset.x
-    let newY = clientY - dragOffset.y
+    let newX = dragPos.x + deltaX
+    let newY = dragPos.y + deltaY
     
-    // Limiter dans la fenêtre
+    // ✅ Limiter dans la fenêtre
     newX = Math.max(0, Math.min(newX, windowWidth - widgetWidth))
     newY = Math.max(0, Math.min(newY, windowHeight - widgetHeight))
     
     setPosition({ x: newX, y: newY })
-  }, [isDragging, dragOffset])
+  }, [isDragging, dragStart, dragPos])
 
   const handleDragEnd = useCallback(() => {
     setIsDragging(false)
+    document.body.style.userSelect = ''
     
-    // ✅ SNAP SUR LES BORDS
+    // ✅ SNAP SUR LES BORDS (comme Messenger)
     const windowWidth = window.innerWidth
     const windowHeight = window.innerHeight
     const widgetWidth = widgetRef.current?.offsetWidth || 380
@@ -166,14 +171,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     let snapX = position.x
     let snapY = position.y
     
-    // Snap horizontal (gauche ou droite)
+    // Snap horizontal : toujours collé à gauche ou droite
     if (position.x < windowWidth / 2) {
       snapX = SNAP_MARGIN
     } else {
       snapX = windowWidth - widgetWidth - SNAP_MARGIN
     }
     
-    // Snap vertical (haut ou bas)
+    // Snap vertical : toujours collé en haut ou en bas
     if (position.y < windowHeight / 2) {
       snapY = SNAP_MARGIN
     } else {
@@ -188,7 +193,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     if (isDragging) {
       window.addEventListener('mousemove', handleDragMove)
       window.addEventListener('mouseup', handleDragEnd)
-      window.addEventListener('touchmove', handleDragMove)
+      window.addEventListener('touchmove', handleDragMove, { passive: false })
       window.addEventListener('touchend', handleDragEnd)
     }
     
@@ -834,7 +839,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
-  // Position du widget
+  // ✅ Position du widget
   const widgetStyle = {
     position: 'fixed' as const,
     top: isMobile ? 'auto' : (position.y > 0 ? position.y : 80),
@@ -842,9 +847,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     right: isMobile ? 12 : 'auto',
     left: isMobile ? 'auto' : (position.x > 0 ? position.x : 24),
     zIndex: 1000,
-    transition: isDragging ? 'none' : 'all 0.3s ease',
+    transition: isDragging ? 'none' : 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
     cursor: isDragging ? 'grabbing' : 'grab',
     touchAction: 'none',
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
   }
 
   return (
@@ -1060,18 +1067,21 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             transition: 'height 0.3s ease, box-shadow 0.3s ease',
           }}
         >
-          {/* HEADER */}
+          {/* HEADER - zone de drag */}
           <div
+            ref={dragRef}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '10px',
               padding: '12px 14px',
               background: '#D4372B',
-              cursor: 'pointer',
+              cursor: isDragging ? 'grabbing' : 'grab',
               flexShrink: 0,
+              touchAction: 'none',
             }}
-            onClick={() => setIsMinimized(!isMinimized)}
+            onMouseDown={handleDragStart}
+            onTouchStart={handleDragStart}
           >
             <div style={{
               width: '32px',
