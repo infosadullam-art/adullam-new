@@ -2,7 +2,8 @@
 
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// DRAGGABLE comme Messenger
+// VENDEUR ULTIME - Version 5.0
+// POSITION FIXE - Pas de drag
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { OfferBanner } from "@/components/OfferBanner"
@@ -56,11 +57,6 @@ interface ChatbotWidgetProps {
 const TRIGGER_CHECK_INTERVAL = 30000
 const INACTIVITY_THRESHOLD   = 15
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.adullamarket.com'
-const SNAP_MARGIN = 20
-const BUTTON_SIZE = 56
-const BUTTON_SIZE_MOBILE = 48
-const WIDGET_WIDTH = 380
-const WIDGET_WIDTH_MOBILE = 'calc(100vw - 24px)'
 
 // ============================================================
 // COMPOSANT PRINCIPAL
@@ -102,16 +98,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const [waitingForOfferResponse, setWaitingForOfferResponse] = useState(false)
   const [hasBeenOffered, setHasBeenOffered] = useState(false)
 
-  // 🎯 Position du widget (comme Messenger)
-  const [position, setPosition] = useState({ x: 0, y: 0 })
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
-  const [widgetSize, setWidgetSize] = useState({ width: 0, height: 0 })
-  const [isInitialized, setIsInitialized] = useState(false)
-  
-  const widgetRef = useRef<HTMLDivElement>(null)
-  const dragRef = useRef<HTMLDivElement>(null)
-
   // Refs
   const messagesEndRef  = useRef<HTMLDivElement>(null)
   const inputRef        = useRef<HTMLInputElement>(null)
@@ -122,119 +108,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const speechSynthRef  = useRef<SpeechSynthesis | null>(null)
 
   // ============================================================
-  // INITIALISATION POSITION (comme Messenger)
-  // ============================================================
-
-  useEffect(() => {
-    const initPosition = () => {
-      const windowWidth = window.innerWidth
-      const windowHeight = window.innerHeight
-      const isMobileView = windowWidth < 768
-      const buttonSize = isMobileView ? BUTTON_SIZE_MOBILE : BUTTON_SIZE
-      
-      // Position initiale : bas à droite (comme Messenger)
-      const newX = windowWidth - buttonSize - 20
-      const newY = windowHeight - buttonSize - 80
-      
-      setPosition({ x: newX, y: newY })
-      setIsInitialized(true)
-    }
-    
-    // Attendre que le DOM soit prêt
-    setTimeout(initPosition, 100)
-  }, [])
-
-  // ============================================================
-  // DRAG & DROP (comme Messenger)
-  // ============================================================
-
-  const handleDragStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    if (!widgetRef.current) return
-    
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
-    
-    const rect = widgetRef.current.getBoundingClientRect()
-    
-    setIsDragging(true)
-    setDragOffset({
-      x: clientX - rect.left,
-      y: clientY - rect.top
-    })
-    
-    document.body.style.userSelect = 'none'
-    document.body.style.cursor = 'grabbing'
-  }, [])
-
-  const handleDragMove = useCallback((e: MouseEvent | TouchEvent) => {
-    if (!isDragging || !widgetRef.current) return
-    
-    const clientX = 'touches' in e ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX
-    const clientY = 'touches' in e ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY
-    
-    const windowWidth = window.innerWidth
-    const windowHeight = window.innerHeight
-    const widgetWidth = widgetRef.current.offsetWidth || (isMobile ? 300 : WIDGET_WIDTH)
-    const widgetHeight = widgetRef.current.offsetHeight || 400
-    
-    let newX = clientX - dragOffset.x
-    let newY = clientY - dragOffset.y
-    
-    // Limiter dans la fenêtre
-    newX = Math.max(0, Math.min(newX, windowWidth - widgetWidth))
-    newY = Math.max(0, Math.min(newY, windowHeight - widgetHeight))
-    
-    setPosition({ x: newX, y: newY })
-  }, [isDragging, dragOffset, isMobile])
-
-  const handleDragEnd = useCallback(() => {
-    setIsDragging(false)
-    document.body.style.userSelect = ''
-    document.body.style.cursor = ''
-    
-    // ✅ Snap sur les bords (comme Messenger)
-    const windowWidth = window.innerWidth
-    const windowHeight = window.innerHeight
-    const widgetWidth = widgetRef.current?.offsetWidth || (isMobile ? 300 : WIDGET_WIDTH)
-    
-    let snapX = position.x
-    
-    // Snap horizontal : collé à gauche ou droite
-    if (position.x < windowWidth / 2) {
-      snapX = SNAP_MARGIN
-    } else {
-      snapX = windowWidth - widgetWidth - SNAP_MARGIN
-    }
-    
-    // Ne pas changer Y (rester où le user l'a laissé)
-    setPosition({ x: snapX, y: position.y })
-  }, [position, isMobile])
-
-  // Gestion des événements de drag
-  useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleDragMove)
-      window.addEventListener('mouseup', handleDragEnd)
-      window.addEventListener('touchmove', handleDragMove, { passive: false })
-      window.addEventListener('touchend', handleDragEnd)
-    }
-    
-    return () => {
-      window.removeEventListener('mousemove', handleDragMove)
-      window.removeEventListener('mouseup', handleDragEnd)
-      window.removeEventListener('touchmove', handleDragMove)
-      window.removeEventListener('touchend', handleDragEnd)
-    }
-  }, [isDragging, handleDragMove, handleDragEnd])
-
-  // ============================================================
   // DÉTECTION MOBILE
   // ============================================================
 
   useEffect(() => {
     const checkMobile = () => {
-      const isMobileView = window.innerWidth < 768
-      setIsMobile(isMobileView)
+      setIsMobile(window.innerWidth < 768)
     }
     checkMobile()
     window.addEventListener('resize', checkMobile)
@@ -877,11 +756,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   // RENDU
   // ============================================================
 
-  const buttonSize = isMobile ? BUTTON_SIZE_MOBILE : BUTTON_SIZE
+  const buttonSize = isMobile ? 48 : 56
   const buttonFontSize = isMobile ? 20 : 24
-  const bottomPosition = isMobile ? 80 : 24
-  const rightPosition = isMobile ? 12 : 24
-  const widgetWidth = isMobile ? WIDGET_WIDTH_MOBILE : `${WIDGET_WIDTH}px`
+  const widgetWidth = isMobile ? 'calc(100vw - 24px)' : '380px'
+  const widgetHeight = isMobile ? '500px' : '540px'
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -889,30 +767,16 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
-  // ✅ Style du widget (comme Messenger)
+  // ✅ Position fixe (pas de drag)
   const widgetStyle = {
     position: 'fixed' as const,
-    top: isMobile ? 'auto' : (position.y > 0 ? position.y : 80),
-    bottom: isMobile ? 80 : 'auto',
-    right: isMobile ? 12 : 'auto',
-    left: isMobile ? 'auto' : (position.x > 0 ? position.x : 24),
+    bottom: isMobile ? 80 : 24,
+    right: isMobile ? 12 : 24,
     zIndex: 1000,
-    transition: isDragging ? 'none' : 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-    cursor: isDragging ? 'grabbing' : 'grab',
-    touchAction: 'none',
-    userSelect: 'none',
-    WebkitUserSelect: 'none',
-    opacity: isInitialized ? 1 : 0,
   }
 
   return (
-    <div
-      ref={widgetRef}
-      style={widgetStyle}
-      onMouseDown={handleDragStart}
-      onTouchStart={handleDragStart}
-      className={`chatbot-wrapper ${isDragging ? 'dragging' : ''}`}
-    >
+    <div style={widgetStyle} className="chatbot-wrapper">
       {/* BANNIÈRE OFFRE */}
       {showOfferBanner && activeOffer && offerTimer > 0 && (
         <OfferBanner
@@ -1082,6 +946,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             lineHeight: 1.4,
             border: '0.5px solid #ECECEC',
             marginTop: '8px',
+            position: 'absolute',
+            bottom: '70px',
+            right: '0',
           }}
         >
           <span style={{ fontWeight: 600, color: '#D4372B' }}>Adu · </span>
@@ -1106,7 +973,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           style={{
             width: widgetWidth,
             maxWidth: 'calc(100vw - 32px)',
-            height: isMinimized ? '52px' : (isMobile ? '500px' : '540px'),
+            height: isMinimized ? '52px' : widgetHeight,
             maxHeight: 'calc(100vh - 48px)',
             background: '#fff',
             borderRadius: '16px',
@@ -1118,21 +985,16 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             transition: 'height 0.3s ease, box-shadow 0.3s ease',
           }}
         >
-          {/* HEADER - zone de drag */}
+          {/* HEADER */}
           <div
-            ref={dragRef}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '10px',
               padding: '12px 14px',
               background: '#D4372B',
-              cursor: isDragging ? 'grabbing' : 'grab',
               flexShrink: 0,
-              touchAction: 'none',
             }}
-            onMouseDown={handleDragStart}
-            onTouchStart={handleDragStart}
           >
             <div style={{
               width: '32px',
@@ -1500,20 +1362,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateX(-8px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
         .chatbot-container {
           animation: slideUp 0.3s ease-out;
-        }
-        .chatbot-wrapper {
-          transition: transform 0.05s ease;
-          user-select: none;
-          -webkit-user-select: none;
-        }
-        .chatbot-wrapper.dragging {
-          transition: none !important;
         }
       `}</style>
     </div>
