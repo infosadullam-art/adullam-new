@@ -130,7 +130,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     setDragStart({ x: clientX, y: clientY })
     setDragPos({ x: position.x, y: position.y })
     
-    // Empêcher le texte d'être sélectionné pendant le drag
     document.body.style.userSelect = 'none'
   }, [position])
 
@@ -151,7 +150,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     let newX = dragPos.x + deltaX
     let newY = dragPos.y + deltaY
     
-    // ✅ Limiter dans la fenêtre
     newX = Math.max(0, Math.min(newX, windowWidth - widgetWidth))
     newY = Math.max(0, Math.min(newY, windowHeight - widgetHeight))
     
@@ -162,7 +160,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     setIsDragging(false)
     document.body.style.userSelect = ''
     
-    // ✅ SNAP SUR LES BORDS (comme Messenger)
     const windowWidth = window.innerWidth
     const windowHeight = window.innerHeight
     const widgetWidth = widgetRef.current?.offsetWidth || 380
@@ -171,14 +168,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     let snapX = position.x
     let snapY = position.y
     
-    // Snap horizontal : toujours collé à gauche ou droite
     if (position.x < windowWidth / 2) {
       snapX = SNAP_MARGIN
     } else {
       snapX = windowWidth - widgetWidth - SNAP_MARGIN
     }
     
-    // Snap vertical : toujours collé en haut ou en bas
     if (position.y < windowHeight / 2) {
       snapY = SNAP_MARGIN
     } else {
@@ -188,7 +183,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     setPosition({ x: snapX, y: snapY })
   }, [position])
 
-  // Gestion des événements de drag
   useEffect(() => {
     if (isDragging) {
       window.addEventListener('mousemove', handleDragMove)
@@ -251,7 +245,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
-  // Compte à rebours offre
   useEffect(() => {
     if (offerTimer > 0 && showOfferBanner) {
       const interval = setInterval(() => {
@@ -268,7 +261,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [offerTimer, showOfferBanner])
 
-  // Compte à rebours coupon
   useEffect(() => {
     if (couponTimer > 0 && showCouponBanner) {
       const interval = setInterval(() => {
@@ -342,6 +334,31 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             offer: m.offer || null,
           }))
           setMessages(loaded)
+          
+          // ✅ Vérifier si un coupon existe dans l'historique et restaurer la bannière
+          const lastCoupon = loaded.find(m => 
+            m.content.includes('coupon spécial') && 
+            m.content.includes('ADU-')
+          )
+          
+          if (lastCoupon && !activeCoupon && !showCouponBanner) {
+            const codeMatch = lastCoupon.content.match(/ADU-[A-Z0-9-]+/)
+            const discountMatch = lastCoupon.content.match(/(\d+)%/)
+            
+            if (codeMatch) {
+              // ✅ Restaurer le coupon et la bannière
+              const restoredCoupon = {
+                code: codeMatch[0],
+                discount: discountMatch ? parseInt(discountMatch[1]) : 8,
+                expires_at: new Date(Date.now() + 20 * 60 * 1000),
+                time_limit: 20
+              }
+              setActiveCoupon(restoredCoupon)
+              setShowCouponBanner(true)
+              setCouponTimer(20 * 60)
+              console.log('🔍 Coupon restauré depuis l\'historique:', codeMatch[0])
+            }
+          }
         }
 
         const justClickedProduct = sessionStorage.getItem('just_clicked_product') === 'true'
@@ -839,7 +856,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
-  // ✅ Position du widget
   const widgetStyle = {
     position: 'fixed' as const,
     top: isMobile ? 'auto' : (position.y > 0 ? position.y : 80),
