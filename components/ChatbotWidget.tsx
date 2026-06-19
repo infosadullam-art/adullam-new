@@ -3,7 +3,7 @@
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
 // VENDEUR ULTIME - Version 4.0
-// Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
+// Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫, DRAGGABLE 🔥
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { OfferBanner } from "@/components/OfferBanner"
@@ -57,6 +57,7 @@ interface ChatbotWidgetProps {
 const TRIGGER_CHECK_INTERVAL = 30000
 const INACTIVITY_THRESHOLD   = 15
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.adullamarket.com'
+const SNAP_MARGIN = 20 // Distance des bords pour le snap
 
 // ============================================================
 // COMPOSANT PRINCIPAL
@@ -98,6 +99,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const [waitingForOfferResponse, setWaitingForOfferResponse] = useState(false)
   const [hasBeenOffered, setHasBeenOffered] = useState(false)
 
+  // 🎯 Position du widget (drag & drop)
+  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const widgetRef = useRef<HTMLDivElement>(null)
+
   // Refs
   const messagesEndRef  = useRef<HTMLDivElement>(null)
   const inputRef        = useRef<HTMLInputElement>(null)
@@ -106,6 +113,92 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const viewCountRef    = useRef(0)
   const recognitionRef  = useRef<any>(null)
   const speechSynthRef  = useRef<SpeechSynthesis | null>(null)
+
+  // ============================================================
+  // DRAG & DROP
+  // ============================================================
+
+  const handleDragStart = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    if (!widgetRef.current) return
+    
+    setIsDragging(true)
+    
+    const rect = widgetRef.current.getBoundingClientRect()
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+    
+    setDragOffset({
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    })
+  }, [])
+
+  const handleDragMove = useCallback((e: MouseEvent | TouchEvent) => {
+    if (!isDragging || !widgetRef.current) return
+    
+    const clientX = 'touches' in e ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX
+    const clientY = 'touches' in e ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY
+    
+    const windowWidth = window.innerWidth
+    const windowHeight = window.innerHeight
+    const widgetWidth = widgetRef.current.offsetWidth || 380
+    const widgetHeight = widgetRef.current.offsetHeight || 540
+    
+    let newX = clientX - dragOffset.x
+    let newY = clientY - dragOffset.y
+    
+    // Limiter dans la fenêtre
+    newX = Math.max(0, Math.min(newX, windowWidth - widgetWidth))
+    newY = Math.max(0, Math.min(newY, windowHeight - widgetHeight))
+    
+    setPosition({ x: newX, y: newY })
+  }, [isDragging, dragOffset])
+
+  const handleDragEnd = useCallback(() => {
+    setIsDragging(false)
+    
+    // ✅ SNAP SUR LES BORDS
+    const windowWidth = window.innerWidth
+    const windowHeight = window.innerHeight
+    const widgetWidth = widgetRef.current?.offsetWidth || 380
+    const widgetHeight = widgetRef.current?.offsetHeight || 540
+    
+    let snapX = position.x
+    let snapY = position.y
+    
+    // Snap horizontal (gauche ou droite)
+    if (position.x < windowWidth / 2) {
+      snapX = SNAP_MARGIN
+    } else {
+      snapX = windowWidth - widgetWidth - SNAP_MARGIN
+    }
+    
+    // Snap vertical (haut ou bas)
+    if (position.y < windowHeight / 2) {
+      snapY = SNAP_MARGIN
+    } else {
+      snapY = windowHeight - widgetHeight - SNAP_MARGIN
+    }
+    
+    setPosition({ x: snapX, y: snapY })
+  }, [position])
+
+  // Gestion des événements de drag
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleDragMove)
+      window.addEventListener('mouseup', handleDragEnd)
+      window.addEventListener('touchmove', handleDragMove)
+      window.addEventListener('touchend', handleDragEnd)
+    }
+    
+    return () => {
+      window.removeEventListener('mousemove', handleDragMove)
+      window.removeEventListener('mouseup', handleDragEnd)
+      window.removeEventListener('touchmove', handleDragMove)
+      window.removeEventListener('touchend', handleDragEnd)
+    }
+  }, [isDragging, handleDragMove, handleDragEnd])
 
   // ============================================================
   // HOOKS & EFFETS
@@ -216,7 +309,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           }
         })
       })
-      console.log('✅ Message assistant sauvegardé')
     } catch (e) {
       console.debug('⚠️ Erreur sauvegarde message:', e)
     }
@@ -245,22 +337,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             offer: m.offer || null,
           }))
           setMessages(loaded)
-          
-          // ✅ Vérifier si un coupon actif existe dans l'historique
-          const lastCoupon = loaded.find(m => 
-            m.content.includes('coupon spécial') && 
-            m.content.includes('ADU-')
-          )
-          if (lastCoupon) {
-            const codeMatch = lastCoupon.content.match(/ADU-[A-Z0-9-]+/)
-            if (codeMatch) {
-              // On pourrait restaurer le coupon ici
-              console.log('🔍 Coupon trouvé dans l\'historique:', codeMatch[0])
-            }
-          }
         }
 
-        // ✅ Ne pas afficher "Content de te revoir" si on vient de cliquer sur un produit
         const justClickedProduct = sessionStorage.getItem('just_clicked_product') === 'true'
         
         if (data.welcome_back_message && !justClickedProduct && messages.length === 0) {
@@ -368,7 +446,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
     setMessages(prev => [...prev, msg])
     
-    // ✅ Sauvegarder dans l'historique
     if (content.length > 5 && !content.includes('...')) {
       saveMessageToHistory(content, products, offer)
     }
@@ -564,10 +641,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         
         const couponMessage = `🎉 Top ! J'ai généré un coupon spécial pour toi : **${data.coupon.code}**\nTu as **${data.coupon.discount}%** de réduction valable **${data.coupon.time_limit}min** ! ⏱️`
         
-        // ✅ Sauvegarder le message dans l'historique
         await saveMessageToHistory(couponMessage, undefined, undefined, data.coupon.code)
-        
-        // ✅ Ajouter au chat localement
         addAssistantMessage(couponMessage)
       } else {
         addAssistantMessage("Désolé, je n'ai pas pu générer le coupon. Réessaie ! 🙏")
@@ -579,7 +653,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   }, [sessionId, userId, addAssistantMessage, saveMessageToHistory])
 
   const proposeOffer = useCallback((product: Product) => {
-    // ✅ Ne proposer qu'une seule fois
     if (hasBeenOffered || activeCoupon) {
       return
     }
@@ -752,8 +825,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
   const buttonSize = isMobile ? 48 : 56
   const buttonFontSize = isMobile ? 20 : 24
-  const bottomPosition = isMobile ? 80 : 24
-  const rightPosition = isMobile ? 12 : 24
   const widgetWidth = isMobile ? 'calc(100vw - 24px)' : '380px'
   const widgetHeight = isMobile ? '500px' : '540px'
 
@@ -763,8 +834,28 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
+  // Position du widget
+  const widgetStyle = {
+    position: 'fixed' as const,
+    top: isMobile ? 'auto' : (position.y > 0 ? position.y : 80),
+    bottom: isMobile ? 80 : 'auto',
+    right: isMobile ? 12 : 'auto',
+    left: isMobile ? 'auto' : (position.x > 0 ? position.x : 24),
+    zIndex: 1000,
+    transition: isDragging ? 'none' : 'all 0.3s ease',
+    cursor: isDragging ? 'grabbing' : 'grab',
+    touchAction: 'none',
+  }
+
   return (
-    <>
+    <div
+      ref={widgetRef}
+      style={widgetStyle}
+      onMouseDown={handleDragStart}
+      onTouchStart={handleDragStart}
+      className={`chatbot-wrapper ${isDragging ? 'dragging' : ''}`}
+    >
+      {/* BANNIÈRE OFFRE */}
       {showOfferBanner && activeOffer && offerTimer > 0 && (
         <OfferBanner
           discount={activeOffer.discount_2}
@@ -783,6 +874,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         />
       )}
 
+      {/* 🎫 BANNIÈRE COUPON */}
       {showCouponBanner && activeCoupon && couponTimer > 0 && (
         <div style={{
           position: 'fixed',
@@ -871,14 +963,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         </div>
       )}
 
+      {/* BOUTON CHAT */}
       {!isOpen && (
         <button
           onClick={openChat}
           aria-label="Ouvrir Adu, votre vendeur"
           style={{
-            position: 'fixed',
-            bottom: bottomPosition,
-            right: rightPosition,
             width: buttonSize,
             height: buttonSize,
             borderRadius: '50%',
@@ -889,7 +979,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             alignItems: 'center',
             justifyContent: 'center',
             boxShadow: '0 4px 20px rgba(212,55,43,0.4)',
-            zIndex: 1000,
             transition: 'transform 0.2s ease',
             fontSize: buttonFontSize,
           }}
@@ -918,25 +1007,23 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         </button>
       )}
 
+      {/* MESSAGE PROACTIF */}
       {!isOpen && proactiveMessage && (
         <div
           onClick={openChat}
           style={{
-            position: 'fixed',
-            bottom: bottomPosition + buttonSize + 8,
-            right: rightPosition,
             maxWidth: isMobile ? '220px' : '260px',
             background: '#fff',
             borderRadius: '12px',
             padding: '10px 12px',
             boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
-            zIndex: 999,
             cursor: 'pointer',
             fontSize: isMobile ? '12px' : '13px',
             color: '#0A0A0A',
             fontFamily: "'Poppins', sans-serif",
             lineHeight: 1.4,
             border: '0.5px solid #ECECEC',
+            marginTop: '8px',
           }}
         >
           <span style={{ fontWeight: 600, color: '#D4372B' }}>Adu · </span>
@@ -954,13 +1041,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         </div>
       )}
 
+      {/* FENÊTRE CHAT */}
       {isOpen && (
         <div
           className="chatbot-container"
           style={{
-            position: 'fixed',
-            bottom: bottomPosition,
-            right: rightPosition,
             width: widgetWidth,
             maxWidth: 'calc(100vw - 32px)',
             height: isMinimized ? '52px' : widgetHeight,
@@ -968,14 +1053,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             background: '#fff',
             borderRadius: '16px',
             boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
-            zIndex: 1000,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
             fontFamily: "'Poppins', sans-serif",
-            transition: 'height 0.3s ease',
+            transition: 'height 0.3s ease, box-shadow 0.3s ease',
           }}
         >
+          {/* HEADER */}
           <div
             style={{
               display: 'flex',
@@ -1030,6 +1115,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             </div>
           </div>
 
+          {/* MESSAGES */}
           {!isMinimized && (
             <>
               <div style={{
@@ -1261,6 +1347,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 <div ref={messagesEndRef} />
               </div>
 
+              {/* INPUT */}
               <div style={{
                 padding: isMobile ? '6px 10px' : '10px 12px',
                 borderTop: '0.5px solid #ECECEC',
@@ -1359,7 +1446,15 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         .chatbot-container {
           animation: slideUp 0.3s ease-out;
         }
+        .chatbot-wrapper {
+          transition: transform 0.05s ease;
+          user-select: none;
+          -webkit-user-select: none;
+        }
+        .chatbot-wrapper.dragging {
+          transition: none !important;
+        }
       `}</style>
-    </>
+    </div>
   )
 }
