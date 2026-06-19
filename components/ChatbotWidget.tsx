@@ -3,7 +3,7 @@
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
 // VENDEUR ULTIME - Version 4.0
-// Mode vocal, cartes produits, offres, compte à rebours, scroll infini
+// Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { OfferBanner } from "@/components/OfferBanner"
@@ -63,11 +63,11 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.adullamarke
 // ============================================================
 
 export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: ChatbotWidgetProps) {
-  // ✅ Hook pour la devise dynamique
+  // ✅ Hooks
   const { formatPrice, getCurrencySymbol } = useCurrencyFormatter()
-  // ✅ Hook pour la localisation
   const { country, currency, locale } = useLocale()
 
+  // ✅ États principaux
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
@@ -79,14 +79,25 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const [isMobile, setIsMobile] = useState(false)
   const [loadOffset, setLoadOffset] = useState(3)
   
+  // 🎤 Vocal
   const [isRecording, setIsRecording] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(true)
 
+  // 🏷️ Offres
   const [activeOffer, setActiveOffer] = useState<Offer | null>(null)
   const [offerTimer, setOfferTimer] = useState<number>(0)
   const [showOfferBanner, setShowOfferBanner] = useState(false)
 
+  // 🎫 Coupons
+  const [activeCoupon, setActiveCoupon] = useState<any>(null)
+  const [showCouponBanner, setShowCouponBanner] = useState(false)
+  const [couponTimer, setCouponTimer] = useState<number>(0)
+  const [pendingOfferProduct, setPendingOfferProduct] = useState<Product | null>(null)
+  const [pendingOfferDiscount, setPendingOfferDiscount] = useState<number | null>(null)
+  const [waitingForOfferResponse, setWaitingForOfferResponse] = useState(false)
+
+  // Refs
   const messagesEndRef  = useRef<HTMLDivElement>(null)
   const inputRef        = useRef<HTMLInputElement>(null)
   const lastActionRef   = useRef<number>(Date.now())
@@ -94,6 +105,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const viewCountRef    = useRef(0)
   const recognitionRef  = useRef<any>(null)
   const speechSynthRef  = useRef<SpeechSynthesis | null>(null)
+
+  // ============================================================
+  // HOOKS & EFFETS
+  // ============================================================
 
   useEffect(() => {
     const checkMobile = () => {
@@ -137,6 +152,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
+  // Compte à rebours offre
   useEffect(() => {
     if (offerTimer > 0 && showOfferBanner) {
       const interval = setInterval(() => {
@@ -153,6 +169,24 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [offerTimer, showOfferBanner])
 
+  // Compte à rebours coupon
+  useEffect(() => {
+    if (couponTimer > 0 && showCouponBanner) {
+      const interval = setInterval(() => {
+        setCouponTimer(prev => {
+          if (prev <= 1) {
+            setShowCouponBanner(false)
+            setActiveCoupon(null)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+      return () => clearInterval(interval)
+    }
+  }, [couponTimer, showCouponBanner])
+
+  // Charger historique
   useEffect(() => {
     if (!sessionId) return
 
@@ -192,6 +226,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     loadHistory()
   }, [sessionId, userId, language])
 
+  // Trigger proactif
   useEffect(() => {
     if (!sessionId) return
 
@@ -255,6 +290,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     return localStorage.getItem('checkout_visited') === 'true'
   }
 
+  // ============================================================
+  // ACTIONS
+  // ============================================================
+
   const addAssistantMessage = useCallback((content: string, products?: Product[], offer?: Offer) => {
     const msg: Message = {
       id: `msg_${Date.now()}`,
@@ -297,6 +336,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
     setTimeout(() => inputRef.current?.focus(), 100)
   }, [proactiveMessage, isFirstOpen, addAssistantMessage])
+
+  // ============================================================
+  // VOCAL
+  // ============================================================
 
   const startVoiceRecognition = useCallback(() => {
     if (isRecording) {
@@ -368,8 +411,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
-  // ✅ Clic sur un produit AVEC REDIRECTION
+  // ============================================================
+  // PRODUITS
+  // ============================================================
+
   const handleProductClick = useCallback(async (product: Product, messageId: string) => {
+    // ✅ Marquer qu'on vient de cliquer sur un produit
+    sessionStorage.setItem('just_clicked_product', 'true')
+
     const productElement = document.getElementById(`product-${product.id}`)
     if (productElement) {
       productElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -423,6 +472,66 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     window.location.href = `/products/${product.id}`
   }, [sessionId, userId, addAssistantMessage])
 
+  // ============================================================
+  // COUPONS 🎫
+  // ============================================================
+
+  // ✅ Générer un coupon
+  const generateCoupon = useCallback(async (productId: string, discount: number) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/coupons/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId || null,
+          session_id: sessionId,
+          product_id: productId,
+          discount: discount,
+        }),
+      })
+
+      const data = await res.json()
+      
+      if (data.success) {
+        setActiveCoupon(data.coupon)
+        setShowCouponBanner(true)
+        setCouponTimer(data.coupon.time_limit * 60)
+        
+        // ✅ Adu confirme dans le chat
+        addAssistantMessage(
+          `🎉 Top ! J'ai généré un coupon spécial pour toi : **${data.coupon.code}**\n` +
+          `Tu as **${data.coupon.discount}%** de réduction valable **${data.coupon.time_limit}min** ! ⏱️`
+        )
+      } else {
+        addAssistantMessage("Désolé, je n'ai pas pu générer le coupon. Réessaie ! 🙏")
+      }
+    } catch (error) {
+      console.error("Erreur génération coupon:", error)
+      addAssistantMessage("Oups, erreur technique. Réessaie dans un instant !")
+    }
+  }, [sessionId, userId, addAssistantMessage])
+
+  // ✅ Proposer une offre dans le chat
+  const proposeOffer = useCallback((product: Product) => {
+    // Le discount varie entre 5 et 10%
+    const discounts = [5, 6, 7, 8, 9, 10]
+    const discount = discounts[Math.floor(Math.random() * discounts.length)]
+    
+    addAssistantMessage(
+      `Je vois que tu hésites sur ce produit... 👀\n` +
+      `Je peux te faire un petit geste : **${discount}%** de réduction.\n` +
+      `Tu es intéressé ? 😊`
+    )
+    
+    setPendingOfferProduct(product)
+    setPendingOfferDiscount(discount)
+    setWaitingForOfferResponse(true)
+  }, [addAssistantMessage])
+
+  // ============================================================
+  // ENVOI DE MESSAGE
+  // ============================================================
+
   const sendMessage = async () => {
     const text = input.trim()
     if (!text || isTyping) return
@@ -465,6 +574,17 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         const offer = data.offer || null
         addAssistantMessage(data.response, formattedProducts, offer)
 
+        // ✅ Si on attend une réponse à une offre et que le user dit "oui"
+        if (waitingForOfferResponse && pendingOfferProduct && pendingOfferDiscount) {
+          const lowerText = text.toLowerCase()
+          if (lowerText.includes('oui') || lowerText.includes('ok') || lowerText.includes('yes') || lowerText.includes('d\'accord')) {
+            await generateCoupon(pendingOfferProduct.id, pendingOfferDiscount)
+            setWaitingForOfferResponse(false)
+            setPendingOfferProduct(null)
+            setPendingOfferDiscount(null)
+          }
+        }
+
         try {
           await fetch(`${API_BASE_URL}/api/track`, {
             method: 'POST',
@@ -499,7 +619,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }
 
-  // ✅ loadMoreProducts avec seen_ids
+  // ============================================================
+  // LOAD MORE
+  // ============================================================
+
   const loadMoreProducts = useCallback(async (query: string, categories: string[] = []) => {
     try {
       const seenIds = messages
@@ -537,6 +660,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [sessionId, userId, addAssistantMessage, scrollToBottom, messages])
 
+  // ============================================================
+  // VOIX
+  // ============================================================
+
   useEffect(() => {
     const handleVoiceSend = () => sendMessage()
     window.addEventListener('send-voice-message' as any, handleVoiceSend)
@@ -549,6 +676,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       sendMessage()
     }
   }
+
+  // ============================================================
+  // RENDU
+  // ============================================================
 
   const buttonSize = isMobile ? 48 : 56
   const buttonFontSize = isMobile ? 20 : 24
@@ -565,6 +696,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
   return (
     <>
+      {/* BANNIÈRE OFFRE */}
       {showOfferBanner && activeOffer && offerTimer > 0 && (
         <OfferBanner
           discount={activeOffer.discount_2}
@@ -583,6 +715,96 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         />
       )}
 
+      {/* 🎫 BANNIÈRE COUPON */}
+      {showCouponBanner && activeCoupon && couponTimer > 0 && (
+        <div style={{
+          position: 'fixed',
+          bottom: '110px',
+          right: '20px',
+          zIndex: 9999,
+          maxWidth: '340px',
+          width: '100%',
+          background: '#D4372B',
+          borderRadius: '16px',
+          padding: '20px',
+          color: '#fff',
+          boxShadow: '0 8px 40px rgba(212,55,43,0.4)',
+          animation: 'slideUp 0.4s ease-out',
+          border: '1px solid rgba(255,255,255,0.15)',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <p style={{ fontSize: '10px', textTransform: 'uppercase', opacity: 0.7, letterSpacing: '1px' }}>
+                🎁 Réduction spéciale
+              </p>
+              <p style={{ fontSize: '28px', fontWeight: 700, lineHeight: 1 }}>
+                -{activeCoupon.discount}%
+              </p>
+              <p style={{ fontSize: '11px', opacity: 0.8, marginTop: '2px' }}>
+                Code: <span style={{ fontFamily: 'monospace', fontWeight: 700, letterSpacing: '1px' }}>
+                  {activeCoupon.code}
+                </span>
+              </p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontSize: '10px', opacity: 0.7 }}>Expire dans</p>
+              <p style={{ fontSize: '22px', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+                {formatTime(couponTimer)}
+              </p>
+            </div>
+          </div>
+
+          <div style={{ marginTop: '16px', display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(activeCoupon.code)
+                const btn = document.getElementById('copy-coupon-btn')
+                if (btn) {
+                  btn.textContent = '✅ Copié !'
+                  setTimeout(() => { btn.textContent = '📋 Copier' }, 2000)
+                }
+              }}
+              id="copy-coupon-btn"
+              style={{
+                flex: 1,
+                padding: '10px',
+                background: '#fff',
+                color: '#D4372B',
+                border: 'none',
+                borderRadius: '10px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.02)' }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)' }}
+            >
+              📋 Copier
+            </button>
+            <button
+              onClick={() => window.location.href = '/cart'}
+              style={{
+                padding: '10px 16px',
+                background: 'rgba(255,255,255,0.15)',
+                color: '#fff',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '10px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.25)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)' }}
+            >
+              🛒 Panier
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* BOUTON CHAT */}
       {!isOpen && (
         <button
           onClick={openChat}
@@ -630,6 +852,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         </button>
       )}
 
+      {/* MESSAGE PROACTIF */}
       {!isOpen && proactiveMessage && (
         <div
           onClick={openChat}
@@ -666,6 +889,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         </div>
       )}
 
+      {/* FENÊTRE CHAT */}
       {isOpen && (
         <div
           className="chatbot-container"
@@ -688,6 +912,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             transition: 'height 0.3s ease',
           }}
         >
+          {/* HEADER */}
           <div
             style={{
               display: 'flex',
@@ -742,6 +967,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             </div>
           </div>
 
+          {/* MESSAGES */}
           {!isMinimized && (
             <>
               <div style={{
@@ -790,6 +1016,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                     }}>
                       {msg.content}
                       
+                      {/* CARTES PRODUITS */}
                       {msg.products && msg.products.length > 0 && (
                         <div style={{
                           marginTop: '8px',
@@ -973,6 +1200,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 <div ref={messagesEndRef} />
               </div>
 
+              {/* INPUT */}
               <div style={{
                 padding: isMobile ? '6px 10px' : '10px 12px',
                 borderTop: '0.5px solid #ECECEC',
