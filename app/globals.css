@@ -3,8 +3,25 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+  ════════════════════════════════════════════════════════════════
+  ADULLAM MARKETPLACE — SYSTÈME DE DESIGN (refonte visuelle)
+  ----------------------------------------------------------------
+  Direction : éditorial premium (Mr Porter / Ssense / Net-a-Porter)
+  fusionné à la densité marketplace (Alibaba / Faire).
+  Sobre · dense mais respirant · contrasté · chorégraphié · confiant.
+
+  NOTE : tous les tokens, classes utilitaires et noms de polices
+  d'origine sont CONSERVÉS pour ne casser aucun composant existant
+  (font-logo, font-poppins-*, splash-*, scrollbar-hide, animate-fade-in…).
+  Les ajouts de la refonte sont regroupés et commentés ci-dessous.
+  ════════════════════════════════════════════════════════════════
+*/
+
 :root {
-  /* ── Palette Adullam ──────────────────────────────────────── */
+  color-scheme: light;
+
+  /* ── Palette Adullam (conservée) ──────────────────────────── */
   --brand:        #0A0A0A;
   --brand-hover:  #1A1A1A;
   --accent:       #D4372B;
@@ -12,14 +29,19 @@
   --accent-light: #FFF0F0;
   --accent-amber: #F5A623;
 
-  /* ── Neutres ──────────────────────────────────────────────── */
+  /* ── Neutres — échelle d'encre enrichie pour la hiérarchie ── */
+  /* (avant : un seul muted-foreground gris pâle = aspect "IA") */
   --background:       #FFFFFF;
-  --surface:          #FAFAFA;
-  --surface-elevated: #F4F4F4;
+  --surface:          #F7F6F4;   /* fond chaud, moins clinique que #FAFAFA */
+  --surface-elevated: #FFFFFF;
+  --surface-sunken:   #EFEDE9;   /* creux pour contraster les cartes */
   --foreground:       #0A0A0A;
-  --muted-foreground: #AAAAAA;
-  --border:           #ECECEC;
-  --border-strong:    #D0D0D0;
+  --ink-2:            #3A3A38;    /* texte secondaire lisible */
+  --ink-3:            #6B6B67;    /* texte tertiaire */
+  --muted-foreground: #8A8A85;    /* relevé (avant #AAAAAA, trop pâle) */
+  --border:           #E6E3DD;    /* hairline chaud */
+  --border-strong:    #C9C5BC;
+  --hairline:         color-mix(in oklab, var(--foreground) 10%, transparent);
 
   /* ── Tokens shadcn/ui (compatibilité) ────────────────────── */
   --card:                   #FFFFFF;
@@ -28,87 +50,115 @@
   --popover-foreground:     #0A0A0A;
   --primary:                #0A0A0A;
   --primary-foreground:     #FFFFFF;
-  --secondary:              #F4F4F4;
+  --secondary:              #F2F0EC;
   --secondary-foreground:   #0A0A0A;
-  --muted:                  #F4F4F4;
+  --muted:                  #F2F0EC;
+  --accent-foreground:      #FFFFFF;
   --destructive:            #D4372B;
   --destructive-foreground: #FFFFFF;
-  --input:                  #ECECEC;
-  --ring:                   #D4372B;
+  --input:                  #E6E3DD;
+  --ring:                   #0A0A0A;
 
-  /* ── Radius ───────────────────────────────────────────────── */
-  --radius: 0.5rem; /* 8px (réduit de 10px à 8px) */
+  /* ── Radius — réduit pour un rendu plus net/éditorial ─────── */
+  --radius: 0.375rem; /* 6px (avant 8px : éviter le tout-arrondi) */
 
-  /* ── Sidebar ──────────────────────────────────────────────── */
+  /* ── Élévation : ombres douces (l'aplat = aspect "IA") ────── */
+  --shadow-xs:  0 1px 2px 0 color-mix(in oklab, var(--foreground) 6%, transparent);
+  --shadow-sm:  0 1px 3px color-mix(in oklab, var(--foreground) 7%, transparent),
+                0 1px 2px -1px color-mix(in oklab, var(--foreground) 6%, transparent);
+  --shadow-md:  0 4px 12px -2px color-mix(in oklab, var(--foreground) 10%, transparent),
+                0 2px 6px -2px color-mix(in oklab, var(--foreground) 6%, transparent);
+  --shadow-lg:  0 12px 32px -8px color-mix(in oklab, var(--foreground) 16%, transparent),
+                0 4px 12px -4px color-mix(in oklab, var(--foreground) 8%, transparent);
+  --shadow-accent: 0 8px 24px -6px color-mix(in oklab, var(--accent) 45%, transparent);
+
+  /* ── Sidebar (conservé) ───────────────────────────────────── */
   --sidebar:                    #FFFFFF;
   --sidebar-foreground:         #0A0A0A;
   --sidebar-primary:            #0A0A0A;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent:             #F4F4F4;
+  --sidebar-accent:             #F2F0EC;
   --sidebar-accent-foreground:  #0A0A0A;
-  --sidebar-border:             #ECECEC;
-  --sidebar-ring:               #D4372B;
+  --sidebar-border:             #E6E3DD;
+  --sidebar-ring:               #0A0A0A;
 
-  /* ── Charts ───────────────────────────────────────────────── */
+  /* ── Charts (conservé) ────────────────────────────────────── */
   --chart-1: #D4372B;
   --chart-2: #0A0A0A;
   --chart-3: #F5A623;
-  --chart-4: #AAAAAA;
+  --chart-4: #8A8A85;
   --chart-5: #FF5A52;
 }
 
 .dark {
-  --background:       #0D0D0D;
-  --surface:          #161616;
-  --surface-elevated: #222222;
-  --foreground:       #F0F0F0;
-  --muted-foreground: #666666;
-  --border:           #2A2A2A;
-  --border-strong:    #3A3A3A;
+  color-scheme: dark;
 
-  --card:                   #161616;
-  --card-foreground:        #F0F0F0;
-  --popover:                #161616;
-  --popover-foreground:     #F0F0F0;
-  --primary:                #FFFFFF;
-  --primary-foreground:     #0D0D0D;
-  --secondary:              #222222;
-  --secondary-foreground:   #F0F0F0;
-  --muted:                  #222222;
-  --destructive:            #D4372B;
-  --destructive-foreground: #FFFFFF;
-  --input:                  #2A2A2A;
-  --ring:                   #D4372B;
+  --background:       #0B0B0C;
+  --surface:          #141416;
+  --surface-elevated: #1B1B1E;
+  --surface-sunken:   #080809;
+  --foreground:       #F2F1EE;
+  --ink-2:            #C4C2BD;
+  --ink-3:            #8E8C87;
+  --muted-foreground: #7A7873;
+  --border:           #2A2A2D;
+  --border-strong:    #3C3C40;
+  --hairline:         color-mix(in oklab, var(--foreground) 14%, transparent);
 
-  --sidebar:                    #161616;
-  --sidebar-foreground:         #F0F0F0;
-  --sidebar-primary:            #FFFFFF;
-  --sidebar-primary-foreground: #0D0D0D;
-  --sidebar-accent:             #222222;
-  --sidebar-accent-foreground:  #F0F0F0;
-  --sidebar-border:             #2A2A2A;
-  --sidebar-ring:               #D4372B;
+  --card:                   #141416;
+  --card-foreground:        #F2F1EE;
+  --popover:                #141416;
+  --popover-foreground:     #F2F1EE;
+  --primary:                #F2F1EE;
+  --primary-foreground:     #0B0B0C;
+  --secondary:              #1B1B1E;
+  --secondary-foreground:   #F2F1EE;
+  --muted:                  #1B1B1E;
+  --accent-foreground:      #FFFFFF;
+  --destructive:            #FF5A52;
+  --destructive-foreground: #0B0B0C;
+  --input:                  #2A2A2D;
+  --ring:                   #F2F1EE;
+
+  --shadow-xs:  0 1px 2px 0 rgba(0,0,0,0.6);
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.6), 0 1px 2px -1px rgba(0,0,0,0.5);
+  --shadow-md:  0 4px 16px -2px rgba(0,0,0,0.7), 0 2px 6px -2px rgba(0,0,0,0.5);
+  --shadow-lg:  0 16px 40px -10px rgba(0,0,0,0.8), 0 4px 12px -4px rgba(0,0,0,0.6);
+  --shadow-accent: 0 8px 28px -6px color-mix(in oklab, var(--accent) 55%, transparent);
+
+  --sidebar:                    #141416;
+  --sidebar-foreground:         #F2F1EE;
+  --sidebar-primary:            #F2F1EE;
+  --sidebar-primary-foreground: #0B0B0C;
+  --sidebar-accent:             #1B1B1E;
+  --sidebar-accent-foreground:  #F2F1EE;
+  --sidebar-border:             #2A2A2D;
+  --sidebar-ring:               #F2F1EE;
 
   --chart-1: #FF5A52;
-  --chart-2: #FFFFFF;
+  --chart-2: #F2F1EE;
   --chart-3: #F5A623;
-  --chart-4: #666666;
+  --chart-4: #7A7873;
   --chart-5: #D4372B;
 }
 
 @theme inline {
-  /* ── Couleurs Tailwind ────────────────────────────────────── */
+  /* ── Couleurs Tailwind (conservées + ajouts) ──────────────── */
   --color-brand:          var(--brand);
   --color-brand-hover:    var(--brand-hover);
   --color-accent:         var(--accent);
   --color-accent-hover:   var(--accent-hover);
   --color-accent-light:   var(--accent-light);
   --color-accent-amber:   var(--accent-amber);
+  --color-accent-foreground: var(--accent-foreground);
 
   --color-background:       var(--background);
   --color-surface:          var(--surface);
   --color-surface-elevated: var(--surface-elevated);
+  --color-surface-sunken:   var(--surface-sunken);
   --color-foreground:       var(--foreground);
+  --color-ink-2:            var(--ink-2);
+  --color-ink-3:            var(--ink-3);
   --color-muted-foreground: var(--muted-foreground);
   --color-border:           var(--border);
   --color-border-strong:    var(--border-strong);
@@ -133,11 +183,24 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
 
+  /* ── Polices ──────────────────────────────────────────────── */
+  /* Sans : UI + corps · Serif : titres éditoriaux (ajout refonte) */
+  --font-sans:    "Amazon Ember", var(--font-poppins), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-heading: var(--font-fraunces), "Times New Roman", Georgia, serif;
+  --font-serif:   var(--font-fraunces), "Times New Roman", Georgia, serif;
+  --font-mono:    "Geist Mono", ui-monospace, "SFMono-Regular", monospace;
+
   /* ── Radius ───────────────────────────────────────────────── */
-  --radius-sm: calc(var(--radius) - 2px); /* 6px  */
-  --radius-md: var(--radius);             /* 8px  */
-  --radius-lg: calc(var(--radius) + 2px); /* 10px */
-  --radius-xl: calc(var(--radius) + 4px); /* 12px */
+  --radius-sm: calc(var(--radius) - 2px); /* 4px  */
+  --radius-md: var(--radius);             /* 6px  */
+  --radius-lg: calc(var(--radius) + 2px); /* 8px  */
+  --radius-xl: calc(var(--radius) + 6px); /* 12px */
+
+  /* ── Ombres exposées à Tailwind (shadow-md, shadow-lg…) ───── */
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
 
   /* ── Sidebar ──────────────────────────────────────────────── */
   --color-sidebar:                    var(--sidebar);
@@ -151,82 +214,76 @@
 }
 
 @layer base {
-  /* Police par défaut : Amazon Ember */
-  html {
-    font-family: "Amazon Ember", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-size: 16px;
-    line-height: 1.5;
-  }
-
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring/40;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     box-sizing: border-box;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
     @apply bg-background text-foreground;
     font-size: 1rem;
     line-height: 1.5;
+    /* ligatures + crénage nets */
+    font-feature-settings: "kern", "liga", "calt";
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
-  /* Typographie - tailles augmentées */
+  /* ── Typographie éditoriale ───────────────────────────────── */
+  /* Les titres passent en serif display = signature premium.    */
+  h1, h2, h3 {
+    font-family: var(--font-heading);
+    font-weight: 500;
+  }
+
   h1 {
-    font-size: 2rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.2;
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
   }
 
   h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.25;
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    line-height: 1.1;
   }
 
   h3 {
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: -0.01em;
-    line-height: 1.3;
+    line-height: 1.25;
   }
 
   h4 {
-    font-size: 1.125rem;
+    font-size: 1.0625rem;
     font-weight: 600;
+    letter-spacing: -0.005em;
     line-height: 1.35;
   }
 
   p, span, li, a {
-    font-size: 0.9375rem; /* 15px - plus lisible */
+    font-size: 0.9375rem;
   }
 
   small, .text-small {
-    font-size: 0.8125rem; /* 13px */
+    font-size: 0.8125rem;
   }
 
-  /* Desktop */
   @media (min-width: 768px) {
-    html {
-      font-size: 16px;
-    }
-    
-    h1 {
-      font-size: 2.5rem;
-    }
-    
-    h2 {
-      font-size: 1.875rem;
-    }
-    
-    p, span, li, a {
-      font-size: 1rem; /* 16px sur desktop */
-    }
+    p, li { font-size: 1rem; }
   }
 
-  /* Liens */
   a {
     @apply transition-colors duration-200;
     text-decoration: none;
@@ -236,16 +293,83 @@
     @apply transition-all duration-200;
     cursor: pointer;
   }
+
+  /* Chiffres tabulaires (prix / quantités / comptes à rebours) */
+  .tabular-nums { font-variant-numeric: tabular-nums; }
+
+  /* Sélection texte aux couleurs de la marque */
+  ::selection {
+    background: var(--accent);
+    color: #fff;
+  }
 }
 
-/* Police Poppins pour le logo uniquement */
+/* ════════════════════════════════════════════════════════════
+   UTILITAIRES DE REFONTE
+   ════════════════════════════════════════════════════════════ */
+
+/* Police éditoriale appliquée à la demande */
+.font-display { font-family: var(--font-heading); font-weight: 500; }
+
+/* Suréclats / micro-labels premium (eyebrow / overline) */
+.overline {
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Filet décoratif (séparateur éditorial) */
+.rule { height: 1px; background: var(--border); }
+
+/* Élévations utilitaires (en plus des shadow-* Tailwind) */
+.elevate-sm { box-shadow: var(--shadow-sm); }
+.elevate-md { box-shadow: var(--shadow-md); }
+.elevate-lg { box-shadow: var(--shadow-lg); }
+.elevate-hover {
+  transition: box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.elevate-hover:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+}
+
+/* Lien éditorial souligné à l'animation (remplace le hover plat) */
+.link-underline { position: relative; }
+.link-underline::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: -2px;
+  height: 1px; width: 100%;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.link-underline:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Image hover zoom (cartes produit) — chorégraphie cohérente */
+.media-zoom { overflow: hidden; }
+.media-zoom img {
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.group:hover .media-zoom img,
+.media-zoom:hover img { transform: scale(1.06); }
+
+/* ── Polices conservées ───────────────────────────────────── */
 .font-logo {
   font-family: "Poppins", sans-serif;
   font-weight: 900;
   letter-spacing: -0.04em;
 }
 
-/* ── Amazon Ember Font ────────────────────────────────────── */
 @font-face {
   font-family: 'Amazon Ember';
   src: url('https://fonts.cdnfonts.com/css/amazon-ember') format('woff2');
@@ -253,12 +377,10 @@
   font-style: normal;
 }
 
-/* ── Safe area mobile ─────────────────────────────────────── */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 }
 
-/* ── Utilitaires Poppins (pour compatibilité) ──────────────── */
 .font-poppins-light     { font-weight: 300; }
 .font-poppins-regular   { font-weight: 400; }
 .font-poppins-medium    { font-weight: 500; }
@@ -267,87 +389,140 @@
 .font-poppins-extrabold { font-weight: 800; }
 .font-poppins-black     { font-weight: 900; }
 
-/* ── Animations ───────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════
+   ANIMATIONS — petite bibliothèque chorégraphiée
+   (remplace le fade+translateY identique partout)
+   ════════════════════════════════════════════════════════════ */
+
+/* conservé pour compatibilité ascendante */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in { animation: fadeIn 0.4s ease-out; }
 
-/* ── Animation gradient pour DealCountdown ────────────────── */
+@keyframes a-fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes a-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes a-scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes a-reveal-up {
+  from { opacity: 0; transform: translateY(110%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes a-clip-in {
+  from { opacity: 0; clip-path: inset(0 0 100% 0); }
+  to   { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+.anim-fade-up  { animation: a-fade-up   0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-fade-in  { animation: a-fade-in   0.8s ease-out both; }
+.anim-scale-in { animation: a-scale-in  0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-clip-in  { animation: a-clip-in   0.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Révèle un mot/ligne en serif (titres éditoriaux) */
+.reveal-line { display: inline-block; overflow: hidden; }
+.reveal-line > span { display: inline-block; animation: a-reveal-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Étalement (stagger) automatique */
+.stagger > * { animation: a-fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.stagger > *:nth-child(1) { animation-delay: 0.04s; }
+.stagger > *:nth-child(2) { animation-delay: 0.10s; }
+.stagger > *:nth-child(3) { animation-delay: 0.16s; }
+.stagger > *:nth-child(4) { animation-delay: 0.22s; }
+.stagger > *:nth-child(5) { animation-delay: 0.28s; }
+.stagger > *:nth-child(6) { animation-delay: 0.34s; }
+.stagger > *:nth-child(7) { animation-delay: 0.40s; }
+.stagger > *:nth-child(8) { animation-delay: 0.46s; }
+/* Étalement manuel via --i sur l'élément */
+[style*="--i"].anim-fade-up,
+[style*="--i"].anim-scale-in { animation-delay: calc(var(--i) * 0.06s); }
+
+/* Marquee (bandeau de réassurance / ticker) */
+@keyframes a-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee { display: flex; width: max-content; animation: a-marquee 30s linear infinite; }
+.marquee:hover { animation-play-state: paused; }
+
+/* Shimmer (skeleton / chargement) */
+@keyframes a-shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position: 200% 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg,
+    var(--surface) 25%,
+    var(--surface-elevated) 50%,
+    var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: a-shimmer 1.4s ease-in-out infinite;
+}
+
+/* Respect des préférences d'accessibilité */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Animation gradient conservée (DealCountdown) ─────────── */
 @keyframes gradientShift {
-  0% { background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%); }
-  50% { background: linear-gradient(135deg, #FFF5F5 0%, #FAFAFA 100%); }
+  0%   { background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%); }
+  50%  { background: linear-gradient(135deg, #FFF5F5 0%, #FAFAFA 100%); }
   100% { background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%); }
 }
 
-/* ── Splash Screen Animations ─────────────────────────────── */
+/* ── Splash Screen (conservé) ─────────────────────────────── */
 @keyframes zoomIn {
-  0% { transform: scale(0.5); opacity: 0; }
+  0%   { transform: scale(0.5); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
-
 @keyframes fadeUp {
-  0% { opacity: 0; transform: translateY(20px); }
+  0%   { opacity: 0; transform: translateY(20px); }
   100% { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes fadeOut {
-  0% { opacity: 1; visibility: visible; }
+  0%   { opacity: 1; visibility: visible; }
   100% { opacity: 0; visibility: hidden; }
 }
-
 .splash-screen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
   background: var(--accent);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
   z-index: 9999;
 }
-
 .splash-logo {
-  width: 120px;
-  height: 120px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: white;
-  border-radius: 24px;
+  width: 120px; height: 120px;
+  display: flex; justify-content: center; align-items: center;
+  background: white; border-radius: 24px;
   animation: zoomIn 0.4s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
 }
-
-.splash-logo img {
-  width: 80%;
-  height: 80%;
-  object-fit: contain;
-}
-
+.splash-logo img { width: 80%; height: 80%; object-fit: contain; }
 .splash-title {
   margin-top: 24px;
   font-family: "Poppins", sans-serif;
-  font-size: 32px;
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  color: white;
-  opacity: 0;
-  animation: fadeUp 0.3s ease-out 0.2s forwards;
+  font-size: 32px; font-weight: 900;
+  letter-spacing: -0.04em; color: white;
+  opacity: 0; animation: fadeUp 0.3s ease-out 0.2s forwards;
 }
+.splash-dot { color: #FF6B6B; }
+.splash-screen.fade-out { animation: fadeOut 0.5s ease-out forwards; }
 
-.splash-dot {
-  color: #FF6B6B;
-}
-
-.splash-screen.fade-out {
-  animation: fadeOut 0.5s ease-out forwards;
-}
-
-/* ── Scrollbar ────────────────────────────────────────────── */
+/* ── Scrollbar (conservé) ─────────────────────────────────── */
 ::-webkit-scrollbar       { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--surface); }
 ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }

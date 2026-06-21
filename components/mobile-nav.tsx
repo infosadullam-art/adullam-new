@@ -70,12 +70,8 @@ export default function MobileNav() {
     return (
       <div className="lg:hidden">
         <nav
-          className="fixed bottom-0 left-0 right-0 z-50"
-          style={{
-            background: "#fff",
-            borderTop: "0.5px solid #ECECEC",
-            paddingBottom: "env(safe-area-inset-bottom)",
-          }}
+          className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border"
+          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
           <div className="grid grid-cols-5" style={{ height: "56px" }} />
         </nav>
@@ -86,12 +82,8 @@ export default function MobileNav() {
   return (
     <div className="lg:hidden">
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50"
-        style={{
-          background: "#fff",
-          borderTop: "0.5px solid #ECECEC",
-          paddingBottom: "env(safe-area-inset-bottom)",
-        }}
+        className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div
           className="grid grid-cols-5"
@@ -126,7 +118,7 @@ export default function MobileNav() {
                     width: isActive ? "24px" : "0px",
                     height: "2.5px",
                     borderRadius: "0 0 3px 3px",
-                    background: "#D4372B",
+                    background: "var(--accent)",
                     transition: "width 0.2s cubic-bezier(0.4,0,0.2,1)",
                   }}
                 />
@@ -137,7 +129,7 @@ export default function MobileNav() {
                     style={{
                       width: "20px",
                       height: "20px",
-                      color: isActive ? "#D4372B" : "#AAAAAA",
+                      color: isActive ? "var(--accent)" : "var(--muted-foreground)",
                       transition: "color 0.15s ease",
                       strokeWidth: isActive ? 2.2 : 1.8,
                     }}
@@ -146,20 +138,19 @@ export default function MobileNav() {
                   {/* Badge notifications */}
                   {showBadge && (
                     <span
-                      className="absolute flex items-center justify-center"
+                      className="absolute flex items-center justify-center tabular-nums"
                       style={{
                         top: "-5px",
                         right: "-6px",
                         minWidth: "16px",
                         height: "16px",
-                        background: "#D4372B",
+                        background: "var(--accent)",
                         color: "#fff",
                         fontSize: "9px",
                         fontWeight: 700,
-                        fontFamily: "'Poppins', sans-serif",
                         borderRadius: "100px",
                         padding: "0 4px",
-                        border: "2px solid #fff",
+                        border: "2px solid var(--background)",
                         lineHeight: 1,
                       }}
                     >
@@ -173,8 +164,7 @@ export default function MobileNav() {
                   style={{
                     fontSize: "9px",
                     fontWeight: isActive ? 700 : 500,
-                    fontFamily: "'Poppins', sans-serif",
-                    color: isActive ? "#D4372B" : "#AAAAAA",
+                    color: isActive ? "var(--accent)" : "var(--muted-foreground)",
                     transition: "color 0.15s ease, font-weight 0.15s ease",
                     letterSpacing: "0.01em",
                     lineHeight: 1,

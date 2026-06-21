@@ -7,13 +7,11 @@ import { useCart } from "@/context/CartContext"
 import { CartDrawer } from "@/components/cart/CartDrawer"
 import { useAuth } from "@/lib/admin/auth-context"
 import Link from "next/link"
-
-// Police Amazon Ember (sauf logo)
-const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-const logoFont = "'Poppins', sans-serif"
+// AJOUT REFONTE — bascule de thème (présentation uniquement)
+import { ThemeToggle } from "@/components/theme-toggle"
 
 const searchSuggestions = [
-  "chaussure", "robe de soirée", "écouteur", "sac à main", 
+  "chaussure", "robe de soirée", "écouteur", "sac à main",
   "montre", "parfum", "jean", "casquette"
 ]
 
@@ -26,10 +24,10 @@ export function Header() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  
+
   const [suggestionIndex, setSuggestionIndex] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
-  
+
   const [isHeaderCompact, setIsHeaderCompact] = useState(false)
 
   const menuTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -59,24 +57,24 @@ export function Header() {
   // Scroll avec hysteresis
   useEffect(() => {
     let ticking = false
-    
+
     const handleScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
           const currentScrollY = window.scrollY
-          
+
           if (currentScrollY > 100 && !isHeaderCompact) {
             setIsHeaderCompact(true)
           } else if (currentScrollY < 30 && isHeaderCompact) {
             setIsHeaderCompact(false)
           }
-          
+
           ticking = false
         })
         ticking = true
       }
     }
-    
+
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [isHeaderCompact])
@@ -88,12 +86,12 @@ export function Header() {
         setIsHeaderCompact(false)
       }
     }
-    
+
     const header = document.querySelector('header')
     if (header) {
       header.addEventListener('mouseenter', handleMouseEnter)
     }
-    
+
     return () => {
       if (header) {
         header.removeEventListener('mouseenter', handleMouseEnter)
@@ -182,51 +180,58 @@ export function Header() {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50">
-        
-        {/* TOPBAR */}
-        <div className="hidden lg:flex items-center justify-between px-6 py-2" style={{ background: "#0A0A0A" }}>
+
+        {/* TOPBAR — bandeau éditorial sombre (brand constant) */}
+        <div className="hidden lg:flex items-center justify-between gap-6 bg-brand px-6 py-2">
           <div className="flex items-center gap-6">
             {isLoading ? (
-              <div className="h-3 w-32 rounded animate-pulse" style={{ background: "#222" }} />
+              <div className="h-3 w-32 rounded-sm animate-pulse bg-white/15" />
             ) : user ? (
-              <button onClick={goToAccount} className="text-xs font-medium hover:opacity-70 transition-opacity" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>
+              <button onClick={goToAccount} className="text-xs font-medium text-white/70 transition-opacity hover:text-white">
                 Bonjour, {user.name || user.email?.split("@")[0]}
               </button>
             ) : (
               <>
-                <button onClick={goToLogin} className="flex items-center gap-1.5 text-xs hover:opacity-70 transition-opacity" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>
+                <button onClick={goToLogin} className="flex items-center gap-1.5 text-xs text-white/70 transition-opacity hover:text-white">
                   <LogIn className="w-3.5 h-3.5" /> Connexion
                 </button>
-                <button onClick={goToRegister} className="flex items-center gap-1.5 text-xs font-medium hover:opacity-70 transition-opacity" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>
+                <button onClick={goToRegister} className="flex items-center gap-1.5 text-xs font-medium text-white/70 transition-opacity hover:text-white">
                   <UserPlus className="w-3.5 h-3.5" /> Inscription
                 </button>
               </>
             )}
-            <button onClick={goToAccount} className="text-xs hover:opacity-70 transition-opacity" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>
-              Compte & commandes
+            <button onClick={goToAccount} className="text-xs text-white/70 transition-opacity hover:text-white">
+              Compte &amp; commandes
             </button>
           </div>
-          <span className="text-xs" style={{ color: "#555", fontFamily: amazonFont }}>
-            Livraison vers l'Afrique · Paiement Mobile Money
-          </span>
+          <div className="flex items-center gap-5">
+            <span className="overline text-white/55">
+              Direct usine · Livraison Afrique · Mobile Money
+            </span>
+            {/* AJOUT REFONTE — bascule de thème segmentée */}
+            <ThemeToggle variant="switch" />
+          </div>
         </div>
 
-        {/* BARRE BLANCHE + BARRE NOIRE */}
-        <div className="bg-white" style={{ borderBottom: "0.5px solid #ECECEC" }}>
-          
-          {/* BARRE BLANCHE */}
-          <div 
+        {/* BARRE PRINCIPALE */}
+        <div className="border-b border-border bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
+
+          {/* LIGNE LOGO / RECHERCHE / ACTIONS */}
+          <div
             className="transition-all duration-300 ease-out"
-            style={{ 
+            style={{
               paddingTop: isHeaderCompact ? "8px" : "14px",
               paddingBottom: isHeaderCompact ? "8px" : "14px",
             }}
           >
             <div className="max-w-7xl mx-auto px-6 flex items-center gap-4">
-              {/* Logo - garde Poppins */}
+              {/* Logo - garde Poppins (.font-logo) */}
               <button onClick={() => router.push("/")} className="flex-shrink-0 focus:outline-none">
-                <span style={{ fontFamily: logoFont, fontWeight: 900, fontSize: isHeaderCompact ? "18px" : "22px", letterSpacing: "-0.04em", color: "#0A0A0A", transition: "font-size 0.3s ease" }}>
-                  adul<span style={{ color: "#D4372B" }}>.</span>lam
+                <span
+                  className="font-logo text-foreground transition-all duration-300"
+                  style={{ fontSize: isHeaderCompact ? "18px" : "22px" }}
+                >
+                  adul<span className="text-accent">.</span>lam
                 </span>
               </button>
 
@@ -236,11 +241,10 @@ export function Header() {
                   ref={buttonRef}
                   onMouseEnter={handleMouseEnterMega}
                   onMouseLeave={handleMouseLeaveMega}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors focus:outline-none"
-                  style={{ background: "#F4F4F4", color: "#0A0A0A", fontFamily: amazonFont, borderRadius: "6px" }}
+                  className="flex items-center gap-2 rounded-md border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-border-strong focus:outline-none"
                 >
                   Catégories
-                  <ChevronDown className="w-4 h-4" style={{ color: "#AAAAAA" }} />
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
                 </button>
 
                 {showMegaMenu && (
@@ -248,21 +252,19 @@ export function Header() {
                     ref={menuRef}
                     onMouseEnter={handleMouseEnterMega}
                     onMouseLeave={handleMouseLeaveMega}
-                    className="absolute top-full left-0 mt-2 bg-white z-[9999]"
-                    style={{ width: "900px", border: "0.5px solid #ECECEC", boxShadow: "0 8px 40px rgba(0,0,0,0.10)", padding: "20px", borderRadius: "12px" }}
+                    className="anim-fade-up absolute top-full left-0 mt-2 z-[9999] w-[900px] rounded-xl border border-border bg-popover p-5 elevate-lg"
                   >
+                    <p className="overline mb-3 text-muted-foreground">Toutes les catégories</p>
                     <div className="grid grid-cols-6 gap-2 mb-2">
                       {categories.slice(0, 6).map((cat) => (
                         <button
                           key={cat.title}
                           onClick={() => { setActiveCategory(cat.items.length === 0 ? null : cat.title); if (!cat.items.length) { goToCategory(cat.title); setShowMegaMenu(false) } }}
-                          className="py-2 px-2 text-xs font-medium text-center transition-colors"
-                          style={{
-                            background: activeCategory === cat.title ? "#0A0A0A" : "#F4F4F4",
-                            color: activeCategory === cat.title ? "#fff" : "#0A0A0A",
-                            fontFamily: amazonFont,
-                            borderRadius: "4px",
-                          }}
+                          className={`rounded-md px-2 py-2 text-xs font-medium text-center transition-colors ${
+                            activeCategory === cat.title
+                              ? "bg-foreground text-background"
+                              : "bg-surface text-foreground hover:bg-surface-sunken"
+                          }`}
                         >
                           {cat.title}
                         </button>
@@ -273,13 +275,11 @@ export function Header() {
                         <button
                           key={cat.title}
                           onClick={() => { setActiveCategory(cat.items.length === 0 ? null : cat.title); if (!cat.items.length) { goToCategory(cat.title); setShowMegaMenu(false) } }}
-                          className="py-2 px-2 text-xs font-medium text-center transition-colors"
-                          style={{
-                            background: activeCategory === cat.title ? "#0A0A0A" : "#F4F4F4",
-                            color: activeCategory === cat.title ? "#fff" : "#0A0A0A",
-                            fontFamily: amazonFont,
-                            borderRadius: "4px",
-                          }}
+                          className={`rounded-md px-2 py-2 text-xs font-medium text-center transition-colors ${
+                            activeCategory === cat.title
+                              ? "bg-foreground text-background"
+                              : "bg-surface text-foreground hover:bg-surface-sunken"
+                          }`}
                         >
                           {cat.title}
                         </button>
@@ -287,8 +287,8 @@ export function Header() {
                     </div>
 
                     {activeCategory && (
-                      <div style={{ borderTop: "0.5px solid #F0F0F0", paddingTop: "16px" }}>
-                        <p className="text-xs font-semibold mb-3" style={{ color: "#AAAAAA", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: amazonFont }}>
+                      <div className="border-t border-border pt-4">
+                        <p className="overline mb-3 text-accent">
                           {activeCategory}
                         </p>
                         <div className="grid grid-cols-4 gap-1.5">
@@ -296,8 +296,7 @@ export function Header() {
                             <button
                               key={i}
                               onClick={() => { goToCategory(item); setShowMegaMenu(false) }}
-                              className="text-left text-xs py-1.5 px-2 transition-colors hover:bg-[#FFF0F0] hover:text-[#D4372B]"
-                              style={{ color: "#0A0A0A", fontFamily: amazonFont, borderRadius: "4px" }}
+                              className="link-underline rounded-md px-2 py-1.5 text-left text-xs text-ink-2 transition-colors hover:text-accent"
                             >
                               {item}
                             </button>
@@ -306,8 +305,7 @@ export function Header() {
                         {(categories.find(c => c.title === activeCategory)?.items.length ?? 0) > 8 && (
                           <button
                             onClick={() => { goToCategory(activeCategory); setShowMegaMenu(false) }}
-                            className="flex items-center gap-1 mt-3 text-xs font-semibold"
-                            style={{ color: "#D4372B", fontFamily: amazonFont }}
+                            className="mt-3 flex items-center gap-1 text-xs font-semibold text-accent"
                           >
                             Voir tout <ChevronRight className="w-3.5 h-3.5" />
                           </button>
@@ -315,8 +313,8 @@ export function Header() {
                       </div>
                     )}
 
-                    <div style={{ borderTop: "0.5px solid #F0F0F0", marginTop: "12px", paddingTop: "12px", textAlign: "center" }}>
-                      <button onClick={() => { router.push("/categories"); setShowMegaMenu(false) }} className="text-xs font-semibold" style={{ color: "#D4372B", fontFamily: amazonFont }}>
+                    <div className="mt-3 border-t border-border pt-3 text-center">
+                      <button onClick={() => { router.push("/categories"); setShowMegaMenu(false) }} className="text-xs font-semibold text-accent link-underline">
                         Voir toutes les catégories →
                       </button>
                     </div>
@@ -327,12 +325,13 @@ export function Header() {
               {/* Search */}
               <div className="flex-1 hidden lg:block relative">
                 <Search
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-colors z-10"
-                  style={{ color: searchFocused ? "#D4372B" : "#AAAAAA" }}
+                  className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-colors z-10 ${
+                    searchFocused ? "text-accent" : "text-muted-foreground"
+                  }`}
                 />
-                
+
                 {!searchFocused && !searchQuery && (
-                  <div className="absolute left-10 top-1/2 -translate-y-1/2 pointer-events-none overflow-hidden" style={{ height: "20px", width: "180px" }}>
+                  <div className="absolute left-10 top-1/2 -translate-y-1/2 pointer-events-none overflow-hidden" style={{ height: "20px", width: "220px" }}>
                     <div
                       className="transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
                       style={{
@@ -340,13 +339,13 @@ export function Header() {
                         opacity: isAnimating ? 0 : 1,
                       }}
                     >
-                      <span className="text-sm" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>
-                        {searchSuggestions[suggestionIndex]}
+                      <span className="text-sm text-muted-foreground">
+                        Rechercher «&nbsp;{searchSuggestions[suggestionIndex]}&nbsp;»
                       </span>
                     </div>
                   </div>
                 )}
-                
+
                 <input
                   type="text"
                   placeholder=""
@@ -355,20 +354,15 @@ export function Header() {
                   onFocus={() => setSearchFocused(true)}
                   onBlur={() => setSearchFocused(false)}
                   onKeyDown={e => e.key === "Enter" && handleSearch()}
-                  className="w-full pl-10 pr-14 py-2 text-sm focus:outline-none transition-all"
-                  style={{
-                    background: "#F4F4F4",
-                    borderRadius: "6px",
-                    border: searchFocused ? "1.5px solid #D4372B" : "1.5px solid transparent",
-                    color: "#0A0A0A",
-                    fontFamily: amazonFont,
-                  }}
+                  className={`w-full rounded-md bg-surface py-2.5 pl-10 pr-14 text-sm text-foreground transition-all focus:outline-none border ${
+                    searchFocused ? "border-accent ring-2 ring-accent/15" : "border-border"
+                  }`}
                 />
-                
+
                 <button
                   onClick={handleSearch}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 transition-colors focus:outline-none"
-                  style={{ background: "#D4372B", borderRadius: "6px" }}
+                  aria-label="Rechercher"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-md bg-accent transition-colors hover:bg-accent-hover focus:outline-none"
                 >
                   <Search className="w-4 h-4 text-white" />
                 </button>
@@ -377,56 +371,54 @@ export function Header() {
               {/* Actions */}
               <div className="hidden lg:flex items-center gap-2">
                 {isLoading ? (
-                  <div className="w-9 h-9 animate-pulse" style={{ background: "#F4F4F4", borderRadius: "6px" }} />
+                  <div className="h-9 w-9 animate-pulse rounded-md bg-surface" />
                 ) : user ? (
                   <div className="relative">
                     <button
                       onClick={() => setUserMenuOpen(!userMenuOpen)}
-                      className="flex items-center gap-2 px-3 py-2 transition-colors focus:outline-none"
-                      style={{ background: "#F4F4F4", borderRadius: "6px" }}
+                      className="flex items-center gap-2 rounded-md border border-border bg-surface px-3 py-2 transition-colors hover:border-border-strong focus:outline-none"
                     >
-                      <div className="flex items-center justify-center w-6 h-6 rounded-full" style={{ background: "#D4372B" }}>
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent">
                         <User className="w-3.5 h-3.5 text-white" />
                       </div>
-                      <span className="text-sm font-medium" style={{ color: "#0A0A0A", fontFamily: amazonFont }}>
+                      <span className="text-sm font-medium text-foreground">
                         {user.name || user.email?.split("@")[0]}
                       </span>
-                      <ChevronDown className="w-4 h-4" style={{ color: "#AAAAAA" }} />
+                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
                     </button>
 
                     {userMenuOpen && (
-                      <div className="absolute right-0 mt-2 bg-white z-[9999]" style={{ width: "200px", border: "0.5px solid #ECECEC", boxShadow: "0 8px 30px rgba(0,0,0,0.08)", padding: "6px", borderRadius: "10px" }}>
+                      <div className="anim-fade-up absolute right-0 mt-2 z-[9999] w-[200px] rounded-xl border border-border bg-popover p-1.5 elevate-lg">
                         {[
                           { label: "Mon compte", href: "/account" },
                           { label: "Mes commandes", href: "/orders" },
                           { label: "Favoris", href: "/favorites" },
                         ].map(({ label, href }) => (
-                          <Link key={href} href={href} className="block px-3 py-2.5 rounded-lg text-sm transition-colors hover:bg-[#FAFAFA]" style={{ color: "#0A0A0A", fontFamily: amazonFont, borderRadius: "6px" }}>
+                          <Link key={href} href={href} className="block rounded-md px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-surface">
                             {label}
                           </Link>
                         ))}
-                        <div style={{ height: "0.5px", background: "#F0F0F0", margin: "4px 0" }} />
-                        <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2.5 text-sm transition-colors hover:bg-[#FFF5F5]" style={{ color: "#D4372B", fontFamily: amazonFont, borderRadius: "6px" }}>
+                        <div className="my-1 h-px bg-border" />
+                        <button onClick={handleLogout} className="flex w-full items-center gap-2 rounded-md px-3 py-2.5 text-sm text-accent transition-colors hover:bg-accent-light">
                           <LogOut className="w-4 h-4" /> Déconnexion
                         </button>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <button onClick={goToLogin} className="flex items-center justify-center w-9 h-9 transition-colors focus:outline-none" style={{ background: "#F4F4F4", borderRadius: "6px" }}>
-                    <User className="w-[18px] h-[18px]" style={{ color: "#0A0A0A" }} />
+                  <button onClick={goToLogin} aria-label="Mon compte" className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-foreground transition-colors hover:border-border-strong focus:outline-none">
+                    <User className="w-[18px] h-[18px]" />
                   </button>
                 )}
 
                 <button
                   onClick={openCart}
-                  className="relative flex items-center gap-2 px-4 py-2 transition-colors focus:outline-none"
-                  style={{ background: "#D4372B", borderRadius: "6px" }}
+                  className="relative flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-white transition-colors hover:bg-accent-hover focus:outline-none"
                 >
-                  <ShoppingCart className="w-[18px] h-[18px] text-white" />
-                  <span className="text-sm font-semibold text-white hidden lg:inline" style={{ fontFamily: amazonFont }}>Panier</span>
+                  <ShoppingCart className="w-[18px] h-[18px]" />
+                  <span className="hidden text-sm font-semibold lg:inline">Panier</span>
                   {cart.length > 0 && (
-                    <span className="flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold text-white" style={{ background: "#0A0A0A" }}>
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-white tabular-nums">
                       {cart.length}
                     </span>
                   )}
@@ -435,19 +427,18 @@ export function Header() {
 
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden flex items-center justify-center w-9 h-9 ml-auto focus:outline-none"
-                style={{ background: "#F4F4F4", borderRadius: "6px" }}
+                aria-label="Menu"
+                className="lg:hidden ml-auto flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-foreground focus:outline-none"
               >
                 {mobileMenuOpen ? <X className="w-[18px] h-[18px]" /> : <Menu className="w-[18px] h-[18px]" />}
               </button>
             </div>
           </div>
 
-          {/* BARRE NOIRE */}
-          <div 
-            className="hidden lg:block transition-all duration-300 ease-out overflow-hidden"
-            style={{ 
-              background: "#0A0A0A",
+          {/* BARRE NOIRE — navigation éditoriale */}
+          <div
+            className="hidden lg:block overflow-hidden bg-brand transition-all duration-300 ease-out"
+            style={{
               maxHeight: isHeaderCompact ? "0px" : "60px",
               opacity: isHeaderCompact ? 0 : 1,
             }}
@@ -460,15 +451,13 @@ export function Header() {
                     <button
                       key={item.path}
                       onClick={() => router.push(item.path)}
-                      className="py-3.5 px-3 text-sm font-medium transition-colors relative"
-                      style={{
-                        color: isActive ? "#fff" : "#AAAAAA",
-                        fontFamily: amazonFont,
-                      }}
+                      className={`relative px-3 py-3.5 text-sm font-medium transition-colors ${
+                        isActive ? "text-white" : "text-white/55 hover:text-white"
+                      }`}
                     >
                       {item.label}
                       {isActive && (
-                        <span className="absolute bottom-0 left-0 right-0 h-[2.5px]" style={{ background: "#D4372B", borderTopLeftRadius: "2px", borderTopRightRadius: "2px" }} />
+                        <span className="absolute bottom-0 left-3 right-3 h-[2.5px] rounded-t-sm bg-accent" />
                       )}
                     </button>
                   )
@@ -487,50 +476,53 @@ export function Header() {
 
       {/* MOBILE MENU */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-[9999] overflow-y-auto bg-white" style={{ top: "56px" }}>
+        <div className="lg:hidden fixed inset-0 z-[9999] overflow-y-auto bg-background" style={{ top: "56px" }}>
           <div className="px-5 py-4">
-            <div className="flex items-center justify-between mb-6" style={{ borderBottom: "0.5px solid #F0F0F0", paddingBottom: "16px" }}>
-              <span style={{ fontFamily: logoFont, fontWeight: 900, fontSize: "20px", letterSpacing: "-0.04em", color: "#0A0A0A" }}>
-                adul<span style={{ color: "#D4372B" }}>.</span>lam
+            <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
+              <span className="font-logo text-foreground" style={{ fontSize: "20px" }}>
+                adul<span className="text-accent">.</span>lam
               </span>
-              <button onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center w-9 h-9 focus:outline-none" style={{ background: "#F4F4F4", borderRadius: "6px" }}>
-                <X className="w-5 h-5" style={{ color: "#0A0A0A" }} />
-              </button>
+              <div className="flex items-center gap-2">
+                {/* AJOUT REFONTE — bascule de thème (mobile) */}
+                <ThemeToggle variant="icon" />
+                <button onClick={() => setMobileMenuOpen(false)} aria-label="Fermer" className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-foreground focus:outline-none">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {isLoading ? (
-              <div className="h-4 rounded animate-pulse mb-4" style={{ background: "#F4F4F4", width: "40%" }} />
+              <div className="mb-4 h-4 w-2/5 animate-pulse rounded-sm bg-surface" />
             ) : user ? (
-              <div className="mb-4 p-3" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC", borderRadius: "8px" }}>
-                <p className="text-xs mb-0.5" style={{ color: "#AAAAAA" }}>Connecté</p>
-                <p className="text-sm font-semibold truncate" style={{ color: "#0A0A0A" }}>{user.name || user.email}</p>
+              <div className="mb-4 rounded-lg border border-border bg-surface p-3">
+                <p className="overline mb-1 text-muted-foreground">Connecté</p>
+                <p className="truncate text-sm font-semibold text-foreground">{user.name || user.email}</p>
               </div>
             ) : (
-              <div className="flex gap-2 mb-6">
-                <button onClick={() => { goToLogin(); setMobileMenuOpen(false) }} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold" style={{ background: "#0A0A0A", color: "#fff", borderRadius: "8px" }}>
+              <div className="mb-6 flex gap-2">
+                <button onClick={() => { goToLogin(); setMobileMenuOpen(false) }} className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-brand py-2.5 text-sm font-semibold text-white">
                   <LogIn className="w-4 h-4" /> Connexion
                 </button>
-                <button onClick={() => { goToRegister(); setMobileMenuOpen(false) }} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold" style={{ border: "1.5px solid #ECECEC", color: "#0A0A0A", background: "#fff", borderRadius: "8px" }}>
-                  <UserPlus className="w-4 h-4" /> S'inscrire
+                <button onClick={() => { goToRegister(); setMobileMenuOpen(false) }} className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-background py-2.5 text-sm font-semibold text-foreground">
+                  <UserPlus className="w-4 h-4" /> S&apos;inscrire
                 </button>
               </div>
             )}
 
-            <div className="flex flex-col mb-4">
+            <div className="mb-4 flex flex-col">
               {navItems.map((item) => (
                 <button
                   key={item.path}
                   onClick={() => { router.push(item.path); setMobileMenuOpen(false) }}
-                  className="flex items-center justify-between py-3.5 text-sm font-medium text-left"
-                  style={{ borderBottom: "0.5px solid #F8F8F8", color: "#0A0A0A", fontFamily: amazonFont }}
+                  className="flex items-center justify-between border-b border-border py-3.5 text-left text-sm font-medium text-foreground"
                 >
                   {item.label}
-                  <ChevronRight className="w-4 h-4" style={{ color: "#ECECEC" }} />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </button>
               ))}
             </div>
 
-            <p className="text-xs font-semibold mb-3" style={{ color: "#AAAAAA", letterSpacing: "0.08em", textTransform: "uppercase" }}>Catégories</p>
+            <p className="overline mb-3 text-muted-foreground">Catégories</p>
             {categories.map((cat) => (
               <div key={cat.title}>
                 <button
@@ -538,22 +530,20 @@ export function Header() {
                     if (!cat.items.length) { goToCategory(cat.title); setMobileMenuOpen(false) }
                     else setActiveCategory(activeCategory === cat.title ? null : cat.title)
                   }}
-                  className="flex items-center justify-between w-full py-3 text-sm font-medium"
-                  style={{ borderBottom: "0.5px solid #F8F8F8", color: "#0A0A0A", fontFamily: amazonFont }}
+                  className="flex w-full items-center justify-between border-b border-border py-3 text-sm font-medium text-foreground"
                 >
                   {cat.title}
                   {cat.items.length > 0 && (
-                    <ChevronDown className="w-4 h-4 transition-transform" style={{ color: "#AAAAAA", transform: activeCategory === cat.title ? "rotate(180deg)" : "rotate(0)" }} />
+                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${activeCategory === cat.title ? "rotate-180" : ""}`} />
                   )}
                 </button>
                 {activeCategory === cat.title && cat.items.length > 0 && (
-                  <div className="pl-4 py-2 flex flex-col gap-1">
+                  <div className="flex flex-col gap-1 py-2 pl-4">
                     {cat.items.map((item, i) => (
                       <button
                         key={i}
                         onClick={() => { goToCategory(item); setMobileMenuOpen(false) }}
-                        className="text-left py-1.5 text-sm"
-                        style={{ color: "#AAAAAA", fontFamily: amazonFont }}
+                        className="py-1.5 text-left text-sm text-ink-3 hover:text-accent"
                       >
                         {item}
                       </button>
@@ -564,7 +554,7 @@ export function Header() {
             ))}
 
             {user && (
-              <button onClick={handleLogout} className="flex items-center gap-2 mt-4 text-sm font-medium" style={{ color: "#D4372B", fontFamily: amazonFont }}>
+              <button onClick={handleLogout} className="mt-4 flex items-center gap-2 text-sm font-medium text-accent">
                 <LogOut className="w-4 h-4" /> Déconnexion
               </button>
             )}

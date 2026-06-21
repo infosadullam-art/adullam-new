@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import dynamic from "next/dynamic"
 
 // ── Composants statiques ──
@@ -54,8 +54,8 @@ const RecommandeEntreprise = dynamic(
 function Skeleton({ height }: { height: number }) {
   return (
     <div
-      className="animate-pulse rounded-xl"
-      style={{ height: `${height}px`, background: "#F4F4F4" }}
+      className="shimmer rounded-lg"
+      style={{ height: `${height}px` }}
     />
   )
 }
@@ -74,7 +74,7 @@ function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; d
       style={{
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-        transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
+        transition: 'opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)',
       }}
     >
       {children}
@@ -102,8 +102,8 @@ export default function Home() {
       }}
     >
       {/* VERSION MOBILE */}
-      <div className="lg:hidden min-h-screen" style={{ background: "#FFFFFF" }}>
-        <div className="sticky top-0 z-50 bg-white" style={{ borderBottom: "0.5px solid #ECECEC" }}>
+      <div className="lg:hidden min-h-screen bg-background">
+        <div className="sticky top-0 z-50 bg-background border-b border-border">
           <MobileHeader />
         </div>
 
@@ -111,78 +111,70 @@ export default function Home() {
           <AnimatedSection delay={0}>
             <HeroSection />
           </AnimatedSection>
-          
-          <div className="h-2" />
+
+          <div className="h-3" />
 
           <AnimatedSection delay={100}>
-            <div className="px-4 py-3" style={{ background: "#fff" }}>
+            <div className="px-4 py-3">
               <DealCountdown />
             </div>
           </AnimatedSection>
-          
-          <div className="h-2" />
+
+          <div className="h-3" />
 
           <AnimatedSection delay={200}>
             {showPriority2 && (
-              <div style={{ background: "#fff" }}>
-                <MeilleuresVentesMobile />
-              </div>
+              <MeilleuresVentesMobile />
             )}
           </AnimatedSection>
 
-          <div className="h-2" />
+          <div className="h-3" />
 
           <AnimatedSection delay={300}>
             {showPriority3 && (
-              <div style={{ background: "#fff" }}>
-                <ModeSection />
-              </div>
+              <ModeSection />
             )}
           </AnimatedSection>
 
-          <div className="h-2" />
+          <div className="h-3" />
 
           <AnimatedSection delay={400}>
             {showPriority4 && (
-              <div style={{ background: "#fff" }}>
-                <TendanceParPays />
-              </div>
+              <TendanceParPays />
             )}
           </AnimatedSection>
 
-          <div className="h-2" />
+          <div className="h-3" />
 
           <AnimatedSection delay={500}>
             {showPriority5 && (
-              <div style={{ background: "#fff" }}>
-                <ForYouSection />
-              </div>
+              <ForYouSection />
             )}
           </AnimatedSection>
 
-          <div className="h-2" />
+          <div className="h-3" />
         </main>
 
         <Footer />
-        <div className="sticky bottom-0 z-50 bg-white" style={{ borderTop: "0.5px solid #ECECEC" }}>
+        <div className="sticky bottom-0 z-50 bg-background border-t border-border">
           <MobileNav />
         </div>
       </div>
 
       {/* VERSION DESKTOP */}
-      <div className="hidden lg:block min-h-screen" style={{ background: "#FFFFFF" }}>
-        <div className="sticky top-0 z-50 bg-white" style={{ borderBottom: "0.5px solid #ECECEC", boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
+      <div className="hidden lg:block min-h-screen bg-background">
+        <div className="sticky top-0 z-50">
           <Header />
         </div>
 
         <main className="overflow-hidden">
           <AnimatedSection delay={0}>
-            <div style={{ background: "#0A0A0A" }}>
+            <div className="bg-brand">
               <HeroSection />
             </div>
           </AnimatedSection>
-          
-          <div className="h-2" />
+
+          <div className="h-10" />
 
           <AnimatedSection delay={100}>
             <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -191,8 +183,8 @@ export default function Home() {
               </div>
             </div>
           </AnimatedSection>
-          
-          <div className="h-2" />
+
+          <div className="h-14" />
 
           <AnimatedSection delay={200}>
             {showPriority2 && (
@@ -204,7 +196,7 @@ export default function Home() {
             )}
           </AnimatedSection>
 
-          <div className="h-2" />
+          <div className="h-14" />
 
           <AnimatedSection delay={300}>
             {showPriority3 && (
@@ -216,7 +208,7 @@ export default function Home() {
             )}
           </AnimatedSection>
 
-          <div className="h-2" />
+          <div className="h-14" />
 
           <AnimatedSection delay={400}>
             {showPriority4 && (
@@ -228,7 +220,7 @@ export default function Home() {
             )}
           </AnimatedSection>
 
-          <div className="h-2" />
+          <div className="h-14" />
 
           <AnimatedSection delay={500}>
             {showPriority5 && (
@@ -240,7 +232,7 @@ export default function Home() {
             )}
           </AnimatedSection>
 
-          <div className="h-2" />
+          <div className="h-16" />
         </main>
 
         <Footer />
