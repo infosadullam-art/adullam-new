@@ -187,7 +187,7 @@ export function DealCountdown() {
   if (isLoading) {
     return (
       <div className="w-full" style={{ background: "#FAFAFA" }}>
-        <div className="mx-auto max-w-6xl px-4 py-6 lg:px-8">
+        <div className="px-4 py-6">
           <div className="flex h-20 animate-pulse items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#D4372B] border-t-transparent" />
           </div>
@@ -199,7 +199,7 @@ export function DealCountdown() {
   if (error) {
     return (
       <div className="w-full" style={{ background: "#FAFAFA" }}>
-        <div className="mx-auto max-w-6xl px-4 py-4 text-center lg:px-8">
+        <div className="px-4 py-4 text-center">
           <p className="text-sm text-[#D4372B]">{error}</p>
         </div>
       </div>
@@ -226,48 +226,48 @@ export function DealCountdown() {
           }}
         />
 
-        <div className="mx-auto max-w-6xl px-4 py-3 lg:px-8">
-          {/* VERSION MOBILE */}
-          <div className="lg:hidden">
-            <div className="mb-2 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#D4372B]">
-                  <Zap className="h-4 w-4 text-white" fill="white" strokeWidth={2} />
-                </div>
-                <div>
-                  <p className="text-sm font-black tracking-tight text-[#0A0A0A]">FLASH SALE</p>
-                  <p className="text-[10px] font-medium text-[#AAAAAA]">jusqu&apos;à -50%</p>
-                </div>
+        {/* MOBILE - full width */}
+        <div className="px-4 py-3 lg:hidden">
+          <div className="mb-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#D4372B]">
+                <Zap className="h-4 w-4 text-white" fill="white" strokeWidth={2} />
               </div>
-
-              <Link href="/deals-du-jour" className="flex items-center gap-1 text-[11px] font-semibold text-[#D4372B]">
-                Voir tout
-                <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-
-            <div className="mt-2 flex items-center justify-between border-t border-[#ECECEC] pt-2">
-              <div className="flex items-center gap-1.5">
-                <Clock className="h-3 w-3 text-[#AAAAAA]" />
-                <span className="text-[10px] font-medium text-[#AAAAAA]">Se termine dans</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {[
-                  { val: timeLeft.hours, label: "h" },
-                  { val: timeLeft.minutes, label: "m" },
-                  { val: timeLeft.seconds, label: "s" },
-                ].map(({ val, label }, idx) => (
-                  <div key={label} className="flex items-center gap-1">
-                    <TimeBlock val={val} label={label} />
-                    {idx < 2 && <span className="text-sm font-bold text-[#D4372B]">:</span>}
-                  </div>
-                ))}
+              <div>
+                <p className="text-sm font-black tracking-tight text-[#0A0A0A]">FLASH SALE</p>
+                <p className="text-[10px] font-medium text-[#AAAAAA]">jusqu&apos;à -50%</p>
               </div>
             </div>
+
+            <Link href="/deals-du-jour" className="flex items-center gap-1 text-[11px] font-semibold text-[#D4372B]">
+              Voir tout
+              <ArrowRight className="h-3 w-3" />
+            </Link>
           </div>
 
-          {/* VERSION DESKTOP */}
-          <div className="hidden lg:flex lg:items-center lg:justify-between">
+          <div className="mt-2 flex items-center justify-between border-t border-[#ECECEC] pt-2">
+            <div className="flex items-center gap-1.5">
+              <Clock className="h-3 w-3 text-[#AAAAAA]" />
+              <span className="text-[10px] font-medium text-[#AAAAAA]">Se termine dans</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              {[
+                { val: timeLeft.hours, label: "h" },
+                { val: timeLeft.minutes, label: "m" },
+                { val: timeLeft.seconds, label: "s" },
+              ].map(({ val, label }, idx) => (
+                <div key={label} className="flex items-center gap-1">
+                  <TimeBlock val={val} label={label} />
+                  {idx < 2 && <span className="text-sm font-bold text-[#D4372B]">:</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* DESKTOP */}
+        <div className="hidden lg:block mx-auto max-w-6xl px-8 py-3">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-md bg-[#D4372B] shadow-lg shadow-[#D4372B]/25">
                 <Sparkles className="h-6 w-6 text-white" strokeWidth={2} />
@@ -317,77 +317,76 @@ export function DealCountdown() {
 
       {/* ══ BLOCS PRODUITS ════════════════════════════════════════ */}
       {/* MOBILE - full width sans padding */}
-      <div className="mx-auto max-w-6xl lg:px-8">
-        {/* MOBILE - full width */}
-        <div className="lg:hidden">
-          <div className="grid grid-cols-2 gap-2 p-2">
-            <div
-              className="rounded-md border border-[#ECECEC] bg-white transition-all duration-1000 ease-in-out"
-              style={{
-                animation: "pulseBlock 8s ease-in-out infinite",
-              }}
-            >
-              <div className="p-2">
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0A0A0A]">
-                    <Sparkles className="h-3 w-3 text-[#D4372B]" strokeWidth={2.25} />
-                    Sélection
-                  </h3>
-                  <span className="rounded-full bg-[#D4372B] px-1.5 py-0.5 text-[8px] font-bold text-white">Nouveau</span>
-                </div>
-                <motion.div
-                  variants={containerStagger}
-                  initial="hidden"
-                  whileInView="show"
-                  viewport={{ once: true, margin: "-40px" }}
-                  className="grid grid-cols-2 gap-1.5"
-                >
-                  {featuredProducts.slice(0, 4).map((p) => (
-                    <motion.div key={p.id} variants={itemRise}>
-                      <ProductCard product={p} hideName />
-                    </motion.div>
-                  ))}
-                </motion.div>
+      <div className="lg:hidden">
+        <div className="grid grid-cols-2 gap-2 p-2">
+          <div
+            className="rounded-md border border-[#ECECEC] bg-white transition-all duration-1000 ease-in-out"
+            style={{
+              animation: "pulseBlock 8s ease-in-out infinite",
+            }}
+          >
+            <div className="p-2">
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0A0A0A]">
+                  <Sparkles className="h-3 w-3 text-[#D4372B]" strokeWidth={2.25} />
+                  Sélection
+                </h3>
+                <span className="rounded-full bg-[#D4372B] px-1.5 py-0.5 text-[8px] font-bold text-white">Nouveau</span>
               </div>
+              <motion.div
+                variants={containerStagger}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, margin: "-40px" }}
+                className="grid grid-cols-2 gap-1.5"
+              >
+                {featuredProducts.slice(0, 4).map((p) => (
+                  <motion.div key={p.id} variants={itemRise}>
+                    <ProductCard product={p} hideName />
+                  </motion.div>
+                ))}
+              </motion.div>
             </div>
+          </div>
 
-            <div
-              className="rounded-md border border-[#ECECEC] bg-white transition-all duration-1000 ease-in-out"
-              style={{
-                animation: "pulseBlock 8s ease-in-out infinite",
-                animationDelay: "2s",
-              }}
-            >
-              <div className="p-2">
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0A0A0A]">
-                    <Flame className="h-3 w-3 text-[#D4372B]" strokeWidth={2.25} />
-                    Best-sellers
-                  </h3>
-                  <span className="rounded-full bg-[#D4372B]/10 px-1.5 py-0.5 text-[8px] font-bold text-[#D4372B]">
-                    Top ventes
-                  </span>
-                </div>
-                <motion.div
-                  variants={containerStagger}
-                  initial="hidden"
-                  whileInView="show"
-                  viewport={{ once: true, margin: "-40px" }}
-                  className="grid grid-cols-2 gap-1.5"
-                >
-                  {bestSellers.slice(0, 4).map((p) => (
-                    <motion.div key={p.id} variants={itemRise}>
-                      <ProductCard product={p} hideName />
-                    </motion.div>
-                  ))}
-                </motion.div>
+          <div
+            className="rounded-md border border-[#ECECEC] bg-white transition-all duration-1000 ease-in-out"
+            style={{
+              animation: "pulseBlock 8s ease-in-out infinite",
+              animationDelay: "2s",
+            }}
+          >
+            <div className="p-2">
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0A0A0A]">
+                  <Flame className="h-3 w-3 text-[#D4372B]" strokeWidth={2.25} />
+                  Best-sellers
+                </h3>
+                <span className="rounded-full bg-[#D4372B]/10 px-1.5 py-0.5 text-[8px] font-bold text-[#D4372B]">
+                  Top ventes
+                </span>
               </div>
+              <motion.div
+                variants={containerStagger}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, margin: "-40px" }}
+                className="grid grid-cols-2 gap-1.5"
+              >
+                {bestSellers.slice(0, 4).map((p) => (
+                  <motion.div key={p.id} variants={itemRise}>
+                    <ProductCard product={p} hideName />
+                  </motion.div>
+                ))}
+              </motion.div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* DESKTOP - avec padding */}
-        <div className="hidden gap-3 lg:grid lg:grid-cols-2 lg:p-4">
+      {/* DESKTOP */}
+      <div className="hidden lg:block mx-auto max-w-6xl px-8 py-4">
+        <div className="grid grid-cols-2 gap-3">
           <div
             className="rounded-md border border-[#ECECEC] bg-white p-4 transition-all duration-1000 ease-in-out"
             style={{
