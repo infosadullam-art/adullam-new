@@ -24,12 +24,14 @@ import {
   Info,
   CreditCard,
   Smartphone,
-  Lock
+  Lock,
+  PenLine,
 } from "lucide-react"
 
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
+import { motion } from "framer-motion"
 import { useCart } from "@/context/CartContext"
 import { useLocale } from "@/context/LocaleProvider"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
@@ -133,7 +135,7 @@ export default function ProductPage() {
   const [reviewsStats, setReviewsStats] = useState({
     averageRating: 0,
     totalReviews: 0,
-    ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+    ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
   })
 
   // ============================================================
@@ -142,8 +144,8 @@ export default function ProductPage() {
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [newReview, setNewReview] = useState({
     rating: 5,
-    comment: '',
-    authorName: ''
+    comment: "",
+    authorName: "",
   })
   const [isSubmittingReview, setIsSubmittingReview] = useState(false)
 
@@ -157,35 +159,40 @@ export default function ProductPage() {
   // ============================================================
   // ÉTATS POUR LES VARIANTES
   // ============================================================
-  const [attributeGroups, setAttributeGroups] = useState<Record<string, {
-    name: string,
-    values: string[],
-    type: 'primary' | 'secondary',
-    hasImages?: boolean
-  }>>({})
-  
+  const [attributeGroups, setAttributeGroups] = useState<
+    Record<
+      string,
+      {
+        name: string
+        values: string[]
+        type: "primary" | "secondary"
+        hasImages?: boolean
+      }
+    >
+  >({})
+
   const [attributeImages, setAttributeImages] = useState<Record<string, string>>({})
-  
+
   // Pour les variantes simples (ex: seulement couleur)
   const [simpleVariantQuantities, setSimpleVariantQuantities] = useState<Record<string, number>>({})
   const [simpleVariantType, setSimpleVariantType] = useState<string>("")
-  
+
   // Pour les variantes multiples (ex: couleur + taille)
   const [complexSelections, setComplexSelections] = useState<Record<string, Record<string, number>>>({})
   const [primaryAttrName, setPrimaryAttrName] = useState<string>("")
   const [secondaryAttrName, setSecondaryAttrName] = useState<string>("")
-  
+
   // Pour les produits sans variantes
   const [simpleQuantity, setSimpleQuantity] = useState(1)
-  
+
   // Popup de sélection pour variantes simples
   const [isSimpleVariantModalOpen, setIsSimpleVariantModalOpen] = useState(false)
   const [selectedSimpleValue, setSelectedSimpleValue] = useState<string>("")
   const [simpleModalQuantity, setSimpleModalQuantity] = useState<number>(0)
-  
+
   // Popup de sélection pour variantes multiples
   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false)
-  const [modalMode, setModalMode] = useState<'primary' | 'secondary'>('primary')
+  const [modalMode, setModalMode] = useState<"primary" | "secondary">("primary")
   const [modalPrimaryValue, setModalPrimaryValue] = useState<string | null>(null)
   const [modalSecondaryOptions, setModalSecondaryOptions] = useState<string[]>([])
   const [modalQuantities, setModalQuantities] = useState<Record<string, number>>({})
@@ -207,7 +214,7 @@ export default function ProductPage() {
   // GESTION DES IMAGES
   // ============================================================
   const [images, setImages] = useState<string[]>([])
-  
+
   // ============================================================
   // CHARGEMENT DU PRODUIT
   // ============================================================
@@ -232,11 +239,11 @@ export default function ProductPage() {
       try {
         const response = await apiFetch(`/api/products/${product.id}/reviews`)
         const data = await response.json()
-        
+
         if (data.success) {
           const allReviews = data.data || []
           setReviews(allReviews)
-          
+
           const total = allReviews.length
           if (total > 0) {
             const avg = allReviews.reduce((sum: number, r: CustomerReview) => sum + r.rating, 0) / total
@@ -246,17 +253,17 @@ export default function ProductPage() {
                 distribution[r.rating as keyof typeof distribution]++
               }
             })
-            
+
             setReviewsStats({
               averageRating: Math.round(avg * 10) / 10,
               totalReviews: total,
-              ratingDistribution: distribution
+              ratingDistribution: distribution,
             })
           } else {
             setReviewsStats({
               averageRating: 0,
               totalReviews: 0,
-              ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+              ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
             })
           }
         }
@@ -266,7 +273,7 @@ export default function ProductPage() {
         setIsLoadingReviews(false)
       }
     }
-    
+
     fetchReviews()
   }, [product?.id])
 
@@ -278,7 +285,7 @@ export default function ProductPage() {
     return date.toLocaleDateString("fr-FR", {
       day: "numeric",
       month: "long",
-      year: "numeric"
+      year: "numeric",
     })
   }
 
@@ -290,42 +297,42 @@ export default function ProductPage() {
       toast.error("Veuillez écrire un commentaire")
       return
     }
-    
+
     if (!newReview.authorName.trim()) {
       toast.error("Veuillez entrer votre nom")
       return
     }
-    
+
     setIsSubmittingReview(true)
-    
+
     try {
       const response = await apiFetch(`/api/products/${product.id}/reviews`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           rating: newReview.rating,
           comment: newReview.comment.trim(),
           authorName: newReview.authorName.trim(),
           verifiedPurchase: false,
           createdAt: new Date().toISOString(),
-          helpfulCount: 0
-        })
+          helpfulCount: 0,
+        }),
       })
-      
+
       const data = await response.json()
-      
+
       if (data.success) {
         toast.success("Merci pour votre avis !")
         setShowReviewForm(false)
-        setNewReview({ rating: 5, comment: '', authorName: '' })
-        
+        setNewReview({ rating: 5, comment: "", authorName: "" })
+
         const refreshResponse = await apiFetch(`/api/products/${product.id}/reviews`)
         const refreshData = await refreshResponse.json()
-        
+
         if (refreshData.success) {
           const allReviews = refreshData.data || []
           setReviews(allReviews)
-          
+
           const total = allReviews.length
           if (total > 0) {
             const avg = allReviews.reduce((sum: number, r: CustomerReview) => sum + r.rating, 0) / total
@@ -335,11 +342,11 @@ export default function ProductPage() {
                 distribution[r.rating as keyof typeof distribution]++
               }
             })
-            
+
             setReviewsStats({
               averageRating: Math.round(avg * 10) / 10,
               totalReviews: total,
-              ratingDistribution: distribution
+              ratingDistribution: distribution,
             })
           }
         }
@@ -360,13 +367,13 @@ export default function ProductPage() {
   useEffect(() => {
     const checkWishlist = async () => {
       if (!user || !product) return
-      
+
       try {
         const response = await wishlistApi.list()
-        
+
         if (response.success && response.data) {
-          const exists = response.data.some((item: any) => 
-            item.productId === product.id || item.product?.id === product.id
+          const exists = response.data.some(
+            (item: any) => item.productId === product.id || item.product?.id === product.id,
           )
           setIsWishlisted(exists)
         }
@@ -374,7 +381,7 @@ export default function ProductPage() {
         console.error("Erreur vérification wishlist:", error)
       }
     }
-    
+
     checkWishlist()
   }, [user, product])
 
@@ -386,11 +393,11 @@ export default function ProductPage() {
       router.push("/account?mode=login")
       return
     }
-    
+
     try {
       if (isWishlisted) {
         const response = await wishlistApi.remove(product.id)
-        
+
         if (response.success) {
           setIsWishlisted(false)
           toast.success("Produit retiré des favoris")
@@ -399,7 +406,7 @@ export default function ProductPage() {
         }
       } else {
         const response = await wishlistApi.add(product.id)
-        
+
         if (response.success) {
           setIsWishlisted(true)
           toast.success("Produit ajouté aux favoris")
@@ -426,29 +433,29 @@ export default function ProductPage() {
   // ============================================================
   useEffect(() => {
     if (!product || !country) return
-    
+
     const fetchLogisticsEstimate = async () => {
       setIsLoadingLogistics(true)
       setLogisticsError(null)
-      
+
       try {
         const params = new URLSearchParams({
           productId: product.id,
           productTitle: product.title || product.name || "Produit",
-          productWeight: product.weight?.toString() || '',
+          productWeight: product.weight?.toString() || "",
           quantity: totalQuantity.toString(),
-          country: country
+          country: country,
         })
-        
+
         const response = await apiFetch(`/api/logistics/estimate?${params}`)
         const data = await response.json()
-        
+
         if (data.success) {
           setLogisticsData(data.data)
-          
+
           if (data.data.shipping) {
-            const availableModes = ['bateau', 'avion', 'express'].filter(
-              mode => data.data.shipping[mode as keyof typeof data.data.shipping]
+            const availableModes = ["bateau", "avion", "express"].filter(
+              (mode) => data.data.shipping[mode as keyof typeof data.data.shipping],
             )
             if (availableModes.length > 0 && !availableModes.includes(selectedShipping)) {
               setSelectedShipping(availableModes[0] as "bateau" | "avion" | "express")
@@ -464,7 +471,7 @@ export default function ProductPage() {
         setIsLoadingLogistics(false)
       }
     }
-    
+
     fetchLogisticsEstimate()
   }, [product, country, totalQuantity])
 
@@ -477,37 +484,43 @@ export default function ProductPage() {
     const allAttributes: Record<string, Set<string>> = {}
     const imageMap: Record<string, string> = {}
     const attributeNames: string[] = []
-    
+
     const ignoredAttributes = [
-      'color_image', 'colorimage', 'color image',
-      'colour_image', 'colourimage', 'colour image',
-      'couleur_image', 'couleurimage', 'couleur image'
+      "color_image",
+      "colorimage",
+      "color image",
+      "colour_image",
+      "colourimage",
+      "colour image",
+      "couleur_image",
+      "couleurimage",
+      "couleur image",
     ]
-    
+
     product.variants.forEach((variant: any) => {
       if (variant.attributes) {
         Object.entries(variant.attributes).forEach(([key, value]) => {
           const normalizedKey = key.toLowerCase().trim()
-          
+
           if (ignoredAttributes.includes(normalizedKey)) return
-          
+
           if (!allAttributes[normalizedKey]) {
             allAttributes[normalizedKey] = new Set()
             attributeNames.push(normalizedKey)
           }
           allAttributes[normalizedKey].add(String(value))
-          
+
           if (variant.image) {
             const comboKey = Object.entries(variant.attributes)
               .filter(([k]) => !ignoredAttributes.includes(k.toLowerCase().trim()))
               .map(([k, v]) => `${k}:${v}`)
               .sort()
-              .join('|')
+              .join("|")
             if (!imageMap[comboKey]) {
               imageMap[comboKey] = variant.image
             }
-            
-            if (normalizedKey.includes('color') || normalizedKey.includes('couleur')) {
+
+            if (normalizedKey.includes("color") || normalizedKey.includes("couleur")) {
               if (!imageMap[`${normalizedKey}:${value}`]) {
                 imageMap[`${normalizedKey}:${value}`] = variant.image
               }
@@ -519,62 +532,74 @@ export default function ProductPage() {
 
     const formatAttributeName = (key: string): string => {
       const map: Record<string, string> = {
-        color: "Couleur", colour: "Couleur", couleur: "Couleur",
-        size: "Taille", taille: "Taille", pointure: "Pointure",
-        eur_size: "Pointure", material: "Matière", matière: "Matière", matiere: "Matière"
+        color: "Couleur",
+        colour: "Couleur",
+        couleur: "Couleur",
+        size: "Taille",
+        taille: "Taille",
+        pointure: "Pointure",
+        eur_size: "Pointure",
+        material: "Matière",
+        matière: "Matière",
+        matiere: "Matière",
       }
       return map[key.toLowerCase()] || key.charAt(0).toUpperCase() + key.slice(1)
     }
 
     const hasMultipleAttrs = attributeNames.length > 1
     const primaryAttr = attributeNames[0] || ""
-    
+
     setAttributeImages(imageMap)
-    
+
     if (!hasMultipleAttrs) {
       const attrName = primaryAttr
       const attrValues = Array.from(allAttributes[attrName] || [])
-      
+
       setSimpleVariantType(attrName)
       setPrimaryAttrName(formatAttributeName(attrName))
-      
+
       const initialQuantities: Record<string, number> = {}
-      attrValues.forEach(value => { initialQuantities[value] = 0 })
+      attrValues.forEach((value) => {
+        initialQuantities[value] = 0
+      })
       setSimpleVariantQuantities(initialQuantities)
-      
+
       setAttributeGroups({
         [attrName]: {
           name: formatAttributeName(attrName),
           values: attrValues,
-          type: 'primary',
-          hasImages: attrValues.some(v => imageMap[`${attrName}:${v}`])
-        }
+          type: "primary",
+          hasImages: attrValues.some((v) => imageMap[`${attrName}:${v}`]),
+        },
       })
     } else {
-      const groups: Record<string, {name: string, values: string[], type: 'primary' | 'secondary', hasImages?: boolean}> = {}
-      
+      const groups: Record<
+        string,
+        { name: string; values: string[]; type: "primary" | "secondary"; hasImages?: boolean }
+      > = {}
+
       attributeNames.forEach((attr, index) => {
         groups[attr] = {
           name: formatAttributeName(attr),
           values: Array.from(allAttributes[attr] || []),
-          type: index === 0 ? 'primary' : 'secondary',
-          hasImages: index === 0 && Array.from(allAttributes[attr] || []).some(v => imageMap[`${attr}:${v}`])
+          type: index === 0 ? "primary" : "secondary",
+          hasImages: index === 0 && Array.from(allAttributes[attr] || []).some((v) => imageMap[`${attr}:${v}`]),
         }
       })
-      
+
       setAttributeGroups(groups)
       setPrimaryAttrName(groups[primaryAttr]?.name || primaryAttr)
-      
+
       const initialSelections: Record<string, Record<string, number>> = {}
-      Array.from(allAttributes[primaryAttr] || []).forEach(value => {
+      Array.from(allAttributes[primaryAttr] || []).forEach((value) => {
         initialSelections[value] = {}
       })
       setComplexSelections(initialSelections)
-      
+
       const secondaryAttr = attributeNames[1] || ""
       setSecondaryAttrName(groups[secondaryAttr]?.name || secondaryAttr)
     }
-    
+
     const price = product.variants[0]?.price || product.price || 0
     let minQty = 1
     if (price <= 3.26) minQty = 10
@@ -583,7 +608,6 @@ export default function ProductPage() {
     else if (price <= 48.98) minQty = 3
     else minQty = 2
     setMinQuantity(minQty)
-    
   }, [product])
 
   // ============================================================
@@ -591,13 +615,13 @@ export default function ProductPage() {
   // ============================================================
   useEffect(() => {
     if (!product) return
-    
+
     const allImages: string[] = []
-    
+
     if (product.images?.length > 0) {
       allImages.push(...product.images)
     }
-    
+
     if (product.variants?.length > 0) {
       product.variants.forEach((variant: any) => {
         if (variant.image && !allImages.includes(variant.image)) {
@@ -605,10 +629,10 @@ export default function ProductPage() {
         }
       })
     }
-    
+
     const uniqueImages = allImages.filter((img: string) => img && img.trim() !== "")
     setImages(uniqueImages)
-    
+
     if (selectedImage >= uniqueImages.length) {
       setSelectedImage(0)
     }
@@ -619,31 +643,35 @@ export default function ProductPage() {
   // ============================================================
   useEffect(() => {
     if (!product) return
-    
+
     if (product.variants && product.variants.length > 0) {
       if (Object.keys(simpleVariantQuantities).length > 0) {
         if (selectedSimpleValue && attributeImages[`${simpleVariantType}:${selectedSimpleValue}`]) {
-          const imgIndex = images.findIndex(i => i === attributeImages[`${simpleVariantType}:${selectedSimpleValue}`])
+          const imgIndex = images.findIndex((i) => i === attributeImages[`${simpleVariantType}:${selectedSimpleValue}`])
           if (imgIndex !== -1) {
             setSelectedImage(imgIndex)
             return
           }
         }
-        
+
         for (const [value, qty] of Object.entries(simpleVariantQuantities)) {
           if (qty > 0 && attributeImages[`${simpleVariantType}:${value}`]) {
-            const imgIndex = images.findIndex(i => i === attributeImages[`${simpleVariantType}:${value}`])
+            const imgIndex = images.findIndex((i) => i === attributeImages[`${simpleVariantType}:${value}`])
             if (imgIndex !== -1) {
               setSelectedImage(imgIndex)
               return
             }
           }
         }
-      } 
-      else if (Object.keys(complexSelections).length > 0) {
+      } else if (Object.keys(complexSelections).length > 0) {
         for (const [primaryValue, secondarySelections] of Object.entries(complexSelections)) {
-          if (Object.keys(secondarySelections).length > 0 && attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]) {
-            const imgIndex = images.findIndex(i => i === attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`])
+          if (
+            Object.keys(secondarySelections).length > 0 &&
+            attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]
+          ) {
+            const imgIndex = images.findIndex(
+              (i) => i === attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`],
+            )
             if (imgIndex !== -1) {
               setSelectedImage(imgIndex)
               return
@@ -666,17 +694,17 @@ export default function ProductPage() {
   }
 
   const incrementSimpleModal = () => {
-    setSimpleModalQuantity(prev => prev + 1)
+    setSimpleModalQuantity((prev) => prev + 1)
   }
 
   const decrementSimpleModal = () => {
-    setSimpleModalQuantity(prev => Math.max(0, prev - 1))
+    setSimpleModalQuantity((prev) => Math.max(0, prev - 1))
   }
 
   const confirmSimpleVariantSelection = () => {
-    setSimpleVariantQuantities(prev => ({
+    setSimpleVariantQuantities((prev) => ({
       ...prev,
-      [selectedSimpleValue]: simpleModalQuantity
+      [selectedSimpleValue]: simpleModalQuantity,
     }))
     setIsSimpleVariantModalOpen(false)
   }
@@ -690,38 +718,38 @@ export default function ProductPage() {
   // ============================================================
   const getAvailableSecondary = (primaryValue: string): string[] => {
     if (!product?.variants) return []
-    
+
     const secondaryValues = new Set<string>()
     const primaryAttr = Object.keys(attributeGroups)[0]
     const secondaryAttr = Object.keys(attributeGroups)[1]
-    
+
     if (!secondaryAttr) return []
-    
+
     product.variants.forEach((variant: any) => {
       const variantPrimary = variant.attributes?.[primaryAttr]
       if (variantPrimary === primaryValue && variant.attributes?.[secondaryAttr]) {
         secondaryValues.add(String(variant.attributes[secondaryAttr]))
       }
     })
-    
+
     return Array.from(secondaryValues).sort()
   }
 
   const openPrimaryModal = (primaryValue: string) => {
     const secondaryOptions = getAvailableSecondary(primaryValue)
     if (secondaryOptions.length > 0) {
-      setModalMode('primary')
+      setModalMode("primary")
       setModalPrimaryValue(primaryValue)
       setModalSecondaryOptions(secondaryOptions)
       setModalAttrName(secondaryAttrName)
-      
+
       const existing: Record<string, number> = {}
-      secondaryOptions.forEach(opt => {
+      secondaryOptions.forEach((opt) => {
         const qty = complexSelections[primaryValue]?.[opt] || 0
         if (qty > 0) existing[opt] = qty
       })
       setModalQuantities(existing)
-      
+
       setIsVariantModalOpen(true)
     }
   }
@@ -729,14 +757,14 @@ export default function ProductPage() {
   const openSecondaryModal = (secondaryValue: string) => {
     const primaryAttr = Object.keys(attributeGroups)[0]
     const primaryOptions = attributeGroups[primaryAttr]?.values || []
-    
-    setModalMode('secondary')
+
+    setModalMode("secondary")
     setModalPrimaryValue(secondaryValue)
     setModalSecondaryOptions(primaryOptions)
     setModalAttrName(primaryAttrName)
-    
+
     const existing: Record<string, number> = {}
-    primaryOptions.forEach(primaryVal => {
+    primaryOptions.forEach((primaryVal) => {
       Object.entries(complexSelections[primaryVal] || {}).forEach(([secVal, qty]) => {
         if (secVal === secondaryValue && qty > 0) {
           existing[primaryVal] = (existing[primaryVal] || 0) + qty
@@ -744,19 +772,19 @@ export default function ProductPage() {
       })
     })
     setModalQuantities(existing)
-    
+
     setIsVariantModalOpen(true)
   }
 
   const addModalQuantity = (value: string) => {
-    setModalQuantities(prev => ({
+    setModalQuantities((prev) => ({
       ...prev,
-      [value]: (prev[value] || 0) + 1
+      [value]: (prev[value] || 0) + 1,
     }))
   }
 
   const removeModalQuantity = (value: string) => {
-    setModalQuantities(prev => {
+    setModalQuantities((prev) => {
       const newQty = (prev[value] || 0) - 1
       if (newQty <= 0) {
         const { [value]: _, ...rest } = prev
@@ -767,8 +795,8 @@ export default function ProductPage() {
   }
 
   const confirmModalSelection = () => {
-    if (modalMode === 'primary' && modalPrimaryValue) {
-      setComplexSelections(prev => {
+    if (modalMode === "primary" && modalPrimaryValue) {
+      setComplexSelections((prev) => {
         const updated = { ...prev }
         if (!updated[modalPrimaryValue]) {
           updated[modalPrimaryValue] = {}
@@ -776,11 +804,11 @@ export default function ProductPage() {
         updated[modalPrimaryValue] = { ...modalQuantities }
         return updated
       })
-    } else if (modalMode === 'secondary' && modalPrimaryValue) {
-      setComplexSelections(prev => {
+    } else if (modalMode === "secondary" && modalPrimaryValue) {
+      setComplexSelections((prev) => {
         const updated = { ...prev }
         const primaryAttr = Object.keys(attributeGroups)[0]
-        
+
         Object.entries(modalQuantities).forEach(([primaryVal, qty]) => {
           if (!updated[primaryVal]) {
             updated[primaryVal] = {}
@@ -791,7 +819,7 @@ export default function ProductPage() {
             delete updated[primaryVal][modalPrimaryValue]
           }
         })
-        
+
         return updated
       })
     }
@@ -800,8 +828,8 @@ export default function ProductPage() {
 
   const getComplexTotal = (): number => {
     let total = 0
-    Object.values(complexSelections).forEach(secondarySelections => {
-      Object.values(secondarySelections).forEach(qty => {
+    Object.values(complexSelections).forEach((secondarySelections) => {
+      Object.values(secondarySelections).forEach((qty) => {
         total += qty
       })
     })
@@ -814,7 +842,7 @@ export default function ProductPage() {
 
   const getSecondaryTotal = (secondaryValue: string): number => {
     let total = 0
-    Object.values(complexSelections).forEach(selections => {
+    Object.values(complexSelections).forEach((selections) => {
       total += selections[secondaryValue] || 0
     })
     return total
@@ -827,11 +855,11 @@ export default function ProductPage() {
     if (!product?.variants || product.variants.length === 0) {
       return simpleQuantity
     }
-    
+
     if (Object.keys(simpleVariantQuantities).length > 0) {
       return getSimpleVariantTotal()
     }
-    
+
     return getComplexTotal()
   }
 
@@ -840,7 +868,7 @@ export default function ProductPage() {
   // ============================================================
   useEffect(() => {
     if (!product) return
-    
+
     const grandTotal = getGrandTotal()
     setIsMOQMet(grandTotal >= minQuantity)
   }, [simpleVariantQuantities, complexSelections, simpleQuantity, product, minQuantity])
@@ -854,9 +882,9 @@ export default function ProductPage() {
       toast.error("Veuillez sélectionner des articles")
       return
     }
-    
+
     let itemsAdded = 0
-    
+
     if (!product.variants || product.variants.length === 0) {
       addToCart({
         id: product.id,
@@ -869,8 +897,7 @@ export default function ProductPage() {
         variantKey: `${product.id}`,
       })
       itemsAdded = simpleQuantity
-    }
-    else if (Object.keys(simpleVariantQuantities).length > 0) {
+    } else if (Object.keys(simpleVariantQuantities).length > 0) {
       Object.entries(simpleVariantQuantities).forEach(([value, qty]) => {
         if (qty > 0) {
           addToCart({
@@ -887,8 +914,7 @@ export default function ProductPage() {
           itemsAdded += qty
         }
       })
-    }
-    else if (Object.keys(complexSelections).length > 0) {
+    } else if (Object.keys(complexSelections).length > 0) {
       Object.entries(complexSelections).forEach(([primaryValue, secondarySelections]) => {
         Object.entries(secondarySelections).forEach(([secondaryValue, qty]) => {
           if (qty > 0) {
@@ -899,7 +925,10 @@ export default function ProductPage() {
               quantity: qty,
               shippingMode: selectedShipping,
               weight: product.weight,
-              image: attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`] || images[selectedImage] || "/placeholder.svg",
+              image:
+                attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`] ||
+                images[selectedImage] ||
+                "/placeholder.svg",
               variantKey: `${product.id}_${primaryValue}_${secondaryValue}`,
               color: primaryValue,
               eurSize: secondaryValue,
@@ -909,11 +938,11 @@ export default function ProductPage() {
         })
       })
     }
-    
+
     toast.success(`${itemsAdded} article(s) ajouté(s) au panier`, {
       duration: 3000,
-      position: 'top-center',
-      icon: '🛒'
+      position: "top-center",
+      icon: "🛒",
     })
   }
 
@@ -923,7 +952,7 @@ export default function ProductPage() {
       toast.error("Veuillez sélectionner des articles")
       return
     }
-    
+
     handleAddToCart()
     setTimeout(() => {
       router.push("/cart")
@@ -932,29 +961,27 @@ export default function ProductPage() {
 
   const handleContactWhatsApp = () => {
     if (!product) return
-    
+
     const grandTotal = getGrandTotal()
     let selectionsText = ""
-    
+
     if (!product.variants || product.variants.length === 0) {
       selectionsText = `${simpleQuantity} pièce(s)`
     } else if (Object.keys(simpleVariantQuantities).length > 0) {
       selectionsText = Object.entries(simpleVariantQuantities)
         .filter(([_, qty]) => qty > 0)
         .map(([value, qty]) => `${primaryAttrName} ${value}: ${qty} pièces`)
-        .join('\n')
+        .join("\n")
     } else {
       selectionsText = Object.entries(complexSelections)
         .flatMap(([primaryValue, secondarySelections]) =>
           Object.entries(secondarySelections)
             .filter(([_, qty]) => qty > 0)
-            .map(([secondaryValue, qty]) => 
-              `${primaryAttrName} ${primaryValue}, ${secondaryAttrName} ${secondaryValue}: ${qty} pièces`
-            )
+            .map(([secondaryValue, qty]) => `${primaryAttrName} ${primaryValue}, ${secondaryAttrName} ${secondaryValue}: ${qty} pièces`),
         )
-        .join('\n')
+        .join("\n")
     }
-    
+
     const message = `Bonjour, je souhaite commander:\n${selectionsText}\nTotal: ${grandTotal} pièces\nPays: ${country}\nMerci de me confirmer la disponibilité.`
     window.open(`https://wa.me/2250564749151?text=${encodeURIComponent(message)}`, "_blank")
   }
@@ -965,7 +992,7 @@ export default function ProductPage() {
       const scrollAmount = container.clientWidth
       container.scrollBy({
         left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth"
+        behavior: "smooth",
       })
     }
   }
@@ -976,7 +1003,7 @@ export default function ProductPage() {
       const scrollAmount = container.clientWidth * 0.8
       container.scrollBy({
         left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth"
+        behavior: "smooth",
       })
     }
   }
@@ -990,18 +1017,18 @@ export default function ProductPage() {
   useEffect(() => {
     const fetchFallbackRecommendations = async () => {
       try {
-        const res = await apiFetch(`/api/graph/recommendations/fallback?limit=8&exclude=${product?.id || ''}`)
+        const res = await apiFetch(`/api/graph/recommendations/fallback?limit=8&exclude=${product?.id || ""}`)
         const data = await res.json()
         if (data.success && data.data.length > 0) {
           setRelatedProducts(data.data)
         }
       } catch (error) {
-        console.error('Erreur chargement fallback:', error)
+        console.error("Erreur chargement fallback:", error)
       } finally {
         setIsLoadingRelated(false)
       }
     }
-    
+
     if (product?.id) {
       fetchFallbackRecommendations()
     }
@@ -1052,8 +1079,14 @@ export default function ProductPage() {
   const hasSimpleVariants = Object.keys(simpleVariantQuantities).length > 0
   const hasComplexVariants = Object.keys(complexSelections).length > 0
 
+  const SHIPPING_OPTIONS = [
+    { mode: "bateau", icon: Ship, label: "Maritime", labelShort: "Mer" },
+    { mode: "avion", icon: Sparkles, label: "Aérien", labelShort: "Air" },
+    { mode: "express", icon: Zap, label: "Express", labelShort: "Express" },
+  ] as const
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="hidden lg:block">
         <Header />
       </div>
@@ -1063,19 +1096,21 @@ export default function ProductPage() {
 
       <main className="pb-24 lg:pb-0">
         <div className="max-w-[1200px] mx-auto">
-          
-          <div className="lg:hidden px-4 py-3 border-b border-gray-100">
+          <div className="lg:hidden px-4 py-3 border-b border-border">
             <CurrencyIndicator />
           </div>
 
           <div className="px-4 lg:px-8 py-3 lg:py-8">
-            
-            <div className="hidden lg:flex items-center gap-2 text-xs mb-6 text-gray-400">
-              <a href="/" className="hover:text-gray-600">Accueil</a>
+            <div className="hidden lg:flex items-center gap-2 text-xs mb-6 text-muted-foreground">
+              <a href="/" className="hover:text-foreground transition-colors">
+                Accueil
+              </a>
               <ChevronRight className="w-3 h-3" />
-              <a href="/category/electronique" className="hover:text-gray-600">Électronique</a>
+              <a href="/category/electronique" className="hover:text-foreground transition-colors">
+                Électronique
+              </a>
               <ChevronRight className="w-3 h-3" />
-              <span className="text-gray-600">{productName}</span>
+              <span className="text-foreground">{productName}</span>
             </div>
 
             {/* SECTION MOBILE */}
@@ -1085,10 +1120,10 @@ export default function ProductPage() {
                 <div className="relative">
                   <button
                     onClick={() => setIsImageModalOpen(true)}
-                    className="w-full aspect-square bg-white flex items-center justify-center overflow-hidden rounded"
+                    className="w-full aspect-square bg-card flex items-center justify-center overflow-hidden rounded-2xl border border-border"
                   >
                     <Image
-                      src={safeImages[selectedImage]}
+                      src={safeImages[selectedImage] || "/placeholder.svg"}
                       alt={productName}
                       width={400}
                       height={400}
@@ -1096,39 +1131,38 @@ export default function ProductPage() {
                       priority
                     />
                   </button>
-                  
+
                   <div className="absolute bottom-4 left-0 right-0 flex justify-center">
-                    <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-white/80 backdrop-blur-sm shadow-sm">
+                    <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-background/80 backdrop-blur-sm shadow-sm border border-border">
                       <div className="flex gap-1.5">
                         {safeImages.slice(0, 12).map((_, idx) => (
                           <button
                             key={idx}
                             onClick={() => setSelectedImage(idx)}
                             className={`transition-all duration-200 rounded-full ${
-                              selectedImage === idx 
-                                ? 'w-3 h-1 bg-[#D4372B] rounded-full' 
-                                : 'w-1.5 h-1.5 bg-gray-400'
+                              selectedImage === idx ? "w-3 h-1 rounded-full" : "w-1.5 h-1.5 bg-muted-foreground/50"
                             }`}
+                            style={selectedImage === idx ? { background: brandColor } : undefined}
                           />
                         ))}
                       </div>
-                      
+
                       {safeImages.length > 12 && (
-                        <div className="flex items-center gap-1 pl-1.5 border-l border-gray-300">
+                        <div className="flex items-center gap-1 pl-1.5 border-l border-border">
                           <button
                             onClick={() => setSelectedImage(Math.max(0, selectedImage - 1))}
-                            className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                            className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-muted transition-colors"
                           >
-                            <ChevronLeft className="w-3 h-3 text-gray-500" />
+                            <ChevronLeft className="w-3 h-3 text-muted-foreground" />
                           </button>
-                          <span className="text-[9px] font-medium text-gray-500 min-w-[32px] text-center">
+                          <span className="text-[9px] font-medium text-muted-foreground min-w-[32px] text-center">
                             {selectedImage + 1}/{safeImages.length}
                           </span>
                           <button
                             onClick={() => setSelectedImage(Math.min(safeImages.length - 1, selectedImage + 1))}
-                            className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                            className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-muted transition-colors"
                           >
-                            <ChevronRight className="w-3 h-3 text-gray-500" />
+                            <ChevronRight className="w-3 h-3 text-muted-foreground" />
                           </button>
                         </div>
                       )}
@@ -1142,13 +1176,13 @@ export default function ProductPage() {
                       <button
                         key={idx}
                         onClick={() => setSelectedImage(idx)}
-                        className="flex-shrink-0 w-16 h-16 bg-white rounded overflow-hidden border"
+                        className="flex-shrink-0 w-16 h-16 bg-card rounded-xl overflow-hidden border-2 transition-all"
                         style={{
-                          borderColor: selectedImage === idx ? '#D4372B' : '#ECECEC'
+                          borderColor: selectedImage === idx ? brandColor : "transparent",
                         }}
                       >
                         <Image
-                          src={img}
+                          src={img || "/placeholder.svg"}
                           alt={`Miniature ${idx + 1}`}
                           width={64}
                           height={64}
@@ -1165,21 +1199,22 @@ export default function ProductPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1.5">
-                      <span 
-                        className="text-xs font-medium px-2 py-0.5 rounded"
-                        style={{ background: '#D4372B', color: '#fff', fontFamily: "'Poppins', sans-serif" }}
+                      <span
+                        className="text-xs font-semibold px-2 py-0.5 rounded-md text-white"
+                        style={{ background: brandColor, fontFamily: "'Poppins', sans-serif" }}
                       >
                         Top vente
                       </span>
-                      <span className="text-xs text-gray-400">SKU: {product.id}</span>
+                      <span className="text-xs text-muted-foreground">SKU: {product.id}</span>
                     </div>
-                    <h1 className="text-lg font-medium leading-tight">{productName}</h1>
+                    <h1 className="text-lg font-semibold leading-tight text-balance">{productName}</h1>
                   </div>
-                  <button 
+                  <button
                     onClick={handleToggleWishlist}
-                    className="p-2 -mt-1 hover:bg-gray-100 rounded-full transition-colors"
+                    className="p-2 -mt-1 hover:bg-muted rounded-full transition-colors"
+                    aria-label="Ajouter aux favoris"
                   >
-                    <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
+                    <Heart className={`w-5 h-5 ${isWishlisted ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
                   </button>
                 </div>
 
@@ -1190,53 +1225,55 @@ export default function ProductPage() {
                         <Star key={star} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
                       ))}
                     </div>
-                    <span className="text-gray-600">{reviewsStats.averageRating || 0}</span>
+                    <span className="text-muted-foreground">{reviewsStats.averageRating || 0}</span>
                   </div>
-                  <span className="text-gray-300">|</span>
-                  <span className="text-gray-600">{reviewsStats.totalReviews} avis</span>
-                  <span className="text-gray-300">|</span>
-                  <span className="text-gray-600">1.2k ventes</span>
+                  <span className="text-border">|</span>
+                  <span className="text-muted-foreground">{reviewsStats.totalReviews} avis</span>
+                  <span className="text-border">|</span>
+                  <span className="text-muted-foreground">1.2k ventes</span>
                 </div>
 
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
+                  <span
+                    className="text-2xl font-bold"
+                    style={{ color: brandColor, fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.02em" }}
+                  >
                     {formatPrice(currentPrice)} x {grandTotal || 1}
                   </span>
-                  <span className="text-xs text-gray-400 line-through">
+                  <span className="text-xs text-muted-foreground line-through">
                     {formatPrice(currentPrice * 1.2 * (grandTotal || 1))}
                   </span>
-                  <span className="text-xs text-white px-1.5 py-0.5 rounded" style={{ background: "#D4372B" }}>-20%</span>
+                  <span className="text-xs text-white px-1.5 py-0.5 rounded-md" style={{ background: brandColor }}>
+                    -20%
+                  </span>
                 </div>
 
                 {/* AFFICHAGE DYNAMIQUE DES VARIANTES */}
                 {hasVariants && (
                   <>
                     {hasSimpleVariants && (
-                      <div className="p-4 rounded mb-4" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
-                        <h3 className="text-sm font-medium text-gray-700 mb-3">
-                          {primaryAttrName}
-                        </h3>
+                      <div className="p-4 rounded-2xl mb-4 bg-muted border border-border">
+                        <h3 className="text-sm font-semibold text-foreground mb-3">{primaryAttrName}</h3>
                         <div className="flex flex-wrap gap-2">
                           {Object.entries(simpleVariantQuantities).map(([value, qty]) => {
                             const hasImage = attributeImages[`${simpleVariantType}:${value}`]
-                            
+
                             return (
                               <button
                                 key={value}
                                 onClick={() => openSimpleVariantModal(value)}
-                                className={`
-                                  px-3 py-1.5 text-xs rounded transition-all relative
-                                  ${qty > 0 
-                                    ? 'bg-[#D4372B] text-white font-semibold shadow-sm' 
-                                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
-                                  }
-                                `}
+                                className={`px-3 py-1.5 text-xs rounded-lg transition-all relative ${
+                                  qty > 0
+                                    ? "text-white font-semibold shadow-sm"
+                                    : "bg-card text-foreground hover:bg-accent border border-border"
+                                }`}
+                                style={qty > 0 ? { background: brandColor } : undefined}
                               >
                                 {hasImage ? (
                                   <div className="flex items-center gap-1">
                                     <div className="w-4 h-4 rounded-full overflow-hidden">
                                       <Image
-                                        src={attributeImages[`${simpleVariantType}:${value}`]}
+                                        src={attributeImages[`${simpleVariantType}:${value}`] || "/placeholder.svg"}
                                         alt={value}
                                         width={16}
                                         height={16}
@@ -1249,7 +1286,10 @@ export default function ProductPage() {
                                   value
                                 )}
                                 {qty > 0 && (
-                                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4372B] text-white text-[8px] rounded-full flex items-center justify-center font-bold">
+                                  <span
+                                    className="absolute -top-1 -right-1 w-4 h-4 text-white text-[8px] rounded-full flex items-center justify-center font-bold"
+                                    style={{ background: brandColor }}
+                                  >
                                     {qty}
                                   </span>
                                 )}
@@ -1260,15 +1300,15 @@ export default function ProductPage() {
 
                         {Object.entries(simpleVariantQuantities).map(([value, qty]) => {
                           if (qty === 0) return null
-                          
+
                           return (
-                            <div key={value} className="bg-white p-2 rounded mt-3 border border-gray-200">
+                            <div key={value} className="bg-card p-2 rounded-lg mt-3 border border-border">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   {attributeImages[`${simpleVariantType}:${value}`] && (
-                                    <div className="w-6 h-6 rounded-full overflow-hidden border border-gray-300">
+                                    <div className="w-6 h-6 rounded-full overflow-hidden border border-border">
                                       <Image
-                                        src={attributeImages[`${simpleVariantType}:${value}`]}
+                                        src={attributeImages[`${simpleVariantType}:${value}`] || "/placeholder.svg"}
                                         alt={value}
                                         width={24}
                                         height={24}
@@ -1276,8 +1316,8 @@ export default function ProductPage() {
                                       />
                                     </div>
                                   )}
-                                  <span className="text-sm font-medium text-gray-700">{value}</span>
-                                  <span className="text-xs text-gray-500">x{qty}</span>
+                                  <span className="text-sm font-medium text-foreground">{value}</span>
+                                  <span className="text-xs text-muted-foreground">x{qty}</span>
                                 </div>
                               </div>
                             </div>
@@ -1288,32 +1328,32 @@ export default function ProductPage() {
 
                     {hasComplexVariants && (
                       <>
-                        <div className="p-4 rounded mb-4" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
-                          <h3 className="text-sm font-medium text-gray-700 mb-3">
-                            {primaryAttrName}
-                          </h3>
+                        <div className="p-4 rounded-2xl mb-4 bg-muted border border-border">
+                          <h3 className="text-sm font-semibold text-foreground mb-3">{primaryAttrName}</h3>
                           <div className="flex flex-wrap gap-2">
                             {Object.keys(complexSelections).map((primaryValue) => {
                               const total = getPrimaryTotal(primaryValue)
                               const hasImage = attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]
-                              
+
                               return (
                                 <button
                                   key={primaryValue}
                                   onClick={() => openPrimaryModal(primaryValue)}
-                                  className={`
-                                    px-3 py-1.5 text-xs rounded transition-all relative
-                                    ${total > 0 
-                                      ? 'bg-[#D4372B] text-white font-semibold shadow-sm' 
-                                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
-                                    }
-                                  `}
+                                  className={`px-3 py-1.5 text-xs rounded-lg transition-all relative ${
+                                    total > 0
+                                      ? "text-white font-semibold shadow-sm"
+                                      : "bg-card text-foreground hover:bg-accent border border-border"
+                                  }`}
+                                  style={total > 0 ? { background: brandColor } : undefined}
                                 >
                                   {hasImage ? (
                                     <div className="flex items-center gap-1">
                                       <div className="w-4 h-4 rounded-full overflow-hidden">
                                         <Image
-                                          src={attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]}
+                                          src={
+                                            attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`] ||
+                                            "/placeholder.svg"
+                                          }
                                           alt={primaryValue}
                                           width={16}
                                           height={16}
@@ -1326,7 +1366,10 @@ export default function ProductPage() {
                                     primaryValue
                                   )}
                                   {total > 0 && (
-                                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4372B] text-white text-[8px] rounded-full flex items-center justify-center font-bold">
+                                    <span
+                                      className="absolute -top-1 -right-1 w-4 h-4 text-white text-[8px] rounded-full flex items-center justify-center font-bold"
+                                      style={{ background: brandColor }}
+                                    >
                                       {total}
                                     </span>
                                   )}
@@ -1337,29 +1380,29 @@ export default function ProductPage() {
                         </div>
 
                         {secondaryAttrName && (
-                          <div className="p-4 rounded mb-4" style={{ background: "#F4F4F4", border: "0.5px solid #ECECEC" }}>
-                            <h3 className="text-sm font-medium text-gray-700 mb-3">
-                              {secondaryAttrName}
-                            </h3>
+                          <div className="p-4 rounded-2xl mb-4 bg-muted border border-border">
+                            <h3 className="text-sm font-semibold text-foreground mb-3">{secondaryAttrName}</h3>
                             <div className="flex flex-wrap gap-2">
                               {attributeGroups[Object.keys(attributeGroups)[1]]?.values.map((secondaryValue) => {
                                 const total = getSecondaryTotal(secondaryValue)
-                                
+
                                 return (
                                   <button
                                     key={secondaryValue}
                                     onClick={() => openSecondaryModal(secondaryValue)}
-                                    className={`
-                                      px-3 py-1.5 text-xs rounded transition-all relative
-                                      ${total > 0 
-                                        ? 'bg-[#D4372B] text-white font-semibold shadow-sm' 
-                                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
-                                      }
-                                    `}
+                                    className={`px-3 py-1.5 text-xs rounded-lg transition-all relative ${
+                                      total > 0
+                                        ? "text-white font-semibold shadow-sm"
+                                        : "bg-card text-foreground hover:bg-accent border border-border"
+                                    }`}
+                                    style={total > 0 ? { background: brandColor } : undefined}
                                   >
                                     {secondaryValue}
                                     {total > 0 && (
-                                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4372B] text-white text-[8px] rounded-full flex items-center justify-center font-bold">
+                                      <span
+                                        className="absolute -top-1 -right-1 w-4 h-4 text-white text-[8px] rounded-full flex items-center justify-center font-bold"
+                                        style={{ background: brandColor }}
+                                      >
                                         {total}
                                       </span>
                                     )}
@@ -1373,14 +1416,17 @@ export default function ProductPage() {
                         {Object.entries(complexSelections).map(([primaryValue, secondarySelections]) => {
                           const nonZeroSelections = Object.entries(secondarySelections).filter(([_, qty]) => qty > 0)
                           if (nonZeroSelections.length === 0) return null
-                          
+
                           return (
-                            <div key={primaryValue} className="bg-white p-3 rounded mb-2 border border-gray-200">
+                            <div key={primaryValue} className="bg-card p-3 rounded-lg mb-2 border border-border">
                               <div className="flex items-center gap-2 mb-2">
                                 {attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`] && (
-                                  <div className="w-6 h-6 rounded-full overflow-hidden border border-gray-300">
+                                  <div className="w-6 h-6 rounded-full overflow-hidden border border-border">
                                     <Image
-                                      src={attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]}
+                                      src={
+                                        attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`] ||
+                                        "/placeholder.svg"
+                                      }
                                       alt={primaryValue}
                                       width={24}
                                       height={24}
@@ -1388,13 +1434,15 @@ export default function ProductPage() {
                                     />
                                   </div>
                                 )}
-                                <span className="text-sm font-medium text-gray-700">{primaryValue}</span>
+                                <span className="text-sm font-medium text-foreground">{primaryValue}</span>
                               </div>
                               <div className="flex flex-wrap gap-2 pl-2">
                                 {nonZeroSelections.map(([secondaryValue, qty]) => (
-                                  <div key={secondaryValue} className="bg-gray-50 px-2 py-1 rounded border border-gray-200 text-xs">
+                                  <div key={secondaryValue} className="bg-muted px-2 py-1 rounded-md border border-border text-xs">
                                     <span className="font-medium">{secondaryValue}</span>
-                                    <span className="ml-1 text-[#D4372B] font-bold">x{qty}</span>
+                                    <span className="ml-1 font-bold" style={{ color: brandColor }}>
+                                      x{qty}
+                                    </span>
                                   </div>
                                 ))}
                               </div>
@@ -1408,19 +1456,19 @@ export default function ProductPage() {
 
                 {!hasVariants && (
                   <div className="mb-4">
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Quantité</h3>
-                    <div className="flex items-center rounded overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
+                    <h3 className="text-sm font-semibold text-foreground mb-2">Quantité</h3>
+                    <div className="flex items-center rounded-lg overflow-hidden border border-border w-fit">
                       <button
                         onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))}
-                        className="p-2.5 transition-colors" style={{ background: "#F4F4F4" }}
+                        className="p-2.5 bg-muted hover:bg-accent transition-colors"
                         disabled={simpleQuantity <= 1}
                       >
                         <Minus className="w-4 h-4" />
                       </button>
-                      <span className="w-12 text-center text-sm font-medium">{simpleQuantity}</span>
+                      <span className="w-12 text-center text-sm font-semibold">{simpleQuantity}</span>
                       <button
                         onClick={() => setSimpleQuantity(simpleQuantity + 1)}
-                        className="p-2.5 transition-colors" style={{ background: "#F4F4F4" }}
+                        className="p-2.5 bg-muted hover:bg-accent transition-colors"
                       >
                         <Plus className="w-4 h-4" />
                       </button>
@@ -1428,9 +1476,9 @@ export default function ProductPage() {
                   </div>
                 )}
 
-                <div className="flex items-center gap-3 text-xs text-gray-600">
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1">
-                    <Package className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
+                    <Package className="w-3.5 h-3.5" style={{ color: brandColor }} />
                     <span>MOQ: {minQuantity}</span>
                   </div>
                   <div className="flex items-center gap-1">
@@ -1439,75 +1487,82 @@ export default function ProductPage() {
                   </div>
                   <div className="flex items-center gap-1">
                     {isLoadingLogistics ? (
-                      <span className="inline-flex items-center text-gray-400">
-                        <span className="w-3 h-3 border-2 border-gray-300 border-t-[#D4372B] rounded-full animate-spin mr-1"></span>
+                      <span className="inline-flex items-center text-muted-foreground">
+                        <span
+                          className="w-3 h-3 border-2 border-border rounded-full animate-spin mr-1"
+                          style={{ borderTopColor: brandColor }}
+                        />
                         Calcul...
                       </span>
                     ) : (
-                      <span className="text-gray-400">
-                        {logisticsData ? `${logisticsData.weight.totalWeight.toFixed(2)} kg total` : '0.00 kg total'}
+                      <span className="text-muted-foreground">
+                        {logisticsData ? `${logisticsData.weight.totalWeight.toFixed(2)} kg total` : "0.00 kg total"}
                       </span>
                     )}
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <h3 className="text-xs font-medium text-gray-500 flex items-center justify-between">
+                  <h3 className="text-xs font-medium text-muted-foreground flex items-center justify-between">
                     <span>Mode de livraison</span>
                     {selectedPortePorteCost > 0 && (
-                      <span className="text-xs font-medium text-gray-700">
-                        Frais porte-à-porte: <span className="font-bold" style={{ color: '#D4372B' }}>{formatPrice(selectedPortePorteCost)}</span>
+                      <span className="text-xs font-medium text-foreground">
+                        Frais porte-à-porte:{" "}
+                        <span className="font-bold" style={{ color: brandColor }}>
+                          {formatPrice(selectedPortePorteCost)}
+                        </span>
                       </span>
                     )}
                   </h3>
                   {isLoadingLogistics ? (
                     <div className="grid grid-cols-3 gap-1.5">
                       {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex flex-col items-center p-2 rounded border border-gray-200 bg-gray-50 animate-pulse">
-                          <div className="w-4 h-4 bg-gray-200 rounded-full mb-1"></div>
-                          <div className="w-8 h-3 bg-gray-200 rounded mb-1"></div>
-                          <div className="w-6 h-2 bg-gray-200 rounded mb-1"></div>
-                          <div className="w-10 h-3 bg-gray-200 rounded"></div>
+                        <div
+                          key={i}
+                          className="flex flex-col items-center p-2 rounded-lg border border-border bg-muted animate-pulse"
+                        >
+                          <div className="w-4 h-4 bg-border rounded-full mb-1" />
+                          <div className="w-8 h-3 bg-border rounded mb-1" />
+                          <div className="w-6 h-2 bg-border rounded mb-1" />
+                          <div className="w-10 h-3 bg-border rounded" />
                         </div>
                       ))}
                     </div>
                   ) : logisticsError ? (
-                    <div className="text-xs text-red-500 p-2 border border-red-200 rounded bg-red-50">
+                    <div className="text-xs text-red-600 p-2 border border-red-300 rounded-lg bg-red-50 dark:bg-red-950/30">
                       {logisticsError}
                     </div>
                   ) : (
                     <>
                       <div className="grid grid-cols-3 gap-1.5">
-                        {[
-                          { mode: "bateau", icon: Ship, label: "Mer" },
-                          { mode: "avion", icon: Sparkles, label: "Air" },
-                          { mode: "express", icon: Zap, label: "Express" }
-                        ].map((item) => {
+                        {SHIPPING_OPTIONS.map((item) => {
                           const shippingMode = item.mode as "bateau" | "avion" | "express"
                           const isAvailable = logisticsData?.shipping?.[shippingMode]
                           const days = getShippingDays(shippingMode)
                           const cost = getShippingCost(shippingMode)
-                          
+                          const isSelected = selectedShipping === shippingMode
+
                           if (!isAvailable) return null
-                          
+
                           return (
                             <button
                               key={item.mode}
                               onClick={() => setSelectedShipping(shippingMode)}
-                              className="flex flex-col items-center p-2 rounded border transition-all hover:shadow-sm"
-                              style={{
-                                borderColor: selectedShipping === shippingMode ? brandColor : '#e5e7eb',
-                                background: selectedShipping === shippingMode ? '#D4372B' : '#fff'
-                              }}
+                              className={`flex flex-col items-center p-2 rounded-lg border transition-all ${
+                                isSelected ? "text-white" : "bg-card border-border text-foreground hover:bg-accent"
+                              }`}
+                              style={isSelected ? { borderColor: brandColor, background: brandColor } : undefined}
                             >
-                              <item.icon className="w-4 h-4 mb-1" style={{ color: selectedShipping === shippingMode ? 'white' : '#9ca3af' }} />
-                              <span className="text-xs font-medium" style={{ color: selectedShipping === shippingMode ? 'white' : '#374151' }}>
-                                {item.label}
-                              </span>
-                              <span className="text-[10px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#6b7280' }}>
-                                {days}
-                              </span>
-                              <span className="text-xs font-semibold mt-0.5" style={{ color: selectedShipping === shippingMode ? 'white' : '#D4372B' }}>
+                              <item.icon
+                                className="w-4 h-4 mb-1"
+                                style={{ color: isSelected ? "white" : undefined }}
+                              />
+                              <span className="text-xs font-medium">{item.labelShort}</span>
+                              <span className="text-[10px] opacity-80">{days}</span>
+                              <span
+                                className="text-xs font-semibold mt-0.5"
+                                style={{ color: isSelected ? "white" : brandColor }}
+                              >
                                 {formatPrice(cost)}
                               </span>
                             </button>
@@ -1515,101 +1570,96 @@ export default function ProductPage() {
                         })}
                       </div>
                       <div className="text-center mt-1">
-                        <span className="text-[10px] text-gray-400">* Frais de porte-à-porte inclus</span>
+                        <span className="text-[10px] text-muted-foreground">* Frais de porte-à-porte inclus</span>
                       </div>
                     </>
                   )}
                 </div>
 
-                <div 
+                <div
                   onClick={() => setIsProtectionModalOpen(true)}
-                  className="rounded p-3 cursor-pointer transition-all hover:shadow-sm"
+                  className="rounded-2xl p-3 cursor-pointer transition-all bg-muted border border-border hover:border-foreground/20"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <Shield className="w-4 h-4" style={{ color: '#D4372B' }} />
-                      <span className="text-xs font-medium text-gray-900">Protection Adullam</span>
+                      <Shield className="w-4 h-4" style={{ color: brandColor }} />
+                      <span className="text-xs font-semibold text-foreground">Protection Adullam</span>
                     </div>
-                    <Info className="w-3.5 h-3.5 text-gray-400" />
+                    <Info className="w-3.5 h-3.5 text-muted-foreground" />
                   </div>
-                  
+
                   <div className="flex flex-wrap items-center gap-2 mb-2">
-                    {['MTN', 'Orange', 'Wave', 'Visa'].map((method) => (
-                      <span key={method} className="text-xs px-2 py-1 bg-white border border-gray-200 rounded text-gray-600 shadow-sm">
+                    {["MTN", "Orange", "Wave", "Visa"].map((method) => (
+                      <span
+                        key={method}
+                        className="text-xs px-2 py-1 bg-card border border-border rounded-md text-muted-foreground"
+                      >
                         {method}
                       </span>
                     ))}
                   </div>
-                  
-                  <p className="text-xs text-gray-500 flex items-center gap-1">
-                    <Lock className="w-3 h-3 text-gray-400" />
+
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Lock className="w-3 h-3" />
                     Paiement sécurisé
                   </p>
                 </div>
 
                 {!isMOQMet && grandTotal > 0 && (
-                  <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded p-3 text-sm text-yellow-800 shadow-sm">
+                  <div className="border rounded-xl p-3 text-sm" style={{ background: `${accentColor}1a`, borderColor: `${accentColor}66`, color: accentColor }}>
                     Quantité minimum non atteinte ({minQuantity} min). Contactez-nous pour discuter.
                   </div>
                 )}
 
-                <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-3 lg:relative lg:border-0 lg:p-0 z-50 shadow-md">
+                <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-3 lg:relative lg:border-0 lg:p-0 z-50 shadow-lg">
                   <div className="flex gap-2 max-w-[1440px] mx-auto">
                     <button
                       onClick={isMOQMet && grandTotal > 0 ? handleAddToCart : handleContactWhatsApp}
-                      className="flex-1 py-3 rounded font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:shadow-md"
-                      style={{
-                        background: (isMOQMet && grandTotal > 0) ? brandGradient : 'linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%)',
-                        color: 'white'
-                      }}
+                      className="flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] text-white"
+                      style={{ background: isMOQMet && grandTotal > 0 ? brandColor : accentColor }}
                     >
                       <ShoppingCart className="w-4 h-4" />
-                      {(isMOQMet && grandTotal > 0) ? `Ajouter (${grandTotal})` : 'Nous contacter'}
+                      {isMOQMet && grandTotal > 0 ? `Ajouter (${grandTotal})` : "Nous contacter"}
                     </button>
                     <button
                       onClick={handleBuyNow}
                       disabled={!isMOQMet || grandTotal === 0}
-                      className="flex-1 py-3 rounded font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:shadow-md"
-                      style={{
-                        background: 'linear-gradient(135deg, #1A2F3F 0%, #2D3F4F 100%)',
-                        color: 'white',
-                        opacity: (isMOQMet && grandTotal > 0) ? 1 : 0.5
-                      }}
+                      className="flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] text-white"
+                      style={{ background: "#0A0A0A", opacity: isMOQMet && grandTotal > 0 ? 1 : 0.5 }}
                     >
                       Acheter
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 py-3 text-xs border-y border-gray-100 my-2">
+                <div className="grid grid-cols-2 gap-2 py-3 text-xs border-y border-border my-2">
                   <div className="flex items-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
+                    <Shield className="w-3.5 h-3.5" style={{ color: brandColor }} />
                     <span>Garantie 12 mois</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <RotateCcw className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
+                    <RotateCcw className="w-3.5 h-3.5" style={{ color: brandColor }} />
                     <span>Retour 15 jours</span>
                   </div>
                 </div>
               </div>
 
               {/* Mobile Tabs */}
-              <div className="mt-6 bg-gradient-to-br from-gray-50 to-white rounded p-4 shadow-sm">
-                <div className="overflow-x-auto hide-scrollbar border-b border-gray-200">
+              <div className="mt-6 bg-card rounded-2xl p-4 border border-border">
+                <div className="overflow-x-auto hide-scrollbar border-b border-border">
                   <div className="flex gap-4 min-w-max px-1">
                     {[
                       { id: "description", label: "Description" },
                       { id: "specifications", label: "Caractéristiques" },
-                      { id: "avis", label: `Avis (${reviewsStats.totalReviews})` }
+                      { id: "avis", label: `Avis (${reviewsStats.totalReviews})` },
                     ].map((tab) => (
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`py-2.5 px-1 text-sm font-medium border-b-2 transition-all whitespace-nowrap`}
+                        className="py-2.5 px-1 text-sm font-medium whitespace-nowrap transition-all"
                         style={{
-                          color: activeTab === tab.id ? brandColor : '#6B7280',
-                          borderBottomColor: activeTab === tab.id ? brandColor : 'transparent',
-                          borderBottomWidth: '2px'
+                          color: activeTab === tab.id ? brandColor : undefined,
+                          borderBottom: activeTab === tab.id ? `2px solid ${brandColor}` : "2px solid transparent",
                         }}
                       >
                         {tab.label}
@@ -1621,17 +1671,17 @@ export default function ProductPage() {
                 <div className="py-4">
                   {activeTab === "description" && (
                     <div className="space-y-3">
-                      <p className="text-sm text-gray-700 leading-relaxed break-words">
+                      <p className="text-sm text-muted-foreground leading-relaxed break-words">
                         {product.description || product.cleanedDesc || "Description non disponible"}
                       </p>
                       {product.features && product.features.length > 0 && (
                         <div className="mt-4">
-                          <h4 className="text-sm font-semibold text-gray-800 mb-2">Points forts :</h4>
+                          <h4 className="text-sm font-semibold text-foreground mb-2">Points forts :</h4>
                           <ul className="space-y-2">
                             {product.features.map((feature: string, i: number) => (
                               <li key={i} className="flex items-start gap-2 text-sm">
-                                <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-[#D4372B]" />
-                                <span className="text-gray-600 break-words">{feature}</span>
+                                <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: brandColor }} />
+                                <span className="text-muted-foreground break-words">{feature}</span>
                               </li>
                             ))}
                           </ul>
@@ -1639,35 +1689,35 @@ export default function ProductPage() {
                       )}
                     </div>
                   )}
-                  
+
                   {activeTab === "specifications" && (
                     <div className="overflow-x-auto">
                       <table className="w-full text-xs border-collapse">
                         <tbody>
                           {product.specifications ? (
                             product.specifications.map((spec: any, i: number) => (
-                              <tr key={i} className="border-b border-gray-100">
-                                <td className="py-1.5 pr-3 text-gray-500 w-1/3">{spec.label}</td>
-                                <td className="py-1.5 text-gray-800">{spec.value}</td>
+                              <tr key={i} className="border-b border-border">
+                                <td className="py-1.5 pr-3 text-muted-foreground w-1/3">{spec.label}</td>
+                                <td className="py-1.5 text-foreground">{spec.value}</td>
                               </tr>
                             ))
                           ) : (
                             <>
-                              <tr className="border-b border-gray-100">
-                                <td className="py-1.5 pr-3 text-gray-500 w-1/3">Marque</td>
-                                <td className="py-1.5 text-gray-800">{product.brand || "TechPro"}</td>
+                              <tr className="border-b border-border">
+                                <td className="py-1.5 pr-3 text-muted-foreground w-1/3">Marque</td>
+                                <td className="py-1.5 text-foreground">{product.brand || "TechPro"}</td>
                               </tr>
-                              <tr className="border-b border-gray-100">
-                                <td className="py-1.5 pr-3 text-gray-500">Modèle</td>
-                                <td className="py-1.5 text-gray-800">{product.model || "Standard"}</td>
+                              <tr className="border-b border-border">
+                                <td className="py-1.5 pr-3 text-muted-foreground">Modèle</td>
+                                <td className="py-1.5 text-foreground">{product.model || "Standard"}</td>
                               </tr>
-                              <tr className="border-b border-gray-100">
-                                <td className="py-1.5 pr-3 text-gray-500">Poids</td>
-                                <td className="py-1.5 text-gray-800">{product.weight ? `${product.weight} kg` : "N/A"}</td>
+                              <tr className="border-b border-border">
+                                <td className="py-1.5 pr-3 text-muted-foreground">Poids</td>
+                                <td className="py-1.5 text-foreground">{product.weight ? `${product.weight} kg` : "N/A"}</td>
                               </tr>
-                              <tr className="border-b border-gray-100">
-                                <td className="py-1.5 pr-3 text-gray-500">Garantie</td>
-                                <td className="py-1.5 text-gray-800">12 mois</td>
+                              <tr className="border-b border-border">
+                                <td className="py-1.5 pr-3 text-muted-foreground">Garantie</td>
+                                <td className="py-1.5 text-foreground">12 mois</td>
                               </tr>
                             </>
                           )}
@@ -1675,32 +1725,34 @@ export default function ProductPage() {
                       </table>
                     </div>
                   )}
-                  
+
                   {activeTab === "avis" && (
                     <div className="space-y-4">
                       {!showReviewForm && (
                         <button
                           onClick={() => setShowReviewForm(true)}
-                          className="w-full py-3 bg-[#D4372B] text-white rounded text-sm font-medium hover:bg-[#B5271C] transition-colors shadow-sm"
+                          className="w-full py-3 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                          style={{ background: brandColor }}
                         >
-                          ✍️ Donner mon avis
+                          <PenLine className="w-4 h-4" />
+                          Donner mon avis
                         </button>
                       )}
-                      
+
                       {showReviewForm && (
-                        <div className="rounded p-4 space-y-4 shadow-sm" style={{ background: "#fff", border: "0.5px solid #ECECEC" }}>
+                        <div className="rounded-2xl p-4 space-y-4 bg-card border border-border">
                           <div className="flex items-center justify-between">
-                            <h4 className="font-semibold text-gray-900">Votre avis</h4>
-                            <button 
+                            <h4 className="font-semibold text-foreground">Votre avis</h4>
+                            <button
                               onClick={() => setShowReviewForm(false)}
-                              className="text-gray-400 hover:text-gray-600 transition-colors"
+                              className="text-muted-foreground hover:text-foreground transition-colors"
                             >
                               <X className="w-5 h-5" />
                             </button>
                           </div>
-                          
+
                           <div>
-                            <label className="text-sm text-gray-600 font-medium">Note</label>
+                            <label className="text-sm text-muted-foreground font-medium">Note</label>
                             <div className="flex gap-3 mt-2">
                               {[1, 2, 3, 4, 5].map((star) => (
                                 <button
@@ -1708,155 +1760,154 @@ export default function ProductPage() {
                                   onClick={() => setNewReview({ ...newReview, rating: star })}
                                   className="focus:outline-none transition-transform hover:scale-110"
                                 >
-                                  <Star 
+                                  <Star
                                     className={`w-8 h-8 ${
-                                      star <= newReview.rating 
-                                        ? 'fill-yellow-400 text-yellow-400' 
-                                        : 'text-gray-300'
-                                    }`} 
+                                      star <= newReview.rating ? "fill-yellow-400 text-yellow-400" : "text-border"
+                                    }`}
                                   />
                                 </button>
                               ))}
                             </div>
                           </div>
-                          
+
                           <div>
-                            <label className="text-sm text-gray-600 font-medium">Votre nom</label>
+                            <label className="text-sm text-muted-foreground font-medium">Votre nom</label>
                             <input
                               type="text"
                               value={newReview.authorName}
                               onChange={(e) => setNewReview({ ...newReview, authorName: e.target.value })}
-                              className="w-full mt-1.5 p-3 border border-gray-200 rounded focus:outline-none focus:border-[#D4372B] transition-all"
+                              className="w-full mt-1.5 p-3 bg-background border border-border rounded-lg focus:outline-none transition-all"
+                              style={{ outlineColor: brandColor }}
                               placeholder="Jean Dupont"
                             />
                           </div>
-                          
+
                           <div>
-                            <label className="text-sm text-gray-600 font-medium">Votre commentaire</label>
+                            <label className="text-sm text-muted-foreground font-medium">Votre commentaire</label>
                             <textarea
                               value={newReview.comment}
                               onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                              className="w-full mt-1.5 p-3 border border-gray-200 rounded focus:outline-none focus:border-[#D4372B] resize-none"
+                              className="w-full mt-1.5 p-3 bg-background border border-border rounded-lg focus:outline-none resize-none"
                               rows={4}
                               placeholder="Partagez votre expérience avec ce produit..."
                             />
                           </div>
-                          
+
                           <div className="flex gap-3 pt-2">
                             <button
                               onClick={() => setShowReviewForm(false)}
-                              className="flex-1 py-3 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                              className="flex-1 py-3 border border-border rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
                             >
                               Annuler
                             </button>
                             <button
                               onClick={handleSubmitReview}
                               disabled={isSubmittingReview}
-                              className="flex-1 py-3 bg-[#D4372B] text-white rounded text-sm font-medium hover:bg-[#B5271C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="flex-1 py-3 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              style={{ background: brandColor }}
                             >
                               {isSubmittingReview ? "Envoi..." : "Publier"}
                             </button>
                           </div>
                         </div>
                       )}
-                      
+
                       {isLoadingReviews ? (
                         <div className="space-y-4">
                           {[1, 2, 3].map((i) => (
                             <div key={i} className="animate-pulse">
                               <div className="flex items-center justify-between mb-2">
-                                <div className="h-4 bg-gray-200 rounded w-24"></div>
-                                <div className="h-3 bg-gray-200 rounded w-20"></div>
+                                <div className="h-4 bg-muted rounded w-24" />
+                                <div className="h-3 bg-muted rounded w-20" />
                               </div>
                               <div className="flex gap-1 mb-2">
                                 {[1, 2, 3, 4, 5].map((star) => (
-                                  <div key={star} className="w-3 h-3 bg-gray-200 rounded"></div>
+                                  <div key={star} className="w-3 h-3 bg-muted rounded" />
                                 ))}
                               </div>
-                              <div className="h-3 bg-gray-200 rounded w-full mb-1"></div>
-                              <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                              <div className="h-3 bg-muted rounded w-full mb-1" />
+                              <div className="h-3 bg-muted rounded w-3/4" />
                             </div>
                           ))}
                         </div>
                       ) : reviews.length === 0 ? (
                         <div className="text-center py-8">
-                          <div className="w-16 h-16 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
-                            <Star className="w-8 h-8 text-gray-300" />
+                          <div className="w-16 h-16 mx-auto mb-3 bg-muted rounded-full flex items-center justify-center">
+                            <Star className="w-8 h-8 text-muted-foreground/50" />
                           </div>
-                          <p className="text-gray-500 text-sm">Aucun avis pour le moment</p>
-                          <p className="text-xs text-gray-400 mt-1">Soyez le premier à donner votre avis</p>
+                          <p className="text-muted-foreground text-sm">Aucun avis pour le moment</p>
+                          <p className="text-xs text-muted-foreground/70 mt-1">Soyez le premier à donner votre avis</p>
                         </div>
                       ) : (
                         <>
-                          <div className="flex items-center gap-4 pb-3 border-b border-gray-100">
+                          <div className="flex items-center gap-4 pb-3 border-b border-border">
                             <div className="text-center">
-                              <div className="text-3xl font-black" style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.03em" }}>{reviewsStats.averageRating}</div>
+                              <div
+                                className="text-3xl font-black"
+                                style={{ color: brandColor, fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.03em" }}
+                              >
+                                {reviewsStats.averageRating}
+                              </div>
                               <div className="flex justify-center mt-1">
                                 {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star 
-                                    key={star} 
+                                  <Star
+                                    key={star}
                                     className={`w-3 h-3 ${
-                                      star <= Math.round(reviewsStats.averageRating) 
-                                        ? 'fill-yellow-400 text-yellow-400' 
-                                        : 'text-gray-300'
-                                    }`} 
+                                      star <= Math.round(reviewsStats.averageRating)
+                                        ? "fill-yellow-400 text-yellow-400"
+                                        : "text-border"
+                                    }`}
                                   />
                                 ))}
                               </div>
-                              <p className="text-[10px] text-gray-400 mt-1">{reviewsStats.totalReviews} avis</p>
+                              <p className="text-[10px] text-muted-foreground mt-1">{reviewsStats.totalReviews} avis</p>
                             </div>
                             <div className="flex-1 space-y-1">
                               {[5, 4, 3, 2, 1].map((rating) => {
-                                const count = reviewsStats.ratingDistribution[rating as keyof typeof reviewsStats.ratingDistribution] || 0
+                                const count =
+                                  reviewsStats.ratingDistribution[rating as keyof typeof reviewsStats.ratingDistribution] || 0
                                 const percentage = reviewsStats.totalReviews > 0 ? (count / reviewsStats.totalReviews) * 100 : 0
                                 return (
                                   <div key={rating} className="flex items-center gap-2 text-[10px]">
                                     <span className="w-6">{rating} ★</span>
-                                    <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                                      <div 
-                                        className="h-full rounded-full bg-[#D4372B]" 
-                                        style={{ width: `${percentage}%` }} 
-                                      />
+                                    <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                                      <div className="h-full rounded-full" style={{ width: `${percentage}%`, background: brandColor }} />
                                     </div>
-                                    <span className="w-8 text-right text-gray-500">{count}</span>
+                                    <span className="w-8 text-right text-muted-foreground">{count}</span>
                                   </div>
                                 )
                               })}
                             </div>
                           </div>
-                          
+
                           <div className="space-y-4 max-h-[400px] overflow-y-auto">
                             {reviews.map((review) => (
-                              <div key={review.id} className="border-b border-gray-100 pb-3 last:border-0">
+                              <div key={review.id} className="border-b border-border pb-3 last:border-0">
                                 <div className="flex items-center justify-between mb-1">
                                   <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                                    <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center text-foreground text-xs font-medium">
                                       {review.authorName.charAt(0).toUpperCase()}
                                     </div>
-                                    <span className="text-xs font-medium text-gray-700">{review.authorName}</span>
+                                    <span className="text-xs font-medium text-foreground">{review.authorName}</span>
                                     {review.verifiedPurchase && (
-                                      <span className="text-[9px] px-1.5 py-0.5 bg-green-100 text-green-700 rounded-full">
+                                      <span className="text-[9px] px-1.5 py-0.5 bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 rounded-full">
                                         Vérifié
                                       </span>
                                     )}
                                   </div>
-                                  <span className="text-[10px] text-gray-400">{formatReviewDate(review.createdAt)}</span>
+                                  <span className="text-[10px] text-muted-foreground">{formatReviewDate(review.createdAt)}</span>
                                 </div>
                                 <div className="flex items-center gap-0.5 mb-1 ml-8">
                                   {[1, 2, 3, 4, 5].map((star) => (
-                                    <Star 
-                                      key={star} 
+                                    <Star
+                                      key={star}
                                       className={`w-2.5 h-2.5 ${
-                                        star <= review.rating 
-                                          ? 'fill-yellow-400 text-yellow-400' 
-                                          : 'text-gray-200'
-                                      }`} 
+                                        star <= review.rating ? "fill-yellow-400 text-yellow-400" : "text-border"
+                                      }`}
                                     />
                                   ))}
                                 </div>
-                                <p className="text-xs text-gray-600 leading-relaxed ml-8">
-                                  {review.comment}
-                                </p>
+                                <p className="text-xs text-muted-foreground leading-relaxed ml-8">{review.comment}</p>
                               </div>
                             ))}
                           </div>
@@ -1869,13 +1920,17 @@ export default function ProductPage() {
             </div>
 
             {/* SECTION DESKTOP */}
-            <div className="hidden lg:grid lg:grid-cols-2 gap-8 mb-16 items-start">
-              
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="hidden lg:grid lg:grid-cols-2 gap-8 mb-16 items-start"
+            >
               {/* PARTIE GAUCHE - IMAGE (sticky + hauteur fixe 400px) */}
               <div className="sticky top-24">
-                <div className="bg-white mb-2 h-[400px] flex items-center justify-center overflow-hidden border border-gray-100 rounded shadow-sm hover:shadow transition-all">
+                <div className="bg-card mb-2 h-[400px] flex items-center justify-center overflow-hidden border border-border rounded-2xl transition-all">
                   <Image
-                    src={safeImages[selectedImage]}
+                    src={safeImages[selectedImage] || "/placeholder.svg"}
                     alt={productName}
                     width={500}
                     height={500}
@@ -1889,7 +1944,7 @@ export default function ProductPage() {
                     {safeImages.length > 5 && (
                       <button
                         onClick={() => scrollThumbnails("left")}
-                        className="absolute -left-3 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full p-1 shadow-sm border hover:bg-gray-50"
+                        className="absolute -left-3 top-1/2 -translate-y-1/2 z-20 bg-background rounded-full p-1 shadow-sm border border-border hover:bg-muted"
                       >
                         <ChevronLeft className="w-3 h-3" />
                       </button>
@@ -1898,20 +1953,17 @@ export default function ProductPage() {
                     <div
                       ref={thumbnailRef}
                       className="flex gap-1.5 overflow-x-hidden scroll-smooth"
-                      style={{
-                        scrollbarWidth: "none",
-                        msOverflowStyle: "none"
-                      }}
+                      style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
                     >
                       {safeImages.map((img, idx) => (
                         <button
                           key={idx}
                           onClick={() => setSelectedImage(idx)}
-                          className="flex-shrink-0 w-1/5 aspect-square bg-white rounded overflow-hidden border transition-all hover:shadow-sm"
+                          className="flex-shrink-0 w-1/5 aspect-square bg-card rounded-xl overflow-hidden border-2 transition-all"
                           style={{
                             flexBasis: "calc(20% - 5px)",
-                            borderColor: selectedImage === idx ? brandColor : '#e5e7eb',
-                            opacity: selectedImage === idx ? 1 : 0.7
+                            borderColor: selectedImage === idx ? brandColor : "transparent",
+                            opacity: selectedImage === idx ? 1 : 0.7,
                           }}
                         >
                           <Image
@@ -1928,7 +1980,7 @@ export default function ProductPage() {
                     {safeImages.length > 5 && (
                       <button
                         onClick={() => scrollThumbnails("right")}
-                        className="absolute -right-3 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full p-1 shadow-sm border hover:bg-gray-50"
+                        className="absolute -right-3 top-1/2 -translate-y-1/2 z-20 bg-background rounded-full p-1 shadow-sm border border-border hover:bg-muted"
                       >
                         <ChevronRight className="w-3 h-3" />
                       </button>
@@ -1942,16 +1994,16 @@ export default function ProductPage() {
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span 
-                        className="text-xs font-medium px-2 py-0.5 rounded"
-                        style={{ background: '#D4372B', color: '#fff', fontFamily: "'Poppins', sans-serif" }}
+                      <span
+                        className="text-xs font-semibold px-2 py-0.5 rounded-md text-white"
+                        style={{ background: brandColor, fontFamily: "'Poppins', sans-serif" }}
                       >
                         Top vente
                       </span>
-                      <span className="text-xs text-gray-400">SKU: {product.id}</span>
+                      <span className="text-xs text-muted-foreground">SKU: {product.id}</span>
                     </div>
-                    <h1 className="text-xl font-medium">{productName}</h1>
-                    
+                    <h1 className="text-xl font-semibold text-balance">{productName}</h1>
+
                     <div className="flex items-center gap-3 text-xs mt-2">
                       <div className="flex items-center gap-1">
                         <div className="flex">
@@ -1959,62 +2011,65 @@ export default function ProductPage() {
                             <Star key={star} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
                           ))}
                         </div>
-                        <span className="text-gray-600 ml-1">{reviewsStats.averageRating || 0}</span>
+                        <span className="text-muted-foreground ml-1">{reviewsStats.averageRating || 0}</span>
                       </div>
-                      <span className="text-gray-300">|</span>
-                      <span className="text-gray-600">{reviewsStats.totalReviews} avis</span>
-                      <span className="text-gray-300">|</span>
-                      <span className="text-gray-600">1,234+ commandes</span>
+                      <span className="text-border">|</span>
+                      <span className="text-muted-foreground">{reviewsStats.totalReviews} avis</span>
+                      <span className="text-border">|</span>
+                      <span className="text-muted-foreground">1,234+ commandes</span>
                     </div>
                   </div>
-                  
-                  <button 
+
+                  <button
                     onClick={handleToggleWishlist}
-                    className="p-1.5 rounded hover:bg-gray-50 transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+                    aria-label="Ajouter aux favoris"
                   >
-                    <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
+                    <Heart className={`w-4 h-4 ${isWishlisted ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
                   </button>
                 </div>
 
-                <div className="bg-gradient-to-br from-gray-50 to-white rounded p-4 mb-4 shadow-sm">
+                <div className="bg-card rounded-2xl p-4 mb-4 border border-border">
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
+                    <span
+                      className="text-2xl font-bold"
+                      style={{ color: brandColor, fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.02em" }}
+                    >
                       {formatPrice(currentPrice)} x {grandTotal || 1}
                     </span>
-                    <span className="text-xs text-gray-400 line-through">
+                    <span className="text-xs text-muted-foreground line-through">
                       {formatPrice(currentPrice * 1.2 * (grandTotal || 1))}
                     </span>
-                    <span className="text-xs text-white px-1.5 py-0.5 rounded" style={{ background: "#D4372B" }}>-20%</span>
+                    <span className="text-xs text-white px-1.5 py-0.5 rounded-md" style={{ background: brandColor }}>
+                      -20%
+                    </span>
                   </div>
-                  
+
                   {hasVariants && (
                     <>
                       {hasSimpleVariants && (
                         <div className="mb-3">
-                          <div className="text-xs text-gray-500 mb-2">{primaryAttrName}</div>
+                          <div className="text-xs text-muted-foreground mb-2">{primaryAttrName}</div>
                           <div className="flex flex-wrap gap-2">
                             {Object.entries(simpleVariantQuantities).map(([value, qty]) => {
                               const hasImage = attributeImages[`${simpleVariantType}:${value}`]
-                              
+
                               return (
                                 <button
                                   key={value}
                                   onClick={() => openSimpleVariantModal(value)}
-                                  className={`
-                                    px-3 py-1.5 text-xs border rounded transition-all flex items-center gap-2 hover:shadow-sm
-                                    ${qty > 0 
-                                      ? 'border-[#D4372B] text-[#D4372B] font-medium shadow-sm' 
-                                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                                    }
-                                  `}
+                                  className="px-3 py-1.5 text-xs border rounded-lg transition-all flex items-center gap-2"
                                   style={{
-                                    background: qty > 0 ? '#FFF0F0' : '#fff'
+                                    borderColor: qty > 0 ? brandColor : "var(--border)",
+                                    color: qty > 0 ? brandColor : undefined,
+                                    background: qty > 0 ? `${brandColor}14` : "var(--card)",
+                                    fontWeight: qty > 0 ? 600 : 400,
                                   }}
                                 >
                                   {hasImage && (
-                                    <div className="w-5 h-5 rounded-full overflow-hidden border border-white shadow-sm">
+                                    <div className="w-5 h-5 rounded-full overflow-hidden border border-border">
                                       <Image
-                                        src={attributeImages[`${simpleVariantType}:${value}`]}
+                                        src={attributeImages[`${simpleVariantType}:${value}`] || "/placeholder.svg"}
                                         alt={value}
                                         width={20}
                                         height={20}
@@ -2024,7 +2079,10 @@ export default function ProductPage() {
                                   )}
                                   {value}
                                   {qty > 0 && (
-                                    <span className="ml-1 text-xs bg-white px-1.5 py-0.5 rounded shadow-sm border border-[#D4372B]">
+                                    <span
+                                      className="ml-1 text-xs px-1.5 py-0.5 rounded-md border"
+                                      style={{ borderColor: brandColor, background: "var(--background)" }}
+                                    >
                                       {qty}
                                     </span>
                                   )}
@@ -2035,15 +2093,15 @@ export default function ProductPage() {
 
                           {Object.entries(simpleVariantQuantities).map(([value, qty]) => {
                             if (qty === 0) return null
-                            
+
                             return (
-                              <div key={value} className="bg-gray-50 p-3 rounded mt-2 shadow-sm">
+                              <div key={value} className="bg-muted p-3 rounded-lg mt-2">
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-2">
                                     {attributeImages[`${simpleVariantType}:${value}`] && (
-                                      <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                                      <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-card">
                                         <Image
-                                          src={attributeImages[`${simpleVariantType}:${value}`]}
+                                          src={attributeImages[`${simpleVariantType}:${value}`] || "/placeholder.svg"}
                                           alt={value}
                                           width={32}
                                           height={32}
@@ -2051,9 +2109,11 @@ export default function ProductPage() {
                                         />
                                       </div>
                                     )}
-                                    <span className="text-sm font-medium text-gray-700">{value}</span>
+                                    <span className="text-sm font-medium text-foreground">{value}</span>
                                   </div>
-                                  <span className="text-sm font-bold" style={{ color: '#D4372B' }}>x{qty}</span>
+                                  <span className="text-sm font-bold" style={{ color: brandColor }}>
+                                    x{qty}
+                                  </span>
                                 </div>
                               </div>
                             )
@@ -2064,31 +2124,31 @@ export default function ProductPage() {
                       {hasComplexVariants && (
                         <>
                           <div className="mb-3">
-                            <div className="text-xs text-gray-500 mb-2">{primaryAttrName}</div>
+                            <div className="text-xs text-muted-foreground mb-2">{primaryAttrName}</div>
                             <div className="flex flex-wrap gap-2">
                               {Object.keys(complexSelections).map((primaryValue) => {
                                 const total = getPrimaryTotal(primaryValue)
                                 const hasImage = attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]
-                                
+
                                 return (
                                   <button
                                     key={primaryValue}
                                     onClick={() => openPrimaryModal(primaryValue)}
-                                    className={`
-                                      px-3 py-1.5 text-xs border rounded transition-all flex items-center gap-2 hover:shadow-sm
-                                      ${total > 0 
-                                        ? 'border-[#D4372B] text-[#D4372B] font-medium shadow-sm' 
-                                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                                      }
-                                    `}
+                                    className="px-3 py-1.5 text-xs border rounded-lg transition-all flex items-center gap-2"
                                     style={{
-                                      background: total > 0 ? '#FFF0F0' : '#fff'
+                                      borderColor: total > 0 ? brandColor : "var(--border)",
+                                      color: total > 0 ? brandColor : undefined,
+                                      background: total > 0 ? `${brandColor}14` : "var(--card)",
+                                      fontWeight: total > 0 ? 600 : 400,
                                     }}
                                   >
                                     {hasImage && (
-                                      <div className="w-5 h-5 rounded-full overflow-hidden border border-white shadow-sm">
+                                      <div className="w-5 h-5 rounded-full overflow-hidden border border-border">
                                         <Image
-                                          src={attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`]}
+                                          src={
+                                            attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`] ||
+                                            "/placeholder.svg"
+                                          }
                                           alt={primaryValue}
                                           width={20}
                                           height={20}
@@ -2098,7 +2158,10 @@ export default function ProductPage() {
                                     )}
                                     {primaryValue}
                                     {total > 0 && (
-                                      <span className="ml-1 text-xs bg-white px-1.5 py-0.5 rounded shadow-sm border border-[#D4372B]">
+                                      <span
+                                        className="ml-1 text-xs px-1.5 py-0.5 rounded-md border"
+                                        style={{ borderColor: brandColor, background: "var(--background)" }}
+                                      >
                                         {total}
                                       </span>
                                     )}
@@ -2110,29 +2173,29 @@ export default function ProductPage() {
 
                           {secondaryAttrName && (
                             <div className="mb-3">
-                              <div className="text-xs text-gray-500 mb-2">{secondaryAttrName}</div>
+                              <div className="text-xs text-muted-foreground mb-2">{secondaryAttrName}</div>
                               <div className="flex flex-wrap gap-2">
                                 {attributeGroups[Object.keys(attributeGroups)[1]]?.values.map((secondaryValue) => {
                                   const total = getSecondaryTotal(secondaryValue)
-                                  
+
                                   return (
                                     <button
                                       key={secondaryValue}
                                       onClick={() => openSecondaryModal(secondaryValue)}
-                                      className={`
-                                        px-3 py-1.5 text-xs border rounded transition-all relative hover:shadow-sm
-                                        ${total > 0 
-                                          ? 'border-[#D4372B] text-[#D4372B] font-medium shadow-sm' 
-                                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                                        }
-                                      `}
+                                      className="px-3 py-1.5 text-xs border rounded-lg transition-all relative"
                                       style={{
-                                        background: total > 0 ? '#FFF0F0' : '#fff'
+                                        borderColor: total > 0 ? brandColor : "var(--border)",
+                                        color: total > 0 ? brandColor : undefined,
+                                        background: total > 0 ? `${brandColor}14` : "var(--card)",
+                                        fontWeight: total > 0 ? 600 : 400,
                                       }}
                                     >
                                       {secondaryValue}
                                       {total > 0 && (
-                                        <span className="absolute -top-2 -right-2 w-4 h-4 bg-[#D4372B] text-white text-[8px] rounded-full flex items-center justify-center shadow-sm">
+                                        <span
+                                          className="absolute -top-2 -right-2 w-4 h-4 text-white text-[8px] rounded-full flex items-center justify-center"
+                                          style={{ background: brandColor }}
+                                        >
                                           {total}
                                         </span>
                                       )}
@@ -2149,155 +2212,161 @@ export default function ProductPage() {
 
                   {!hasVariants && (
                     <div className="mb-3">
-                      <div className="text-xs text-gray-500 mb-2">Quantité</div>
-                      <div className="flex items-center rounded overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
+                      <div className="text-xs text-muted-foreground mb-2">Quantité</div>
+                      <div className="flex items-center rounded-lg overflow-hidden border border-border w-fit">
                         <button
                           onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))}
-                          className="p-1.5 hover:bg-gray-50 transition-colors"
+                          className="p-1.5 hover:bg-muted transition-colors"
                           disabled={simpleQuantity <= 1}
                         >
                           <Minus className="w-3.5 h-3.5" />
                         </button>
-                        <span className="w-12 text-center text-sm font-medium">{simpleQuantity}</span>
+                        <span className="w-12 text-center text-sm font-semibold">{simpleQuantity}</span>
                         <button
                           onClick={() => setSimpleQuantity(simpleQuantity + 1)}
-                          className="p-1.5 hover:bg-gray-50 transition-colors"
+                          className="p-1.5 hover:bg-muted transition-colors"
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
                   )}
-                  
+
                   <div className="flex items-center gap-2 text-xs mb-2">
-                    <span className="px-2 py-0.5 rounded text-white" style={{ background: "#D4372B" }}>Prix direct usine</span>
-                    <span className="text-gray-500">Prix en {getCurrencySymbol()} (USD ${Number(product.price).toFixed(2)})</span>
+                    <span className="px-2 py-0.5 rounded-md text-white" style={{ background: brandColor }}>
+                      Prix direct usine
+                    </span>
+                    <span className="text-muted-foreground">
+                      Prix en {getCurrencySymbol()} (USD ${Number(product.price).toFixed(2)})
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-4 text-xs">
-                    <div className="flex items-center gap-1 text-gray-600">
-                      <Package className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <Package className="w-3.5 h-3.5" style={{ color: brandColor }} />
                       <span>MOQ: {minQuantity}</span>
                     </div>
-                    <div className="flex items-center gap-1 text-gray-600">
-                      <Clock className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
-                      <span>Délai: {logisticsData?.recommended.days || '15-20'} jours</span>
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <Clock className="w-3.5 h-3.5" style={{ color: brandColor }} />
+                      <span>Délai: {logisticsData?.recommended.days || "15-20"} jours</span>
                     </div>
-                    <div className="flex items-center gap-1 text-gray-600">
+                    <div className="flex items-center gap-1 text-muted-foreground">
                       {isLoadingLogistics ? (
-                        <span className="inline-flex items-center text-gray-500">
-                          <span className="w-3 h-3 border-2 border-gray-300 border-t-[#D4372B] rounded-full animate-spin mr-1"></span>
+                        <span className="inline-flex items-center text-muted-foreground">
+                          <span
+                            className="w-3 h-3 border-2 border-border rounded-full animate-spin mr-1"
+                            style={{ borderTopColor: brandColor }}
+                          />
                           Calcul...
                         </span>
                       ) : (
-                        <span className="text-gray-500">
-                          {logisticsData ? `${logisticsData.weight.totalWeight.toFixed(2)} kg total` : '0.00 kg total'}
+                        <span className="text-muted-foreground">
+                          {logisticsData ? `${logisticsData.weight.totalWeight.toFixed(2)} kg total` : "0.00 kg total"}
                         </span>
                       )}
                     </div>
                   </div>
                 </div>
 
-                <div 
+                <div
                   onClick={() => setIsProtectionModalOpen(true)}
-                  className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded p-4 mb-4 cursor-pointer hover:shadow-sm transition-all"
+                  className="bg-muted border border-border rounded-2xl p-4 mb-4 cursor-pointer hover:border-foreground/20 transition-all"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <Shield className="w-5 h-5" style={{ color: '#D4372B' }} />
-                      <span className="text-sm font-medium text-gray-900">Protection des achats Adullam</span>
+                      <Shield className="w-5 h-5" style={{ color: brandColor }} />
+                      <span className="text-sm font-semibold text-foreground">Protection des achats Adullam</span>
                     </div>
-                    <Info className="w-4 h-4 text-gray-400" />
+                    <Info className="w-4 h-4 text-muted-foreground" />
                   </div>
-                  
+
                   <div className="flex flex-wrap items-center gap-3 mb-3">
-                    {['MTN', 'Orange', 'Wave', 'Visa'].map((method) => (
-                      <span key={method} className="text-xs px-3 py-1.5 bg-white border border-gray-200 rounded text-gray-600 shadow-sm">
+                    {["MTN", "Orange", "Wave", "Visa"].map((method) => (
+                      <span
+                        key={method}
+                        className="text-xs px-3 py-1.5 bg-card border border-border rounded-md text-muted-foreground"
+                      >
                         {method}
                       </span>
                     ))}
                   </div>
-                  
-                  <p className="text-sm text-gray-500 flex items-center gap-1">
-                    <Lock className="w-4 h-4 text-gray-400" />
+
+                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Lock className="w-4 h-4" />
                     Paiement sécurisé - Cliquez pour en savoir plus
                   </p>
                 </div>
 
                 <div className="mb-4">
-                  <h3 className="text-sm font-medium mb-2 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold mb-2 flex items-center justify-between">
                     <span>Mode de livraison</span>
                     {selectedPortePorteCost > 0 && (
-                      <span className="text-xs font-medium text-gray-700">
-                        Frais porte-à-porte: <span className="font-bold" style={{ color: '#D4372B' }}>{formatPrice(selectedPortePorteCost)}</span>
+                      <span className="text-xs font-medium text-foreground">
+                        Frais porte-à-porte:{" "}
+                        <span className="font-bold" style={{ color: brandColor }}>
+                          {formatPrice(selectedPortePorteCost)}
+                        </span>
                       </span>
                     )}
                   </h3>
                   {isLoadingLogistics ? (
                     <div className="grid grid-cols-3 gap-2">
                       {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex items-center justify-between p-2 rounded border border-gray-200 bg-gray-50 animate-pulse">
+                        <div
+                          key={i}
+                          className="flex items-center justify-between p-2 rounded-lg border border-border bg-muted animate-pulse"
+                        >
                           <div className="flex items-center gap-1.5">
-                            <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
+                            <div className="w-5 h-5 bg-border rounded-full" />
                             <div>
-                              <div className="w-8 h-3 bg-gray-200 rounded mb-1"></div>
-                              <div className="w-6 h-2 bg-gray-200 rounded"></div>
+                              <div className="w-8 h-3 bg-border rounded mb-1" />
+                              <div className="w-6 h-2 bg-border rounded" />
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="w-10 h-3 bg-gray-200 rounded mb-1"></div>
-                            <div className="w-8 h-2 bg-gray-200 rounded"></div>
+                            <div className="w-10 h-3 bg-border rounded mb-1" />
+                            <div className="w-8 h-2 bg-border rounded" />
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : logisticsError ? (
-                    <div className="text-xs text-red-500 p-2 border border-red-200 rounded bg-red-50">
+                    <div className="text-xs text-red-600 p-2 border border-red-300 rounded-lg bg-red-50 dark:bg-red-950/30">
                       {logisticsError}
                     </div>
                   ) : (
                     <div className="grid grid-cols-3 gap-2">
-                      {[
-                        { mode: "bateau", icon: Ship, label: "Maritime" },
-                        { mode: "avion", icon: Sparkles, label: "Aérien" },
-                        { mode: "express", icon: Zap, label: "Express" }
-                      ].map((item) => {
+                      {SHIPPING_OPTIONS.map((item) => {
                         const shippingMode = item.mode as "bateau" | "avion" | "express"
                         const isAvailable = logisticsData?.shipping?.[shippingMode]
                         const days = getShippingDays(shippingMode)
                         const cost = getShippingCost(shippingMode)
                         const estimatedDate = getEstimatedDate(shippingMode)
-                        
+                        const isSelected = selectedShipping === shippingMode
+
                         if (!isAvailable) return null
-                        
+
                         return (
                           <button
                             key={item.mode}
                             onClick={() => setSelectedShipping(shippingMode)}
-                            className="flex items-center justify-between p-2 rounded border transition-all text-xs hover:shadow-sm"
-                            style={{
-                              borderColor: selectedShipping === shippingMode ? brandColor : '#e5e7eb',
-                              background: selectedShipping === shippingMode ? '#D4372B' : '#fff'
-                            }}
+                            className={`flex items-center justify-between p-2 rounded-lg border transition-all text-xs ${
+                              isSelected ? "text-white" : "bg-card border-border text-foreground hover:bg-accent"
+                            }`}
+                            style={isSelected ? { borderColor: brandColor, background: brandColor } : undefined}
                           >
                             <div className="flex items-center gap-1.5">
-                              <item.icon className="w-3.5 h-3.5" style={{ color: selectedShipping === shippingMode ? 'white' : '#9ca3af' }} />
+                              <item.icon className="w-3.5 h-3.5" style={{ color: isSelected ? "white" : undefined }} />
                               <div className="text-left">
-                                <p className="font-medium text-xs" style={{ color: selectedShipping === shippingMode ? 'white' : '#374151' }}>
-                                  {item.label}
-                                </p>
-                                <p className="text-[10px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#6b7280' }}>
-                                  {days}
-                                </p>
+                                <p className="font-medium text-xs">{item.label}</p>
+                                <p className="text-[10px] opacity-80">{days}</p>
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="font-semibold text-xs" style={{ color: selectedShipping === shippingMode ? 'white' : '#D4372B' }}>
+                              <p className="font-semibold text-xs" style={{ color: isSelected ? "white" : brandColor }}>
                                 {formatPrice(cost)}
                               </p>
-                              <p className="text-[9px]" style={{ color: selectedShipping === shippingMode ? 'rgba(255,255,255,0.8)' : '#9ca3af' }}>
-                                {estimatedDate}
-                              </p>
+                              <p className="text-[9px] opacity-80">{estimatedDate}</p>
                             </div>
                           </button>
                         )
@@ -2308,75 +2377,72 @@ export default function ProductPage() {
 
                 <div className="space-y-2 mb-4">
                   {!isMOQMet && grandTotal > 0 && (
-                    <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded p-2 text-xs text-yellow-800 shadow-sm">
+                    <div
+                      className="border rounded-xl p-2 text-xs"
+                      style={{ background: `${accentColor}1a`, borderColor: `${accentColor}66`, color: accentColor }}
+                    >
                       MOQ non atteint ({minQuantity} min). Contactez-nous.
                     </div>
                   )}
-                  
+
                   <div className="flex gap-2">
                     <button
                       onClick={isMOQMet && grandTotal > 0 ? handleAddToCart : handleContactWhatsApp}
-                      className="flex-1 py-2.5 text-sm font-medium rounded transition-all flex items-center justify-center gap-1.5 hover:shadow-md"
-                      style={{
-                        background: (isMOQMet && grandTotal > 0) ? brandGradient : 'linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%)',
-                        color: 'white'
-                      }}
+                      className="flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 text-white hover:opacity-90"
+                      style={{ background: isMOQMet && grandTotal > 0 ? brandColor : accentColor }}
                     >
                       <ShoppingCart className="w-4 h-4" />
-                      {(isMOQMet && grandTotal > 0) ? `Ajouter (${grandTotal})` : "Nous contacter"}
+                      {isMOQMet && grandTotal > 0 ? `Ajouter (${grandTotal})` : "Nous contacter"}
                     </button>
 
                     <button
                       onClick={handleBuyNow}
                       disabled={!isMOQMet || grandTotal === 0}
-                      className="flex-1 py-2.5 text-sm text-white font-medium rounded transition-all hover:shadow-md"
-                      style={{
-                        background: 'linear-gradient(135deg, #1A2F3F 0%, #2D3F4F 100%)',
-                        opacity: (isMOQMet && grandTotal > 0) ? 1 : 0.5
-                      }}
+                      className="flex-1 py-2.5 text-sm text-white font-semibold rounded-xl transition-all hover:opacity-90"
+                      style={{ background: "#0A0A0A", opacity: isMOQMet && grandTotal > 0 ? 1 : 0.5 }}
                     >
                       Acheter
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 p-3 bg-gradient-to-r from-gray-50 to-white rounded text-xs shadow-sm">
+                <div className="grid grid-cols-4 gap-2 p-3 bg-muted rounded-2xl text-xs border border-border">
                   <div className="flex items-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
+                    <Shield className="w-3.5 h-3.5" style={{ color: brandColor }} />
                     <span>Garantie 12 mois</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <RotateCcw className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
+                    <RotateCcw className="w-3.5 h-3.5" style={{ color: brandColor }} />
                     <span>Retour 15j</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
+                    <Check className="w-3.5 h-3.5" style={{ color: brandColor }} />
                     <span>Certifié</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Truck className="w-3.5 h-3.5" style={{ color: '#D4372B' }} />
+                    <Truck className="w-3.5 h-3.5" style={{ color: brandColor }} />
                     <span>Suivi</span>
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Desktop Tabs */}
-            <div className="hidden lg:block mt-8 bg-gradient-to-br from-gray-50 to-white rounded p-6 shadow-sm">
-              <div className="border-b border-gray-200 mb-6">
+            <div className="hidden lg:block mt-8 bg-card rounded-2xl p-6 border border-border">
+              <div className="border-b border-border mb-6">
                 <div className="flex gap-6">
                   {[
                     { id: "description", label: "Description" },
                     { id: "specifications", label: "Caractéristiques" },
-                    { id: "avis", label: `Avis (${reviewsStats.totalReviews})` }
+                    { id: "avis", label: `Avis (${reviewsStats.totalReviews})` },
                   ].map((tab) => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`pb-3 px-1 text-sm font-medium transition-colors relative`}
+                      className="pb-3 px-1 text-sm font-medium transition-colors relative"
                       style={{
-                        color: activeTab === tab.id ? brandColor : '#6B7280',
-                        borderBottom: activeTab === tab.id ? `2px solid ${brandColor}` : '2px solid transparent'
+                        color: activeTab === tab.id ? brandColor : undefined,
+                        borderBottom: activeTab === tab.id ? `2px solid ${brandColor}` : "2px solid transparent",
                       }}
                     >
                       {tab.label}
@@ -2388,17 +2454,17 @@ export default function ProductPage() {
               <div className="text-sm">
                 {activeTab === "description" && (
                   <div>
-                    <h3 className="font-medium mb-3 text-gray-900">Description</h3>
-                    <p className="text-gray-700 leading-relaxed">
+                    <h3 className="font-semibold mb-3 text-foreground">Description</h3>
+                    <p className="text-muted-foreground leading-relaxed">
                       {product.description || product.cleanedDesc || "Description non disponible"}
                     </p>
                     {product.features && product.features.length > 0 && (
                       <div className="mt-6">
-                        <h3 className="font-medium mb-3 text-gray-900">Caractéristiques principales</h3>
-                        <ul className="space-y-2 text-gray-700">
+                        <h3 className="font-semibold mb-3 text-foreground">Caractéristiques principales</h3>
+                        <ul className="space-y-2 text-muted-foreground">
                           {product.features.map((feature: string, i: number) => (
                             <li key={i} className="flex items-start gap-2">
-                              <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#D4372B' }} />
+                              <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: brandColor }} />
                               <span>{feature}</span>
                             </li>
                           ))}
@@ -2407,35 +2473,35 @@ export default function ProductPage() {
                     )}
                   </div>
                 )}
-                
+
                 {activeTab === "specifications" && (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm border-collapse">
                       <tbody>
                         {product.specifications ? (
                           product.specifications.map((spec: any, i: number) => (
-                            <tr key={i} className="border-b border-gray-200">
-                              <td className="py-2 pr-4 text-gray-500 font-medium w-1/3">{spec.label}</td>
-                              <td className="py-2 text-gray-800">{spec.value}</td>
+                            <tr key={i} className="border-b border-border">
+                              <td className="py-2 pr-4 text-muted-foreground font-medium w-1/3">{spec.label}</td>
+                              <td className="py-2 text-foreground">{spec.value}</td>
                             </tr>
                           ))
                         ) : (
                           <>
-                            <tr className="border-b border-gray-200">
-                              <td className="py-2 pr-4 text-gray-500 font-medium w-1/3">Marque</td>
-                              <td className="py-2 text-gray-800">{product.brand || "TechPro"}</td>
+                            <tr className="border-b border-border">
+                              <td className="py-2 pr-4 text-muted-foreground font-medium w-1/3">Marque</td>
+                              <td className="py-2 text-foreground">{product.brand || "TechPro"}</td>
                             </tr>
-                            <tr className="border-b border-gray-200">
-                              <td className="py-2 pr-4 text-gray-500 font-medium">Modèle</td>
-                              <td className="py-2 text-gray-800">{product.model || "Standard"}</td>
+                            <tr className="border-b border-border">
+                              <td className="py-2 pr-4 text-muted-foreground font-medium">Modèle</td>
+                              <td className="py-2 text-foreground">{product.model || "Standard"}</td>
                             </tr>
-                            <tr className="border-b border-gray-200">
-                              <td className="py-2 pr-4 text-gray-500 font-medium">Poids</td>
-                              <td className="py-2 text-gray-800">{product.weight ? `${product.weight} kg` : "N/A"}</td>
+                            <tr className="border-b border-border">
+                              <td className="py-2 pr-4 text-muted-foreground font-medium">Poids</td>
+                              <td className="py-2 text-foreground">{product.weight ? `${product.weight} kg` : "N/A"}</td>
                             </tr>
-                            <tr className="border-b border-gray-200">
-                              <td className="py-2 pr-4 text-gray-500 font-medium">Garantie</td>
-                              <td className="py-2 text-gray-800">12 mois</td>
+                            <tr className="border-b border-border">
+                              <td className="py-2 pr-4 text-muted-foreground font-medium">Garantie</td>
+                              <td className="py-2 text-foreground">12 mois</td>
                             </tr>
                           </>
                         )}
@@ -2443,32 +2509,34 @@ export default function ProductPage() {
                     </table>
                   </div>
                 )}
-                
+
                 {activeTab === "avis" && (
                   <div>
                     {!showReviewForm && (
                       <button
                         onClick={() => setShowReviewForm(true)}
-                        className="mb-6 px-4 py-2 bg-[#D4372B] text-white rounded text-sm font-medium hover:bg-[#B5271C] transition-colors"
+                        className="mb-6 px-4 py-2 text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-2"
+                        style={{ background: brandColor }}
                       >
-                        ✍️ Donner mon avis
+                        <PenLine className="w-4 h-4" />
+                        Donner mon avis
                       </button>
                     )}
-                    
+
                     {showReviewForm && (
-                      <div className="bg-white border border-gray-200 rounded p-6 mb-6 shadow-sm">
+                      <div className="bg-background border border-border rounded-2xl p-6 mb-6">
                         <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-semibold text-gray-900">Donnez votre avis</h3>
-                          <button 
+                          <h3 className="font-semibold text-foreground">Donnez votre avis</h3>
+                          <button
                             onClick={() => setShowReviewForm(false)}
-                            className="text-gray-400 hover:text-gray-600"
+                            className="text-muted-foreground hover:text-foreground"
                           >
                             <X className="w-5 h-5" />
                           </button>
                         </div>
-                        
+
                         <div className="mb-4">
-                          <label className="text-sm text-gray-600 font-medium">Note</label>
+                          <label className="text-sm text-muted-foreground font-medium">Note</label>
                           <div className="flex gap-2 mt-2">
                             {[1, 2, 3, 4, 5].map((star) => (
                               <button
@@ -2476,98 +2544,97 @@ export default function ProductPage() {
                                 onClick={() => setNewReview({ ...newReview, rating: star })}
                                 className="focus:outline-none"
                               >
-                                <Star 
+                                <Star
                                   className={`w-8 h-8 ${
-                                    star <= newReview.rating 
-                                      ? 'fill-yellow-400 text-yellow-400' 
-                                      : 'text-gray-300'
-                                  }`} 
+                                    star <= newReview.rating ? "fill-yellow-400 text-yellow-400" : "text-border"
+                                  }`}
                                 />
                               </button>
                             ))}
                           </div>
                         </div>
-                        
+
                         <div className="mb-4">
-                          <label className="text-sm text-gray-600 font-medium">Votre nom</label>
+                          <label className="text-sm text-muted-foreground font-medium">Votre nom</label>
                           <input
                             type="text"
                             value={newReview.authorName}
                             onChange={(e) => setNewReview({ ...newReview, authorName: e.target.value })}
-                            className="w-full mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-[#D4372B]"
+                            className="w-full mt-1 p-2 bg-card border border-border rounded-lg focus:outline-none"
                             placeholder="Jean Dupont"
                           />
                         </div>
-                        
+
                         <div className="mb-4">
-                          <label className="text-sm text-gray-600 font-medium">Votre commentaire</label>
+                          <label className="text-sm text-muted-foreground font-medium">Votre commentaire</label>
                           <textarea
                             value={newReview.comment}
                             onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                            className="w-full mt-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-[#D4372B] resize-none"
+                            className="w-full mt-1 p-2 bg-card border border-border rounded-lg focus:outline-none resize-none"
                             rows={4}
                             placeholder="Partagez votre expérience..."
                           />
                         </div>
-                        
+
                         <div className="flex gap-3">
                           <button
                             onClick={() => setShowReviewForm(false)}
-                            className="px-4 py-2 border border-gray-300 rounded text-sm font-medium text-gray-600 hover:bg-gray-50"
+                            className="px-4 py-2 border border-border rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted"
                           >
                             Annuler
                           </button>
                           <button
                             onClick={handleSubmitReview}
                             disabled={isSubmittingReview}
-                            className="px-4 py-2 bg-[#D4372B] text-white rounded text-sm font-medium hover:bg-[#B5271C] disabled:opacity-50"
+                            className="px-4 py-2 text-white rounded-lg text-sm font-semibold disabled:opacity-50"
+                            style={{ background: brandColor }}
                           >
                             {isSubmittingReview ? "Envoi..." : "Publier mon avis"}
                           </button>
                         </div>
                       </div>
                     )}
-                    
+
                     {isLoadingReviews ? (
                       <div className="space-y-6">
                         <div className="flex items-center gap-6 mb-6 animate-pulse">
                           <div className="text-center">
-                            <div className="w-16 h-8 bg-gray-200 rounded mb-1"></div>
+                            <div className="w-16 h-8 bg-muted rounded mb-1" />
                             <div className="flex gap-1 mt-1">
-                              {[1,2,3,4,5].map((i) => (
-                                <div key={i} className="w-4 h-4 bg-gray-200 rounded"></div>
+                              {[1, 2, 3, 4, 5].map((i) => (
+                                <div key={i} className="w-4 h-4 bg-muted rounded" />
                               ))}
                             </div>
-                            <div className="w-16 h-3 bg-gray-200 rounded mt-1"></div>
+                            <div className="w-16 h-3 bg-muted rounded mt-1" />
                           </div>
                           <div className="flex-1 space-y-2">
-                            {[1,2,3,4,5].map((i) => (
+                            {[1, 2, 3, 4, 5].map((i) => (
                               <div key={i} className="flex items-center gap-2">
-                                <div className="w-12 h-3 bg-gray-200 rounded"></div>
-                                <div className="flex-1 h-2 bg-gray-200 rounded"></div>
-                                <div className="w-8 h-3 bg-gray-200 rounded"></div>
+                                <div className="w-12 h-3 bg-muted rounded" />
+                                <div className="flex-1 h-2 bg-muted rounded" />
+                                <div className="w-8 h-3 bg-muted rounded" />
                               </div>
                             ))}
                           </div>
                         </div>
                         <div className="space-y-4">
-                          {[1,2,3].map((i) => (
-                            <div key={i} className="border-b border-gray-200 pb-4 animate-pulse">
+                          {[1, 2, 3].map((i) => (
+                            <div key={i} className="border-b border-border pb-4 animate-pulse">
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-                                  <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                  <div className="w-8 h-8 bg-muted rounded-full" />
+                                  <div className="h-4 bg-muted rounded w-24" />
                                 </div>
-                                <div className="h-3 bg-gray-200 rounded w-20"></div>
+                                <div className="h-3 bg-muted rounded w-20" />
                               </div>
                               <div className="flex gap-1 ml-10 mb-2">
-                                {[1,2,3,4,5].map((star) => (
-                                  <div key={star} className="w-3 h-3 bg-gray-200 rounded"></div>
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <div key={star} className="w-3 h-3 bg-muted rounded" />
                                 ))}
                               </div>
                               <div className="ml-10 space-y-1">
-                                <div className="h-3 bg-gray-200 rounded w-full"></div>
-                                <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                                <div className="h-3 bg-muted rounded w-full" />
+                                <div className="h-3 bg-muted rounded w-3/4" />
                               </div>
                             </div>
                           ))}
@@ -2575,47 +2642,48 @@ export default function ProductPage() {
                       </div>
                     ) : reviews.length === 0 ? (
                       <div className="text-center py-12">
-                        <div className="w-20 h-20 mx-auto mb-4 bg-gray-50 rounded-full flex items-center justify-center">
-                          <Star className="w-10 h-10 text-gray-300" />
+                        <div className="w-20 h-20 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+                          <Star className="w-10 h-10 text-muted-foreground/50" />
                         </div>
-                        <p className="text-gray-500">Aucun avis pour le moment</p>
-                        <p className="text-sm text-gray-400 mt-1">Soyez le premier à donner votre avis</p>
+                        <p className="text-muted-foreground">Aucun avis pour le moment</p>
+                        <p className="text-sm text-muted-foreground/70 mt-1">Soyez le premier à donner votre avis</p>
                       </div>
                     ) : (
                       <>
                         <div className="flex items-center gap-6 mb-6">
                           <div className="text-center">
-                            <div className="text-2xl font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
+                            <div
+                              className="text-2xl font-bold"
+                              style={{ color: brandColor, fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.02em" }}
+                            >
                               {reviewsStats.averageRating}
                             </div>
                             <div className="flex justify-center mt-1">
                               {[1, 2, 3, 4, 5].map((star) => (
-                                <Star 
-                                  key={star} 
+                                <Star
+                                  key={star}
                                   className={`w-3.5 h-3.5 ${
-                                    star <= Math.round(reviewsStats.averageRating) 
-                                      ? 'fill-yellow-400 text-yellow-400' 
-                                      : 'text-gray-300'
-                                  }`} 
+                                    star <= Math.round(reviewsStats.averageRating)
+                                      ? "fill-yellow-400 text-yellow-400"
+                                      : "text-border"
+                                  }`}
                                 />
                               ))}
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">{reviewsStats.totalReviews} avis</p>
+                            <p className="text-xs text-muted-foreground mt-1">{reviewsStats.totalReviews} avis</p>
                           </div>
                           <div className="flex-1 space-y-1">
                             {[5, 4, 3, 2, 1].map((rating) => {
-                              const count = reviewsStats.ratingDistribution[rating as keyof typeof reviewsStats.ratingDistribution] || 0
+                              const count =
+                                reviewsStats.ratingDistribution[rating as keyof typeof reviewsStats.ratingDistribution] || 0
                               const percentage = reviewsStats.totalReviews > 0 ? (count / reviewsStats.totalReviews) * 100 : 0
                               return (
                                 <div key={rating} className="flex items-center gap-3 text-sm">
-                                  <span className="w-12 text-gray-600">{rating} étoiles</span>
-                                  <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                    <div 
-                                      className="h-full rounded-full" 
-                                      style={{ width: `${percentage}%`, background: brandGradient }} 
-                                    />
+                                  <span className="w-12 text-muted-foreground">{rating} étoiles</span>
+                                  <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                    <div className="h-full rounded-full" style={{ width: `${percentage}%`, background: brandColor }} />
                                   </div>
-                                  <span className="w-12 text-right text-gray-500 text-sm">{count}</span>
+                                  <span className="w-12 text-right text-muted-foreground text-sm">{count}</span>
                                 </div>
                               )
                             })}
@@ -2624,40 +2692,36 @@ export default function ProductPage() {
 
                         <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2">
                           {reviews.map((review) => (
-                            <div key={review.id} className="border-b border-gray-200 pb-5 last:border-0">
+                            <div key={review.id} className="border-b border-border pb-5 last:border-0">
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                  <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center text-foreground text-sm font-medium">
                                     {review.authorName.charAt(0).toUpperCase()}
                                   </div>
                                   <div>
                                     <div className="flex items-center gap-2">
-                                      <span className="text-sm font-medium text-gray-800">{review.authorName}</span>
+                                      <span className="text-sm font-medium text-foreground">{review.authorName}</span>
                                       {review.verifiedPurchase && (
-                                        <span className="text-[10px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+                                        <span className="text-[10px] px-2 py-0.5 bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 rounded-full">
                                           Achat vérifié
                                         </span>
                                       )}
                                     </div>
                                     <div className="flex items-center gap-1 mt-0.5">
                                       {[1, 2, 3, 4, 5].map((star) => (
-                                        <Star 
-                                          key={star} 
+                                        <Star
+                                          key={star}
                                           className={`w-3 h-3 ${
-                                            star <= review.rating 
-                                              ? 'fill-yellow-400 text-yellow-400' 
-                                              : 'text-gray-200'
-                                          }`} 
+                                            star <= review.rating ? "fill-yellow-400 text-yellow-400" : "text-border"
+                                          }`}
                                         />
                                       ))}
                                     </div>
                                   </div>
                                 </div>
-                                <span className="text-xs text-gray-400">{formatReviewDate(review.createdAt)}</span>
+                                <span className="text-xs text-muted-foreground">{formatReviewDate(review.createdAt)}</span>
                               </div>
-                              <p className="text-sm text-gray-700 ml-11 leading-relaxed">
-                                {review.comment}
-                              </p>
+                              <p className="text-sm text-muted-foreground ml-11 leading-relaxed">{review.comment}</p>
                             </div>
                           ))}
                         </div>
@@ -2671,31 +2735,29 @@ export default function ProductPage() {
             {/* RELATED PRODUCTS */}
             <div className="mt-8 lg:mt-12">
               <div className="flex items-center justify-between mb-4 lg:mb-6">
-                <h2 className="text-base lg:text-lg font-medium">Vous aimerez aussi</h2>
+                <h2 className="text-base lg:text-lg font-semibold">Vous aimerez aussi</h2>
               </div>
-              
+
               {isLoadingRelated ? (
                 <div className="flex justify-center items-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600" />
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: brandColor }} />
                 </div>
               ) : relatedProducts.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 text-sm">
-                  Aucune recommandation pour le moment
-                </div>
+                <div className="text-center py-8 text-muted-foreground text-sm">Aucune recommandation pour le moment</div>
               ) : (
                 <>
                   <div className="lg:hidden">
-                    <div className="bg-gradient-to-br from-gray-50 to-white rounded p-4 shadow-sm">
+                    <div className="bg-card rounded-2xl p-4 border border-border">
                       <div className="relative">
                         <div className="overflow-x-auto overflow-y-hidden hide-scrollbar">
                           <div className="flex gap-3 w-max">
                             {relatedProducts.map((p) => (
-                              <a 
-                                key={p.id} 
-                                href={`/products/${p.id}`} 
+                              <a
+                                key={p.id}
+                                href={`/products/${p.id}`}
                                 className="group w-[calc((100vw-4rem)/3-0.5rem)] min-w-[calc((100vw-4rem)/3-0.5rem)]"
                               >
-                                <div className="bg-white rounded aspect-square mb-2 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow transition-all">
+                                <div className="bg-background rounded-xl aspect-square mb-2 overflow-hidden border border-border group-hover:border-foreground/20 transition-all">
                                   <Image
                                     src={p.image || "/placeholder.svg"}
                                     alt={p.name}
@@ -2704,16 +2766,19 @@ export default function ProductPage() {
                                     className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform"
                                   />
                                 </div>
-                                <h3 className="font-medium text-xs mb-0.5 line-clamp-2 text-gray-800">{p.name}</h3>
+                                <h3 className="font-medium text-xs mb-0.5 line-clamp-2 text-foreground">{p.name}</h3>
                                 <div className="flex items-center gap-1 mb-0.5">
                                   <div className="flex">
                                     {[1, 2, 3, 4, 5].map((star) => (
                                       <Star key={star} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
                                     ))}
                                   </div>
-                                  <span className="text-[9px] text-gray-500">{p.rating || 4.5}</span>
+                                  <span className="text-[9px] text-muted-foreground">{p.rating || 4.5}</span>
                                 </div>
-                                <p className="text-sm font-bold" style={{ color: '#D4372B', fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
+                                <p
+                                  className="text-sm font-bold"
+                                  style={{ color: brandColor, fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.02em" }}
+                                >
                                   {formatPrice(p.priceUSD)}
                                 </p>
                               </a>
@@ -2725,18 +2790,11 @@ export default function ProductPage() {
                   </div>
 
                   <div className="hidden lg:block relative">
-                    <div 
-                      ref={relatedCarouselRef}
-                      className="overflow-x-auto overflow-y-hidden hide-scrollbar pb-4 scroll-smooth"
-                    >
+                    <div ref={relatedCarouselRef} className="overflow-x-auto overflow-y-hidden hide-scrollbar pb-4 scroll-smooth">
                       <div className="flex gap-4 w-max">
                         {relatedProducts.map((p) => (
-                          <a 
-                            key={p.id} 
-                            href={`/products/${p.id}`} 
-                            className="group w-[calc((1200px-4rem)/6-1rem)] min-w-[160px]"
-                          >
-                            <div className="bg-white rounded aspect-square mb-3 overflow-hidden border border-gray-100 shadow-sm group-hover:shadow transition-all">
+                          <a key={p.id} href={`/products/${p.id}`} className="group w-[calc((1200px-4rem)/6-1rem)] min-w-[160px]">
+                            <div className="bg-card rounded-xl aspect-square mb-3 overflow-hidden border border-border group-hover:border-foreground/20 transition-all">
                               <Image
                                 src={p.image || "/placeholder.svg"}
                                 alt={p.name}
@@ -2745,34 +2803,34 @@ export default function ProductPage() {
                                 className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform"
                               />
                             </div>
-                            <h3 className="font-medium text-xs mb-1 line-clamp-2 text-gray-800">{p.name}</h3>
+                            <h3 className="font-medium text-xs mb-1 line-clamp-2 text-foreground">{p.name}</h3>
                             <div className="flex items-center gap-1 mb-1">
                               <div className="flex">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                   <Star key={star} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
                                 ))}
                               </div>
-                              <span className="text-[10px] text-gray-500">{p.rating || 4.5}</span>
+                              <span className="text-[10px] text-muted-foreground">{p.rating || 4.5}</span>
                             </div>
-                            <p className="text-xs font-bold" style={{ color: '#D4372B' }}>
+                            <p className="text-xs font-bold" style={{ color: brandColor }}>
                               {formatPrice(p.priceUSD)}
                             </p>
                           </a>
                         ))}
                       </div>
                     </div>
-                    
-                    <button 
+
+                    <button
                       onClick={() => scrollRelated("left")}
-                      className="absolute left-0 top-1/3 -translate-y-1/2 -ml-4 w-7 h-7 bg-white rounded-full shadow-sm border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+                      className="absolute left-0 top-1/3 -translate-y-1/2 -ml-4 w-7 h-7 bg-background rounded-full shadow-sm border border-border flex items-center justify-center hover:bg-muted transition-colors z-10"
                     >
-                      <ChevronLeft className="w-3.5 h-3.5 text-gray-600" />
+                      <ChevronLeft className="w-3.5 h-3.5 text-muted-foreground" />
                     </button>
-                    <button 
+                    <button
                       onClick={() => scrollRelated("right")}
-                      className="absolute right-0 top-1/3 -translate-y-1/2 -mr-4 w-7 h-7 bg-white rounded-full shadow-sm border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors z-10"
+                      className="absolute right-0 top-1/3 -translate-y-1/2 -mr-4 w-7 h-7 bg-background rounded-full shadow-sm border border-border flex items-center justify-center hover:bg-muted transition-colors z-10"
                     >
-                      <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
+                      <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
                     </button>
                   </div>
                 </>
@@ -2785,13 +2843,18 @@ export default function ProductPage() {
       {/* MODAL DE SÉLECTION POUR VARIANTES SIMPLES */}
       {isSimpleVariantModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-end lg:items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-t-xl lg:rounded-xl w-full max-w-md overflow-hidden shadow-lg">
-            <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="bg-background rounded-t-2xl lg:rounded-2xl w-full max-w-md overflow-hidden shadow-xl border border-border"
+          >
+            <div className="sticky top-0 bg-background border-b border-border p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {attributeImages[`${simpleVariantType}:${selectedSimpleValue}`] && (
-                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-card">
                     <Image
-                      src={attributeImages[`${simpleVariantType}:${selectedSimpleValue}`]}
+                      src={attributeImages[`${simpleVariantType}:${selectedSimpleValue}`] || "/placeholder.svg"}
                       alt={selectedSimpleValue}
                       width={40}
                       height={40}
@@ -2800,46 +2863,44 @@ export default function ProductPage() {
                   </div>
                 )}
                 <div>
-                  <h3 className="text-base font-semibold text-gray-900">
+                  <h3 className="text-base font-semibold text-foreground">
                     {primaryAttrName} {selectedSimpleValue}
                   </h3>
-                  <p className="text-xs text-gray-500">
-                    Sélectionnez la quantité
-                  </p>
+                  <p className="text-xs text-muted-foreground">Sélectionnez la quantité</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setIsSimpleVariantModalOpen(false)}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-1 hover:bg-muted rounded-full transition-colors"
               >
-                <X className="w-5 h-5 text-gray-400" />
+                <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
 
             <div className="p-6">
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white rounded shadow-sm mb-4">
+              <div className="flex items-center justify-between p-4 bg-muted rounded-xl mb-4">
                 <span className="text-sm font-medium">Quantité</span>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={decrementSimpleModal}
                     disabled={simpleModalQuantity <= 0}
-                    className="w-10 h-10 border border-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:shadow-sm disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    className="w-10 h-10 border border-border rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
-                  <span className="w-12 text-center text-lg font-bold" style={{ color: '#D4372B' }}>
+                  <span className="w-12 text-center text-lg font-bold" style={{ color: brandColor }}>
                     {simpleModalQuantity}
                   </span>
                   <button
                     onClick={incrementSimpleModal}
-                    className="w-10 h-10 border border-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:shadow-sm transition-all"
+                    className="w-10 h-10 border border-border rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent transition-all"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
-              <div className="mt-4 p-3 rounded" style={{ background: '#0A0A0A' }}>
+              <div className="mt-4 p-3 rounded-xl" style={{ background: "#0A0A0A" }}>
                 <div className="flex justify-between text-sm font-medium text-white">
                   <span>Total sélectionné:</span>
                   <span>{simpleModalQuantity} article(s)</span>
@@ -2849,76 +2910,80 @@ export default function ProductPage() {
               <div className="flex gap-3 mt-4">
                 <button
                   onClick={() => setIsSimpleVariantModalOpen(false)}
-                  className="flex-1 py-3 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 hover:shadow-sm transition-all"
+                  className="flex-1 py-3 border border-border rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted transition-all"
                 >
                   Annuler
                 </button>
                 <button
                   onClick={confirmSimpleVariantSelection}
-                  className="flex-1 py-3 rounded text-sm font-medium text-white hover:shadow-md transition-all"
-                  style={{ background: "#D4372B" }}
+                  className="flex-1 py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
+                  style={{ background: brandColor }}
                 >
                   Confirmer
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
 
       {/* MODAL DE SÉLECTION POUR VARIANTES MULTIPLES */}
       {isVariantModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-end lg:items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-t-xl lg:rounded-xl w-full max-w-md max-h-[80vh] overflow-y-auto shadow-lg">
-            <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="bg-background rounded-t-2xl lg:rounded-2xl w-full max-w-md max-h-[80vh] overflow-y-auto shadow-xl border border-border"
+          >
+            <div className="sticky top-0 bg-background border-b border-border p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                {modalMode === 'primary' && modalPrimaryValue && attributeImages[`${Object.keys(attributeGroups)[0]}:${modalPrimaryValue}`] && (
-                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm">
-                    <Image
-                      src={attributeImages[`${Object.keys(attributeGroups)[0]}:${modalPrimaryValue}`]}
-                      alt={modalPrimaryValue}
-                      width={40}
-                      height={40}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
+                {modalMode === "primary" &&
+                  modalPrimaryValue &&
+                  attributeImages[`${Object.keys(attributeGroups)[0]}:${modalPrimaryValue}`] && (
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-card">
+                      <Image
+                        src={attributeImages[`${Object.keys(attributeGroups)[0]}:${modalPrimaryValue}`] || "/placeholder.svg"}
+                        alt={modalPrimaryValue}
+                        width={40}
+                        height={40}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
                 <div>
-                  <h3 className="text-base font-semibold text-gray-900">
-                    {modalMode === 'primary' 
+                  <h3 className="text-base font-semibold text-foreground">
+                    {modalMode === "primary"
                       ? `${primaryAttrName} ${modalPrimaryValue}`
-                      : `${modalAttrName} ${modalPrimaryValue}`
-                    }
+                      : `${modalAttrName} ${modalPrimaryValue}`}
                   </h3>
-                  <p className="text-xs text-gray-500">
-                    Sélectionnez les {modalMode === 'primary' ? secondaryAttrName.toLowerCase() + 's' : primaryAttrName.toLowerCase() + 's'}
+                  <p className="text-xs text-muted-foreground">
+                    Sélectionnez les{" "}
+                    {modalMode === "primary" ? secondaryAttrName.toLowerCase() + "s" : primaryAttrName.toLowerCase() + "s"}
                   </p>
                 </div>
               </div>
-              <button 
-                onClick={() => setIsVariantModalOpen(false)}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5 text-gray-400" />
+              <button onClick={() => setIsVariantModalOpen(false)} className="p-1 hover:bg-muted rounded-full transition-colors">
+                <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
 
             <div className="p-4 space-y-3">
               {modalSecondaryOptions.map((value) => (
-                <div key={value} className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-white rounded shadow-sm">
+                <div key={value} className="flex items-center justify-between p-3 bg-muted rounded-xl">
                   <span className="text-sm font-medium">{value}</span>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => removeModalQuantity(value)}
                       disabled={!modalQuantities[value]}
-                      className="w-8 h-8 border border-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:shadow-sm disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                      className="w-8 h-8 border border-border rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                     >
                       <Minus className="w-3 h-3" />
                     </button>
                     <span className="w-8 text-center text-sm font-medium">{modalQuantities[value] || 0}</span>
                     <button
                       onClick={() => addModalQuantity(value)}
-                      className="w-8 h-8 border border-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:shadow-sm transition-all"
+                      className="w-8 h-8 border border-border rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent transition-all"
                     >
                       <Plus className="w-3 h-3" />
                     </button>
@@ -2926,95 +2991,96 @@ export default function ProductPage() {
                 </div>
               ))}
 
-              <div className="mt-4 p-3 rounded" style={{ background: '#0A0A0A' }}>
+              <div className="mt-4 p-3 rounded-xl" style={{ background: "#0A0A0A" }}>
                 <div className="flex justify-between text-sm font-medium text-white">
                   <span>Total sélectionné:</span>
-                  <span>
-                    {Object.values(modalQuantities).reduce((a, b) => a + b, 0)} articles
-                  </span>
+                  <span>{Object.values(modalQuantities).reduce((a, b) => a + b, 0)} articles</span>
                 </div>
               </div>
 
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setIsVariantModalOpen(false)}
-                  className="flex-1 py-3 border border-gray-200 rounded text-sm font-medium text-gray-600 hover:bg-gray-50 hover:shadow-sm transition-all"
+                  className="flex-1 py-3 border border-border rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted transition-all"
                 >
                   Annuler
                 </button>
                 <button
                   onClick={confirmModalSelection}
-                  className="flex-1 py-3 rounded text-sm font-medium text-white hover:shadow-md transition-all"
-                  style={{ background: "#D4372B" }}
+                  className="flex-1 py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
+                  style={{ background: brandColor }}
                 >
                   Confirmer
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
 
       {/* MODAL PROTECTION ADULLAM */}
       {isProtectionModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-lg">
-            <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="bg-background rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl border border-border"
+          >
+            <div className="sticky top-0 bg-background border-b border-border p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5" style={{ color: '#D4372B' }} />
-                <h3 className="text-base font-semibold text-gray-900">Protection des achats Adullam</h3>
+                <Shield className="w-5 h-5" style={{ color: brandColor }} />
+                <h3 className="text-base font-semibold text-foreground">Protection des achats Adullam</h3>
               </div>
-              <button 
+              <button
                 onClick={() => setIsProtectionModalOpen(false)}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-1 hover:bg-muted rounded-full transition-colors"
               >
-                <X className="w-5 h-5 text-gray-400" />
+                <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
 
             <div className="p-6 space-y-6">
               <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-3">Moyens de paiement acceptés</h4>
+                <h4 className="text-sm font-semibold text-foreground mb-3">Moyens de paiement acceptés</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded p-3 text-center shadow-sm">
-                    <Smartphone className="w-5 h-5 text-gray-600 mx-auto mb-1" />
-                    <p className="text-xs font-medium text-gray-700">MTN Money</p>
+                  <div className="bg-muted border border-border rounded-xl p-3 text-center">
+                    <Smartphone className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
+                    <p className="text-xs font-medium text-foreground">MTN Money</p>
                   </div>
-                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded p-3 text-center shadow-sm">
-                    <Smartphone className="w-5 h-5 text-gray-600 mx-auto mb-1" />
-                    <p className="text-xs font-medium text-gray-700">Orange Money</p>
+                  <div className="bg-muted border border-border rounded-xl p-3 text-center">
+                    <Smartphone className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
+                    <p className="text-xs font-medium text-foreground">Orange Money</p>
                   </div>
-                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded p-3 text-center shadow-sm">
-                    <CreditCard className="w-5 h-5 text-gray-600 mx-auto mb-1" />
-                    <p className="text-xs font-medium text-gray-700">Wave</p>
+                  <div className="bg-muted border border-border rounded-xl p-3 text-center">
+                    <CreditCard className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
+                    <p className="text-xs font-medium text-foreground">Wave</p>
                   </div>
-                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded p-3 text-center shadow-sm">
-                    <CreditCard className="w-5 h-5 text-gray-600 mx-auto mb-1" />
-                    <p className="text-xs font-medium text-gray-700">Visa/Mastercard</p>
+                  <div className="bg-muted border border-border rounded-xl p-3 text-center">
+                    <CreditCard className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
+                    <p className="text-xs font-medium text-foreground">Visa/Mastercard</p>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-3">Protection de votre commande</h4>
+                <h4 className="text-sm font-semibold text-foreground mb-3">Protection de votre commande</h4>
                 <div className="space-y-3">
-                  <div className="bg-gradient-to-r from-gray-50 to-white rounded p-4 shadow-sm">
-                    <p className="text-sm font-medium text-gray-900 mb-1">Paiements sécurisés</p>
-                    <p className="text-sm text-gray-600">
-                      Chaque transaction est protégée par un cryptage SSL strict.
-                    </p>
+                  <div className="bg-muted rounded-xl p-4">
+                    <p className="text-sm font-medium text-foreground mb-1">Paiements sécurisés</p>
+                    <p className="text-sm text-muted-foreground">Chaque transaction est protégée par un cryptage SSL strict.</p>
                   </div>
-                  
-                  <div className="bg-gradient-to-r from-gray-50 to-white rounded p-4 shadow-sm">
-                    <p className="text-sm font-medium text-gray-900 mb-1">Garantie remboursement</p>
-                    <p className="text-sm text-gray-600">
-                      Obtenez un remboursement si votre commande n'est pas expédiée.
+
+                  <div className="bg-muted rounded-xl p-4">
+                    <p className="text-sm font-medium text-foreground mb-1">Garantie remboursement</p>
+                    <p className="text-sm text-muted-foreground">
+                      Obtenez un remboursement si votre commande n&apos;est pas expédiée.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
 
