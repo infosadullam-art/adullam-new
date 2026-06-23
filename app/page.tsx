@@ -112,15 +112,11 @@ export default function Home() {
             <HeroSection />
           </AnimatedSection>
 
-          <div className="h-3" />
-
           <AnimatedSection delay={100}>
-            <div className="px-4 py-3">
+            <div className="px-4 py-2">
               <DealCountdown />
             </div>
           </AnimatedSection>
-
-          <div className="h-3" />
 
           <AnimatedSection delay={200}>
             {showPriority2 && (
@@ -128,15 +124,11 @@ export default function Home() {
             )}
           </AnimatedSection>
 
-          <div className="h-3" />
-
           <AnimatedSection delay={300}>
             {showPriority3 && (
               <ModeSection />
             )}
           </AnimatedSection>
-
-          <div className="h-3" />
 
           <AnimatedSection delay={400}>
             {showPriority4 && (
@@ -144,15 +136,11 @@ export default function Home() {
             )}
           </AnimatedSection>
 
-          <div className="h-3" />
-
           <AnimatedSection delay={500}>
             {showPriority5 && (
               <ForYouSection />
             )}
           </AnimatedSection>
-
-          <div className="h-3" />
         </main>
 
         <Footer />
@@ -174,8 +162,6 @@ export default function Home() {
             </div>
           </AnimatedSection>
 
-          <div className="h-10" />
-
           <AnimatedSection delay={100}>
             <div className="w-full px-4 sm:px-6 lg:px-8">
               <div className="max-w-7xl mx-auto">
@@ -183,8 +169,6 @@ export default function Home() {
               </div>
             </div>
           </AnimatedSection>
-
-          <div className="h-14" />
 
           <AnimatedSection delay={200}>
             {showPriority2 && (
@@ -196,8 +180,6 @@ export default function Home() {
             )}
           </AnimatedSection>
 
-          <div className="h-14" />
-
           <AnimatedSection delay={300}>
             {showPriority3 && (
               <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -207,8 +189,6 @@ export default function Home() {
               </div>
             )}
           </AnimatedSection>
-
-          <div className="h-14" />
 
           <AnimatedSection delay={400}>
             {showPriority4 && (
@@ -220,8 +200,6 @@ export default function Home() {
             )}
           </AnimatedSection>
 
-          <div className="h-14" />
-
           <AnimatedSection delay={500}>
             {showPriority5 && (
               <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -231,8 +209,6 @@ export default function Home() {
               </div>
             )}
           </AnimatedSection>
-
-          <div className="h-16" />
         </main>
 
         <Footer />
