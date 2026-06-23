@@ -174,16 +174,20 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const speechSynthRef  = useRef<SpeechSynthesis | null>(null)
 
   // 🖱️ Déplacement (drag) façon Messenger
-  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null)
+  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null)     // fenêtre (desktop)
+  const [bubblePos, setBubblePos] = useState<{ x: number; y: number } | null>(null) // bulle flottante
   const [isDragging, setIsDragging] = useState(false)
+  const [snapAnimating, setSnapAnimating] = useState(false) // animation d'accroche au bord
   const dragStateRef = useRef<{
     startX: number
     startY: number
     originX: number
     originY: number
     moved: boolean
+    mode: 'window' | 'bubble'
   } | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const bubbleRef = useRef<HTMLButtonElement>(null)
 
   // ⌨️ Hauteur clavier (visualViewport) façon Messenger
   const [keyboardInset, setKeyboardInset] = useState(0)
@@ -256,14 +260,15 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
-  // 🖱️ Déplacement de la fenêtre (souris + tactile)
+  // 🖱️ Déplacement fluide (fenêtre OU bulle) — souris + tactile
   useEffect(() => {
     if (!isDragging) return
 
-    const clamp = (x: number, y: number) => {
-      const el = containerRef.current
-      const w = el?.offsetWidth ?? 380
-      const h = el?.offsetHeight ?? 540
+    const bubbleSize = isMobile ? 48 : 56
+    const clamp = (x: number, y: number, mode: 'window' | 'bubble') => {
+      const el = mode === 'bubble' ? bubbleRef.current : containerRef.current
+      const w = el?.offsetWidth ?? (mode === 'bubble' ? bubbleSize : 380)
+      const h = el?.offsetHeight ?? (mode === 'bubble' ? bubbleSize : 540)
       const maxX = window.innerWidth - w - 8
       const maxY = window.innerHeight - h - 8
       return {
@@ -278,7 +283,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       const dx = clientX - s.startX
       const dy = clientY - s.startY
       if (Math.abs(dx) > 4 || Math.abs(dy) > 4) s.moved = true
-      setDragPos(clamp(s.originX + dx, s.originY + dy))
+      const pos = clamp(s.originX + dx, s.originY + dy, s.mode)
+      if (s.mode === 'bubble') setBubblePos(pos)
+      else setDragPos(pos)
     }
 
     const onMouseMove = (e: MouseEvent) => onMove(e.clientX, e.clientY)
@@ -288,7 +295,25 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         e.preventDefault()
       }
     }
-    const onEnd = () => setIsDragging(false)
+
+    const onEnd = () => {
+      const s = dragStateRef.current
+      // 🧲 Accroche au bord le plus proche (façon Messenger) pour la bulle
+      if (s?.mode === 'bubble' && s.moved) {
+        const el = bubbleRef.current
+        const w = el?.offsetWidth ?? bubbleSize
+        setBubblePos(prev => {
+          if (!prev) return prev
+          const center = prev.x + w / 2
+          const snapLeft = 12
+          const snapRight = window.innerWidth - w - 12
+          return { x: center < window.innerWidth / 2 ? snapLeft : snapRight, y: prev.y }
+        })
+        setSnapAnimating(true)
+        window.setTimeout(() => setSnapAnimating(false), 320)
+      }
+      setIsDragging(false)
+    }
 
     window.addEventListener('mousemove', onMouseMove)
     window.addEventListener('mouseup', onEnd)
@@ -300,11 +325,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       window.removeEventListener('touchmove', onTouchMove)
       window.removeEventListener('touchend', onEnd)
     }
-  }, [isDragging])
+  }, [isDragging, isMobile])
 
-  // Démarrage du drag depuis l'en-tête
-  const startDrag = useCallback((clientX: number, clientY: number) => {
-    const el = containerRef.current
+  // Démarrage du drag (en-tête de fenêtre ou bulle)
+  const startDrag = useCallback((clientX: number, clientY: number, mode: 'window' | 'bubble') => {
+    const el = mode === 'bubble' ? bubbleRef.current : containerRef.current
     const rect = el?.getBoundingClientRect()
     dragStateRef.current = {
       startX: clientX,
@@ -312,6 +337,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       originX: rect?.left ?? 0,
       originY: rect?.top ?? 0,
       moved: false,
+      mode,
     }
     setIsDragging(true)
   }, [])
@@ -920,17 +946,28 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const widgetWidth = isMobile ? 'calc(100vw - 24px)' : '380px'
   const widgetHeight = isMobile ? '500px' : '540px'
 
-  // Positionnement : ancré en bas-droite par défaut, ou libre si déplacé (drag).
-  // Le clavier (keyboardInset) pousse la fenêtre vers le haut SANS réduire sa hauteur.
-  const positionStyle: React.CSSProperties = dragPos
-    ? {
-        top: Math.max(8, dragPos.y - keyboardInset),
-        left: dragPos.x,
-      }
-    : {
-        bottom: bottomPosition + keyboardInset,
-        right: rightPosition,
-      }
+  // Positionnement de la fenêtre :
+  // - Mobile ouvert : ancré entre le haut et juste au-dessus du clavier (top + bottom),
+  //   la fenêtre occupe la zone visible → l'input reste toujours visible, rien n'est coupé.
+  // - Mobile réduit : barre en bas.
+  // - Desktop : bas-droite, ou position libre si déplacée (drag).
+  let positionStyle: React.CSSProperties
+  let heightStyle: React.CSSProperties
+  if (isMobile) {
+    if (isMinimized) {
+      positionStyle = { bottom: bottomPosition, left: 12, right: 12 }
+      heightStyle = { height: '52px', maxHeight: '52px' }
+    } else {
+      positionStyle = { top: 8, left: 12, right: 12, bottom: keyboardInset + 8 }
+      heightStyle = { height: 'auto' } // top + bottom définissent la hauteur visible
+    }
+  } else if (dragPos) {
+    positionStyle = { top: dragPos.y, left: dragPos.x }
+    heightStyle = { height: isMinimized ? '52px' : widgetHeight, maxHeight: 'calc(100vh - 48px)' }
+  } else {
+    positionStyle = { bottom: bottomPosition, right: rightPosition }
+    heightStyle = { height: isMinimized ? '52px' : widgetHeight, maxHeight: 'calc(100vh - 48px)' }
+  }
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -1048,33 +1085,45 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
       {!isOpen && (
         <button
-          onClick={openChat}
-          aria-label="Ouvrir Adu, votre vendeur"
+          ref={bubbleRef}
+          onClick={() => {
+            // Ouvre le chat seulement si on n'a pas déplacé la bulle
+            if (dragStateRef.current?.mode === 'bubble' && dragStateRef.current?.moved) return
+            openChat()
+          }}
+          onMouseDown={e => startDrag(e.clientX, e.clientY, 'bubble')}
+          onTouchStart={e => {
+            const t = e.touches[0]
+            if (t) startDrag(t.clientX, t.clientY, 'bubble')
+          }}
+          aria-label="Ouvrir Adu, votre vendeur (déplaçable)"
           style={{
             position: 'fixed',
-            bottom: bottomPosition,
-            right: rightPosition,
+            ...(bubblePos
+              ? { top: bubblePos.y, left: bubblePos.x }
+              : { bottom: bottomPosition, right: rightPosition }),
             width: buttonSize,
             height: buttonSize,
             borderRadius: '50%',
             background: '#D4372B',
             border: 'none',
-            cursor: 'pointer',
+            cursor: isDragging && dragStateRef.current?.mode === 'bubble' ? 'grabbing' : 'grab',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 8px 28px rgba(212,55,43,0.45), 0 2px 8px rgba(0,0,0,0.12)',
+            boxShadow: isDragging && dragStateRef.current?.mode === 'bubble'
+              ? '0 16px 40px rgba(212,55,43,0.55), 0 4px 12px rgba(0,0,0,0.18)'
+              : '0 8px 28px rgba(212,55,43,0.45), 0 2px 8px rgba(0,0,0,0.12)',
             zIndex: 1000,
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+            // Suivi 1:1 pendant le drag, accroche animée au relâcher, sinon micro-anim
+            transition: isDragging && dragStateRef.current?.mode === 'bubble'
+              ? 'box-shadow 0.15s ease'
+              : snapAnimating
+                ? 'left 0.3s cubic-bezier(0.22,1,0.36,1), top 0.3s cubic-bezier(0.22,1,0.36,1), transform 0.2s ease, box-shadow 0.2s ease'
+                : 'transform 0.2s ease, box-shadow 0.2s ease',
+            transform: isDragging && dragStateRef.current?.mode === 'bubble' ? 'scale(1.08)' : 'scale(1)',
+            touchAction: 'none',
             fontSize: buttonFontSize,
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.transform = 'scale(1.06)'
-            e.currentTarget.style.boxShadow = '0 12px 32px rgba(212,55,43,0.55), 0 2px 8px rgba(0,0,0,0.14)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.transform = 'scale(1)'
-            e.currentTarget.style.boxShadow = '0 8px 28px rgba(212,55,43,0.45), 0 2px 8px rgba(0,0,0,0.12)'
           }}
         >
           <BotIcon size={isMobile ? 24 : 28} />
@@ -1142,12 +1191,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           style={{
             position: 'fixed',
             ...positionStyle,
+            ...heightStyle,
             width: widgetWidth,
             maxWidth: 'calc(100vw - 32px)',
-            height: isMinimized ? '52px' : widgetHeight,
-            // La hauteur est conservée (façon Messenger) : on ne la réduit pas
-            // quand le clavier s'ouvre, on remonte juste la fenêtre.
-            maxHeight: `calc(100vh - ${48 + keyboardInset}px)`,
             background: '#fff',
             borderRadius: '16px',
             boxShadow: '0 12px 48px rgba(0,0,0,0.22)',
@@ -1169,19 +1215,21 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               gap: '10px',
               padding: '12px 14px',
               background: '#D4372B',
-              cursor: isDragging ? 'grabbing' : 'grab',
+              cursor: isMobile ? 'pointer' : (isDragging ? 'grabbing' : 'grab'),
               flexShrink: 0,
-              touchAction: 'none',
+              touchAction: isMobile ? 'auto' : 'none',
             }}
             onMouseDown={e => {
-              // Ne pas démarrer le drag depuis les boutons d'action
+              // Déplacement de la fenêtre réservé au desktop (sur mobile elle est ancrée)
+              if (isMobile) return
               if ((e.target as HTMLElement).closest('button')) return
-              startDrag(e.clientX, e.clientY)
+              startDrag(e.clientX, e.clientY, 'window')
             }}
             onTouchStart={e => {
+              if (isMobile) return
               if ((e.target as HTMLElement).closest('button')) return
               const t = e.touches[0]
-              if (t) startDrag(t.clientX, t.clientY)
+              if (t) startDrag(t.clientX, t.clientY, 'window')
             }}
             onClick={() => {
               // Clic = réduire/agrandir, mais seulement si on n'a pas déplacé
