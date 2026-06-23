@@ -316,71 +316,78 @@ export function DealCountdown() {
       </div>
 
       {/* ══ BLOCS PRODUITS ════════════════════════════════════════ */}
-      <div className="mx-auto max-w-6xl px-4 py-4 lg:px-8">
-        {/* MOBILE */}
-        <div className="grid grid-cols-2 gap-2 lg:hidden">
-          <div
-            className="rounded-md border border-[#ECECEC] bg-white p-2 transition-all duration-1000 ease-in-out"
-            style={{
-              animation: "pulseBlock 8s ease-in-out infinite",
-            }}
-          >
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0A0A0A]">
-                <Sparkles className="h-3 w-3 text-[#D4372B]" strokeWidth={2.25} />
-                Sélection
-              </h3>
-              <span className="rounded-full bg-[#D4372B] px-1.5 py-0.5 text-[8px] font-bold text-white">Nouveau</span>
-            </div>
-            <motion.div
-              variants={containerStagger}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, margin: "-40px" }}
-              className="grid grid-cols-2 gap-1.5"
+      {/* MOBILE - full width sans padding */}
+      <div className="mx-auto max-w-6xl lg:px-8">
+        {/* MOBILE - full width */}
+        <div className="lg:hidden">
+          <div className="grid grid-cols-2 gap-2 p-2">
+            <div
+              className="rounded-md border border-[#ECECEC] bg-white transition-all duration-1000 ease-in-out"
+              style={{
+                animation: "pulseBlock 8s ease-in-out infinite",
+              }}
             >
-              {featuredProducts.slice(0, 4).map((p) => (
-                <motion.div key={p.id} variants={itemRise}>
-                  <ProductCard product={p} hideName />
+              <div className="p-2">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0A0A0A]">
+                    <Sparkles className="h-3 w-3 text-[#D4372B]" strokeWidth={2.25} />
+                    Sélection
+                  </h3>
+                  <span className="rounded-full bg-[#D4372B] px-1.5 py-0.5 text-[8px] font-bold text-white">Nouveau</span>
+                </div>
+                <motion.div
+                  variants={containerStagger}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, margin: "-40px" }}
+                  className="grid grid-cols-2 gap-1.5"
+                >
+                  {featuredProducts.slice(0, 4).map((p) => (
+                    <motion.div key={p.id} variants={itemRise}>
+                      <ProductCard product={p} hideName />
+                    </motion.div>
+                  ))}
                 </motion.div>
-              ))}
-            </motion.div>
-          </div>
+              </div>
+            </div>
 
-          <div
-            className="rounded-md border border-[#ECECEC] bg-white p-2 transition-all duration-1000 ease-in-out"
-            style={{
-              animation: "pulseBlock 8s ease-in-out infinite",
-              animationDelay: "2s",
-            }}
-          >
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0A0A0A]">
-                <Flame className="h-3 w-3 text-[#D4372B]" strokeWidth={2.25} />
-                Best-sellers
-              </h3>
-              <span className="rounded-full bg-[#D4372B]/10 px-1.5 py-0.5 text-[8px] font-bold text-[#D4372B]">
-                Top ventes
-              </span>
-            </div>
-            <motion.div
-              variants={containerStagger}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, margin: "-40px" }}
-              className="grid grid-cols-2 gap-1.5"
+            <div
+              className="rounded-md border border-[#ECECEC] bg-white transition-all duration-1000 ease-in-out"
+              style={{
+                animation: "pulseBlock 8s ease-in-out infinite",
+                animationDelay: "2s",
+              }}
             >
-              {bestSellers.slice(0, 4).map((p) => (
-                <motion.div key={p.id} variants={itemRise}>
-                  <ProductCard product={p} hideName />
+              <div className="p-2">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0A0A0A]">
+                    <Flame className="h-3 w-3 text-[#D4372B]" strokeWidth={2.25} />
+                    Best-sellers
+                  </h3>
+                  <span className="rounded-full bg-[#D4372B]/10 px-1.5 py-0.5 text-[8px] font-bold text-[#D4372B]">
+                    Top ventes
+                  </span>
+                </div>
+                <motion.div
+                  variants={containerStagger}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, margin: "-40px" }}
+                  className="grid grid-cols-2 gap-1.5"
+                >
+                  {bestSellers.slice(0, 4).map((p) => (
+                    <motion.div key={p.id} variants={itemRise}>
+                      <ProductCard product={p} hideName />
+                    </motion.div>
+                  ))}
                 </motion.div>
-              ))}
-            </motion.div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* DESKTOP */}
-        <div className="hidden gap-3 lg:grid lg:grid-cols-2">
+        {/* DESKTOP - avec padding */}
+        <div className="hidden gap-3 lg:grid lg:grid-cols-2 lg:p-4">
           <div
             className="rounded-md border border-[#ECECEC] bg-white p-4 transition-all duration-1000 ease-in-out"
             style={{
