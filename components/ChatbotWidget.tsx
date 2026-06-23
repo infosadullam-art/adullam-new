@@ -11,6 +11,72 @@ import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useLocale } from "@/context/LocaleProvider"
 
 // ============================================================
+// ICÔNES PRO (SVG inline, aucune dépendance)
+// ============================================================
+
+function BotIcon({ size = 22, color = "#fff" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="4" y="8" width="16" height="11" rx="4" stroke={color} strokeWidth="1.8" />
+      <path d="M12 4v4" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+      <circle cx="12" cy="3.2" r="1.4" fill={color} />
+      <circle cx="9" cy="13.5" r="1.3" fill={color} />
+      <circle cx="15" cy="13.5" r="1.3" fill={color} />
+      <path d="M9.5 16.5h5" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M4 12H2.6M20 12h1.4" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function SendIcon({ size = 16, color = "#fff" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 12l16-7-7 16-2.5-6.5L4 12z" stroke={color} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function MicIcon({ size = 16, color = "#fff", active = false }: { size?: number; color?: string; active?: boolean }) {
+  if (active) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="7" y="7" width="10" height="10" rx="2" fill={color} />
+      </svg>
+    )
+  }
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="9" y="3" width="6" height="11" rx="3" stroke={color} strokeWidth="1.8" />
+      <path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function CloseIcon({ size = 16, color = "#fff" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M6 6l12 12M18 6L6 18" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function ChevronIcon({ size = 16, color = "#fff", up = false }: { size?: number; color?: string; up?: boolean }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ transform: up ? "rotate(180deg)" : "none" }}>
+      <path d="M6 9l6 6 6-6" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function StopIcon({ size = 14, color = "#fff" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="6" y="6" width="12" height="12" rx="2" fill={color} />
+    </svg>
+  )
+}
+
+// ============================================================
 // TYPES
 // ============================================================
 
@@ -107,6 +173,21 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const recognitionRef  = useRef<any>(null)
   const speechSynthRef  = useRef<SpeechSynthesis | null>(null)
 
+  // 🖱️ Déplacement (drag) façon Messenger
+  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const dragStateRef = useRef<{
+    startX: number
+    startY: number
+    originX: number
+    originY: number
+    moved: boolean
+  } | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // ⌨️ Hauteur clavier (visualViewport) façon Messenger
+  const [keyboardInset, setKeyboardInset] = useState(0)
+
   // ============================================================
   // HOOKS & EFFETS
   // ============================================================
@@ -151,6 +232,88 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       window.removeEventListener('scroll', trackActivity)
       window.removeEventListener('click', trackActivity)
     }
+  }, [])
+
+  // ⌨️ Gestion clavier mobile (façon Messenger : la fenêtre reste ancrée
+  // au-dessus du clavier et CONSERVE sa hauteur au lieu d'être écrasée)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return
+    const vv = window.visualViewport
+
+    const handleViewport = () => {
+      // Hauteur "mangée" par le clavier = différence entre la fenêtre
+      // et le viewport visible (+ décalage de scroll éventuel)
+      const inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
+      setKeyboardInset(inset > 80 ? inset : 0) // seuil pour ignorer les barres natives
+    }
+
+    vv.addEventListener('resize', handleViewport)
+    vv.addEventListener('scroll', handleViewport)
+    handleViewport()
+    return () => {
+      vv.removeEventListener('resize', handleViewport)
+      vv.removeEventListener('scroll', handleViewport)
+    }
+  }, [])
+
+  // 🖱️ Déplacement de la fenêtre (souris + tactile)
+  useEffect(() => {
+    if (!isDragging) return
+
+    const clamp = (x: number, y: number) => {
+      const el = containerRef.current
+      const w = el?.offsetWidth ?? 380
+      const h = el?.offsetHeight ?? 540
+      const maxX = window.innerWidth - w - 8
+      const maxY = window.innerHeight - h - 8
+      return {
+        x: Math.min(Math.max(8, x), Math.max(8, maxX)),
+        y: Math.min(Math.max(8, y), Math.max(8, maxY)),
+      }
+    }
+
+    const onMove = (clientX: number, clientY: number) => {
+      const s = dragStateRef.current
+      if (!s) return
+      const dx = clientX - s.startX
+      const dy = clientY - s.startY
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) s.moved = true
+      setDragPos(clamp(s.originX + dx, s.originY + dy))
+    }
+
+    const onMouseMove = (e: MouseEvent) => onMove(e.clientX, e.clientY)
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches[0]) {
+        onMove(e.touches[0].clientX, e.touches[0].clientY)
+        e.preventDefault()
+      }
+    }
+    const onEnd = () => setIsDragging(false)
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onEnd)
+    window.addEventListener('touchmove', onTouchMove, { passive: false })
+    window.addEventListener('touchend', onEnd)
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onEnd)
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('touchend', onEnd)
+    }
+  }, [isDragging])
+
+  // Démarrage du drag depuis l'en-tête
+  const startDrag = useCallback((clientX: number, clientY: number) => {
+    const el = containerRef.current
+    const rect = el?.getBoundingClientRect()
+    dragStateRef.current = {
+      startX: clientX,
+      startY: clientY,
+      originX: rect?.left ?? 0,
+      originY: rect?.top ?? 0,
+      moved: false,
+    }
+    setIsDragging(true)
   }, [])
 
   // Compte à rebours offre
@@ -757,6 +920,18 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const widgetWidth = isMobile ? 'calc(100vw - 24px)' : '380px'
   const widgetHeight = isMobile ? '500px' : '540px'
 
+  // Positionnement : ancré en bas-droite par défaut, ou libre si déplacé (drag).
+  // Le clavier (keyboardInset) pousse la fenêtre vers le haut SANS réduire sa hauteur.
+  const positionStyle: React.CSSProperties = dragPos
+    ? {
+        top: Math.max(8, dragPos.y - keyboardInset),
+        left: dragPos.x,
+      }
+    : {
+        bottom: bottomPosition + keyboardInset,
+        right: rightPosition,
+      }
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -888,15 +1063,21 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 20px rgba(212,55,43,0.4)',
+            boxShadow: '0 8px 28px rgba(212,55,43,0.45), 0 2px 8px rgba(0,0,0,0.12)',
             zIndex: 1000,
-            transition: 'transform 0.2s ease',
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
             fontSize: buttonFontSize,
           }}
-          onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
-          onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+          onMouseEnter={e => {
+            e.currentTarget.style.transform = 'scale(1.06)'
+            e.currentTarget.style.boxShadow = '0 12px 32px rgba(212,55,43,0.55), 0 2px 8px rgba(0,0,0,0.14)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.boxShadow = '0 8px 28px rgba(212,55,43,0.45), 0 2px 8px rgba(0,0,0,0.12)'
+          }}
         >
-          🤖
+          <BotIcon size={isMobile ? 24 : 28} />
           {hasUnread && (
             <span style={{
               position: 'absolute',
@@ -956,24 +1137,29 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
       {isOpen && (
         <div
+          ref={containerRef}
           className="chatbot-container"
           style={{
             position: 'fixed',
-            bottom: bottomPosition,
-            right: rightPosition,
+            ...positionStyle,
             width: widgetWidth,
             maxWidth: 'calc(100vw - 32px)',
             height: isMinimized ? '52px' : widgetHeight,
-            maxHeight: 'calc(100vh - 48px)',
+            // La hauteur est conservée (façon Messenger) : on ne la réduit pas
+            // quand le clavier s'ouvre, on remonte juste la fenêtre.
+            maxHeight: `calc(100vh - ${48 + keyboardInset}px)`,
             background: '#fff',
             borderRadius: '16px',
-            boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
+            boxShadow: '0 12px 48px rgba(0,0,0,0.22)',
             zIndex: 1000,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
             fontFamily: "'Poppins', sans-serif",
-            transition: 'height 0.3s ease',
+            // Pas de transition pendant le drag pour un suivi 1:1 du curseur
+            transition: isDragging ? 'none' : 'height 0.3s ease, bottom 0.25s ease',
+            touchAction: isDragging ? 'none' : 'auto',
+            userSelect: isDragging ? 'none' : 'auto',
           }}
         >
           <div
@@ -983,21 +1169,38 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               gap: '10px',
               padding: '12px 14px',
               background: '#D4372B',
-              cursor: 'pointer',
+              cursor: isDragging ? 'grabbing' : 'grab',
               flexShrink: 0,
+              touchAction: 'none',
             }}
-            onClick={() => setIsMinimized(!isMinimized)}
+            onMouseDown={e => {
+              // Ne pas démarrer le drag depuis les boutons d'action
+              if ((e.target as HTMLElement).closest('button')) return
+              startDrag(e.clientX, e.clientY)
+            }}
+            onTouchStart={e => {
+              if ((e.target as HTMLElement).closest('button')) return
+              const t = e.touches[0]
+              if (t) startDrag(t.clientX, t.clientY)
+            }}
+            onClick={() => {
+              // Clic = réduire/agrandir, mais seulement si on n'a pas déplacé
+              if (dragStateRef.current?.moved) return
+              setIsMinimized(!isMinimized)
+            }}
           >
             <div style={{
-              width: '32px',
-              height: '32px',
+              width: '34px',
+              height: '34px',
               borderRadius: '50%',
-              background: 'rgba(255,255,255,0.2)',
+              background: 'rgba(255,255,255,0.18)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '16px',
-            }}>🤖</div>
+              flexShrink: 0,
+            }}>
+              <BotIcon size={20} />
+            </div>
             <div style={{ flex: 1 }}>
               <p style={{ margin: 0, color: '#fff', fontWeight: 700, fontSize: '13px' }}>
                 Adu {isSpeaking && '🔊'}
@@ -1006,26 +1209,29 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 {isRecording ? '🎤 Écoute...' : 'Votre vendeur Adullam'}
               </p>
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '4px' }}>
               {isSpeaking && (
                 <button
                   onClick={(e) => { e.stopPropagation(); stopSpeaking() }}
-                  style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '14px', padding: '2px' }}
+                  aria-label="Arrêter la voix"
+                  style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}
                 >
-                  ⏹
+                  <StopIcon size={14} />
                 </button>
               )}
               <button
                 onClick={e => { e.stopPropagation(); setIsMinimized(!isMinimized) }}
-                style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '16px', padding: '2px' }}
+                aria-label={isMinimized ? "Agrandir" : "Réduire"}
+                style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}
               >
-                {isMinimized ? '▲' : '▼'}
+                <ChevronIcon size={16} up={isMinimized} />
               </button>
               <button
                 onClick={e => { e.stopPropagation(); setIsOpen(false) }}
-                style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '16px', padding: '2px' }}
+                aria-label="Fermer"
+                style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}
               >
-                ✕
+                <CloseIcon size={16} />
               </button>
             </div>
           </div>
@@ -1065,7 +1271,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0,
-                      }}>🤖</div>
+                      }}><BotIcon size={isMobile ? 12 : 14} color="#D4372B" /></div>
                     )}
                     <div style={{
                       maxWidth: isMobile ? '85%' : '78%',
@@ -1237,7 +1443,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                    }}>🤖</div>
+                    }}><BotIcon size={isMobile ? 12 : 14} color="#D4372B" /></div>
                     <div style={{
                       padding: '6px 12px',
                       background: '#F5F5F5',
@@ -1309,7 +1515,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                       boxShadow: isRecording ? '0 0 20px rgba(230,119,0,0.3)' : 'none',
                     }}
                   >
-                    {isRecording ? '⏹' : '🎤'}
+                    <MicIcon size={isMobile ? 14 : 16} color={isRecording ? '#fff' : '#5A5A5A'} active={isRecording} />
                   </button>
                 )}
                 
@@ -1331,7 +1537,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                     transition: 'background 0.2s',
                   }}
                 >
-                  ➤
+                  <SendIcon size={isMobile ? 14 : 16} color={input.trim() && !isTyping ? '#fff' : '#9A9A9A'} />
                 </button>
               </div>
             </>
