@@ -253,9 +253,9 @@ export function ModeSection() {
         </div>
       )}
 
-      {/* ── BANNIÈRE PROMO ─────────────────────────────────────── */}
-      <div className="mx-4 my-3 overflow-hidden transition-all duration-300 hover:shadow-md" style={{ background: "#0A0A0A", borderRadius: "6px" }}>
-        <div className="flex items-center justify-between px-3 py-2 gap-2">
+      {/* ── BANNIÈRE PROMO FULL WIDTH ─────────────────────────── */}
+      <div className="mx-0 my-3 overflow-hidden transition-all duration-300 hover:shadow-md" style={{ background: "#0A0A0A", borderRadius: "0px" }}>
+        <div className="flex items-center justify-between px-4 py-3 gap-2">
           <div>
             <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont, textTransform: "uppercase", letterSpacing: "0.06em" }}>Première commande</p>
             <p style={{ fontSize: "12px", fontWeight: 700, color: "#fff", fontFamily: amazonFont }}>-10% de réduction</p>
