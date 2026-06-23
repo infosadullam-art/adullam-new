@@ -7,7 +7,6 @@ import Link from "next/link"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { apiFetch } from "@/lib/api"
 
-// Types
 interface Product {
   id: string
   name: string
@@ -34,22 +33,17 @@ interface FlashSaleData {
   }
 }
 
+const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+
 export function DealCountdown() {
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 })
   const [hasFlashSale, setHasFlashSale] = useState(false)
-  const [flashSaleData, setFlashSaleData] = useState<FlashSaleData | null>(null)
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
   const [bestSellers, setBestSellers] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const { formatPrice } = useCurrencyFormatter()
-
-  const brandColor    = "#0A0A0A"
-  const brandAccent   = "#D4372B"
-
-  // Police Amazon Ember
-  const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -96,7 +90,6 @@ export function DealCountdown() {
         if (flashSaleRes.ok) {
           const flashData = await flashSaleRes.json()
           if (flashData.success) {
-            setFlashSaleData(flashData)
             setHasFlashSale(flashData.hasActiveSale)
             if (flashData.hasActiveSale) setTimeLeft(flashData.timeLeft)
           }
@@ -128,45 +121,39 @@ export function DealCountdown() {
   const fmt = (n: number) => n.toString().padStart(2, "0")
 
   const ProductCard = ({ product, hideName = false }: { product: Product; hideName?: boolean }) => (
-    <Link href={`/products/${product.id}`} className="group block">
+    <Link href={`/products/${product.id}`} className="group block transition-all duration-200 hover:-translate-y-0.5">
       <div
-        className="bg-white overflow-hidden transition-all duration-300 hover:shadow-md"
-        style={{
-          borderRadius: "4px",
-          border: "0.5px solid #ECECEC",
-        }}
+        className="overflow-hidden transition-all duration-200 hover:shadow-md"
+        style={{ background: "#fff", borderRadius: "6px", border: "0.5px solid #ECECEC" }}
       >
-        <div className="relative w-full aspect-square bg-gradient-to-br from-[#FAFAFA] to-[#F5F5F5]">
+        <div className="relative w-full aspect-square" style={{ background: "#FAFAFA" }}>
           <Image
             src={product.image || "/placeholder.jpg"}
             alt={product.name || "Produit"}
             fill
             sizes="(max-width: 768px) 150px, 200px"
-            className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+            className="object-contain p-1.5 transition-transform duration-300 group-hover:scale-105"
           />
           {product.badge && (
             <span
-              className="absolute top-2 left-2 text-[9px] font-bold px-1.5 py-0.5 text-white"
-              style={{ background: "#D4372B", borderRadius: "3px" }}
+              className="absolute top-1 left-1 text-[8px] font-bold px-1.5 py-0.5 text-white"
+              style={{ background: "#D4372B", borderRadius: "3px", fontFamily: amazonFont }}
             >
               {product.badge}
             </span>
           )}
         </div>
 
-        <div className="px-2 py-2">
+        <div className="px-1.5 py-1.5">
           {!hideName && (
             <p
-              className="text-[11px] font-medium truncate mb-1"
-              style={{ color: "#0A0A0A", fontFamily: amazonFont }}
+              className="truncate mb-0.5"
+              style={{ fontSize: "9px", fontWeight: 500, color: "#0A0A0A", fontFamily: amazonFont }}
             >
               {product.name || "Produit"}
             </p>
           )}
-          <p
-            className="text-[13px] font-bold"
-            style={{ color: "#D4372B", fontFamily: amazonFont }}
-          >
+          <p style={{ fontSize: "10px", fontWeight: 700, color: "#D4372B", fontFamily: amazonFont }}>
             {formatPrice(product.price)}
           </p>
         </div>
@@ -176,10 +163,10 @@ export function DealCountdown() {
 
   if (isLoading) {
     return (
-      <div className="w-full">
-        <div className="max-w-6xl mx-auto px-4 lg:px-8 py-4">
-          <div className="animate-pulse flex justify-center items-center h-20">
-            <div className="w-8 h-8 rounded-full border-2 border-[#D4372B] border-t-transparent animate-spin" />
+      <div className="w-full" style={{ background: "#FAFAFA" }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex justify-center items-center h-24">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2" style={{ borderColor: "#D4372B" }} />
           </div>
         </div>
       </div>
@@ -188,8 +175,8 @@ export function DealCountdown() {
 
   if (error) {
     return (
-      <div className="w-full">
-        <div className="max-w-6xl mx-auto px-4 lg:px-8 py-4 text-center">
+      <div className="w-full" style={{ background: "#FAFAFA" }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 text-center">
           <p className="text-sm" style={{ color: "#D4372B", fontFamily: amazonFont }}>{error}</p>
         </div>
       </div>
@@ -197,210 +184,173 @@ export function DealCountdown() {
   }
 
   return (
-    <div className="w-full lg:bg-white" style={{ background: "#FAFAFA" }}>
-      {/* ══ BLOC CHRONO ════════════════════════════════════════ */}
-      <div className="relative overflow-hidden">
-        <div 
-          className="absolute inset-0 opacity-5 animate-pulse-slow"
-          style={{
-            background: `radial-gradient(circle at 0% 0%, ${brandAccent} 0%, transparent 70%)`,
-            pointerEvents: "none",
-          }}
-        />
-        
-        <div className="max-w-6xl mx-auto px-4 lg:px-8 py-3 lg:py-3">
+    <div className="w-full" style={{ background: "#FAFAFA" }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+
+        {/* ══ BLOC CHRONO ════════════════════════════════════════ */}
+        <div className="relative overflow-hidden mb-3" style={{ background: "#fff", borderRadius: "8px", border: "0.5px solid #ECECEC" }}>
           
-          {/* VERSION MOBILE */}
-          <div className="lg:hidden">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div
-                  className="flex items-center justify-center w-8 h-8 rounded"
-                  style={{ background: `linear-gradient(135deg, ${brandAccent}, #B82D20)` }}
+          <div className="px-3 py-2.5">
+            
+            {/* VERSION MOBILE */}
+            <div className="lg:hidden">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="flex items-center justify-center w-7 h-7 rounded"
+                    style={{ background: "linear-gradient(135deg, #D4372B, #B82D20)" }}
+                  >
+                    <Zap className="w-3.5 h-3.5 text-white" fill="white" />
+                  </div>
+                  <div>
+                    <p style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont }}>
+                      FLASH SALE
+                    </p>
+                    <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>
+                      jusqu'à -50%
+                    </p>
+                  </div>
+                </div>
+                
+                <Link
+                  href="/deals-du-jour"
+                  className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1"
+                  style={{ color: "#D4372B", fontFamily: amazonFont }}
                 >
-                  <Zap className="w-4 h-4 text-white" fill="white" />
-                </div>
-                <div>
-                  <p
-                    className="text-sm font-black tracking-tight"
-                    style={{ color: brandColor, fontFamily: amazonFont }}
-                  >
-                    FLASH SALE
-                  </p>
-                  <p
-                    className="text-[10px] font-medium"
-                    style={{ color: "#AAAAAA", fontFamily: amazonFont }}
-                  >
-                    jusqu'à -50%
-                  </p>
-                </div>
+                  Voir tout
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
               </div>
               
-              <Link
-                href="/deals-du-jour"
-                className="flex items-center gap-1 text-[11px] font-semibold"
-                style={{ color: brandAccent, fontFamily: amazonFont }}
-              >
-                Voir tout
-                <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
-            
-            <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#ECECEC]">
-              <div className="flex items-center gap-1.5">
-                <Clock className="w-3 h-3" style={{ color: "#AAAAAA" }} />
-                <span className="text-[10px] font-medium" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>
-                  Se termine dans
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {[
-                  { val: timeLeft.hours, label: "h" },
-                  { val: timeLeft.minutes, label: "m" },
-                  { val: timeLeft.seconds, label: "s" },
-                ].map(({ val, label }) => (
-                  <div key={label} className="flex items-center gap-1">
-                    <div
-                      className="flex flex-col items-center justify-center min-w-[38px] px-1.5 py-1 rounded"
-                      style={{
-                        background: brandColor,
-                        boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                      }}
-                    >
-                      <span
-                        className="text-sm font-black leading-none tracking-tight"
-                        style={{ color: "#fff", fontFamily: amazonFont }}
-                      >
-                        {fmt(val)}
-                      </span>
-                      <span
-                        className="text-[7px] font-medium leading-none mt-0.5"
-                        style={{ color: "rgba(255,255,255,0.6)", fontFamily: amazonFont }}
-                      >
-                        {label}
-                      </span>
-                    </div>
-                    {label !== "s" && (
-                      <span className="text-sm font-bold" style={{ color: "#D4372B", fontFamily: amazonFont }}>:</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* VERSION DESKTOP */}
-          <div className="hidden lg:flex lg:items-center lg:justify-between">
-            <div className="flex items-center gap-4">
-              <div
-                className="flex items-center justify-center w-12 h-12 rounded"
-                style={{
-                  background: `linear-gradient(135deg, ${brandAccent}, #B82D20)`,
-                  boxShadow: "0 4px 12px rgba(212,55,43,0.25)",
-                }}
-              >
-                <Sparkles className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2
-                    className="text-xl font-black tracking-tight"
-                    style={{ color: brandColor, fontFamily: amazonFont, letterSpacing: "-0.03em" }}
-                  >
-                    FLASH SALE
-                  </h2>
-                  <span
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                    style={{ background: "#FFF0F0", color: brandAccent, fontFamily: amazonFont }}
-                  >
-                    🔥 Limited
+              <div className="flex items-center justify-between mt-1.5 pt-1.5" style={{ borderTop: "0.5px solid #ECECEC" }}>
+                <div className="flex items-center gap-1.5">
+                  <Clock className="w-3 h-3" style={{ color: "#AAAAAA" }} />
+                  <span style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>
+                    Se termine dans
                   </span>
                 </div>
-                <p className="text-sm" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>
-                  Jusqu'à -50% · Renouvellement quotidien
-                </p>
+                <div className="flex items-center gap-1.5">
+                  {[
+                    { val: timeLeft.hours, label: "h" },
+                    { val: timeLeft.minutes, label: "m" },
+                    { val: timeLeft.seconds, label: "s" },
+                  ].map(({ val, label }) => (
+                    <div key={label} className="flex items-center gap-1">
+                      <div
+                        className="flex flex-col items-center justify-center min-w-[32px] px-1 py-0.5 rounded"
+                        style={{ background: "#0A0A0A", borderRadius: "4px" }}
+                      >
+                        <span style={{ fontSize: "14px", fontWeight: 700, color: "#fff", fontFamily: amazonFont, lineHeight: 1.2 }}>
+                          {fmt(val)}
+                        </span>
+                        <span style={{ fontSize: "7px", color: "rgba(255,255,255,0.5)", fontFamily: amazonFont, lineHeight: 1 }}>
+                          {label}
+                        </span>
+                      </div>
+                      {label !== "s" && (
+                        <span style={{ fontSize: "12px", fontWeight: 700, color: "#D4372B", fontFamily: amazonFont }}>:</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" style={{ color: "#AAAAAA" }} />
-                <span className="text-sm font-medium" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>
-                  Fin dans
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {[
-                  { val: timeLeft.hours, label: "HEURES" },
-                  { val: timeLeft.minutes, label: "MINUTES" },
-                  { val: timeLeft.seconds, label: "SECONDES" },
-                ].map(({ val, label }, idx) => (
-                  <div key={label} className="flex items-center gap-2">
-                    <div
-                      className="flex flex-col items-center justify-center min-w-[70px] px-3 py-2 rounded"
-                      style={{
-                        background: brandColor,
-                        boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
-                      }}
-                    >
-                      <span
-                        className="text-2xl font-black leading-none tracking-tight"
-                        style={{ color: "#fff", fontFamily: amazonFont }}
-                      >
-                        {fmt(val)}
-                      </span>
-                      <span
-                        className="text-[9px] font-semibold leading-none mt-1.5 tracking-wider"
-                        style={{ color: "rgba(255,255,255,0.5)", fontFamily: amazonFont }}
-                      >
-                        {label}
-                      </span>
-                    </div>
-                    {idx < 2 && (
-                      <span className="text-xl font-black" style={{ color: brandAccent, fontFamily: amazonFont }}>:</span>
-                    )}
+            {/* VERSION DESKTOP */}
+            <div className="hidden lg:flex lg:items-center lg:justify-between">
+              <div className="flex items-center gap-4">
+                <div
+                  className="flex items-center justify-center w-12 h-12 rounded"
+                  style={{
+                    background: "linear-gradient(135deg, #D4372B, #B82D20)",
+                    boxShadow: "0 4px 12px rgba(212,55,43,0.25)",
+                  }}
+                >
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 style={{ fontSize: "20px", fontWeight: 900, color: "#0A0A0A", fontFamily: amazonFont, letterSpacing: "-0.03em" }}>
+                      FLASH SALE
+                    </h2>
+                    <span style={{ fontSize: "10px", fontWeight: 700, padding: "2px 8px", borderRadius: "12px", background: "#FFF0F0", color: "#D4372B", fontFamily: amazonFont }}>
+                      🔥 Limited
+                    </span>
                   </div>
-                ))}
+                  <p style={{ fontSize: "14px", color: "#AAAAAA", fontFamily: amazonFont }}>
+                    Jusqu'à -50% · Renouvellement quotidien
+                  </p>
+                </div>
               </div>
 
-              <Link
-                href="/deals-du-jour"
-                className="group flex items-center gap-2 px-5 py-2.5 text-white rounded text-sm font-bold transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer"
-                style={{
-                  background: `linear-gradient(135deg, ${brandAccent}, #B82D20)`,
-                  fontFamily: amazonFont,
-                  position: "relative",
-                  zIndex: 10,
-                }}
-              >
-                Voir toutes les offres
-                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </Link>
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" style={{ color: "#AAAAAA" }} />
+                  <span style={{ fontSize: "14px", fontWeight: 500, color: "#AAAAAA", fontFamily: amazonFont }}>
+                    Fin dans
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {[
+                    { val: timeLeft.hours, label: "HEURES" },
+                    { val: timeLeft.minutes, label: "MINUTES" },
+                    { val: timeLeft.seconds, label: "SECONDES" },
+                  ].map(({ val, label }, idx) => (
+                    <div key={label} className="flex items-center gap-2">
+                      <div
+                        className="flex flex-col items-center justify-center min-w-[70px] px-3 py-2 rounded"
+                        style={{ background: "#0A0A0A", borderRadius: "6px" }}
+                      >
+                        <span style={{ fontSize: "24px", fontWeight: 900, color: "#fff", fontFamily: amazonFont, lineHeight: 1 }}>
+                          {fmt(val)}
+                        </span>
+                        <span style={{ fontSize: "9px", fontWeight: 600, color: "rgba(255,255,255,0.5)", fontFamily: amazonFont, letterSpacing: "0.05em", marginTop: "2px" }}>
+                          {label}
+                        </span>
+                      </div>
+                      {idx < 2 && (
+                        <span style={{ fontSize: "20px", fontWeight: 900, color: "#D4372B", fontFamily: amazonFont }}>:</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <Link
+                  href="/deals-du-jour"
+                  className="group flex items-center gap-2 px-5 py-2.5 text-white rounded text-sm font-bold transition-all duration-300 hover:shadow-lg hover:scale-105"
+                  style={{
+                    background: "linear-gradient(135deg, #D4372B, #B82D20)",
+                    fontFamily: amazonFont,
+                    borderRadius: "6px",
+                  }}
+                >
+                  Voir toutes les offres
+                  <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* ══ BLOCS PRODUITS ════════════════════════════════════════ */}
-      <div className="max-w-6xl mx-auto px-4 lg:px-8 py-3 lg:py-2">
+        {/* ══ BLOCS PRODUITS ════════════════════════════════════════ */}
         
-        {/* MOBILE - fond blanc mais animation conservée */}
+        {/* MOBILE */}
         <div className="grid grid-cols-2 gap-2 lg:hidden">
           
-          <div 
-            className="rounded p-2 transition-all duration-1000 ease-in-out"
+          <div
+            className="rounded p-2"
             style={{ 
               background: "#fff",
               border: "0.5px solid #ECECEC",
-              animation: "gradientShift 8s ease-in-out infinite",
+              borderRadius: "6px",
             }}
           >
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-[10px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: amazonFont, letterSpacing: "0.1em" }}>
+            <div className="flex items-center justify-between mb-1.5">
+              <h3 style={{ fontSize: "9px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont, letterSpacing: "0.05em", textTransform: "uppercase" }}>
                 ✨ Sélection
               </h3>
-              <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: brandAccent, color: "#fff", fontFamily: amazonFont }}>
+              <span style={{ fontSize: "7px", fontWeight: 700, padding: "1px 6px", borderRadius: "3px", background: "#D4372B", color: "#fff", fontFamily: amazonFont }}>
                 Nouveau
               </span>
             </div>
@@ -411,20 +361,19 @@ export function DealCountdown() {
             </div>
           </div>
 
-          <div 
-            className="rounded p-2 transition-all duration-1000 ease-in-out"
+          <div
+            className="rounded p-2"
             style={{ 
               background: "#fff",
               border: "0.5px solid #ECECEC",
-              animation: "gradientShift 8s ease-in-out infinite",
-              animationDelay: "2s",
+              borderRadius: "6px",
             }}
           >
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-[10px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: amazonFont, letterSpacing: "0.1em" }}>
+            <div className="flex items-center justify-between mb-1.5">
+              <h3 style={{ fontSize: "9px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont, letterSpacing: "0.05em", textTransform: "uppercase" }}>
                 🔥 Best-sellers
               </h3>
-              <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "#FFF0F0", color: brandAccent, fontFamily: amazonFont }}>
+              <span style={{ fontSize: "7px", fontWeight: 700, padding: "1px 6px", borderRadius: "3px", background: "#FFF0F0", color: "#D4372B", fontFamily: amazonFont }}>
                 Top ventes
               </span>
             </div>
@@ -437,22 +386,22 @@ export function DealCountdown() {
 
         </div>
 
-        {/* DESKTOP - garde le dégradé animé */}
+        {/* DESKTOP */}
         <div className="hidden lg:grid lg:grid-cols-2 gap-2">
           
-          <div 
-            className="rounded p-4 transition-all duration-1000 ease-in-out"
+          <div
+            className="rounded p-4"
             style={{ 
-              background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
+              background: "#fff",
               border: "0.5px solid #ECECEC",
-              animation: "gradientShift 8s ease-in-out infinite",
+              borderRadius: "6px",
             }}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[11px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: amazonFont, letterSpacing: "0.1em" }}>
+            <div className="flex items-center justify-between mb-3">
+              <h3 style={{ fontSize: "11px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont, letterSpacing: "0.05em", textTransform: "uppercase" }}>
                 ✨ Sélection du moment
               </h3>
-              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: brandAccent, color: "#fff", fontFamily: amazonFont }}>
+              <span style={{ fontSize: "9px", fontWeight: 700, padding: "2px 8px", borderRadius: "4px", background: "#D4372B", color: "#fff", fontFamily: amazonFont }}>
                 Nouveau
               </span>
             </div>
@@ -463,20 +412,19 @@ export function DealCountdown() {
             </div>
           </div>
 
-          <div 
-            className="rounded p-4 transition-all duration-1000 ease-in-out"
+          <div
+            className="rounded p-4"
             style={{ 
-              background: "linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%)",
+              background: "#fff",
               border: "0.5px solid #ECECEC",
-              animation: "gradientShift 8s ease-in-out infinite",
-              animationDelay: "2s",
+              borderRadius: "6px",
             }}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[11px] font-black uppercase tracking-wider" style={{ color: brandColor, fontFamily: amazonFont, letterSpacing: "0.1em" }}>
+            <div className="flex items-center justify-between mb-3">
+              <h3 style={{ fontSize: "11px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont, letterSpacing: "0.05em", textTransform: "uppercase" }}>
                 🔥 Meilleures ventes
               </h3>
-              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#FFF0F0", color: brandAccent, fontFamily: amazonFont }}>
+              <span style={{ fontSize: "9px", fontWeight: 700, padding: "2px 8px", borderRadius: "4px", background: "#FFF0F0", color: "#D4372B", fontFamily: amazonFont }}>
                 Top ventes
               </span>
             </div>
@@ -489,30 +437,6 @@ export function DealCountdown() {
 
         </div>
       </div>
-
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&display=swap');
-        
-        @font-face {
-          font-family: 'Amazon Ember';
-          src: url('https://fonts.cdnfonts.com/css/amazon-ember') format('woff2');
-          font-weight: 100 900;
-          font-style: normal;
-        }
-        
-        @keyframes gradientShift {
-          0% { background: #fff; }
-          50% { background: #FFF5F5; }
-          100% { background: #fff; }
-        }
-        
-        @keyframes pulse {
-          0%, 100% { opacity: 0.05; }
-          50% { opacity: 0.12; }
-        }
-        
-        .animate-pulse-slow { animation: pulse 4s ease-in-out infinite; }
-      `}</style>
     </div>
   )
 }
