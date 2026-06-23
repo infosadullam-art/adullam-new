@@ -187,7 +187,7 @@ export function DealCountdown() {
   if (isLoading) {
     return (
       <div className="w-full" style={{ background: "#FAFAFA" }}>
-        <div className="px-4 py-6">
+        <div className="py-6">
           <div className="flex h-20 animate-pulse items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#D4372B] border-t-transparent" />
           </div>
@@ -199,7 +199,7 @@ export function DealCountdown() {
   if (error) {
     return (
       <div className="w-full" style={{ background: "#FAFAFA" }}>
-        <div className="px-4 py-4 text-center">
+        <div className="py-4 text-center">
           <p className="text-sm text-[#D4372B]">{error}</p>
         </div>
       </div>
@@ -226,9 +226,9 @@ export function DealCountdown() {
           }}
         />
 
-        {/* MOBILE - full width */}
-        <div className="px-4 py-3 lg:hidden">
-          <div className="mb-2 flex items-center justify-between">
+        {/* MOBILE - full width SANS px */}
+        <div className="py-3 lg:hidden">
+          <div className="flex items-center justify-between px-4 mb-2">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#D4372B]">
                 <Zap className="h-4 w-4 text-white" fill="white" strokeWidth={2} />
@@ -245,7 +245,7 @@ export function DealCountdown() {
             </Link>
           </div>
 
-          <div className="mt-2 flex items-center justify-between border-t border-[#ECECEC] pt-2">
+          <div className="flex items-center justify-between px-4 pt-2 border-t border-[#ECECEC]">
             <div className="flex items-center gap-1.5">
               <Clock className="h-3 w-3 text-[#AAAAAA]" />
               <span className="text-[10px] font-medium text-[#AAAAAA]">Se termine dans</span>
@@ -316,7 +316,7 @@ export function DealCountdown() {
       </div>
 
       {/* ══ BLOCS PRODUITS ════════════════════════════════════════ */}
-      {/* MOBILE - full width sans padding */}
+      {/* MOBILE - full width SANS padding externe */}
       <div className="lg:hidden">
         <div className="grid grid-cols-2 gap-2 p-2">
           <div
