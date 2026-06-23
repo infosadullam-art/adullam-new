@@ -216,7 +216,7 @@ export function DealCountdown() {
   }
 
   return (
-    <div className="w-full" style={{ background: "#FAFAFA" }}>
+    <div className="w-full lg:-mx-0 -mx-4" style={{ background: "#FAFAFA", width: "calc(100% + 32px)" }}>
       {/* ══ BLOC CHRONO ════════════════════════════════════════ */}
       <div className="relative overflow-hidden" style={{ background: "#fff" }}>
         <div
@@ -226,7 +226,7 @@ export function DealCountdown() {
           }}
         />
 
-        {/* MOBILE - full width SANS px */}
+        {/* MOBILE - full width */}
         <div className="py-3 lg:hidden">
           <div className="flex items-center justify-between px-4 mb-2">
             <div className="flex items-center gap-2">
@@ -316,7 +316,7 @@ export function DealCountdown() {
       </div>
 
       {/* ══ BLOCS PRODUITS ════════════════════════════════════════ */}
-      {/* MOBILE - full width SANS padding externe */}
+      {/* MOBILE - full width */}
       <div className="lg:hidden">
         <div className="grid grid-cols-2 gap-2 p-2">
           <div
