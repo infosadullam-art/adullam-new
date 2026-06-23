@@ -254,52 +254,75 @@ export function ModeSection() {
         </div>
       )}
 
-      {/* ── BANNIÈRE PROMO FULL WIDTH AVEC ANIMATION ─────────── */}
+      {/* ── BANNIÈRE PROMO AVEC ANIMATION EN BOUCLE ─────────── */}
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-        whileHover={{ scale: 1.01 }}
-        className="mx-0 my-3 overflow-hidden cursor-pointer"
-        style={{ background: "#0A0A0A", borderRadius: "0px" }}
+        animate={{
+          background: ["#0A0A0A", "#1A0A0A", "#0A0A0A"],
+        }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        className="mx-0 my-3 overflow-hidden"
+        style={{ borderRadius: "0px" }}
       >
-        <div className="flex items-center justify-between px-3 py-2 gap-2">
-          <div>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont, textTransform: "uppercase", letterSpacing: "0.06em" }}
+        <div className="flex items-center justify-between px-3 py-1.5 gap-2">
+          <div className="flex items-center gap-2">
+            <motion.span
+              animate={{
+                scale: [1, 1.1, 1],
+                opacity: [1, 0.7, 1],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              style={{ fontSize: "14px" }}
             >
-              Première commande
-            </motion.p>
-            <motion.p
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6 }}
-              style={{ fontSize: "12px", fontWeight: 700, color: "#fff", fontFamily: amazonFont }}
-            >
-              -10% de réduction
-            </motion.p>
+              🎉
+            </motion.span>
+            <div>
+              <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                Première commande
+              </p>
+              <p style={{ fontSize: "11px", fontWeight: 700, color: "#fff", fontFamily: amazonFont }}>
+                -10% de réduction
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-1.5">
             <motion.code
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.7, type: "spring", stiffness: 200 }}
-              whileHover={{ scale: 1.05 }}
-              style={{ fontSize: "10px", fontWeight: 700, color: "#D4372B", letterSpacing: "0.08em", fontFamily: amazonFont }}
+              animate={{
+                color: ["#D4372B", "#FF6B5A", "#D4372B"],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em", fontFamily: amazonFont }}
             >
               BIENVENUE10
             </motion.code>
             <motion.button
               onClick={copyCouponCode}
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.8, type: "spring", stiffness: 200 }}
-              whileHover={{ scale: 1.1 }}
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="text-[9px] font-bold px-2 py-1 transition-all duration-200"
+              animate={{
+                boxShadow: [
+                  "0 0 0 0 rgba(212,55,43,0)",
+                  "0 0 20px 4px rgba(212,55,43,0.3)",
+                  "0 0 0 0 rgba(212,55,43,0)",
+                ],
+              }}
+              transition={{
+                duration: 2.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="text-[9px] font-bold px-2 py-0.5 transition-all duration-200"
               style={{ background: "#D4372B", color: "#fff", fontFamily: amazonFont, borderRadius: "4px" }}
             >
               Copier
