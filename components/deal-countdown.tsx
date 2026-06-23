@@ -46,7 +46,6 @@ export function DealCountdown() {
 
   const brandColor = "#0A0A0A"
   const brandAccent = "#D4372B"
-  const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -145,7 +144,7 @@ export function DealCountdown() {
           {product.badge && (
             <span
               className="absolute top-1 left-1 text-[8px] font-bold px-1.5 py-0.5 text-white"
-              style={{ background: "#D4372B", borderRadius: "3px", fontFamily: amazonFont }}
+              style={{ background: "#D4372B", borderRadius: "3px" }}
             >
               {product.badge}
             </span>
@@ -156,12 +155,12 @@ export function DealCountdown() {
           {!hideName && (
             <p
               className="truncate mb-0.5"
-              style={{ fontSize: "9px", fontWeight: 500, color: "#0A0A0A", fontFamily: amazonFont }}
+              style={{ fontSize: "9px", fontWeight: 500, color: "#0A0A0A" }}
             >
               {product.name || "Produit"}
             </p>
           )}
-          <p style={{ fontSize: "10px", fontWeight: 700, color: "#D4372B", fontFamily: amazonFont }}>
+          <p style={{ fontSize: "10px", fontWeight: 700, color: "#D4372B" }}>
             {formatPrice(product.price)}
           </p>
         </div>
@@ -185,7 +184,7 @@ export function DealCountdown() {
     return (
       <div className="w-full" style={{ background: "#FAFAFA" }}>
         <div className="px-4 py-4 text-center">
-          <p className="text-sm" style={{ color: "#D4372B", fontFamily: amazonFont }}>
+          <p className="text-sm" style={{ color: "#D4372B" }}>
             {error}
           </p>
         </div>
@@ -216,10 +215,10 @@ export function DealCountdown() {
                   <Zap className="h-4 w-4 text-white" fill="white" />
                 </div>
                 <div>
-                  <p style={{ fontSize: "12px", fontWeight: 700, color: brandColor, fontFamily: amazonFont }}>
+                  <p style={{ fontSize: "12px", fontWeight: 700, color: brandColor }}>
                     FLASH SALE
                   </p>
-                  <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>
+                  <p style={{ fontSize: "9px", color: "#AAAAAA" }}>
                     jusqu'à -50%
                   </p>
                 </div>
@@ -228,7 +227,7 @@ export function DealCountdown() {
               <Link
                 href="/deals-du-jour"
                 className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1"
-                style={{ color: brandAccent, fontFamily: amazonFont }}
+                style={{ color: brandAccent }}
               >
                 Voir tout
                 <ArrowRight className="h-3 w-3" />
@@ -238,7 +237,7 @@ export function DealCountdown() {
             <div className="mt-1.5 flex items-center justify-between pt-1.5" style={{ borderTop: "0.5px solid #ECECEC" }}>
               <div className="flex items-center gap-1.5">
                 <Clock className="h-3 w-3" style={{ color: "#AAAAAA" }} />
-                <span style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>
+                <span style={{ fontSize: "9px", color: "#AAAAAA" }}>
                   Se termine dans
                 </span>
               </div>
@@ -253,15 +252,15 @@ export function DealCountdown() {
                       className="flex flex-col items-center justify-center min-w-[32px] rounded px-1 py-0.5"
                       style={{ background: brandColor, borderRadius: "4px" }}
                     >
-                      <span style={{ fontSize: "14px", fontWeight: 700, color: "#fff", fontFamily: amazonFont, lineHeight: 1.2 }}>
+                      <span style={{ fontSize: "14px", fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>
                         {fmt(val)}
                       </span>
-                      <span style={{ fontSize: "7px", color: "rgba(255,255,255,0.5)", fontFamily: amazonFont, lineHeight: 1 }}>
+                      <span style={{ fontSize: "7px", color: "rgba(255,255,255,0.5)", lineHeight: 1 }}>
                         {label}
                       </span>
                     </div>
                     {label !== "s" && (
-                      <span style={{ fontSize: "12px", fontWeight: 700, color: brandAccent, fontFamily: amazonFont }}>
+                      <span style={{ fontSize: "12px", fontWeight: 700, color: brandAccent }}>
                         :
                       </span>
                     )}
@@ -285,7 +284,7 @@ export function DealCountdown() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 style={{ fontSize: "20px", fontWeight: 900, color: brandColor, fontFamily: amazonFont, letterSpacing: "-0.03em" }}>
+                  <h2 style={{ fontSize: "20px", fontWeight: 900, color: brandColor, letterSpacing: "-0.03em" }}>
                     FLASH SALE
                   </h2>
                   <span
@@ -296,13 +295,12 @@ export function DealCountdown() {
                       borderRadius: "12px",
                       background: "#FFF0F0",
                       color: brandAccent,
-                      fontFamily: amazonFont,
                     }}
                   >
                     <Flame className="inline h-3 w-3" /> Limited
                   </span>
                 </div>
-                <p style={{ fontSize: "14px", color: "#AAAAAA", fontFamily: amazonFont }}>
+                <p style={{ fontSize: "14px", color: "#AAAAAA" }}>
                   Jusqu'à -50% · Renouvellement quotidien
                 </p>
               </div>
@@ -311,7 +309,7 @@ export function DealCountdown() {
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4" style={{ color: "#AAAAAA" }} />
-                <span style={{ fontSize: "14px", fontWeight: 500, color: "#AAAAAA", fontFamily: amazonFont }}>
+                <span style={{ fontSize: "14px", fontWeight: 500, color: "#AAAAAA" }}>
                   Fin dans
                 </span>
               </div>
@@ -327,7 +325,7 @@ export function DealCountdown() {
                       className="flex flex-col items-center justify-center min-w-[70px] rounded px-3 py-2"
                       style={{ background: brandColor, borderRadius: "6px" }}
                     >
-                      <span style={{ fontSize: "24px", fontWeight: 900, color: "#fff", fontFamily: amazonFont, lineHeight: 1 }}>
+                      <span style={{ fontSize: "24px", fontWeight: 900, color: "#fff", lineHeight: 1 }}>
                         {fmt(val)}
                       </span>
                       <span
@@ -335,7 +333,6 @@ export function DealCountdown() {
                           fontSize: "9px",
                           fontWeight: 600,
                           color: "rgba(255,255,255,0.5)",
-                          fontFamily: amazonFont,
                           letterSpacing: "0.05em",
                           marginTop: "2px",
                         }}
@@ -344,7 +341,7 @@ export function DealCountdown() {
                       </span>
                     </div>
                     {idx < 2 && (
-                      <span style={{ fontSize: "20px", fontWeight: 900, color: brandAccent, fontFamily: amazonFont }}>
+                      <span style={{ fontSize: "20px", fontWeight: 900, color: brandAccent }}>
                         :
                       </span>
                     )}
@@ -357,7 +354,6 @@ export function DealCountdown() {
                 className="group flex items-center gap-2 rounded px-5 py-2.5 text-sm font-bold text-white transition-all duration-300 hover:shadow-lg hover:scale-105"
                 style={{
                   background: `linear-gradient(135deg, ${brandAccent}, #B82D20)`,
-                  fontFamily: amazonFont,
                   borderRadius: "6px",
                 }}
               >
@@ -387,7 +383,6 @@ export function DealCountdown() {
                   fontSize: "9px",
                   fontWeight: 700,
                   color: brandColor,
-                  fontFamily: amazonFont,
                   letterSpacing: "0.05em",
                   textTransform: "uppercase",
                 }}
@@ -402,7 +397,6 @@ export function DealCountdown() {
                   borderRadius: "3px",
                   background: brandAccent,
                   color: "#fff",
-                  fontFamily: amazonFont,
                 }}
               >
                 Nouveau
@@ -429,7 +423,6 @@ export function DealCountdown() {
                   fontSize: "9px",
                   fontWeight: 700,
                   color: brandColor,
-                  fontFamily: amazonFont,
                   letterSpacing: "0.05em",
                   textTransform: "uppercase",
                 }}
@@ -444,7 +437,6 @@ export function DealCountdown() {
                   borderRadius: "3px",
                   background: "#FFF0F0",
                   color: brandAccent,
-                  fontFamily: amazonFont,
                 }}
               >
                 Top ventes
@@ -474,7 +466,6 @@ export function DealCountdown() {
                   fontSize: "11px",
                   fontWeight: 700,
                   color: brandColor,
-                  fontFamily: amazonFont,
                   letterSpacing: "0.05em",
                   textTransform: "uppercase",
                 }}
@@ -489,7 +480,6 @@ export function DealCountdown() {
                   borderRadius: "4px",
                   background: brandAccent,
                   color: "#fff",
-                  fontFamily: amazonFont,
                 }}
               >
                 Nouveau
@@ -516,7 +506,6 @@ export function DealCountdown() {
                   fontSize: "11px",
                   fontWeight: 700,
                   color: brandColor,
-                  fontFamily: amazonFont,
                   letterSpacing: "0.05em",
                   textTransform: "uppercase",
                 }}
@@ -531,7 +520,6 @@ export function DealCountdown() {
                   borderRadius: "4px",
                   background: "#FFF0F0",
                   color: brandAccent,
-                  fontFamily: amazonFont,
                 }}
               >
                 Top ventes
@@ -545,31 +533,6 @@ export function DealCountdown() {
           </div>
         </div>
       </div>
-
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&display=swap');
-
-        @font-face {
-          font-family: 'Amazon Ember';
-          src: url('https://fonts.cdnfonts.com/css/amazon-ember') format('woff2');
-          font-weight: 100 900;
-          font-style: normal;
-        }
-
-        @keyframes pulse {
-          0%,
-          100% {
-            opacity: 0.04;
-          }
-          50% {
-            opacity: 0.08;
-          }
-        }
-
-        .animate-pulse-slow {
-          animation: pulse 4s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   )
 }
