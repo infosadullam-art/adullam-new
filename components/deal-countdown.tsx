@@ -169,7 +169,6 @@ export function DealCountdown() {
     </Link>
   )
 
-  // Bloc chrono réutilisable (mobile + desktop) avec vrai poids visuel
   const TimeBlock = ({ val, label, big = false }: { val: number; label: string; big?: boolean }) => (
     <div
       className={`flex flex-col items-center justify-center rounded-md bg-[#0A0A0A] shadow-lg shadow-black/20 ${
@@ -220,7 +219,6 @@ export function DealCountdown() {
     <div className="w-full" style={{ background: "#FAFAFA" }}>
       {/* ══ BLOC CHRONO ════════════════════════════════════════ */}
       <div className="relative overflow-hidden" style={{ background: "#fff" }}>
-        {/* Animation du fond (pulse) */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.04] animate-pulse-slow"
           style={{
@@ -321,7 +319,12 @@ export function DealCountdown() {
       <div className="mx-auto max-w-6xl px-4 py-4 lg:px-8">
         {/* MOBILE */}
         <div className="grid grid-cols-2 gap-2 lg:hidden">
-          <div className="rounded-md border border-[#ECECEC] bg-white p-2">
+          <div
+            className="rounded-md border border-[#ECECEC] bg-white p-2 transition-all duration-1000 ease-in-out"
+            style={{
+              animation: "pulseBlock 8s ease-in-out infinite",
+            }}
+          >
             <div className="mb-2 flex items-center justify-between">
               <h3 className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0A0A0A]">
                 <Sparkles className="h-3 w-3 text-[#D4372B]" strokeWidth={2.25} />
@@ -344,7 +347,13 @@ export function DealCountdown() {
             </motion.div>
           </div>
 
-          <div className="rounded-md border border-[#ECECEC] bg-white p-2">
+          <div
+            className="rounded-md border border-[#ECECEC] bg-white p-2 transition-all duration-1000 ease-in-out"
+            style={{
+              animation: "pulseBlock 8s ease-in-out infinite",
+              animationDelay: "2s",
+            }}
+          >
             <div className="mb-2 flex items-center justify-between">
               <h3 className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0A0A0A]">
                 <Flame className="h-3 w-3 text-[#D4372B]" strokeWidth={2.25} />
@@ -372,7 +381,12 @@ export function DealCountdown() {
 
         {/* DESKTOP */}
         <div className="hidden gap-3 lg:grid lg:grid-cols-2">
-          <div className="rounded-md border border-[#ECECEC] bg-white p-4">
+          <div
+            className="rounded-md border border-[#ECECEC] bg-white p-4 transition-all duration-1000 ease-in-out"
+            style={{
+              animation: "pulseBlock 8s ease-in-out infinite",
+            }}
+          >
             <div className="mb-4 flex items-center justify-between">
               <h3 className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.1em] text-[#0A0A0A]">
                 <Sparkles className="h-3.5 w-3.5 text-[#D4372B]" strokeWidth={2.25} />
@@ -395,7 +409,13 @@ export function DealCountdown() {
             </motion.div>
           </div>
 
-          <div className="rounded-md border border-[#ECECEC] bg-white p-4">
+          <div
+            className="rounded-md border border-[#ECECEC] bg-white p-4 transition-all duration-1000 ease-in-out"
+            style={{
+              animation: "pulseBlock 8s ease-in-out infinite",
+              animationDelay: "2s",
+            }}
+          >
             <div className="mb-4 flex items-center justify-between">
               <h3 className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.1em] text-[#0A0A0A]">
                 <Flame className="h-3.5 w-3.5 text-[#D4372B]" strokeWidth={2.25} />
@@ -430,6 +450,18 @@ export function DealCountdown() {
           }
           50% {
             opacity: 0.08;
+          }
+        }
+
+        @keyframes pulseBlock {
+          0% {
+            background: #fff;
+          }
+          50% {
+            background: #FFF5F5;
+          }
+          100% {
+            background: #fff;
           }
         }
 
