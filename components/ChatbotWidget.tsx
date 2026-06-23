@@ -1105,7 +1105,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             width: buttonSize,
             height: buttonSize,
             borderRadius: '50%',
-            background: '#D4372B',
+            background: 'var(--accent)',
             border: 'none',
             cursor: isDragging && dragStateRef.current?.mode === 'bubble' ? 'grabbing' : 'grab',
             display: 'flex',
@@ -1136,7 +1136,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               height: '18px',
               borderRadius: '50%',
               background: '#E67700',
-              border: '2px solid #fff',
+              border: '2px solid var(--background)',
               fontSize: '9px',
               color: '#fff',
               display: 'flex',
@@ -1148,41 +1148,59 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         </button>
       )}
 
-      {!isOpen && proactiveMessage && (
-        <div
-          onClick={openChat}
-          style={{
-            position: 'fixed',
-            bottom: bottomPosition + buttonSize + 8,
-            right: rightPosition,
-            maxWidth: isMobile ? '220px' : '260px',
-            background: '#fff',
-            borderRadius: '12px',
-            padding: '10px 12px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
-            zIndex: 999,
-            cursor: 'pointer',
-            fontSize: isMobile ? '12px' : '13px',
-            color: '#0A0A0A',
-            fontFamily: "'Poppins', sans-serif",
-            lineHeight: 1.4,
-            border: '0.5px solid #ECECEC',
-          }}
-        >
-          <span style={{ fontWeight: 600, color: '#D4372B' }}>Adu · </span>
-          {proactiveMessage}
-          <div style={{
-            position: 'absolute',
-            bottom: '-8px',
-            right: '22px',
-            width: 0,
-            height: 0,
-            borderLeft: '8px solid transparent',
-            borderRight: '8px solid transparent',
-            borderTop: '8px solid #fff',
-          }} />
-        </div>
-      )}
+      {!isOpen && proactiveMessage && (() => {
+        // 🐛 FIX — avant : la bulle de notif utilisait toujours
+        // bottomPosition/rightPosition (la position INITIALE), même
+        // après un drag. Elle s'affichait donc à l'ancien emplacement
+        // au lieu de suivre la bulle déplacée. On calcule maintenant
+        // sa position à partir de bubblePos quand la bulle a été bougée.
+        const onLeft = bubblePos ? bubblePos.x < window.innerWidth / 2 : false
+        const anchorStyle: React.CSSProperties = bubblePos
+          ? {
+              top: bubblePos.y - 8,
+              transform: 'translateY(-100%)',
+              ...(onLeft
+                ? { left: bubblePos.x }
+                : { right: window.innerWidth - bubblePos.x - buttonSize }),
+            }
+          : { bottom: bottomPosition + buttonSize + 8, right: rightPosition }
+
+        return (
+          <div
+            onClick={openChat}
+            style={{
+              position: 'fixed',
+              ...anchorStyle,
+              maxWidth: isMobile ? '220px' : '260px',
+              background: 'var(--background)',
+              borderRadius: '12px',
+              padding: '10px 12px',
+              boxShadow: 'var(--shadow-lg)',
+              zIndex: 999,
+              cursor: 'pointer',
+              fontSize: isMobile ? '12px' : '13px',
+              color: 'var(--foreground)',
+              fontFamily: "'Poppins', sans-serif",
+              lineHeight: 1.4,
+              border: '0.5px solid var(--border)',
+              transition: 'left 0.3s cubic-bezier(0.22,1,0.36,1), right 0.3s cubic-bezier(0.22,1,0.36,1), top 0.3s cubic-bezier(0.22,1,0.36,1)',
+            }}
+          >
+            <span style={{ fontWeight: 600, color: 'var(--accent)' }}>Adu · </span>
+            {proactiveMessage}
+            <div style={{
+              position: 'absolute',
+              bottom: '-8px',
+              ...(onLeft ? { left: '22px' } : { right: '22px' }),
+              width: 0,
+              height: 0,
+              borderLeft: '8px solid transparent',
+              borderRight: '8px solid transparent',
+              borderTop: '8px solid var(--background)',
+            }} />
+          </div>
+        )
+      })()}
 
       {isOpen && (
         <div
@@ -1194,9 +1212,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             ...heightStyle,
             width: widgetWidth,
             maxWidth: 'calc(100vw - 32px)',
-            background: '#fff',
+            background: 'var(--background)',
             borderRadius: '16px',
-            boxShadow: '0 12px 48px rgba(0,0,0,0.22)',
+            boxShadow: 'var(--shadow-lg)',
             zIndex: 1000,
             display: 'flex',
             flexDirection: 'column',
@@ -1214,7 +1232,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               alignItems: 'center',
               gap: '10px',
               padding: '12px 14px',
-              background: '#D4372B',
+              background: 'var(--accent)',
               cursor: isMobile ? 'pointer' : (isDragging ? 'grabbing' : 'grab'),
               flexShrink: 0,
               touchAction: isMobile ? 'auto' : 'none',
@@ -1313,20 +1331,20 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                         width: isMobile ? '20px' : '24px',
                         height: isMobile ? '20px' : '24px',
                         borderRadius: '50%',
-                        background: '#FFF0F0',
+                        background: 'var(--accent-light)',
                         fontSize: isMobile ? '10px' : '12px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0,
-                      }}><BotIcon size={isMobile ? 12 : 14} color="#D4372B" /></div>
+                      }}><BotIcon size={isMobile ? 12 : 14} color="var(--accent)" /></div>
                     )}
                     <div style={{
                       maxWidth: isMobile ? '85%' : '78%',
                       padding: isMobile ? '6px 10px' : '8px 12px',
                       borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-                      background: msg.role === 'user' ? '#D4372B' : '#F5F5F5',
-                      color: msg.role === 'user' ? '#fff' : '#0A0A0A',
+                      background: msg.role === 'user' ? 'var(--accent)' : 'var(--surface)',
+                      color: msg.role === 'user' ? 'var(--accent-foreground)' : 'var(--foreground)',
                       fontSize: isMobile ? '11px' : '12px',
                       lineHeight: 1.4,
                     }}>
@@ -1348,24 +1366,24 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                               style={{
                                 display: 'flex',
                                 gap: '10px',
-                                background: '#fff',
+                                background: 'var(--surface-elevated)',
                                 borderRadius: '8px',
                                 padding: '8px 10px',
-                                border: '1px solid #F0F0F0',
+                                border: '1px solid var(--border)',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s ease',
-                                boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
+                                boxShadow: 'var(--shadow-xs)',
                                 alignItems: 'center',
                                 animation: `fadeIn 0.3s ease ${index * 0.08}s both`,
                               }}
                               onMouseEnter={e => {
-                                e.currentTarget.style.borderColor = '#D4372B'
-                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(212,55,43,0.08)'
+                                e.currentTarget.style.borderColor = 'var(--accent)'
+                                e.currentTarget.style.boxShadow = 'var(--shadow-accent)'
                                 e.currentTarget.style.transform = 'translateY(-1px)'
                               }}
                               onMouseLeave={e => {
-                                e.currentTarget.style.borderColor = '#F0F0F0'
-                                e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.03)'
+                                e.currentTarget.style.borderColor = 'var(--border)'
+                                e.currentTarget.style.boxShadow = 'var(--shadow-xs)'
                                 e.currentTarget.style.transform = 'translateY(0)'
                               }}
                             >
@@ -1373,7 +1391,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                                 width: '50px',
                                 height: '50px',
                                 borderRadius: '6px',
-                                background: '#F8F8F8',
+                                background: 'var(--surface-sunken)',
                                 flexShrink: 0,
                                 overflow: 'hidden',
                                 display: 'flex',
@@ -1396,7 +1414,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                                   margin: 0,
                                   fontSize: isMobile ? '11px' : '12px',
                                   fontWeight: 500,
-                                  color: '#0A0A0A',
+                                  color: 'var(--foreground)',
                                   whiteSpace: 'nowrap',
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
@@ -1407,7 +1425,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                                   <p style={{
                                     margin: '2px 0 0 0',
                                     fontSize: isMobile ? '11px' : '12px',
-                                    color: '#D4372B',
+                                    color: 'var(--accent)',
                                     fontWeight: 600,
                                   }}>
                                     {formatPrice(p.price)}
@@ -1416,7 +1434,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                                 <p style={{
                                   margin: '1px 0 0 0',
                                   fontSize: isMobile ? '8px' : '9px',
-                                  color: '#999',
+                                  color: 'var(--muted-foreground)',
                                 }}>
                                   💡 {p.reason || 'Recommandé pour vous'}
                                 </p>
@@ -1449,21 +1467,21 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                               style={{
                                 padding: '6px 12px',
                                 background: 'transparent',
-                                border: '1px dashed #D4372B',
+                                border: '1px dashed var(--accent)',
                                 borderRadius: '20px',
-                                color: '#D4372B',
+                                color: 'var(--accent)',
                                 fontSize: isMobile ? '10px' : '11px',
                                 cursor: 'pointer',
                                 width: '100%',
                                 transition: 'all 0.2s',
                               }}
                               onMouseEnter={e => {
-                                e.currentTarget.style.background = '#FFF5F3'
-                                e.currentTarget.style.borderColor = '#D4372B'
+                                e.currentTarget.style.background = 'var(--accent-light)'
+                                e.currentTarget.style.borderColor = 'var(--accent)'
                               }}
                               onMouseLeave={e => {
                                 e.currentTarget.style.background = 'transparent'
-                                e.currentTarget.style.borderColor = '#D4372B'
+                                e.currentTarget.style.borderColor = 'var(--accent)'
                               }}
                             >
                               Voir plus de produits →
@@ -1486,15 +1504,15 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                       width: isMobile ? '20px' : '24px',
                       height: isMobile ? '20px' : '24px',
                       borderRadius: '50%',
-                      background: '#FFF0F0',
+                      background: 'var(--accent-light)',
                       fontSize: isMobile ? '10px' : '12px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                    }}><BotIcon size={isMobile ? 12 : 14} color="#D4372B" /></div>
+                    }}><BotIcon size={isMobile ? 12 : 14} color="var(--accent)" /></div>
                     <div style={{
                       padding: '6px 12px',
-                      background: '#F5F5F5',
+                      background: 'var(--surface)',
                       borderRadius: '12px 12px 12px 2px',
                       display: 'flex',
                       gap: '3px',
@@ -1505,7 +1523,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                           width: isMobile ? '5px' : '6px',
                           height: isMobile ? '5px' : '6px',
                           borderRadius: '50%',
-                          background: '#AAAAAA',
+                          background: 'var(--muted-foreground)',
                           animation: `bounce 1.2s ${i * 0.2}s infinite`,
                         }} />
                       ))}
@@ -1517,7 +1535,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
               <div style={{
                 padding: isMobile ? '6px 10px' : '10px 12px',
-                borderTop: '0.5px solid #ECECEC',
+                borderTop: '0.5px solid var(--border)',
                 display: 'flex',
                 gap: '6px',
                 alignItems: 'center',
@@ -1532,14 +1550,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                   disabled={isTyping || isRecording}
                   style={{
                     flex: 1,
-                    border: '0.5px solid #ECECEC',
+                    border: '0.5px solid var(--border)',
                     borderRadius: '20px',
                     padding: isMobile ? '6px 12px' : '8px 14px',
                     fontSize: isMobile ? '11px' : '12px',
                     fontFamily: "'Poppins', sans-serif",
                     outline: 'none',
-                    background: isRecording ? '#FFF8E1' : '#FAFAFA',
-                    color: '#0A0A0A',
+                    background: isRecording ? '#FFF8E1' : 'var(--surface)',
+                    color: 'var(--foreground)',
                   }}
                 />
                 
@@ -1551,7 +1569,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                       width: isMobile ? '30px' : '34px',
                       height: isMobile ? '30px' : '34px',
                       borderRadius: '50%',
-                      background: isRecording ? '#E67700' : '#ECECEC',
+                      background: isRecording ? '#E67700' : 'var(--surface)',
                       border: 'none',
                       cursor: isTyping ? 'default' : 'pointer',
                       display: 'flex',
@@ -1563,7 +1581,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                       boxShadow: isRecording ? '0 0 20px rgba(230,119,0,0.3)' : 'none',
                     }}
                   >
-                    <MicIcon size={isMobile ? 14 : 16} color={isRecording ? '#fff' : '#5A5A5A'} active={isRecording} />
+                    <MicIcon size={isMobile ? 14 : 16} color={isRecording ? '#fff' : 'var(--ink-2)'} active={isRecording} />
                   </button>
                 )}
                 
@@ -1574,7 +1592,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                     width: isMobile ? '30px' : '34px',
                     height: isMobile ? '30px' : '34px',
                     borderRadius: '50%',
-                    background: input.trim() && !isTyping ? '#D4372B' : '#ECECEC',
+                    background: input.trim() && !isTyping ? 'var(--accent)' : 'var(--surface)',
                     border: 'none',
                     cursor: input.trim() && !isTyping ? 'pointer' : 'default',
                     display: 'flex',
@@ -1585,7 +1603,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                     transition: 'background 0.2s',
                   }}
                 >
-                  <SendIcon size={isMobile ? 14 : 16} color={input.trim() && !isTyping ? '#fff' : '#9A9A9A'} />
+                  <SendIcon size={isMobile ? 14 : 16} color={input.trim() && !isTyping ? '#fff' : 'var(--muted-foreground)'} />
                 </button>
               </div>
             </>
