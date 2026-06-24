@@ -33,7 +33,7 @@ import { useRouter } from "next/navigation";
 import { PaymentButton } from "@/components/PaymentButton";
 import { CouponInput } from "@/components/CouponInput";
 import { apiFetch } from "@/lib/api";
-import { useTheme } from "@/context/ThemeProvider";
+import { useTheme } from "@/components/theme-provider";
 
 // Couleurs dynamiques
 const brandColor = "#D4372B";
