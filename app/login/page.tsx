@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/card"
 import { Loader2, ShoppingBag, Mail, Phone, Lock, Key, Shield, AlertCircle, CheckCircle, MailCheck, Eye, EyeOff, ArrowLeft } from "lucide-react"
 import { useAuth } from "@/lib/admin/auth-context"
+import { useTheme } from "@/components/theme-provider"
+import Link from "next/link"
 
 // ============================================================
 // COMPOSANT INTERNE QUI UTILISE useSearchParams
@@ -24,6 +26,8 @@ function UserLoginContent() {
   const redirect = searchParams.get('redirect') || '/account'
   
   const { login, register, user, isLoading: authLoading } = useAuth()
+  const { theme } = useTheme()
+  const isDark = theme === "dark"
 
   // États du formulaire
   const [step, setStep] = useState<"login" | "register" | "verify">("login")
@@ -251,18 +255,23 @@ function UserLoginContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: isDark ? "#0A0A0A" : "#F4F4F4" }}>
+      <Card className="w-full max-w-md" style={{ background: isDark ? "#1A1A1A" : "#fff", borderColor: isDark ? "#2A2A2A" : "#ECECEC" }}>
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-            <ShoppingBag className="h-6 w-6 text-primary-foreground" />
-          </div>
-          <CardTitle className="text-2xl">
+          {/* Logo cliquable qui ramène à l'accueil */}
+          <Link 
+            href="/" 
+            className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full transition-transform hover:scale-105"
+            style={{ background: "#D4372B" }}
+          >
+            <ShoppingBag className="h-6 w-6 text-white" />
+          </Link>
+          <CardTitle className="text-2xl" style={{ color: isDark ? "#fff" : "#0A0A0A" }}>
             {step === "login" && "Connexion client"}
             {step === "register" && "Créer un compte"}
             {step === "verify" && "Vérification"}
           </CardTitle>
-          <CardDescription>
+          <CardDescription style={{ color: isDark ? "#AAAAAA" : "#666666" }}>
             {step === "login" && "Connectez-vous pour accéder à votre espace client"}
             {step === "register" && "Créez votre compte en quelques secondes"}
             {step === "verify" && "Entrez le code reçu"}
@@ -277,7 +286,8 @@ function UserLoginContent() {
                 setError("")
                 setSuccess("")
               }}
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
+              className="flex items-center gap-2 text-sm mb-4 transition-colors"
+              style={{ color: isDark ? "#AAAAAA" : "#666666" }}
             >
               <ArrowLeft className="w-4 h-4" />
               Retour à la connexion
@@ -285,14 +295,14 @@ function UserLoginContent() {
           )}
 
           {error && (
-            <div className="mb-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive flex items-start gap-2">
+            <div className="mb-4 rounded-md p-3 text-sm flex items-start gap-2" style={{ background: isDark ? "#3A0A0A" : "#FFF0F0", border: isDark ? "0.5px solid #5A1A1A" : "0.5px solid #FECACA", color: "#D4372B" }}>
               <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {success && (
-            <div className="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-700 flex items-start gap-2 border border-green-200">
+            <div className="mb-4 rounded-md p-3 text-sm flex items-start gap-2" style={{ background: isDark ? "#0A2A0A" : "#F0FFF0", border: isDark ? "0.5px solid #1A5A1A" : "0.5px solid #A0E0A0", color: isDark ? "#66CC66" : "#2D7D2D" }}>
               <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <span>{success}</span>
             </div>
@@ -305,9 +315,10 @@ function UserLoginContent() {
                 onClick={() => setLoginMethod("email")}
                 className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
                   loginMethod === "email"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    ? "text-white shadow-sm"
+                    : isDark ? "text-gray-300 hover:bg-white/5" : "text-gray-700 hover:bg-gray-100"
                 }`}
+                style={loginMethod === "email" ? { background: "#D4372B" } : { background: isDark ? "#0A0A0A" : "#F4F4F4" }}
               >
                 <Mail className="w-4 h-4 inline mr-2" />
                 Email
@@ -317,9 +328,10 @@ function UserLoginContent() {
                 onClick={() => setLoginMethod("phone")}
                 className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
                   loginMethod === "phone"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    ? "text-white shadow-sm"
+                    : isDark ? "text-gray-300 hover:bg-white/5" : "text-gray-700 hover:bg-gray-100"
                 }`}
+                style={loginMethod === "phone" ? { background: "#D4372B" } : { background: isDark ? "#0A0A0A" : "#F4F4F4" }}
               >
                 <Phone className="w-4 h-4 inline mr-2" />
                 Téléphone
@@ -334,7 +346,7 @@ function UserLoginContent() {
               <>
                 {step === "register" && (
                   <div className="space-y-2">
-                    <Label htmlFor="name">Nom complet</Label>
+                    <Label htmlFor="name" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>Nom complet</Label>
                     <Input
                       id="name"
                       name="name"
@@ -344,13 +356,14 @@ function UserLoginContent() {
                       onChange={handleInputChange}
                       disabled={isSubmitting}
                       required={step === "register"}
+                      className={isDark ? "bg-[#0A0A0A] border-gray-700 text-white" : ""}
                     />
                   </div>
                 )}
 
                 {loginMethod === "email" ? (
                   <div className="space-y-2">
-                    <Label htmlFor="email">Adresse email</Label>
+                    <Label htmlFor="email" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>Adresse email</Label>
                     <Input
                       id="email"
                       name="email"
@@ -360,13 +373,14 @@ function UserLoginContent() {
                       onChange={handleInputChange}
                       disabled={isSubmitting}
                       required
+                      className={isDark ? "bg-[#0A0A0A] border-gray-700 text-white" : ""}
                     />
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Numéro de téléphone</Label>
+                    <Label htmlFor="phone" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>Numéro de téléphone</Label>
                     <div className="flex">
-                      <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-muted-foreground text-sm">
+                      <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 text-sm" style={{ background: isDark ? "#0A0A0A" : "#F4F4F4", color: isDark ? "#AAAAAA" : "#666666", borderColor: isDark ? "#2A2A2A" : "#ECECEC" }}>
                         +225
                       </span>
                       <Input
@@ -376,7 +390,7 @@ function UserLoginContent() {
                         placeholder="01 23 45 67 89"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className="rounded-l-none"
+                        className={`rounded-l-none ${isDark ? "bg-[#0A0A0A] border-gray-700 text-white" : ""}`}
                         disabled={isSubmitting}
                         required
                       />
@@ -385,7 +399,7 @@ function UserLoginContent() {
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Mot de passe</Label>
+                  <Label htmlFor="password" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>Mot de passe</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -396,11 +410,13 @@ function UserLoginContent() {
                       onChange={handleInputChange}
                       disabled={isSubmitting}
                       required
+                      className={isDark ? "bg-[#0A0A0A] border-gray-700 text-white" : ""}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                      style={{ color: isDark ? "#AAAAAA" : "#666666" }}
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -409,7 +425,7 @@ function UserLoginContent() {
 
                 {step === "register" && (
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+                    <Label htmlFor="confirmPassword" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>Confirmer le mot de passe</Label>
                     <div className="relative">
                       <Input
                         id="confirmPassword"
@@ -420,11 +436,13 @@ function UserLoginContent() {
                         onChange={handleInputChange}
                         disabled={isSubmitting}
                         required
+                        className={isDark ? "bg-[#0A0A0A] border-gray-700 text-white" : ""}
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        className="absolute right-3 top-1/2 -translate-y-1/2"
+                        style={{ color: isDark ? "#AAAAAA" : "#666666" }}
                       >
                         {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -432,7 +450,12 @@ function UserLoginContent() {
                   </div>
                 )}
 
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                <Button 
+                  type="submit" 
+                  className="w-full text-white"
+                  style={{ background: "#D4372B" }}
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -448,19 +471,19 @@ function UserLoginContent() {
             {step === "verify" && (
               <>
                 <div className="text-center mb-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <MailCheck className="w-6 h-6 text-green-600" />
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: isDark ? "#0A2A0A" : "#F0FFF0" }}>
+                    <MailCheck className="w-6 h-6" style={{ color: isDark ? "#66CC66" : "#2D7D2D" }} />
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm" style={{ color: isDark ? "#AAAAAA" : "#666666" }}>
                     Nous avons envoyé un code à 6 chiffres à
                   </p>
-                  <p className="text-sm font-medium mt-1">
+                  <p className="text-sm font-medium mt-1" style={{ color: isDark ? "#fff" : "#0A0A0A" }}>
                     {loginMethod === "email" ? formData.email : formData.phone}
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="verificationCode">Code de vérification</Label>
+                  <Label htmlFor="verificationCode" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>Code de vérification</Label>
                   <Input
                     id="verificationCode"
                     name="verificationCode"
@@ -471,7 +494,7 @@ function UserLoginContent() {
                       const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6)
                       setFormData(prev => ({ ...prev, verificationCode: value }))
                     }}
-                    className="text-center text-2xl tracking-[0.5em] font-mono"
+                    className={`text-center text-2xl tracking-[0.5em] font-mono ${isDark ? "bg-[#0A0A0A] border-gray-700 text-white" : ""}`}
                     maxLength={6}
                     disabled={isSubmitting}
                     required
@@ -479,20 +502,26 @@ function UserLoginContent() {
                 </div>
 
                 {countdown > 0 ? (
-                  <p className="text-sm text-muted-foreground text-center">
+                  <p className="text-sm text-center" style={{ color: isDark ? "#AAAAAA" : "#666666" }}>
                     Renvoyer le code dans {countdown} secondes
                   </p>
                 ) : (
                   <button
                     type="button"
                     onClick={handleSendCode}
-                    className="w-full text-sm text-primary hover:underline"
+                    className="w-full text-sm hover:underline"
+                    style={{ color: "#D4372B" }}
                   >
                     Renvoyer le code
                   </button>
                 )}
 
-                <Button type="submit" className="w-full" disabled={isSubmitting || formData.verificationCode.length !== 6}>
+                <Button 
+                  type="submit" 
+                  className="w-full text-white"
+                  style={{ background: "#D4372B" }}
+                  disabled={isSubmitting || formData.verificationCode.length !== 6}
+                >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -508,7 +537,7 @@ function UserLoginContent() {
 
           {step !== "verify" && (
             <div className="mt-6 text-center text-sm">
-              <span className="text-muted-foreground">
+              <span style={{ color: isDark ? "#AAAAAA" : "#666666" }}>
                 {step === "login" ? "Pas encore de compte ?" : "Déjà inscrit ?"}
               </span>{" "}
               <button
@@ -519,14 +548,15 @@ function UserLoginContent() {
                   setSuccess("")
                   setFormData(prev => ({ ...prev, verificationCode: "", password: "", confirmPassword: "" }))
                 }}
-                className="text-primary hover:underline"
+                className="hover:underline"
+                style={{ color: "#D4372B" }}
               >
                 {step === "login" ? "Inscrivez-vous" : "Connectez-vous"}
               </button>
             </div>
           )}
 
-          <div className="mt-4 text-center text-xs text-muted-foreground flex items-center justify-center gap-3">
+          <div className="mt-4 text-center text-xs flex items-center justify-center gap-3" style={{ color: isDark ? "#666666" : "#999999" }}>
             <div className="flex items-center gap-1">
               <Lock className="w-3 h-3" />
               <span>Chiffré 256-bit</span>
@@ -550,18 +580,21 @@ function UserLoginContent() {
 // LOADING FALLBACK PENDANT LE SUSPENSE
 // ============================================================
 function LoginLoadingFallback() {
+  const { theme } = useTheme()
+  const isDark = theme === "dark"
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: isDark ? "#0A0A0A" : "#F4F4F4" }}>
+      <Card className="w-full max-w-md" style={{ background: isDark ? "#1A1A1A" : "#fff", borderColor: isDark ? "#2A2A2A" : "#ECECEC" }}>
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-            <ShoppingBag className="h-6 w-6 text-primary-foreground" />
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full" style={{ background: "#D4372B" }}>
+            <ShoppingBag className="h-6 w-6 text-white" />
           </div>
-          <CardTitle className="text-2xl">Adullam</CardTitle>
-          <CardDescription>Chargement...</CardDescription>
+          <CardTitle className="text-2xl" style={{ color: isDark ? "#fff" : "#0A0A0A" }}>Adullam</CardTitle>
+          <CardDescription style={{ color: isDark ? "#AAAAAA" : "#666666" }}>Chargement...</CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#D4372B" }} />
         </CardContent>
       </Card>
     </div>
