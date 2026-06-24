@@ -2,7 +2,7 @@
 
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// VENDEUR ULTIME - Version 4.0
+// VENDEUR ULTIME - Version 5.0
 // Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
 
 import { useState, useEffect, useRef, useCallback } from "react"
@@ -101,12 +101,13 @@ interface Product {
 }
 
 interface Offer {
-  type: 'safe' | 'risky' | 'none'
+  type: 'safe' | 'risky' | 'none' | 'coupon'
   discount_1: number
   discount_2: number
   time_limit: number
   urgency_message?: string
   taunt_message?: string
+  coupon?: any
 }
 
 interface ChatbotWidgetProps {
@@ -174,10 +175,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const speechSynthRef  = useRef<SpeechSynthesis | null>(null)
 
   // 🖱️ Déplacement (drag) façon Messenger
-  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null)     // fenêtre (desktop)
-  const [bubblePos, setBubblePos] = useState<{ x: number; y: number } | null>(null) // bulle flottante
+  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null)
+  const [bubblePos, setBubblePos] = useState<{ x: number; y: number } | null>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const [snapAnimating, setSnapAnimating] = useState(false) // animation d'accroche au bord
+  const [snapAnimating, setSnapAnimating] = useState(false)
   const dragStateRef = useRef<{
     startX: number
     startY: number
@@ -238,17 +239,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
-  // ⌨️ Gestion clavier mobile (façon Messenger : la fenêtre reste ancrée
-  // au-dessus du clavier et CONSERVE sa hauteur au lieu d'être écrasée)
+  // ⌨️ Gestion clavier mobile
   useEffect(() => {
     if (typeof window === 'undefined' || !window.visualViewport) return
     const vv = window.visualViewport
 
     const handleViewport = () => {
-      // Hauteur "mangée" par le clavier = différence entre la fenêtre
-      // et le viewport visible (+ décalage de scroll éventuel)
       const inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
-      setKeyboardInset(inset > 80 ? inset : 0) // seuil pour ignorer les barres natives
+      setKeyboardInset(inset > 80 ? inset : 0)
     }
 
     vv.addEventListener('resize', handleViewport)
@@ -260,7 +258,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
-  // 🖱️ Déplacement fluide (fenêtre OU bulle) — souris + tactile
+  // 🖱️ Déplacement fluide
   useEffect(() => {
     if (!isDragging) return
 
@@ -298,7 +296,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
     const onEnd = () => {
       const s = dragStateRef.current
-      // 🧲 Accroche au bord le plus proche (façon Messenger) pour la bulle
       if (s?.mode === 'bubble' && s.moved) {
         const el = bubbleRef.current
         const w = el?.offsetWidth ?? bubbleSize
@@ -327,7 +324,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [isDragging, isMobile])
 
-  // Démarrage du drag (en-tête de fenêtre ou bulle)
   const startDrag = useCallback((clientX: number, clientY: number, mode: 'window' | 'bubble') => {
     const el = mode === 'bubble' ? bubbleRef.current : containerRef.current
     const rect = el?.getBoundingClientRect()
@@ -443,13 +439,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           if (lastCoupon) {
             const codeMatch = lastCoupon.content.match(/ADU-[A-Z0-9-]+/)
             if (codeMatch) {
-              // On pourrait restaurer le coupon ici
               console.log('🔍 Coupon trouvé dans l\'historique:', codeMatch[0])
             }
           }
         }
 
-        // ✅ Ne pas afficher "Content de te revoir" si on vient de cliquer sur un produit
         const justClickedProduct = sessionStorage.getItem('just_clicked_product') === 'true'
         
         if (data.welcome_back_message && !justClickedProduct && messages.length === 0) {
@@ -562,7 +556,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       saveMessageToHistory(content, products, offer)
     }
     
-    if (offer && offer.type !== 'none') {
+    // ✅ GESTION DU COUPON
+    if (offer && offer.type === 'coupon' && offer.coupon) {
+      setActiveCoupon(offer.coupon)
+      setShowCouponBanner(true)
+      setCouponTimer(offer.coupon.time_limit * 60)
+    } else if (offer && offer.type !== 'none') {
       setActiveOffer(offer)
       setOfferTimer(offer.time_limit * 60)
       setShowOfferBanner(true)
@@ -946,11 +945,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const widgetWidth = isMobile ? 'calc(100vw - 24px)' : '380px'
   const widgetHeight = isMobile ? '500px' : '540px'
 
-  // Positionnement de la fenêtre :
-  // - Mobile ouvert : ancré entre le haut et juste au-dessus du clavier (top + bottom),
-  //   la fenêtre occupe la zone visible → l'input reste toujours visible, rien n'est coupé.
-  // - Mobile réduit : barre en bas.
-  // - Desktop : bas-droite, ou position libre si déplacée (drag).
   let positionStyle: React.CSSProperties
   let heightStyle: React.CSSProperties
   if (isMobile) {
@@ -959,7 +953,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       heightStyle = { height: '52px', maxHeight: '52px' }
     } else {
       positionStyle = { top: 8, left: 12, right: 12, bottom: keyboardInset + 8 }
-      heightStyle = { height: 'auto' } // top + bottom définissent la hauteur visible
+      heightStyle = { height: 'auto' }
     }
   } else if (dragPos) {
     positionStyle = { top: dragPos.y, left: dragPos.x }
@@ -1087,7 +1081,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         <button
           ref={bubbleRef}
           onClick={() => {
-            // Ouvre le chat seulement si on n'a pas déplacé la bulle
             if (dragStateRef.current?.mode === 'bubble' && dragStateRef.current?.moved) return
             openChat()
           }}
@@ -1115,7 +1108,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               ? '0 16px 40px rgba(212,55,43,0.55), 0 4px 12px rgba(0,0,0,0.18)'
               : '0 8px 28px rgba(212,55,43,0.45), 0 2px 8px rgba(0,0,0,0.12)',
             zIndex: 1000,
-            // Suivi 1:1 pendant le drag, accroche animée au relâcher, sinon micro-anim
             transition: isDragging && dragStateRef.current?.mode === 'bubble'
               ? 'box-shadow 0.15s ease'
               : snapAnimating
@@ -1149,11 +1141,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       )}
 
       {!isOpen && proactiveMessage && (() => {
-        // 🐛 FIX — avant : la bulle de notif utilisait toujours
-        // bottomPosition/rightPosition (la position INITIALE), même
-        // après un drag. Elle s'affichait donc à l'ancien emplacement
-        // au lieu de suivre la bulle déplacée. On calcule maintenant
-        // sa position à partir de bubblePos quand la bulle a été bougée.
         const onLeft = bubblePos ? bubblePos.x < window.innerWidth / 2 : false
         const anchorStyle: React.CSSProperties = bubblePos
           ? {
@@ -1220,7 +1207,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             flexDirection: 'column',
             overflow: 'hidden',
             fontFamily: "'Poppins', sans-serif",
-            // Pas de transition pendant le drag pour un suivi 1:1 du curseur
             transition: isDragging ? 'none' : 'height 0.3s ease, bottom 0.25s ease',
             touchAction: isDragging ? 'none' : 'auto',
             userSelect: isDragging ? 'none' : 'auto',
@@ -1238,7 +1224,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               touchAction: isMobile ? 'auto' : 'none',
             }}
             onMouseDown={e => {
-              // Déplacement de la fenêtre réservé au desktop (sur mobile elle est ancrée)
               if (isMobile) return
               if ((e.target as HTMLElement).closest('button')) return
               startDrag(e.clientX, e.clientY, 'window')
@@ -1250,7 +1235,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               if (t) startDrag(t.clientX, t.clientY, 'window')
             }}
             onClick={() => {
-              // Clic = réduire/agrandir, mais seulement si on n'a pas déplacé
               if (dragStateRef.current?.moved) return
               setIsMinimized(!isMinimized)
             }}
