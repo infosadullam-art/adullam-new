@@ -33,6 +33,7 @@ import { useRouter } from "next/navigation";
 import { PaymentButton } from "@/components/PaymentButton";
 import { CouponInput } from "@/components/CouponInput";
 import { apiFetch } from "@/lib/api";
+import { useTheme } from "@/context/ThemeProvider";
 
 // Couleurs dynamiques
 const brandColor = "#D4372B";
@@ -114,6 +115,9 @@ const getShippingLabel = (mode: string): string => {
 export default function CheckoutPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  
   const { 
     cart, 
     totalUSD, 
@@ -398,7 +402,7 @@ export default function CheckoutPage() {
   // ==================== LOADING ====================
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: isDark ? "#0A0A0A" : "#FAFAFA" }}>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#D4372B' }} />
       </div>
     );
@@ -406,7 +410,7 @@ export default function CheckoutPage() {
 
   // ==================== CHECKOUT ====================
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#FAFAFA' }}>
+    <div className="min-h-screen" style={{ backgroundColor: isDark ? "#0A0A0A" : "#FAFAFA" }}>
       <div className="hidden lg:block"><Header /></div>
       <div className="lg:hidden"><MobileHeader /></div>
 
@@ -414,24 +418,24 @@ export default function CheckoutPage() {
         <div className="max-w-6xl mx-auto px-4">
           
           <div className="hidden lg:flex items-center gap-2 text-xs mb-6">
-            <Link href="/" className="text-gray-400 hover:text-gray-600">Accueil</Link>
-            <ChevronRight className="w-3 h-3 text-gray-300" />
-            <Link href="/cart" className="text-gray-400 hover:text-gray-600">Panier</Link>
-            <ChevronRight className="w-3 h-3 text-gray-300" />
-            <span className="text-gray-600">Checkout</span>
+            <Link href="/" className={isDark ? "text-gray-500 hover:text-gray-300" : "text-gray-400 hover:text-gray-600"}>Accueil</Link>
+            <ChevronRight className={isDark ? "w-3 h-3 text-gray-600" : "w-3 h-3 text-gray-300"} />
+            <Link href="/cart" className={isDark ? "text-gray-500 hover:text-gray-300" : "text-gray-400 hover:text-gray-600"}>Panier</Link>
+            <ChevronRight className={isDark ? "w-3 h-3 text-gray-600" : "w-3 h-3 text-gray-300"} />
+            <span className={isDark ? "text-gray-400" : "text-gray-600"}>Checkout</span>
           </div>
 
           <div className="flex items-center gap-3 mb-4 lg:hidden">
             <button
               onClick={() => router.back()}
-              className="p-2 -ml-2 hover:bg-white rounded-lg transition-colors"
+              className={`p-2 -ml-2 rounded-lg transition-colors ${isDark ? "hover:bg-white/5" : "hover:bg-white"}`}
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
+              <ArrowLeft className={`w-5 h-5 ${isDark ? "text-gray-400" : "text-gray-600"}`} />
             </button>
-            <h1 className="text-lg font-medium">Finaliser la commande</h1>
+            <h1 className={`text-lg font-medium ${isDark ? "text-white" : "text-gray-900"}`}>Finaliser la commande</h1>
           </div>
 
-          <h1 className="hidden lg:block text-2xl font-medium mb-6">Finaliser la commande</h1>
+          <h1 className={`hidden lg:block text-2xl font-medium mb-6 ${isDark ? "text-white" : "text-gray-900"}`}>Finaliser la commande</h1>
 
           <div className="flex items-center justify-between mb-6 lg:mb-8 max-w-2xl">
             {[
@@ -443,17 +447,17 @@ export default function CheckoutPage() {
                 <div className="flex flex-col items-center">
                   <div 
                     className={`w-7 h-7 lg:w-8 lg:h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
-                      step >= item.step ? 'text-white' : 'text-gray-400'
+                      step >= item.step ? 'text-white' : isDark ? 'text-gray-500' : 'text-gray-400'
                     }`}
-                    style={{ background: step >= item.step ? '#D4372B' : '#F4F4F4' }}
+                    style={{ background: step >= item.step ? '#D4372B' : isDark ? '#1A1A1A' : '#F4F4F4' }}
                   >
                     {step > item.step ? <Check className="w-3 h-3 lg:w-4 lg:h-4" /> : item.step}
                   </div>
-                  <span className="text-[10px] lg:text-xs mt-1 text-gray-500">{item.label}</span>
+                  <span className={`text-[10px] lg:text-xs mt-1 ${isDark ? "text-gray-500" : "text-gray-500"}`}>{item.label}</span>
                 </div>
                 {index < 2 && (
                   <div className={`w-8 lg:w-12 h-0.5 mx-1 lg:mx-2 ${
-                    step > item.step ? 'bg-[#D4372B]' : 'bg-gray-200'
+                    step > item.step ? 'bg-[#D4372B]' : isDark ? 'bg-gray-700' : 'bg-gray-200'
                   }`} />
                 )}
               </div>
@@ -467,39 +471,39 @@ export default function CheckoutPage() {
               
               {/* ÉTAPE 1 - LIVRAISON Desktop */}
               {step === 1 && (
-                <div className="bg-white rounded-xl border-0 p-4 lg:p-6">
-                  <h2 className="text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2">
+                <div className={`rounded-xl border-0 p-4 lg:p-6 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
+                  <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
                     <MapPin className="w-4 h-4" style={{ color: '#D4372B' }} />
                     Adresse de livraison
                   </h2>
 
                   <div className="mb-3 lg:mb-4">
-                    <label className="block text-xs text-gray-500 mb-1">Pays</label>
+                    <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Pays</label>
                     <div className="relative" ref={countryDropdownRef}>
                       <button
                         type="button"
                         onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                        className="w-full px-3 py-2.5 flex items-center justify-between text-sm transition-all" style={{ background: '#F4F4F4', borderRadius: '10px', border: '1.5px solid transparent' }}
+                        className={`w-full px-3 py-2.5 flex items-center justify-between text-sm transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white" : "bg-[#F4F4F4] text-gray-900"}`}
                       >
                         <div className="flex items-center gap-2 truncate">
                           <span>{selectedCountry.flag}</span>
                           <span className="truncate">{selectedCountry.name}</span>
-                          <span className="text-xs text-gray-400 hidden sm:inline">{selectedCountry.prefix}</span>
+                          <span className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"} hidden sm:inline`}>{selectedCountry.prefix}</span>
                         </div>
-                        <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${isCountryDropdownOpen ? 'rotate-90' : ''}`} />
+                        <ChevronRight className={`w-4 h-4 ${isDark ? "text-gray-500" : "text-gray-400"} transition-transform flex-shrink-0 ${isCountryDropdownOpen ? 'rotate-90' : ''}`} />
                       </button>
 
                       {isCountryDropdownOpen && (
-                        <div className="absolute z-50 w-full mt-1 overflow-y-auto" style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #ECECEC', boxShadow: '0 8px 30px rgba(0,0,0,0.08)', maxHeight: '240px' }}>
+                        <div className="absolute z-50 w-full mt-1 overflow-y-auto rounded-lg border-0" style={{ background: isDark ? '#1A1A1A' : '#fff', boxShadow: isDark ? '0 8px 30px rgba(0,0,0,0.5)' : '0 8px 30px rgba(0,0,0,0.08)', maxHeight: '240px' }}>
                           {AFRICAN_COUNTRIES.map((country) => (
                             <button
                               key={country.code}
                               onClick={() => handleCountryChange(country)}
-                              className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm border-b last:border-0"
+                              className={`w-full px-3 py-2 text-left flex items-center gap-2 text-sm border-b last:border-0 ${isDark ? "hover:bg-white/5 text-gray-300 border-gray-800" : "hover:bg-gray-50 text-gray-900 border-gray-100"}`}
                             >
                               <span>{country.flag}</span>
                               <span className="flex-1 truncate">{country.name}</span>
-                              <span className="text-xs text-gray-400">{country.prefix}</span>
+                              <span className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>{country.prefix}</span>
                             </button>
                           ))}
                         </div>
@@ -509,7 +513,7 @@ export default function CheckoutPage() {
 
                   {addresses.length > 0 && !showNewAddressForm && (
                     <div className="mb-3 lg:mb-4">
-                      <label className="block text-xs text-gray-500 mb-2">Adresse existante</label>
+                      <label className={`block text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Adresse existante</label>
                       <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                         {addresses
                           .filter(a => a.country === selectedCountry.code)
@@ -520,24 +524,24 @@ export default function CheckoutPage() {
                             className={`w-full p-3 border rounded-lg text-left transition-all ${
                               selectedAddressId === addr.id
                                 ? 'border-[#D4372B] bg-[#D4372B]/5'
-                                : 'border-gray-100 hover:border-gray-200'
+                                : isDark ? 'border-gray-800 hover:border-gray-700' : 'border-gray-100 hover:border-gray-200'
                             }`}
                           >
                             <div className="flex items-start gap-2">
                               <div className={`mt-1 w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 ${
                                 selectedAddressId === addr.id
                                   ? 'border-[#D4372B]'
-                                  : 'border-gray-300'
+                                  : isDark ? 'border-gray-600' : 'border-gray-300'
                               }`}>
                                 {selectedAddressId === addr.id && (
                                   <div className="w-2 h-2 rounded-full" style={{ backgroundColor: brandColor }} />
                                 )}
                               </div>
                               <div className="text-xs min-w-0 flex-1">
-                                <p className="font-medium truncate">{addr.firstName} {addr.lastName}</p>
-                                <p className="text-gray-500 mt-0.5 truncate">{addr.address}</p>
-                                {addr.quartier && <p className="text-gray-500 truncate">{addr.quartier}</p>}
-                                <p className="text-gray-500 truncate">{addr.city}</p>
+                                <p className={`font-medium truncate ${isDark ? "text-white" : "text-gray-900"}`}>{addr.firstName} {addr.lastName}</p>
+                                <p className={`mt-0.5 truncate ${isDark ? "text-gray-400" : "text-gray-500"}`}>{addr.address}</p>
+                                {addr.quartier && <p className={`truncate ${isDark ? "text-gray-400" : "text-gray-500"}`}>{addr.quartier}</p>}
+                                <p className={`truncate ${isDark ? "text-gray-400" : "text-gray-500"}`}>{addr.city}</p>
                               </div>
                             </div>
                           </button>
@@ -546,16 +550,16 @@ export default function CheckoutPage() {
                       
                       <div className="relative my-3 lg:my-4">
                         <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-gray-100"></div>
+                          <div className={`w-full border-t ${isDark ? "border-gray-800" : "border-gray-100"}`}></div>
                         </div>
                         <div className="relative flex justify-center text-xs">
-                          <span className="px-2 bg-white text-gray-400">ou</span>
+                          <span className={`px-2 ${isDark ? "bg-[#1A1A1A] text-gray-500" : "bg-white text-gray-400"}`}>ou</span>
                         </div>
                       </div>
 
                       <button
                         onClick={() => setShowNewAddressForm(true)}
-                        className="w-full py-2 border border-dashed border-gray-200 rounded-lg text-xs text-gray-500 hover:border-gray-300 hover:text-gray-700 transition flex items-center justify-center gap-1"
+                        className={`w-full py-2 border border-dashed rounded-lg text-xs transition flex items-center justify-center gap-1 ${isDark ? "border-gray-700 text-gray-400 hover:border-gray-600 hover:text-gray-300" : "border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700"}`}
                       >
                         <Plus className="w-3 h-3" />
                         Nouvelle adresse
@@ -567,46 +571,46 @@ export default function CheckoutPage() {
                     <div className="space-y-3">
                       <div className="grid grid-cols-2 gap-2 lg:gap-3">
                         <div>
-                          <label className="block text-xs text-gray-500 mb-1">Prénom</label>
+                          <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Prénom</label>
                           <input
                             type="text"
                             name="firstName"
                             value={showNewAddressForm ? newAddress.firstName : shippingInfo.firstName}
                             onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                            className="w-full px-3 py-2.5 text-sm focus:outline-none transition-all" style={{ background: '#F4F4F4', borderRadius: '10px', border: '1.5px solid transparent' }}
+                            className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
                             placeholder="Jean"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-500 mb-1">Nom</label>
+                          <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Nom</label>
                           <input
                             type="text"
                             name="lastName"
                             value={showNewAddressForm ? newAddress.lastName : shippingInfo.lastName}
                             onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                            className="w-full px-3 py-2.5 text-sm focus:outline-none transition-all" style={{ background: '#F4F4F4', borderRadius: '10px', border: '1.5px solid transparent' }}
+                            className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
                             placeholder="Dupont"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Email</label>
+                        <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Email</label>
                         <input
                           type="email"
                           name="email"
                           value={shippingInfo.email}
                           onChange={handleInputChange}
                           disabled={!showNewAddressForm}
-                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4372B]/20 bg-gray-50"
+                          className={`w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4372B]/20 ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-gray-50 text-gray-900 border-0"}`}
                           placeholder="jean@exemple.com"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Téléphone</label>
+                        <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Téléphone</label>
                         <div className="flex">
-                          <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-200 bg-gray-50 text-xs text-gray-600">
+                          <span className={`inline-flex items-center px-3 rounded-l-lg text-xs ${isDark ? "bg-[#0A0A0A] text-gray-400" : "bg-gray-50 text-gray-600"}`}>
                             {selectedCountry.prefix}
                           </span>
                           <input
@@ -614,56 +618,56 @@ export default function CheckoutPage() {
                             name="phone"
                             value={showNewAddressForm ? newAddress.phone : shippingInfo.phone}
                             onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                            className="flex-1 px-3 py-2.5 text-sm focus:outline-none" style={{ background: '#F4F4F4', borderRadius: '0 10px 10px 0', border: '1.5px solid transparent' }}
+                            className={`flex-1 px-3 py-2.5 text-sm focus:outline-none rounded-r-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
                             placeholder="01 23 45 67"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Adresse</label>
+                        <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Adresse</label>
                         <input
                           type="text"
                           name="address"
                           value={showNewAddressForm ? newAddress.address : shippingInfo.address}
                           onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                          className="w-full px-3 py-2.5 text-sm focus:outline-none transition-all" style={{ background: '#F4F4F4', borderRadius: '10px', border: '1.5px solid transparent' }}
+                          className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
                           placeholder="Rue, numéro"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Quartier</label>
+                        <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Quartier</label>
                         <input
                           type="text"
                           name="quartier"
                           value={showNewAddressForm ? newAddress.quartier : shippingInfo.quartier}
                           onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                          className="w-full px-3 py-2.5 text-sm focus:outline-none transition-all" style={{ background: '#F4F4F4', borderRadius: '10px', border: '1.5px solid transparent' }}
+                          className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
                           placeholder="Quartier / Zone"
                         />
                       </div>
 
                       <div className="grid grid-cols-2 gap-2 lg:gap-3">
                         <div>
-                          <label className="block text-xs text-gray-500 mb-1">Ville</label>
+                          <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Ville</label>
                           <input
                             type="text"
                             name="city"
                             value={showNewAddressForm ? newAddress.city : shippingInfo.city}
                             onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                            className="w-full px-3 py-2.5 text-sm focus:outline-none transition-all" style={{ background: '#F4F4F4', borderRadius: '10px', border: '1.5px solid transparent' }}
+                            className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
                             placeholder="Ville"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-500 mb-1">Code postal</label>
+                          <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Code postal</label>
                           <input
                             type="text"
                             name="postalCode"
                             value={showNewAddressForm ? newAddress.postalCode : shippingInfo.postalCode}
                             onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                            className="w-full px-3 py-2.5 text-sm focus:outline-none transition-all" style={{ background: '#F4F4F4', borderRadius: '10px', border: '1.5px solid transparent' }}
+                            className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
                             placeholder="BP"
                           />
                         </div>
@@ -671,7 +675,7 @@ export default function CheckoutPage() {
 
                       {showNewAddressForm && (
                         <>
-                          <label className="flex items-center gap-2">
+                          <label className={`flex items-center gap-2 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
                             <input
                               type="checkbox"
                               name="isDefault"
@@ -679,7 +683,7 @@ export default function CheckoutPage() {
                               onChange={handleNewAddressChange}
                               className="w-3 h-3 rounded border-gray-300"
                             />
-                            <span className="text-xs text-gray-600">Par défaut</span>
+                            <span className="text-xs">Par défaut</span>
                           </label>
 
                           <div className="flex gap-2 pt-2">
@@ -692,7 +696,7 @@ export default function CheckoutPage() {
                             </button>
                             <button
                               onClick={() => setShowNewAddressForm(false)}
-                              className="flex-1 px-3 py-2 text-xs font-medium border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                              className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${isDark ? "border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
                             >
                               Annuler
                             </button>
@@ -717,13 +721,13 @@ export default function CheckoutPage() {
 
               {/* ÉTAPE 2 - EXPÉDITION Desktop */}
               {step === 2 && (
-                <div className="bg-white rounded-xl border-0 p-4 lg:p-6">
-                  <h2 className="text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2">
+                <div className={`rounded-xl border-0 p-4 lg:p-6 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
+                  <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
                     <Truck className="w-4 h-4" style={{ color: '#D4372B' }} />
                     Mode d'expédition par produit
                   </h2>
                   
-                  <p className="text-xs text-gray-500 mb-4">
+                  <p className={`text-xs mb-4 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
                     Choisissez le mode d'expédition pour chaque article.
                   </p>
 
@@ -735,10 +739,10 @@ export default function CheckoutPage() {
                       return (
                         <div 
                           key={item.variantKey} 
-                          className={`bg-gray-50 rounded-lg p-3 border-0 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'}`}
+                          className={`rounded-lg p-3 border-0 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'} ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}
                         >
                           <div className="flex gap-3">
-                            <div className="w-12 h-12 bg-white rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
+                            <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border ${isDark ? "bg-[#1A1A1A] border-gray-800" : "bg-white border-gray-200"}`}>
                               <Image
                                 src={item.image || "/placeholder.svg"}
                                 alt={item.name || "Produit"}
@@ -748,15 +752,15 @@ export default function CheckoutPage() {
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium break-words leading-tight">
+                              <p className={`text-sm font-medium break-words leading-tight ${isDark ? "text-white" : "text-gray-900"}`}>
                                 {item.name || "Produit"}
                               </p>
                               {(item.color || item.eurSize) && (
-                                <p className="text-xs text-gray-500 mt-0.5">
+                                <p className={`text-xs mt-0.5 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
                                   {item.color} {item.eurSize && `• Pointure ${item.eurSize}`}
                                 </p>
                               )}
-                              <p className="text-xs text-gray-400 mt-1">Quantité: {item.quantity}</p>
+                              <p className={`text-xs mt-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}>Quantité: {item.quantity}</p>
                             </div>
                             <div className="text-right flex-shrink-0">
                               <p className="text-sm font-bold whitespace-nowrap" style={{ color: '#D4372B' }}>
@@ -765,8 +769,8 @@ export default function CheckoutPage() {
                             </div>
                           </div>
 
-                          <div className="mt-3 pt-2 border-t border-gray-200">
-                            <span className="text-xs text-gray-500 mr-2">Expédition:</span>
+                          <div className="mt-3 pt-2 border-t" style={{ borderColor: isDark ? '#2A2A2A' : '#E5E5E5' }}>
+                            <span className={`text-xs mr-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Expédition:</span>
                             <div className="flex gap-2 mt-1 flex-wrap">
                               {SHIPPING_METHODS.map((method) => (
                                 <button
@@ -775,7 +779,7 @@ export default function CheckoutPage() {
                                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                                     currentMode === method.id
                                       ? 'text-white'
-                                      : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
+                                      : isDark ? 'bg-[#0A0A0A] border border-gray-700 text-gray-400 hover:border-gray-600' : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
                                   }`}
                                   style={currentMode === method.id ? { background: '#D4372B' } : {}}
                                 >
@@ -789,14 +793,14 @@ export default function CheckoutPage() {
                     })}
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-gray-200">
-                    <p className="text-xs text-gray-500 mb-2">Appliquer le même mode à tous les articles:</p>
+                  <div className="mt-4 pt-3 border-t" style={{ borderColor: isDark ? '#2A2A2A' : '#E5E5E5' }}>
+                    <p className={`text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Appliquer le même mode à tous les articles:</p>
                     <div className="flex gap-2 flex-wrap">
                       {SHIPPING_METHODS.map((method) => (
                         <button
                           key={method.id}
                           onClick={() => handleGlobalShippingChange(method.id as any)}
-                          className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors" style={{ background: '#F4F4F4', color: '#0A0A0A' }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${isDark ? "bg-[#0A0A0A] text-gray-300 hover:bg-white/5" : "bg-[#F4F4F4] text-gray-700 hover:bg-gray-200"}`}
                         >
                           {method.label}
                         </button>
@@ -807,7 +811,7 @@ export default function CheckoutPage() {
                   <div className="flex gap-2 mt-4">
                     <button
                       onClick={() => setStep(1)}
-                      className="flex-1 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors" style={{ border: '1.5px solid #ECECEC', color: '#0A0A0A' }}
+                      className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors ${isDark ? "border border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
                     >
                       Retour
                     </button>
@@ -822,25 +826,25 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* ÉTAPE 3 - CONFIRMATION Desktop - onSuccess SUPPRIMÉ */}
+              {/* ÉTAPE 3 - CONFIRMATION Desktop */}
               {step === 3 && (
-                <div className="bg-white rounded-xl border-0 p-4 lg:p-6">
-                  <h2 className="text-sm lg:text-base font-medium mb-3 lg:mb-4">Confirmation</h2>
+                <div className={`rounded-xl border-0 p-4 lg:p-6 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
+                  <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>Confirmation</h2>
 
                   {error && (
-                    <div className="mb-4 p-3 rounded-xl flex items-center gap-2 text-xs" style={{ background: '#FFF0F0', border: '0.5px solid #FECACA', color: '#D4372B' }}>
+                    <div className="mb-4 p-3 rounded-xl flex items-center gap-2 text-xs" style={{ background: isDark ? '#3A0A0A' : '#FFF0F0', border: isDark ? '0.5px solid #5A1A1A' : '0.5px solid #FECACA', color: '#D4372B' }}>
                       <AlertCircle className="w-4 h-4 flex-shrink-0" />
                       <span>{error}</span>
                     </div>
                   )}
 
                   <div className="space-y-3">
-                    <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className={`p-3 rounded-lg ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
                       <div className="flex items-center gap-1 mb-2">
                         <Home className="w-3 h-3" style={{ color: '#D4372B' }} />
-                        <span className="text-xs font-medium">Livraison</span>
+                        <span className={`text-xs font-medium ${isDark ? "text-white" : "text-gray-900"}`}>Livraison</span>
                       </div>
-                      <p className="text-xs text-gray-600 leading-relaxed break-words">
+                      <p className={`text-xs leading-relaxed break-words ${isDark ? "text-gray-400" : "text-gray-600"}`}>
                         {shippingInfo.firstName} {shippingInfo.lastName}<br />
                         {shippingInfo.address}<br />
                         {shippingInfo.quartier && <>{shippingInfo.quartier}<br /></>}
@@ -849,19 +853,19 @@ export default function CheckoutPage() {
                       </p>
                     </div>
 
-                    <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className={`p-3 rounded-lg ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
                       <div className="space-y-1.5 text-xs">
                         <div className="flex justify-between">
-                          <span className="text-gray-500">Sous-total</span>
-                          <span>{formatPrice(totalUSD)}</span>
+                          <span className={isDark ? "text-gray-400" : "text-gray-500"}>Sous-total</span>
+                          <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalUSD)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-500">Expédition</span>
-                          <span>{formatPrice(totalShippingUSD)}</span>
+                          <span className={isDark ? "text-gray-400" : "text-gray-500"}>Expédition</span>
+                          <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalShippingUSD)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-500">Porte-à-porte</span>
-                          <span>{formatPrice(totalPortePorteUSD)}</span>
+                          <span className={isDark ? "text-gray-400" : "text-gray-500"}>Porte-à-porte</span>
+                          <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalPortePorteUSD)}</span>
                         </div>
                         {discountAmount > 0 && (
                           <div className="flex justify-between text-green-600">
@@ -869,14 +873,13 @@ export default function CheckoutPage() {
                             <span>- {formatPrice(discountAmount)}</span>
                           </div>
                         )}
-                        <div className="border-t border-gray-200 pt-1.5 mt-1.5 flex justify-between font-medium">
-                          <span>Total</span>
+                        <div className={`border-t pt-1.5 mt-1.5 flex justify-between font-medium ${isDark ? "border-gray-800" : "border-gray-200"}`}>
+                          <span className={isDark ? "text-white" : "text-gray-900"}>Total</span>
                           <span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Input coupon */}
                     <CouponInput
                       onApply={handleApplyCoupon}
                       onRemove={handleRemoveCoupon}
@@ -888,11 +891,10 @@ export default function CheckoutPage() {
                     <div className="flex gap-2 pt-2">
                       <button
                         onClick={() => setStep(2)}
-                        className="flex-1 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors" style={{ border: '1.5px solid #ECECEC', color: '#0A0A0A' }}
+                        className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors ${isDark ? "border border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
                       >
                         Retour
                       </button>
-                      {/* ✅ onSuccess SUPPRIMÉ */}
                       <PaymentButton
                         email={shippingInfo.email || user?.email || ""}
                         amount={finalTotal}
@@ -909,10 +911,10 @@ export default function CheckoutPage() {
               )}
             </div>
 
-            {/* Desktop: Résumé à droite - inchangé */}
+            {/* Desktop: Résumé à droite */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl border-0 p-4 lg:p-5 sticky lg:top-24">
-                <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
+              <div className={`rounded-xl border-0 p-4 lg:p-5 sticky lg:top-24 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
+                <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
                   <Truck className="w-4 h-4" style={{ color: '#D4372B' }} />
                   Commande ({totalItems})
                 </h2>
@@ -925,8 +927,8 @@ export default function CheckoutPage() {
                     const shippingMode = item.shippingMode || defaultShippingMode;
                     
                     return (
-                      <div key={item.variantKey} className="flex gap-2 pb-2 border-b border-gray-100 last:border-0">
-                        <div className="w-12 h-12 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 border-0">
+                      <div key={item.variantKey} className={`flex gap-2 pb-2 border-b ${isDark ? "border-gray-800" : "border-gray-100"} last:border-0`}>
+                        <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border-0 ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
                           <Image
                             src={item.image || "/placeholder.svg"}
                             alt={item.name || "Produit"}
@@ -936,19 +938,19 @@ export default function CheckoutPage() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium break-words leading-tight">{truncatedTitle}</p>
+                          <p className={`text-xs font-medium break-words leading-tight ${isDark ? "text-white" : "text-gray-900"}`}>{truncatedTitle}</p>
                           {(item.color || item.eurSize) && (
-                            <p className="text-[10px] text-gray-400 mt-0.5 break-words">
+                            <p className={`text-[10px] mt-0.5 break-words ${isDark ? "text-gray-500" : "text-gray-400"}`}>
                               {item.color} {item.eurSize && `• ${item.eurSize}`}
                             </p>
                           )}
                           <div className="mt-1">
-                            <span className="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${isDark ? "bg-[#0A0A0A] text-gray-400" : "bg-gray-100 text-gray-500"}`}>
                               {getShippingLabel(shippingMode)}
                             </span>
                           </div>
                           <div className="flex justify-between items-center mt-1">
-                            <span className="text-[10px] text-gray-400">x{item.quantity}</span>
+                            <span className={`text-[10px] ${isDark ? "text-gray-500" : "text-gray-400"}`}>x{item.quantity}</span>
                             <span className="text-xs font-medium whitespace-nowrap" style={{ color: '#D4372B' }}>
                               {formatPrice(item.price * item.quantity)}
                             </span>
@@ -959,18 +961,18 @@ export default function CheckoutPage() {
                   })}
                 </div>
 
-                <div className="border-t border-gray-100 mt-3 pt-3 space-y-1.5">
+                <div className={`border-t mt-3 pt-3 space-y-1.5 ${isDark ? "border-gray-800" : "border-gray-100"}`}>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">Sous-total</span>
-                    <span className="font-medium">{formatPrice(totalUSD)}</span>
+                    <span className={isDark ? "text-gray-400" : "text-gray-500"}>Sous-total</span>
+                    <span className={`font-medium ${isDark ? "text-white" : "text-gray-900"}`}>{formatPrice(totalUSD)}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">Expédition</span>
-                    <span className="font-medium">{formatPrice(totalShippingUSD)}</span>
+                    <span className={isDark ? "text-gray-400" : "text-gray-500"}>Expédition</span>
+                    <span className={`font-medium ${isDark ? "text-white" : "text-gray-900"}`}>{formatPrice(totalShippingUSD)}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-500">Porte-à-porte</span>
-                    <span className="font-medium">{formatPrice(totalPortePorteUSD)}</span>
+                    <span className={isDark ? "text-gray-400" : "text-gray-500"}>Porte-à-porte</span>
+                    <span className={`font-medium ${isDark ? "text-white" : "text-gray-900"}`}>{formatPrice(totalPortePorteUSD)}</span>
                   </div>
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-xs text-green-600">
@@ -978,14 +980,14 @@ export default function CheckoutPage() {
                       <span>- {formatPrice(discountAmount)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-xs font-medium pt-1.5 border-t border-gray-100">
-                    <span>Total</span>
+                  <div className={`flex justify-between text-xs font-medium pt-1.5 border-t ${isDark ? "border-gray-800" : "border-gray-100"}`}>
+                    <span className={isDark ? "text-white" : "text-gray-900"}>Total</span>
                     <span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span>
                   </div>
                 </div>
 
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  <div className="flex items-center gap-1.5 text-[10px] text-gray-400">
+                <div className="mt-3 pt-3 border-t" style={{ borderColor: isDark ? '#2A2A2A' : '#E5E5E5' }}>
+                  <div className={`flex items-center gap-1.5 text-[10px] ${isDark ? "text-gray-500" : "text-gray-400"}`}>
                     <Lock className="w-3 h-3" />
                     <span>Paiement sécurisé</span>
                   </div>
@@ -994,39 +996,39 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Layout Mobile: Résumé totalement en bas après tous les choix */}
+          {/* Layout Mobile */}
           <div className="lg:hidden">
             <div className="space-y-4">
               
-              {/* ÉTAPE 1 - LIVRAISON Mobile - inchangé */}
+              {/* ÉTAPE 1 - LIVRAISON Mobile */}
               {step === 1 && (
-                <div className="bg-white rounded-xl border-0 p-4">
-                  <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
+                <div className={`rounded-xl border-0 p-4 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
+                  <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
                     <MapPin className="w-4 h-4" style={{ color: '#D4372B' }} />
                     Adresse de livraison
                   </h2>
 
                   <div className="mb-3">
-                    <label className="block text-xs text-gray-500 mb-1">Pays</label>
+                    <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Pays</label>
                     <div className="relative" ref={countryDropdownRef}>
                       <button
                         type="button"
                         onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white flex items-center justify-between text-sm"
+                        className={`w-full px-3 py-2 border rounded-lg flex items-center justify-between text-sm ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`}
                       >
                         <div className="flex items-center gap-2">
                           <span>{selectedCountry.flag}</span>
                           <span>{selectedCountry.name}</span>
                         </div>
-                        <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${isCountryDropdownOpen ? 'rotate-90' : ''}`} />
+                        <ChevronRight className={`w-4 h-4 ${isDark ? "text-gray-500" : "text-gray-400"} transition-transform ${isCountryDropdownOpen ? 'rotate-90' : ''}`} />
                       </button>
                       {isCountryDropdownOpen && (
-                        <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        <div className={`absolute z-50 w-full mt-1 border rounded-lg shadow-lg max-h-60 overflow-y-auto ${isDark ? "bg-[#1A1A1A] border-gray-700" : "bg-white border-gray-200"}`}>
                           {AFRICAN_COUNTRIES.map((country) => (
                             <button
                               key={country.code}
                               onClick={() => handleCountryChange(country)}
-                              className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 text-sm border-b"
+                              className={`w-full px-3 py-2 text-left flex items-center gap-2 text-sm border-b ${isDark ? "hover:bg-white/5 text-gray-300 border-gray-800" : "hover:bg-gray-50 text-gray-900 border-gray-100"}`}
                             >
                               <span>{country.flag}</span>
                               <span>{country.name}</span>
@@ -1039,7 +1041,7 @@ export default function CheckoutPage() {
 
                   {addresses.length > 0 && !showNewAddressForm ? (
                     <div>
-                      <label className="block text-xs text-gray-500 mb-2">Adresse existante</label>
+                      <label className={`block text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Adresse existante</label>
                       <div className="space-y-2 max-h-48 overflow-y-auto">
                         {addresses
                           .filter(a => a.country === selectedCountry.code)
@@ -1050,21 +1052,21 @@ export default function CheckoutPage() {
                               className={`w-full p-3 border rounded-lg text-left transition-all ${
                                 selectedAddressId === addr.id
                                   ? 'border-[#D4372B] bg-[#D4372B]/5'
-                                  : 'border-gray-100'
+                                  : isDark ? 'border-gray-800' : 'border-gray-100'
                               }`}
                             >
                               <div className="flex items-start gap-2">
                                 <div className={`mt-1 w-4 h-4 rounded-full border flex items-center justify-center ${
-                                  selectedAddressId === addr.id ? 'border-[#D4372B]' : 'border-gray-300'
+                                  selectedAddressId === addr.id ? 'border-[#D4372B]' : isDark ? 'border-gray-600' : 'border-gray-300'
                                 }`}>
                                   {selectedAddressId === addr.id && (
                                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: brandColor }} />
                                   )}
                                 </div>
-                                <div className="text-xs flex-1">
+                                <div className={`text-xs flex-1 ${isDark ? "text-gray-300" : "text-gray-900"}`}>
                                   <p className="font-medium">{addr.firstName} {addr.lastName}</p>
-                                  <p className="text-gray-500">{addr.address}</p>
-                                  <p className="text-gray-500">{addr.city}</p>
+                                  <p className={isDark ? "text-gray-400" : "text-gray-500"}>{addr.address}</p>
+                                  <p className={isDark ? "text-gray-400" : "text-gray-500"}>{addr.city}</p>
                                 </div>
                               </div>
                             </button>
@@ -1072,7 +1074,7 @@ export default function CheckoutPage() {
                       </div>
                       <button
                         onClick={() => setShowNewAddressForm(true)}
-                        className="w-full mt-3 py-2 border border-dashed rounded-lg text-xs text-gray-500 flex items-center justify-center gap-1"
+                        className={`w-full mt-3 py-2 border border-dashed rounded-lg text-xs flex items-center justify-center gap-1 ${isDark ? "border-gray-700 text-gray-400 hover:border-gray-600" : "border-gray-200 text-gray-500 hover:border-gray-300"}`}
                       >
                         <Plus className="w-3 h-3" /> Nouvelle adresse
                       </button>
@@ -1080,16 +1082,16 @@ export default function CheckoutPage() {
                   ) : (
                     <div className="space-y-3">
                       <div className="grid grid-cols-2 gap-2">
-                        <input type="text" name="firstName" value={shippingInfo.firstName} onChange={handleInputChange} placeholder="Prénom" className="px-3 py-2 text-sm border rounded-lg" />
-                        <input type="text" name="lastName" value={shippingInfo.lastName} onChange={handleInputChange} placeholder="Nom" className="px-3 py-2 text-sm border rounded-lg" />
+                        <input type="text" name="firstName" value={shippingInfo.firstName} onChange={handleInputChange} placeholder="Prénom" className={`px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
+                        <input type="text" name="lastName" value={shippingInfo.lastName} onChange={handleInputChange} placeholder="Nom" className={`px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
                       </div>
-                      <input type="email" name="email" value={shippingInfo.email} onChange={handleInputChange} placeholder="Email" className="w-full px-3 py-2 text-sm border rounded-lg" />
-                      <input type="tel" name="phone" value={shippingInfo.phone} onChange={handleInputChange} placeholder="Téléphone" className="w-full px-3 py-2 text-sm border rounded-lg" />
-                      <input type="text" name="address" value={shippingInfo.address} onChange={handleInputChange} placeholder="Adresse" className="w-full px-3 py-2 text-sm border rounded-lg" />
-                      <input type="text" name="quartier" value={shippingInfo.quartier} onChange={handleInputChange} placeholder="Quartier" className="w-full px-3 py-2 text-sm border rounded-lg" />
+                      <input type="email" name="email" value={shippingInfo.email} onChange={handleInputChange} placeholder="Email" className={`w-full px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
+                      <input type="tel" name="phone" value={shippingInfo.phone} onChange={handleInputChange} placeholder="Téléphone" className={`w-full px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
+                      <input type="text" name="address" value={shippingInfo.address} onChange={handleInputChange} placeholder="Adresse" className={`w-full px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
+                      <input type="text" name="quartier" value={shippingInfo.quartier} onChange={handleInputChange} placeholder="Quartier" className={`w-full px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
                       <div className="grid grid-cols-2 gap-2">
-                        <input type="text" name="city" value={shippingInfo.city} onChange={handleInputChange} placeholder="Ville" className="px-3 py-2 text-sm border rounded-lg" />
-                        <input type="text" name="postalCode" value={shippingInfo.postalCode} onChange={handleInputChange} placeholder="Code postal" className="px-3 py-2 text-sm border rounded-lg" />
+                        <input type="text" name="city" value={shippingInfo.city} onChange={handleInputChange} placeholder="Ville" className={`px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
+                        <input type="text" name="postalCode" value={shippingInfo.postalCode} onChange={handleInputChange} placeholder="Code postal" className={`px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
                       </div>
                     </div>
                   )}
@@ -1105,16 +1107,16 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* ÉTAPE 2 - EXPÉDITION Mobile - inchangé */}
+              {/* ÉTAPE 2 - EXPÉDITION Mobile */}
               {step === 2 && (
                 <>
-                  <div className="bg-white rounded-xl border-0 p-4">
-                    <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
+                  <div className={`rounded-xl border-0 p-4 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
+                    <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
                       <Truck className="w-4 h-4" style={{ color: '#D4372B' }} />
                       Mode d'expédition par produit
                     </h2>
                     
-                    <p className="text-xs text-gray-500 mb-4">
+                    <p className={`text-xs mb-4 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
                       Choisissez le mode d'expédition pour chaque article.
                     </p>
 
@@ -1124,21 +1126,21 @@ export default function CheckoutPage() {
                         const currentMode = item.shippingMode || defaultShippingMode;
                         
                         return (
-                          <div key={item.variantKey} className={`bg-gray-50 rounded-lg p-3 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'}`}>
+                          <div key={item.variantKey} className={`rounded-lg p-3 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'} ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
                             <div className="flex gap-3">
-                              <div className="w-12 h-12 bg-white rounded-lg overflow-hidden flex-shrink-0 border">
+                              <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border ${isDark ? "bg-[#1A1A1A] border-gray-800" : "bg-white border-gray-200"}`}>
                                 <Image src={item.image || "/placeholder.svg"} alt={item.name || "Produit"} width={48} height={48} className="w-full h-full object-contain p-1" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium break-words leading-tight">
+                                <p className={`text-sm font-medium break-words leading-tight ${isDark ? "text-white" : "text-gray-900"}`}>
                                   {item.name || "Produit"}
                                 </p>
                                 {(item.color || item.eurSize) && (
-                                  <p className="text-xs text-gray-500 mt-0.5">
+                                  <p className={`text-xs mt-0.5 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
                                     {item.color} {item.eurSize && `• ${item.eurSize}`}
                                   </p>
                                 )}
-                                <p className="text-xs text-gray-400 mt-1">Qté: {item.quantity}</p>
+                                <p className={`text-xs mt-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}>Qté: {item.quantity}</p>
                               </div>
                               <div className="text-right flex-shrink-0">
                                 <p className="text-sm font-bold whitespace-nowrap" style={{ color: '#D4372B' }}>
@@ -1146,8 +1148,8 @@ export default function CheckoutPage() {
                                 </p>
                               </div>
                             </div>
-                            <div className="mt-3 pt-2 border-t border-gray-200">
-                              <span className="text-xs text-gray-500 mr-2">Expédition:</span>
+                            <div className="mt-3 pt-2 border-t" style={{ borderColor: isDark ? '#2A2A2A' : '#E5E5E5' }}>
+                              <span className={`text-xs mr-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Expédition:</span>
                               <div className="flex gap-2 mt-1 flex-wrap">
                                 {SHIPPING_METHODS.map((method) => (
                                   <button
@@ -1156,7 +1158,7 @@ export default function CheckoutPage() {
                                     className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
                                       currentMode === method.id
                                         ? 'text-white'
-                                        : 'bg-white border border-gray-200 text-gray-600'
+                                        : isDark ? 'bg-[#0A0A0A] border border-gray-700 text-gray-400' : 'bg-white border border-gray-200 text-gray-600'
                                     }`}
                                     style={currentMode === method.id ? { background: '#D4372B' } : {}}
                                   >
@@ -1170,14 +1172,14 @@ export default function CheckoutPage() {
                       })}
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-gray-200">
-                      <p className="text-xs text-gray-500 mb-2">Appliquer à tous:</p>
+                    <div className="mt-4 pt-3 border-t" style={{ borderColor: isDark ? '#2A2A2A' : '#E5E5E5' }}>
+                      <p className={`text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Appliquer à tous:</p>
                       <div className="flex gap-2 flex-wrap">
                         {SHIPPING_METHODS.map((method) => (
                           <button
                             key={method.id}
                             onClick={() => handleGlobalShippingChange(method.id as any)}
-                            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-600"
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium ${isDark ? "bg-[#0A0A0A] text-gray-300" : "bg-gray-100 text-gray-600"}`}
                           >
                             {method.label}
                           </button>
@@ -1186,8 +1188,8 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-xl border-0 p-4">
-                    <h2 className="text-sm font-medium mb-3 flex items-center gap-2">
+                  <div className={`rounded-xl border-0 p-4 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
+                    <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
                       <Truck className="w-4 h-4" style={{ color: '#D4372B' }} />
                       Récapitulatif ({totalItems})
                     </h2>
@@ -1197,41 +1199,41 @@ export default function CheckoutPage() {
                         const shippingMode = item.shippingMode || defaultShippingMode;
                         
                         return (
-                          <div key={item.variantKey} className="flex gap-2 pb-2 border-b border-gray-100">
-                            <div className="w-10 h-10 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0 border">
+                          <div key={item.variantKey} className={`flex gap-2 pb-2 border-b ${isDark ? "border-gray-800" : "border-gray-100"}`}>
+                            <div className={`w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border ${isDark ? "bg-[#0A0A0A] border-gray-800" : "bg-gray-50 border-gray-200"}`}>
                               <Image src={item.image || "/placeholder.svg"} alt="" width={40} height={40} className="w-full h-full object-contain p-1" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium break-words leading-tight">
+                              <p className={`text-xs font-medium break-words leading-tight ${isDark ? "text-white" : "text-gray-900"}`}>
                                 {item.name || "Produit"}
                               </p>
                               <div className="flex justify-between items-center mt-1 flex-wrap gap-1">
-                                <span className="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${isDark ? "bg-[#0A0A0A] text-gray-400" : "bg-gray-100 text-gray-500"}`}>
                                   {getShippingLabel(shippingMode)}
                                 </span>
                                 <span className="text-xs font-medium whitespace-nowrap" style={{ color: '#D4372B' }}>
                                   {formatPrice(item.price * item.quantity)}
                                 </span>
                               </div>
-                              <p className="text-[10px] text-gray-400">x{item.quantity}</p>
+                              <p className={`text-[10px] ${isDark ? "text-gray-500" : "text-gray-400"}`}>x{item.quantity}</p>
                             </div>
                           </div>
                         );
                       })}
                     </div>
 
-                    <div className="border-t border-gray-100 mt-3 pt-3 space-y-1.5">
+                    <div className={`border-t mt-3 pt-3 space-y-1.5 ${isDark ? "border-gray-800" : "border-gray-100"}`}>
                       <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">Sous-total</span>
-                        <span>{formatPrice(totalUSD)}</span>
+                        <span className={isDark ? "text-gray-400" : "text-gray-500"}>Sous-total</span>
+                        <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalUSD)}</span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">Expédition</span>
-                        <span>{formatPrice(totalShippingUSD)}</span>
+                        <span className={isDark ? "text-gray-400" : "text-gray-500"}>Expédition</span>
+                        <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalShippingUSD)}</span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">Porte-à-porte</span>
-                        <span>{formatPrice(totalPortePorteUSD)}</span>
+                        <span className={isDark ? "text-gray-400" : "text-gray-500"}>Porte-à-porte</span>
+                        <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalPortePorteUSD)}</span>
                       </div>
                       {discountAmount > 0 && (
                         <div className="flex justify-between text-xs text-green-600">
@@ -1239,13 +1241,12 @@ export default function CheckoutPage() {
                           <span>- {formatPrice(discountAmount)}</span>
                         </div>
                       )}
-                      <div className="flex justify-between text-sm font-bold pt-1.5 border-t border-gray-100">
-                        <span>Total</span>
+                      <div className={`flex justify-between text-sm font-bold pt-1.5 border-t ${isDark ? "border-gray-800" : "border-gray-100"}`}>
+                        <span className={isDark ? "text-white" : "text-gray-900"}>Total</span>
                         <span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span>
                       </div>
                     </div>
 
-                    {/* Input coupon mobile */}
                     <div className="mt-3">
                       <CouponInput
                         onApply={handleApplyCoupon}
@@ -1260,7 +1261,7 @@ export default function CheckoutPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => setStep(1)}
-                      className="flex-1 py-2.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                      className={`flex-1 py-2.5 text-sm rounded-lg transition-colors ${isDark ? "border border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
                     >
                       Retour
                     </button>
@@ -1275,16 +1276,16 @@ export default function CheckoutPage() {
                 </>
               )}
 
-              {/* ÉTAPE 3 - CONFIRMATION Mobile - onSuccess SUPPRIMÉ */}
+              {/* ÉTAPE 3 - CONFIRMATION Mobile */}
               {step === 3 && (
-                <div className="bg-white rounded-xl border-0 p-4">
-                  <h2 className="text-sm font-medium mb-3">Confirmation</h2>
+                <div className={`rounded-xl border-0 p-4 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
+                  <h2 className={`text-sm font-medium mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Confirmation</h2>
                   
-                  {error && <div className="mb-3 p-2 bg-red-50 rounded-lg text-xs text-red-600">{error}</div>}
+                  {error && <div className={`mb-3 p-2 rounded-lg text-xs ${isDark ? "bg-[#3A0A0A] text-[#D4372B]" : "bg-red-50 text-red-600"}`}>{error}</div>}
                   
                   <div className="space-y-3">
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-600 break-words">
+                    <div className={`p-3 rounded-lg ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
+                      <p className={`text-xs break-words ${isDark ? "text-gray-400" : "text-gray-600"}`}>
                         {shippingInfo.firstName} {shippingInfo.lastName}<br />
                         {shippingInfo.address}<br />
                         {shippingInfo.quartier && <>{shippingInfo.quartier}<br /></>}
@@ -1293,20 +1294,33 @@ export default function CheckoutPage() {
                       </p>
                     </div>
 
-                    <div className="bg-gray-50 p-3 rounded-lg space-y-1.5 text-xs">
-                      <div className="flex justify-between"><span>Sous-total</span><span>{formatPrice(totalUSD)}</span></div>
-                      <div className="flex justify-between"><span>Expédition</span><span>{formatPrice(totalShippingUSD)}</span></div>
-                      <div className="flex justify-between"><span>Porte-à-porte</span><span>{formatPrice(totalPortePorteUSD)}</span></div>
-                      {discountAmount > 0 && (
-                        <div className="flex justify-between text-green-600">
-                          <span>Réduction ({appliedCoupon?.code})</span>
-                          <span>- {formatPrice(discountAmount)}</span>
+                    <div className={`p-3 rounded-lg ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
+                      <div className="space-y-1.5 text-xs">
+                        <div className="flex justify-between">
+                          <span className={isDark ? "text-gray-400" : "text-gray-500"}>Sous-total</span>
+                          <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalUSD)}</span>
                         </div>
-                      )}
-                      <div className="flex justify-between font-bold pt-1 border-t"><span>Total</span><span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span></div>
+                        <div className="flex justify-between">
+                          <span className={isDark ? "text-gray-400" : "text-gray-500"}>Expédition</span>
+                          <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalShippingUSD)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className={isDark ? "text-gray-400" : "text-gray-500"}>Porte-à-porte</span>
+                          <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalPortePorteUSD)}</span>
+                        </div>
+                        {discountAmount > 0 && (
+                          <div className="flex justify-between text-xs text-green-600">
+                            <span>Réduction ({appliedCoupon?.code})</span>
+                            <span>- {formatPrice(discountAmount)}</span>
+                          </div>
+                        )}
+                        <div className={`flex justify-between font-bold pt-1 border-t ${isDark ? "border-gray-800" : "border-gray-200"}`}>
+                          <span className={isDark ? "text-white" : "text-gray-900"}>Total</span>
+                          <span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Input coupon mobile */}
                     <CouponInput
                       onApply={handleApplyCoupon}
                       onRemove={handleRemoveCoupon}
@@ -1316,8 +1330,7 @@ export default function CheckoutPage() {
                     />
 
                     <div className="flex gap-2 pt-2">
-                      <button onClick={() => setStep(2)} className="flex-1 py-2 text-sm border rounded-lg">Retour</button>
-                      {/* ✅ onSuccess SUPPRIMÉ */}
+                      <button onClick={() => setStep(2)} className={`flex-1 py-2 text-sm rounded-lg ${isDark ? "border border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}>Retour</button>
                       <PaymentButton
                         email={shippingInfo.email || user?.email || ""}
                         amount={finalTotal}
