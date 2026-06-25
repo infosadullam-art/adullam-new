@@ -134,95 +134,18 @@ export default function CheckoutPage() {
   const { country: userCountry, currency } = useLocale();
   const { formatPrice, getCurrencySymbol } = useCurrencyFormatter();
 
-  // ============================================================
-  // 🔍 LOGS DE DÉBOGAGE - CHECKOUT (placé immédiatement après les hooks)
-  // ============================================================
-  console.log("=".repeat(60));
-  console.log("🔍 CHECKOUT - DÉBUT DU RENDU");
-  console.log("=".repeat(60));
-
-  console.log("🔍 CHECKOUT - TOTAUX REÇUS DU CART:");
-  console.log("  📊 totalUSD:", totalUSD);
-  console.log("  📊 totalShippingUSD:", totalShippingUSD);
-  console.log("  📊 totalPortePorteUSD:", totalPortePorteUSD);
-  console.log("  📊 grandTotalUSD:", grandTotalUSD);
-  console.log("  📊 totalItems:", totalItems);
-  console.log("  📊 cart.length:", cart.length);
-
   // États
   const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   
-  // États pour sauvegarder les données de la commande
   const [lastOrderTotal, setLastOrderTotal] = useState<number>(0);
   const [lastOrderRef, setLastOrderRef] = useState<string>("");
 
-  // États pour les coupons
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
   const finalTotal = Math.max(0, grandTotalUSD - discountAmount);
-
-  // ============================================================
-  // 🔍 LOGS DE DÉBOGAGE - APRÈS FINAL TOTAL
-  // ============================================================
-  console.log("🔍 CHECKOUT - APRÈS CALCUL FINAL TOTAL:");
-  console.log("  discountAmount:", discountAmount);
-  console.log("  finalTotal (grandTotal - discount):", finalTotal);
-
-  // ============================================================
-  // 🔍 LOGS DE DÉBOGAGE - CONVERSION EN FCFA
-  // ============================================================
-  const RATE = 615.50;
-  console.log("🔍 CHECKOUT - CONVERSION EN FCFA (taux: " + RATE + "):");
-  console.log("  📈 Sous-total FCFA:", (totalUSD * RATE).toFixed(2));
-  console.log("  📈 Expédition FCFA:", (totalShippingUSD * RATE).toFixed(2));
-  console.log("  📈 Porte-à-porte FCFA:", (totalPortePorteUSD * RATE).toFixed(2));
-  console.log("  📈 Grand total FCFA:", (grandTotalUSD * RATE).toFixed(2)); // ✅ CORRIGÉ : utilise grandTotalUSD qui inclut déjà tout
-  console.log("  📈 Remise FCFA:", (discountAmount * RATE).toFixed(2));
-  console.log("  📈 Total final FCFA:", (finalTotal * RATE).toFixed(2));
-
-  // ============================================================
-  // 🔍 LOGS DE DÉBOGAGE - DÉTAIL PAR ARTICLE
-  // ============================================================
-  console.log("🔍 CHECKOUT - DÉTAIL DES ARTICLES:");
-  cart.forEach((item, index) => {
-    const subtotalUSD = item.price * item.quantity;
-    const shippingUSD = item.shippingCostUSD || 0;
-    const portePorteUSD = item.portePorteCostUSD || 0;
-    const totalUSDItem = subtotalUSD + shippingUSD + portePorteUSD;
-    
-    console.log(`  📦 Article ${index + 1}:`, {
-      name: item.name?.substring(0, 40) || "Sans nom",
-      priceUSD: item.price,
-      qty: item.quantity,
-      subtotalUSD: subtotalUSD,
-      subtotalFCFA: subtotalUSD * RATE,
-      shippingUSD: shippingUSD,
-      shippingFCFA: shippingUSD * RATE,
-      portePorteUSD: portePorteUSD,
-      portePorteFCFA: portePorteUSD * RATE,
-      totalUSD: totalUSDItem,
-      totalFCFA: totalUSDItem * RATE
-    });
-  });
-
-  // ============================================================
-  // 🔍 LOGS DE DÉBOGAGE - VÉRIFICATION DES ÉCARTS
-  // ============================================================
-  // ✅ CORRIGÉ : grandTotalUSD inclut déjà shipping + portePorte
-  const displayedFCFA = Math.round(grandTotalUSD * RATE);
-  const paymentFCFA = Math.round(finalTotal * RATE);
-  const diff = displayedFCFA - paymentFCFA;
-  
-  console.log("🔍 ÉCART IDENTIFIÉ:");
-  console.log("  📊 Grand total FCFA (affiché):", displayedFCFA.toLocaleString());
-  console.log("  📊 Montant à payer (finalTotal):", paymentFCFA.toLocaleString());
-  console.log("  📊 Différence:", diff.toLocaleString(), "FCFA");
-  console.log("  📊 Différence en USD:", (diff / RATE).toFixed(4));
-  console.log("  📊 Taux de change utilisé:", RATE);
-  console.log("=".repeat(60));
 
   // Adresses
   const [addresses, setAddresses] = useState<any[]>([]);
@@ -266,21 +189,18 @@ export default function CheckoutPage() {
 
   // ==================== HOOKS ====================
 
-  // Redirection si non connecté
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/account?mode=login&redirect=checkout");
     }
   }, [user, authLoading, router]);
 
-  // Redirection si panier vide
   useEffect(() => {
     if (cart.length === 0 && user) {
       router.push("/cart");
     }
   }, [cart, router, user]);
 
-  // Pré-remplissage
   useEffect(() => {
     if (user) {
       setShippingInfo(prev => ({
@@ -293,12 +213,10 @@ export default function CheckoutPage() {
     }
   }, [user]);
 
-  // Chargement adresses
   useEffect(() => {
     if (user) fetchAddresses();
   }, [user]);
 
-  // Fermeture dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (countryDropdownRef.current && !countryDropdownRef.current.contains(event.target as Node)) {
@@ -483,7 +401,7 @@ export default function CheckoutPage() {
     );
   }
 
-  // ==================== CHECKOUT ====================
+  // ==================== RENDU ====================
   return (
     <div className="min-h-screen" style={{ backgroundColor: isDark ? "#0A0A0A" : "#FAFAFA" }}>
       <div className="hidden lg:block"><Header /></div>
@@ -538,47 +456,6 @@ export default function CheckoutPage() {
               </div>
             ))}
           </div>
-
-          {/* 🔍 DEBUG - Afficher les détails du calcul en haut de la page */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className={`mb-4 p-4 rounded-xl text-xs font-mono space-y-1 ${
-              isDark ? "bg-yellow-900/20 border border-yellow-800" : "bg-yellow-50 border border-yellow-200"
-            }`}>
-              <p className="font-bold" style={{ color: '#D4372B' }}>🔍 DEBUG - Détail du calcul</p>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
-                <span className="text-gray-500">Sous-total USD:</span>
-                <span className="font-mono">{totalUSD?.toFixed(4) || 0}</span>
-                
-                <span className="text-gray-500">Expédition USD:</span>
-                <span className="font-mono">{totalShippingUSD?.toFixed(4) || 0}</span>
-                
-                <span className="text-gray-500">Porte-à-porte USD:</span>
-                <span className="font-mono">{totalPortePorteUSD?.toFixed(4) || 0}</span>
-                
-                <span className="text-gray-500">Grand total USD:</span>
-                <span className="font-mono font-bold">{grandTotalUSD?.toFixed(4) || 0}</span>
-                
-                <span className="text-gray-500">Remise USD:</span>
-                <span className="font-mono">-{discountAmount?.toFixed(4) || 0}</span>
-                
-                <span className="text-gray-500">Final USD:</span>
-                <span className="font-mono font-bold" style={{ color: '#D4372B' }}>{finalTotal?.toFixed(4) || 0}</span>
-                
-                <span className="text-gray-500 border-t pt-1">Taux FCFA:</span>
-                <span className="font-mono border-t pt-1">615.50</span>
-                
-                <span className="text-gray-500 font-bold border-t">Final FCFA:</span>
-                <span className="font-mono font-bold border-t" style={{ color: '#D4372B' }}>
-                  {((finalTotal || 0) * 615.50).toFixed(0)}
-                </span>
-                
-                <span className="text-gray-500">Écart vs paiement:</span>
-                <span className={`font-mono ${Math.abs((finalTotal || 0) * 615.50 - 3523434) > 1000 ? 'text-red-500' : 'text-green-500'}`}>
-                  {((finalTotal || 0) * 615.50 - 3523434).toFixed(0)} FCFA
-                </span>
-              </div>
-            </div>
-          )}
 
           {/* Layout Desktop: 2 colonnes */}
           <div className="hidden lg:flex flex-col lg:grid lg:grid-cols-3 gap-4 lg:gap-6">
