@@ -272,6 +272,44 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const totalPortePorteUSD = cart.reduce((sum, item) => sum + (item.portePorteCostUSD || 0), 0);
   const grandTotalUSD = totalUSD + totalShippingUSD + totalPortePorteUSD;
 
+  // ============================================================
+  // 🔴 LOG UNIQUE - TOUT EN UN
+  // ============================================================
+  console.log("🔴===== CART DEBUG =====");
+  console.log("📊 totalUSD:", totalUSD);
+  console.log("📊 totalShippingUSD:", totalShippingUSD);
+  console.log("📊 totalPortePorteUSD:", totalPortePorteUSD);
+  console.log("📊 grandTotalUSD:", grandTotalUSD);
+  console.log("📊 Nombre articles:", cart.length);
+  console.log("📊 Quantité totale:", totalItems);
+  
+  // Afficher le détail de chaque article
+  cart.forEach((item, i) => {
+    const subtotal = item.price * item.quantity;
+    const shipping = item.shippingCostUSD || 0;
+    const portePorte = item.portePorteCostUSD || 0;
+    const totalItem = subtotal + shipping + portePorte;
+    
+    console.log(`📦 Article ${i+1}:`, {
+      nom: item.name?.substring(0, 40) || "Sans nom",
+      prixUSD: item.price,
+      qte: item.quantity,
+      subtotalUSD: subtotal,
+      shippingUSD: shipping,
+      portePorteUSD: portePorte,
+      totalUSD: totalItem
+    });
+  });
+
+  // Conversion en FCFA avec le taux 615.50
+  const RATE = 615.50;
+  console.log("💶 Conversion FCFA (taux: 615.50):");
+  console.log("  Sous-total FCFA:", (totalUSD * RATE).toFixed(2));
+  console.log("  Expédition FCFA:", (totalShippingUSD * RATE).toFixed(2));
+  console.log("  Porte-à-porte FCFA:", (totalPortePorteUSD * RATE).toFixed(2));
+  console.log("  Grand total FCFA:", (grandTotalUSD * RATE).toFixed(2));
+  console.log("🔴===== FIN CART DEBUG =====");
+
   return (
     <CartContext.Provider
       value={{
