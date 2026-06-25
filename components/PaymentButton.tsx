@@ -3,13 +3,15 @@
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
+import { useLocale } from '@/context/LocaleProvider';
+import { useCurrencyFormatter } from '@/hooks/useCurrencyFormatter';
 
 interface PaymentButtonProps {
   email: string;
-  amount: number;
+  amount: number; // USD
   orderId?: string;
   couponCode?: string | null;
-  couponDiscount?: number;
+  couponDiscount?: number; // USD
   onSuccess?: () => void;
   onError?: (error: string) => void;
   children?: React.ReactNode;
@@ -26,6 +28,20 @@ export function PaymentButton({
   children 
 }: PaymentButtonProps) {
   const [loading, setLoading] = useState(false);
+  
+  // Récupère la devise et le taux
+  const { currency } = useLocale();
+  const { getCurrentRate } = useCurrencyFormatter();
+  
+  const rate = getCurrentRate();
+  const amountInLocalCurrency = Math.round(amount * rate);
+  const discountInLocalCurrency = Math.round(couponDiscount * rate);
+
+  // Logs pour déboguer
+  console.log("💳 PaymentButton - Devise:", currency);
+  console.log("💳 PaymentButton - Taux:", rate);
+  console.log("💳 PaymentButton - Montant USD:", amount);
+  console.log("💳 PaymentButton - Montant en " + currency + ":", amountInLocalCurrency);
 
   const handlePayment = async () => {
     setLoading(true);
@@ -35,10 +51,11 @@ export function PaymentButton({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
-          amount,
+          amount: amountInLocalCurrency, // ✅ Conversion en devise locale
+          currency, // ✅ Envoie la devise
           orderId,
           couponCode,
-          couponDiscount,
+          couponDiscount: discountInLocalCurrency,
         }),
       });
 
@@ -46,7 +63,6 @@ export function PaymentButton({
 
       if (data.success && data.authorization_url) {
         window.location.href = data.authorization_url;
-        // ✅ onSuccess SUPPRIMÉ - plus de flash !
       } else {
         onError?.(data.error || 'Erreur d\'initialisation du paiement');
       }
