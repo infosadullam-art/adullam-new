@@ -140,9 +140,11 @@ export default function CheckoutPage() {
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   
+  // États pour sauvegarder les données de la commande
   const [lastOrderTotal, setLastOrderTotal] = useState<number>(0);
   const [lastOrderRef, setLastOrderRef] = useState<string>("");
 
+  // États pour les coupons
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
   const finalTotal = Math.max(0, grandTotalUSD - discountAmount);
@@ -189,18 +191,21 @@ export default function CheckoutPage() {
 
   // ==================== HOOKS ====================
 
+  // Redirection si non connecté
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/account?mode=login&redirect=checkout");
     }
   }, [user, authLoading, router]);
 
+  // Redirection si panier vide
   useEffect(() => {
     if (cart.length === 0 && user) {
       router.push("/cart");
     }
   }, [cart, router, user]);
 
+  // Pré-remplissage
   useEffect(() => {
     if (user) {
       setShippingInfo(prev => ({
@@ -213,10 +218,12 @@ export default function CheckoutPage() {
     }
   }, [user]);
 
+  // Chargement adresses
   useEffect(() => {
     if (user) fetchAddresses();
   }, [user]);
 
+  // Fermeture dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (countryDropdownRef.current && !countryDropdownRef.current.contains(event.target as Node)) {
@@ -401,7 +408,7 @@ export default function CheckoutPage() {
     );
   }
 
-  // ==================== RENDU ====================
+  // ==================== CHECKOUT ====================
   return (
     <div className="min-h-screen" style={{ backgroundColor: isDark ? "#0A0A0A" : "#FAFAFA" }}>
       <div className="hidden lg:block"><Header /></div>

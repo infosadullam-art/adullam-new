@@ -8,10 +8,10 @@ import { useCurrencyFormatter } from '@/hooks/useCurrencyFormatter';
 
 interface PaymentButtonProps {
   email: string;
-  amount: number; // USD
+  amount: number;
   orderId?: string;
   couponCode?: string | null;
-  couponDiscount?: number; // USD
+  couponDiscount?: number;
   onSuccess?: () => void;
   onError?: (error: string) => void;
   children?: React.ReactNode;
@@ -39,19 +39,17 @@ export function PaymentButton({
   const handlePayment = async () => {
     setLoading(true);
     try {
-      const payload = {
-        email,
-        amount: amountInLocalCurrency,
-        currency,
-        orderId,
-        couponCode,
-        couponDiscount: discountInLocalCurrency,
-      };
-
       const response = await apiFetch('/api/payment/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          email,
+          amount: amountInLocalCurrency,
+          currency,
+          orderId,
+          couponCode,
+          couponDiscount: discountInLocalCurrency,
+        }),
       });
 
       const data = await response.json();

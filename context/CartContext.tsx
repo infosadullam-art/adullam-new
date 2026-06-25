@@ -98,7 +98,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("shippingMode", shippingMode);
   }, [shippingMode, ready]);
 
-  // ✅ Appel à l'API logistique avec le mode sélectionné
+  // ✅ Appel à l'API logistique avec le mode sélectionné - CORRIGÉ avec apiFetch
   const fetchShippingEstimate = async (
     productId: string,
     productTitle: string,
@@ -123,6 +123,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         const shipping = data.data.shipping;
         const weight = data.data.weight;
         
+        // ✅ Utilise le mode sélectionné
         const selectedShipping = shipping[mode as keyof typeof shipping];
         
         return {
@@ -160,6 +161,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       return result;
     }
 
+    // Fallback si l'API échoue
     const itemWeight = (item.weight || 0.5) * item.quantity;
     const roundedWeight = Math.ceil(itemWeight);
     return {
