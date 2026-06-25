@@ -3,15 +3,13 @@
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
-import { useLocale } from '@/context/LocaleProvider'; // ✅ AJOUT
-import { useCurrencyFormatter } from '@/hooks/useCurrencyFormatter'; // ✅ AJOUT
 
 interface PaymentButtonProps {
   email: string;
-  amount: number; // USD
+  amount: number;
   orderId?: string;
   couponCode?: string | null;
-  couponDiscount?: number; // USD
+  couponDiscount?: number;
   onSuccess?: () => void;
   onError?: (error: string) => void;
   children?: React.ReactNode;
@@ -28,40 +26,37 @@ export function PaymentButton({
   children 
 }: PaymentButtonProps) {
   const [loading, setLoading] = useState(false);
-  
-  // ✅ Récupère la devise et le taux
-  const { currency } = useLocale();
-  const { getCurrentRate } = useCurrencyFormatter();
-  
-  const rate = getCurrentRate();
-  const amountInLocalCurrency = Math.round(amount * rate);
-  const discountInLocalCurrency = Math.round(couponDiscount * rate);
 
-  // 🔴 LOGS pour déboguer
-  console.log("💳 PaymentButton - Devise:", currency);
-  console.log("💳 PaymentButton - Taux:", rate);
-  console.log("💳 PaymentButton - Montant USD:", amount);
-  console.log("💳 PaymentButton - Montant en " + currency + ":", amountInLocalCurrency);
-  console.log("💳 PaymentButton - Remise USD:", couponDiscount);
-  console.log("💳 PaymentButton - Remise en " + currency + ":", discountInLocalCurrency);
+  // 🔴 LOG - Montant reçu
+  console.log("💳 PaymentButton - Montant reçu:", amount);
+  console.log("💳 PaymentButton - Type:", typeof amount);
 
   const handlePayment = async () => {
     setLoading(true);
     try {
+      // 🔴 LOG - Ce qui est envoyé
+      console.log("💳 Envoi à l'API:", {
+        email,
+        amount,
+        orderId,
+        couponCode,
+        couponDiscount
+      });
+
       const response = await apiFetch('/api/payment/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
-          amount: amountInLocalCurrency, // ✅ Envoie en devise locale
-          currency, // ✅ Envoie la devise
+          amount,
           orderId,
           couponCode,
-          couponDiscount: discountInLocalCurrency, // ✅ Remise en devise locale
+          couponDiscount,
         }),
       });
 
       const data = await response.json();
+      console.log("💳 Réponse API:", data);
 
       if (data.success && data.authorization_url) {
         window.location.href = data.authorization_url;
@@ -69,6 +64,7 @@ export function PaymentButton({
         onError?.(data.error || 'Erreur d\'initialisation du paiement');
       }
     } catch (error) {
+      console.error("💳 Erreur:", error);
       onError?.('Erreur de connexion au serveur');
     } finally {
       setLoading(false);
