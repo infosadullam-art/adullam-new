@@ -27,22 +27,9 @@ export function PaymentButton({
 }: PaymentButtonProps) {
   const [loading, setLoading] = useState(false);
 
-  // 🔴 LOG - Montant reçu
-  console.log("💳 PaymentButton - Montant reçu:", amount);
-  console.log("💳 PaymentButton - Type:", typeof amount);
-
   const handlePayment = async () => {
     setLoading(true);
     try {
-      // 🔴 LOG - Ce qui est envoyé
-      console.log("💳 Envoi à l'API:", {
-        email,
-        amount,
-        orderId,
-        couponCode,
-        couponDiscount
-      });
-
       const response = await apiFetch('/api/payment/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -56,15 +43,14 @@ export function PaymentButton({
       });
 
       const data = await response.json();
-      console.log("💳 Réponse API:", data);
 
       if (data.success && data.authorization_url) {
         window.location.href = data.authorization_url;
+        // ✅ onSuccess SUPPRIMÉ - plus de flash !
       } else {
         onError?.(data.error || 'Erreur d\'initialisation du paiement');
       }
     } catch (error) {
-      console.error("💳 Erreur:", error);
       onError?.('Erreur de connexion au serveur');
     } finally {
       setLoading(false);
