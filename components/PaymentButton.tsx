@@ -3,15 +3,13 @@
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
-import { useLocale } from '@/context/LocaleProvider';
-import { useCurrencyFormatter } from '@/hooks/useCurrencyFormatter';
 
 interface PaymentButtonProps {
   email: string;
-  amount: number; // USD
+  amount: number;
   orderId?: string;
   couponCode?: string | null;
-  couponDiscount?: number; // USD
+  couponDiscount?: number;
   onSuccess?: () => void;
   onError?: (error: string) => void;
   children?: React.ReactNode;
@@ -28,38 +26,30 @@ export function PaymentButton({
   children 
 }: PaymentButtonProps) {
   const [loading, setLoading] = useState(false);
-  
-  // Récupère la devise et le taux
-  const { currency } = useLocale();
-  const { getCurrentRate } = useCurrencyFormatter();
-  
-  const rate = getCurrentRate();
-  const amountInLocalCurrency = Math.round(amount * rate);
-  const discountInLocalCurrency = Math.round(couponDiscount * rate);
-
-  // Logs pour déboguer
-  console.log("💳 PaymentButton - Devise:", currency);
-  console.log("💳 PaymentButton - Taux:", rate);
-  console.log("💳 PaymentButton - Montant USD:", amount);
-  console.log("💳 PaymentButton - Montant en " + currency + ":", amountInLocalCurrency);
 
   const handlePayment = async () => {
+    console.log("💳 PaymentButton - Montant envoyé:", amount);
+    console.log("💳 PaymentButton - Type:", typeof amount);
+    
     setLoading(true);
     try {
+      const payload = {
+        email,
+        amount,
+        orderId,
+        couponCode,
+        couponDiscount,
+      };
+      console.log("💳 Payload complet:", payload);
+
       const response = await apiFetch('/api/payment/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          amount: amountInLocalCurrency, // ✅ Conversion en devise locale
-          currency, // ✅ Envoie la devise
-          orderId,
-          couponCode,
-          couponDiscount: discountInLocalCurrency,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
+      console.log("💳 Réponse API:", data);
 
       if (data.success && data.authorization_url) {
         window.location.href = data.authorization_url;
@@ -67,6 +57,7 @@ export function PaymentButton({
         onError?.(data.error || 'Erreur d\'initialisation du paiement');
       }
     } catch (error) {
+      console.error("💳 Erreur:", error);
       onError?.('Erreur de connexion au serveur');
     } finally {
       setLoading(false);
