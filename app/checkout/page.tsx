@@ -179,7 +179,7 @@ export default function CheckoutPage() {
   console.log("  📈 Sous-total FCFA:", (totalUSD * RATE).toFixed(2));
   console.log("  📈 Expédition FCFA:", (totalShippingUSD * RATE).toFixed(2));
   console.log("  📈 Porte-à-porte FCFA:", (totalPortePorteUSD * RATE).toFixed(2));
-  console.log("  📈 Grand total FCFA:", ((totalUSD + totalShippingUSD + totalPortePorteUSD) * RATE).toFixed(2));
+  console.log("  📈 Grand total FCFA:", (grandTotalUSD * RATE).toFixed(2)); // ✅ CORRIGÉ : utilise grandTotalUSD qui inclut déjà tout
   console.log("  📈 Remise FCFA:", (discountAmount * RATE).toFixed(2));
   console.log("  📈 Total final FCFA:", (finalTotal * RATE).toFixed(2));
 
@@ -211,12 +211,13 @@ export default function CheckoutPage() {
   // ============================================================
   // 🔍 LOGS DE DÉBOGAGE - VÉRIFICATION DES ÉCARTS
   // ============================================================
-  const displayedFCFA = Math.round((grandTotalUSD + totalShippingUSD + totalPortePorteUSD) * RATE);
+  // ✅ CORRIGÉ : grandTotalUSD inclut déjà shipping + portePorte
+  const displayedFCFA = Math.round(grandTotalUSD * RATE);
   const paymentFCFA = Math.round(finalTotal * RATE);
   const diff = displayedFCFA - paymentFCFA;
   
   console.log("🔍 ÉCART IDENTIFIÉ:");
-  console.log("  📊 Affiché dans checkout (grandTotal + livraison):", displayedFCFA.toLocaleString());
+  console.log("  📊 Grand total FCFA (affiché):", displayedFCFA.toLocaleString());
   console.log("  📊 Montant à payer (finalTotal):", paymentFCFA.toLocaleString());
   console.log("  📊 Différence:", diff.toLocaleString(), "FCFA");
   console.log("  📊 Différence en USD:", (diff / RATE).toFixed(4));
