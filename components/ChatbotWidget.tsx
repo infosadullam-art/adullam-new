@@ -2,7 +2,7 @@
 
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// VENDEUR ULTIME - Version 5.2
+// VENDEUR ULTIME - Version 5.3
 // Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
 
 import { useState, useEffect, useRef, useCallback } from "react"
@@ -169,6 +169,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const [pendingOfferDiscount, setPendingOfferDiscount] = useState<number | null>(null)
   const [waitingForOfferResponse, setWaitingForOfferResponse] = useState(false)
   const [hasBeenOffered, setHasBeenOffered] = useState(false)
+
+  // ✅ TIMER BASÉ SUR expires_at
+  const [remainingTime, setRemainingTime] = useState(0)
 
   // Refs
   const messagesEndRef  = useRef<HTMLDivElement>(null)
@@ -437,35 +440,37 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [offerTimer, showOfferBanner])
 
+  // ✅ TIMER COUPON BASÉ SUR expires_at (cohérent)
+  useEffect(() => {
+    if (!activeCoupon?.expires_at) return
+    const updateRemaining = () => {
+      const diff = Math.floor((new Date(activeCoupon.expires_at).getTime() - Date.now()) / 1000)
+      setRemainingTime(diff > 0 ? diff : 0)
+      if (diff <= 0) {
+        setShowCouponBanner(false)
+        setActiveCoupon(null)
+      }
+    }
+    updateRemaining()
+    const interval = setInterval(updateRemaining, 1000)
+    return () => clearInterval(interval)
+  }, [activeCoupon?.expires_at])
+
   // 🔥 Compte à rebours coupon - avec auto-déploiement à 10min et 5min
   useEffect(() => {
-    if (couponTimer > 0 && showCouponBanner) {
-      const interval = setInterval(() => {
-        setCouponTimer(prev => {
-          const next = prev - 1
-          
-          // ✅ AUTO-DÉPLOIEMENT À 10 MIN (600s)
-          if (next === 600 && !couponExpanded) {
-            setCouponExpanded(true)
-          }
-          
-          // ✅ MESSAGE D'URGENCE À 5 MIN (300s)
-          if (next === 300 && activeCoupon) {
-            addAssistantMessage(`⚠️ Ton coupon **${activeCoupon.code}** expire dans 5min ! Utilise-le vite 🔥`)
-            setCouponExpanded(true)
-          }
-          
-          if (next <= 0) {
-            setShowCouponBanner(false)
-            setActiveCoupon(null)
-            return 0
-          }
-          return next
-        })
-      }, 1000)
-      return () => clearInterval(interval)
+    if (remainingTime > 0 && showCouponBanner) {
+      // ✅ AUTO-DÉPLOIEMENT À 10 MIN (600s)
+      if (remainingTime <= 600 && !couponExpanded) {
+        setCouponExpanded(true)
+      }
+      
+      // ✅ MESSAGE D'URGENCE À 5 MIN (300s)
+      if (remainingTime === 300 && activeCoupon) {
+        addAssistantMessage(`⚠️ Ton coupon **${activeCoupon.code}** expire dans 5min ! Utilise-le vite 🔥`)
+        setCouponExpanded(true)
+      }
     }
-  }, [couponTimer, showCouponBanner, activeCoupon, couponExpanded])
+  }, [remainingTime, showCouponBanner, activeCoupon, couponExpanded])
 
   // ============================================================
   // SAUVEGARDE DES MESSAGES
@@ -653,6 +658,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       setActiveCoupon(offer.coupon)
       setShowCouponBanner(true)
       setCouponTimer(offer.coupon.time_limit * 60)
+      setRemainingTime(offer.coupon.time_limit * 60)
       // ✅ Auto-déployer le coupon quand il est généré
       setTimeout(() => setCouponExpanded(true), 500)
     } else if (offer && offer.type !== 'none') {
@@ -843,6 +849,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         setActiveCoupon(data.coupon)
         setShowCouponBanner(true)
         setCouponTimer(data.coupon.time_limit * 60)
+        setRemainingTime(data.coupon.time_limit * 60)
         // ✅ Auto-déployer
         setTimeout(() => setCouponExpanded(true), 500)
         
@@ -928,6 +935,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           setActiveCoupon(offer.coupon)
           setShowCouponBanner(true)
           setCouponTimer((offer.coupon.time_limit || 20) * 60)
+          setRemainingTime((offer.coupon.time_limit || 20) * 60)
           setTimeout(() => setCouponExpanded(true), 500)
           setWaitingForOfferResponse(false)
           setPendingOfferProduct(null)
@@ -1103,8 +1111,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         />
       )}
 
-      {/* ✅ WIDGET COUPON - DRAWER (rétractable sur le côté) */}
-      {showCouponBanner && activeCoupon && couponTimer > 0 && (
+      {/* ✅ WIDGET COUPON - DRAWER (rétractable sur le côté) - TIMER COHÉRENT */}
+      {showCouponBanner && activeCoupon && remainingTime > 0 && (
         <div
           ref={couponRef}
           style={{
@@ -1163,7 +1171,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             </div>
           )}
 
-          {/* ✅ CONTENU DÉPLOYÉ */}
+          {/* ✅ CONTENU DÉPLOYÉ - TIMER COHÉRENT */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ 
@@ -1203,7 +1211,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 opacity: 0.6, 
                 margin: '2px 0 0 0',
               }}>
-                {couponTimer <= 300 ? '⚠️ Expire bientôt !' : 'Valable 20min'}
+                {remainingTime <= 300 ? '⚠️ Expire bientôt !' : 'Valable 20min'}
               </p>
             </div>
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -1213,9 +1221,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 fontWeight: 700, 
                 fontVariantNumeric: 'tabular-nums',
                 margin: 0,
-                color: couponTimer <= 300 ? '#FFD700' : '#fff',
+                color: remainingTime <= 300 ? '#FFD700' : '#fff',
               }}>
-                {formatTime(couponTimer)}
+                {formatTime(remainingTime)}
               </p>
             </div>
           </div>
