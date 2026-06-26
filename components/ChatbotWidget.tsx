@@ -173,6 +173,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   // ✅ TIMER BASÉ SUR expires_at
   const [remainingTime, setRemainingTime] = useState(0)
 
+  // ✅ DÉPLACEMENT VERTICAL DU DRAWER
+  const [couponY, setCouponY] = useState(50)
+  const [isDraggingY, setIsDraggingY] = useState(false)
+  const dragYRef = useRef<{ startY: number; startOffset: number } | null>(null)
+
   // Refs
   const messagesEndRef  = useRef<HTMLDivElement>(null)
   const inputRef        = useRef<HTMLInputElement>(null)
@@ -1111,15 +1116,15 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         />
       )}
 
-      {/* ✅ WIDGET COUPON - DRAWER RÉTRACTABLE ET DÉPLAÇABLE */}
+      {/* ✅ WIDGET COUPON - DRAWER RÉTRACTABLE + DÉPLAÇABLE VERTICALEMENT */}
       {showCouponBanner && activeCoupon && remainingTime > 0 && (
         <div
           ref={couponRef}
           style={{
             position: 'fixed',
-            top: '50%',
-            right: 0,
-            transform: `translateY(-50%) translateX(${couponExpanded ? 0 : (isMobile ? -280 : -300)})`,
+            top: `${couponY}%`,
+            right: couponExpanded ? '0px' : (isMobile ? '-280px' : '-300px'),
+            transform: 'translateY(-50%)',
             zIndex: 9999,
             width: isMobile ? '280px' : '280px',
             background: '#D4372B',
@@ -1127,42 +1132,41 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             padding: '16px 18px',
             color: '#fff',
             boxShadow: '0 8px 40px rgba(212,55,43,0.4)',
-            transition: 'transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
+            transition: isDraggingY ? 'none' : 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease',
             border: '1px solid rgba(255,255,255,0.15)',
             borderRight: 'none',
-            cursor: 'ew-resize',
+            cursor: isDraggingY ? 'grabbing' : 'grab',
             touchAction: 'none',
             userSelect: 'none',
             marginRight: isMobile ? '0' : '-20px',
           }}
           onMouseDown={(e) => {
             e.preventDefault()
-            const startX = e.clientX
-            const startOffset = couponExpanded ? 0 : (isMobile ? -280 : -300)
+            const startY = e.clientY
+            const rect = couponRef.current?.getBoundingClientRect()
+            const windowHeight = window.innerHeight
+            const currentY = ((rect?.top || 0) + (rect?.height || 0) / 2) / windowHeight * 100
+            dragYRef.current = { startY, startOffset: currentY }
+            setIsDraggingY(true)
             
             const onMove = (ev) => {
-              const diff = ev.clientX - startX
-              const newOffset = Math.max(isMobile ? -280 : -300, Math.min(0, startOffset + diff))
-              couponRef.current.style.transition = 'none'
-              couponRef.current.style.transform = `translateY(-50%) translateX(${newOffset}px)`
+              const diff = ev.clientY - startY
+              const windowHeight = window.innerHeight
+              const newY = Math.max(5, Math.min(95, currentY + (diff / windowHeight) * 100))
+              setCouponY(newY)
+              if (couponRef.current) {
+                couponRef.current.style.transition = 'none'
+                couponRef.current.style.top = `${newY}%`
+              }
             }
             
             const onUp = () => {
               document.removeEventListener('mousemove', onMove)
               document.removeEventListener('mouseup', onUp)
-              const rect = couponRef.current?.getBoundingClientRect()
-              if (rect) {
-                const visible = rect.left + rect.width
-                const threshold = isMobile ? 200 : 180
-                if (visible < threshold) {
-                  setCouponExpanded(false)
-                  couponRef.current.style.transform = `translateY(-50%) translateX(${isMobile ? -280 : -300}px)`
-                } else {
-                  setCouponExpanded(true)
-                  couponRef.current.style.transform = 'translateY(-50%) translateX(0px)'
-                }
+              setIsDraggingY(false)
+              if (couponRef.current) {
+                couponRef.current.style.transition = 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease'
               }
-              couponRef.current.style.transition = 'transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)'
             }
             
             document.addEventListener('mousemove', onMove)
@@ -1170,33 +1174,32 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           }}
           onTouchStart={(e) => {
             const touch = e.touches[0]
-            const startX = touch.clientX
-            const startOffset = couponExpanded ? 0 : (isMobile ? -280 : -300)
+            const startY = touch.clientY
+            const rect = couponRef.current?.getBoundingClientRect()
+            const windowHeight = window.innerHeight
+            const currentY = ((rect?.top || 0) + (rect?.height || 0) / 2) / windowHeight * 100
+            dragYRef.current = { startY, startOffset: currentY }
+            setIsDraggingY(true)
             
             const onMove = (ev) => {
               const touch = ev.touches[0]
-              const diff = touch.clientX - startX
-              const newOffset = Math.max(isMobile ? -280 : -300, Math.min(0, startOffset + diff))
-              couponRef.current.style.transition = 'none'
-              couponRef.current.style.transform = `translateY(-50%) translateX(${newOffset}px)`
+              const diff = touch.clientY - startY
+              const windowHeight = window.innerHeight
+              const newY = Math.max(5, Math.min(95, currentY + (diff / windowHeight) * 100))
+              setCouponY(newY)
+              if (couponRef.current) {
+                couponRef.current.style.transition = 'none'
+                couponRef.current.style.top = `${newY}%`
+              }
             }
             
             const onUp = () => {
               document.removeEventListener('touchmove', onMove)
               document.removeEventListener('touchend', onUp)
-              const rect = couponRef.current?.getBoundingClientRect()
-              if (rect) {
-                const visible = rect.left + rect.width
-                const threshold = isMobile ? 200 : 180
-                if (visible < threshold) {
-                  setCouponExpanded(false)
-                  couponRef.current.style.transform = `translateY(-50%) translateX(${isMobile ? -280 : -300}px)`
-                } else {
-                  setCouponExpanded(true)
-                  couponRef.current.style.transform = 'translateY(-50%) translateX(0px)'
-                }
+              setIsDraggingY(false)
+              if (couponRef.current) {
+                couponRef.current.style.transition = 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease'
               }
-              couponRef.current.style.transition = 'transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)'
             }
             
             document.addEventListener('touchmove', onMove, { passive: false })
@@ -1207,12 +1210,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           {/* ✅ ONGLET DE RETRACTION (visible quand rétracté) */}
           {!couponExpanded && (
             <div
-              onClick={() => {
-                setCouponExpanded(true)
-                if (couponRef.current) {
-                  couponRef.current.style.transform = 'translateY(-50%) translateX(0px)'
-                }
-              }}
+              onClick={() => setCouponExpanded(true)}
               style={{
                 position: 'absolute',
                 left: isMobile ? '-36px' : '-40px',
@@ -1361,12 +1359,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
           {/* BOUTON FERMER (petit X) */}
           <button
-            onClick={() => {
-              setCouponExpanded(false)
-              if (couponRef.current) {
-                couponRef.current.style.transform = `translateY(-50%) translateX(${isMobile ? -280 : -300}px)`
-              }
-            }}
+            onClick={() => setCouponExpanded(false)}
             style={{
               position: 'absolute',
               top: '8px',
@@ -1927,9 +1920,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         }
         .chatbot-container {
           animation: slideUp 0.3s ease-out;
-        }
-        .coupon-drawer {
-          transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
         }
       `}</style>
     </>
