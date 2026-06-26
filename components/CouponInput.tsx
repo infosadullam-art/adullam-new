@@ -61,8 +61,17 @@ export function CouponInput({
       const data = await res.json();
 
       if (data.valid) {
-        setSuccess(`✅ ${data.coupon.discountDescription} appliquée !`);
-        onApply(data.coupon);
+        // ✅ Calculer le vrai montant de réduction selon le type
+        const coupon = data.coupon
+        let computedDiscount = coupon.discountAmount || 0
+        if (coupon.type === 'PERCENTAGE') {
+          computedDiscount = Math.round((cartTotal * coupon.value) / 100)
+        } else if (coupon.type === 'FIXED_AMOUNT') {
+          computedDiscount = coupon.value
+        }
+        const finalCoupon = { ...coupon, discountAmount: computedDiscount }
+        setSuccess(`✅ -${coupon.value}% appliqué sur votre commande !`);
+        onApply(finalCoupon);
         setCode("");
         setTimeout(() => setSuccess(""), 3000);
       } else {
