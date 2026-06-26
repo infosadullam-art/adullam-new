@@ -2,7 +2,7 @@
 
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// VENDEUR ULTIME - Version 5.1
+// VENDEUR ULTIME - Version 5.2
 // Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
 
 import { useState, useEffect, useRef, useCallback } from "react"
@@ -253,35 +253,27 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     const updateInset = () => {
       if (window.visualViewport) {
         const vv = window.visualViewport
-        // Chrome mobile: la hauteur visible du viewport
-        // vs la hauteur totale de la fenêtre
         const visibleHeight = vv.height
         const totalHeight = window.innerHeight
         let gap = totalHeight - visibleHeight
-        
-        // Ajustement pour Chrome (offsetTop peut varier)
         if (vv.offsetTop > 0) {
           gap = gap + vv.offsetTop
         }
-        
         setKeyboardInset(gap > 50 ? gap : 0)
       } else {
         setKeyboardInset(0)
       }
     }
 
-    // Écouter les événements du viewport
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', updateInset)
       window.visualViewport.addEventListener('scroll', updateInset)
     }
 
-    // Détecter le focus sur l'input (Chrome a besoin de 2 passes)
     const onFocus = () => {
       if (timeoutId) clearTimeout(timeoutId)
       timeoutId = setTimeout(() => {
         updateInset()
-        // Deuxième passe pour Chrome
         setTimeout(updateInset, 300)
       }, 100)
     }
@@ -294,11 +286,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       setTimeout(() => setKeyboardInset(0), 150)
     }
 
-    // Utiliser 'focusin' et 'focusout' pour capturer tous les inputs
     document.addEventListener('focusin', onFocus)
     document.addEventListener('focusout', onBlur)
 
-    // Initialisation
     setTimeout(updateInset, 500)
 
     return () => {
@@ -447,19 +437,24 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [offerTimer, showOfferBanner])
 
-  // Compte à rebours coupon + expansion auto + message urgence
+  // 🔥 Compte à rebours coupon - avec auto-déploiement à 10min et 5min
   useEffect(() => {
     if (couponTimer > 0 && showCouponBanner) {
       const interval = setInterval(() => {
         setCouponTimer(prev => {
           const next = prev - 1
-          // Auto-expand à 10min
-          if (next === 600) setCouponExpanded(true)
-          // Message Adu à 5min
-          if (next === 300 && activeCoupon) {
-            addAssistantMessage(`⚠️ Ton coupon **${activeCoupon.code}** expire dans 5min ! Utilise-le avant qu'il disparaisse 🔥`)
+          
+          // ✅ AUTO-DÉPLOIEMENT À 10 MIN (600s)
+          if (next === 600 && !couponExpanded) {
             setCouponExpanded(true)
           }
+          
+          // ✅ MESSAGE D'URGENCE À 5 MIN (300s)
+          if (next === 300 && activeCoupon) {
+            addAssistantMessage(`⚠️ Ton coupon **${activeCoupon.code}** expire dans 5min ! Utilise-le vite 🔥`)
+            setCouponExpanded(true)
+          }
+          
           if (next <= 0) {
             setShowCouponBanner(false)
             setActiveCoupon(null)
@@ -470,7 +465,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       }, 1000)
       return () => clearInterval(interval)
     }
-  }, [couponTimer, showCouponBanner, activeCoupon])
+  }, [couponTimer, showCouponBanner, activeCoupon, couponExpanded])
 
   // ============================================================
   // SAUVEGARDE DES MESSAGES
@@ -531,7 +526,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           }))
           setMessages(loaded)
           
-          // ✅ Vérifier si un coupon actif existe dans l'historique
           const lastCoupon = loaded.find(m => 
             m.content.includes('coupon spécial') && 
             m.content.includes('ADU-')
@@ -651,16 +645,16 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
     setMessages(prev => [...prev, msg])
     
-    // ✅ Sauvegarder dans l'historique
     if (content.length > 5 && !content.includes('...')) {
       saveMessageToHistory(content, products, offer)
     }
     
-    // ✅ GESTION DU COUPON
     if (offer && offer.type === 'coupon' && offer.coupon) {
       setActiveCoupon(offer.coupon)
       setShowCouponBanner(true)
       setCouponTimer(offer.coupon.time_limit * 60)
+      // ✅ Auto-déployer le coupon quand il est généré
+      setTimeout(() => setCouponExpanded(true), 500)
     } else if (offer && offer.type !== 'none') {
       setActiveOffer(offer)
       setOfferTimer(offer.time_limit * 60)
@@ -849,13 +843,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         setActiveCoupon(data.coupon)
         setShowCouponBanner(true)
         setCouponTimer(data.coupon.time_limit * 60)
+        // ✅ Auto-déployer
+        setTimeout(() => setCouponExpanded(true), 500)
         
         const couponMessage = `🎉 Top ! J'ai généré un coupon spécial pour toi : **${data.coupon.code}**\nTu as **${data.coupon.discount}%** de réduction valable **${data.coupon.time_limit}min** ! ⏱️`
         
-        // ✅ Sauvegarder le message dans l'historique
         await saveMessageToHistory(couponMessage, undefined, undefined, data.coupon.code)
-        
-        // ✅ Ajouter au chat localement
         addAssistantMessage(couponMessage)
       } else {
         addAssistantMessage("Désolé, je n'ai pas pu générer le coupon. Réessaie ! 🙏")
@@ -867,7 +860,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   }, [sessionId, userId, addAssistantMessage, saveMessageToHistory])
 
   const proposeOffer = useCallback((product: Product) => {
-    // ✅ Ne proposer qu'une seule fois
     if (hasBeenOffered || activeCoupon) {
       return
     }
@@ -932,24 +924,22 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         const offer = data.offer || null
         addAssistantMessage(data.response, formattedProducts, offer)
 
-        // ✅ Si le backend a déjà généré un coupon (réponse à "oui")
         if (offer && offer.type === 'coupon' && offer.coupon) {
           setActiveCoupon(offer.coupon)
           setShowCouponBanner(true)
           setCouponTimer((offer.coupon.time_limit || 20) * 60)
+          setTimeout(() => setCouponExpanded(true), 500)
           setWaitingForOfferResponse(false)
           setPendingOfferProduct(null)
           setPendingOfferDiscount(null)
         }
 
-        // ✅ Si le backend propose une offre (safe ou risky), mettre en attente
         if (offer && (offer.type === 'safe' || offer.type === 'risky') && !waitingForOfferResponse) {
           setWaitingForOfferResponse(true)
           setPendingOfferDiscount(offer.discount_2 || offer.discount_1 || 10)
           setPendingOfferProduct(formattedProducts[0] || null)
         }
 
-        // ✅ Fallback : si le frontend gère lui-même la confirmation
         if (waitingForOfferResponse && pendingOfferDiscount && !(offer && offer.type === 'coupon')) {
           const lowerText = text.toLowerCase()
           if (lowerText.includes('oui') || lowerText.includes('ok') || lowerText.includes('yes') || lowerText.includes('d\'accord') || lowerText.includes('je veux') || lowerText.includes('veux bien')) {
@@ -1070,7 +1060,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       positionStyle = { bottom: bottomPosition, left: 12, right: 12 }
       heightStyle = { height: '52px', maxHeight: '52px' }
     } else {
-      // ✅ Le chat s'adapte au clavier comme Messenger
       const bottomInset = keyboardInset > 0 ? keyboardInset + 8 : 80
       positionStyle = { 
         top: 8, 
@@ -1114,48 +1103,81 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         />
       )}
 
-      {/* ✅ POPUP COUPON - VERSION MOBILE COMPACTE ET DÉPLAÇABLE */}
+      {/* ✅ WIDGET COUPON - DRAWER (rétractable sur le côté) */}
       {showCouponBanner && activeCoupon && couponTimer > 0 && (
         <div
           ref={couponRef}
           style={{
             position: 'fixed',
-            bottom: isMobile ? '76px' : '110px',
-            right: couponPos ? 'auto' : (isMobile ? '8px' : '20px'),
-            left: couponPos ? couponPos.x : (isMobile ? '8px' : 'auto'),
-            top: couponPos ? couponPos.y : 'auto',
+            top: '50%',
+            right: couponExpanded ? '0px' : '-280px',
+            transform: 'translateY(-50%)',
             zIndex: 9999,
-            maxWidth: isMobile ? 'calc(100vw - 16px)' : '340px',
-            width: isMobile ? 'calc(100vw - 16px)' : '100%',
+            width: isMobile ? '280px' : '320px',
             background: '#D4372B',
-            borderRadius: isMobile ? '10px' : '16px',
-            padding: isMobile ? '10px 12px' : '20px',
+            borderRadius: '12px 0 0 12px',
+            padding: '16px 18px',
             color: '#fff',
             boxShadow: '0 8px 40px rgba(212,55,43,0.4)',
-            animation: 'slideUp 0.4s ease-out',
+            transition: 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
             border: '1px solid rgba(255,255,255,0.15)',
+            borderRight: 'none',
             cursor: isMobile ? 'default' : 'grab',
             touchAction: 'none',
-            transition: isDraggingCoupon ? 'none' : 'all 0.2s ease',
           }}
           onMouseDown={isMobile ? undefined : startCouponDrag}
           onTouchStart={isMobile ? undefined : startCouponDrag}
         >
-          {/* Version mobile réduite */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {/* ✅ ONGLET DE RETRACTION (visible quand rétracté) */}
+          {!couponExpanded && (
+            <div
+              onClick={() => setCouponExpanded(true)}
+              style={{
+                position: 'absolute',
+                left: '-36px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: '#D4372B',
+                padding: '10px 8px',
+                borderRadius: '8px 0 0 8px',
+                border: '1px solid rgba(255,255,255,0.15)',
+                borderRight: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                minWidth: '28px',
+              }}
+            >
+              <span style={{ fontSize: '14px' }}>🎁</span>
+              <span style={{ 
+                fontSize: '9px', 
+                fontWeight: 700,
+                background: 'rgba(255,255,255,0.2)',
+                padding: '2px 4px',
+                borderRadius: '4px',
+              }}>
+                -{activeCoupon.discount}%
+              </span>
+            </div>
+          )}
+
+          {/* ✅ CONTENU DÉPLOYÉ */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ 
-                fontSize: isMobile ? '7px' : '10px', 
+                fontSize: isMobile ? '8px' : '10px', 
                 textTransform: 'uppercase', 
                 opacity: 0.7, 
                 letterSpacing: '0.5px',
                 margin: 0,
               }}>
-                🎁 Réduction
+                🎁 Réduction spéciale
               </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <p style={{ 
-                  fontSize: isMobile ? '20px' : '28px', 
+                  fontSize: isMobile ? '24px' : '28px', 
                   fontWeight: 700, 
                   lineHeight: 1.1,
                   margin: 0,
@@ -1163,36 +1185,44 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                   -{activeCoupon.discount}%
                 </p>
                 <p style={{ 
-                  fontSize: isMobile ? '9px' : '11px', 
+                  fontSize: isMobile ? '10px' : '12px', 
                   opacity: 0.8, 
                   margin: 0,
                   fontFamily: 'monospace',
                   fontWeight: 600,
                   letterSpacing: '0.5px',
                   background: 'rgba(255,255,255,0.15)',
-                  padding: '2px 6px',
+                  padding: '3px 8px',
                   borderRadius: '4px',
                 }}>
                   {activeCoupon.code}
                 </p>
               </div>
+              <p style={{ 
+                fontSize: isMobile ? '9px' : '11px', 
+                opacity: 0.6, 
+                margin: '2px 0 0 0',
+              }}>
+                {couponTimer <= 300 ? '⚠️ Expire bientôt !' : 'Valable 20min'}
+              </p>
             </div>
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
               <p style={{ fontSize: isMobile ? '7px' : '10px', opacity: 0.7, margin: 0 }}>Expire</p>
               <p style={{ 
-                fontSize: isMobile ? '16px' : '22px', 
+                fontSize: isMobile ? '18px' : '22px', 
                 fontWeight: 700, 
                 fontVariantNumeric: 'tabular-nums',
                 margin: 0,
+                color: couponTimer <= 300 ? '#FFD700' : '#fff',
               }}>
                 {formatTime(couponTimer)}
               </p>
             </div>
           </div>
 
-          {/* Boutons en ligne */}
+          {/* BOUTONS */}
           <div style={{ 
-            marginTop: isMobile ? '8px' : '16px', 
+            marginTop: isMobile ? '10px' : '14px', 
             display: 'flex', 
             gap: '6px',
           }}>
@@ -1202,53 +1232,77 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 const btn = document.getElementById('copy-coupon-btn')
                 if (btn) {
                   btn.textContent = '✅'
-                  setTimeout(() => { btn.textContent = '📋' }, 1500)
+                  setTimeout(() => { btn.textContent = '📋 Copier' }, 1500)
                 }
               }}
               id="copy-coupon-btn"
               style={{
                 flex: 1,
-                padding: isMobile ? '6px' : '10px',
+                padding: isMobile ? '8px' : '10px',
                 background: '#fff',
                 color: '#D4372B',
                 border: 'none',
-                borderRadius: '6px',
-                fontSize: isMobile ? '12px' : '13px',
+                borderRadius: '8px',
+                fontSize: isMobile ? '11px' : '13px',
                 fontWeight: 600,
                 cursor: 'pointer',
                 transition: 'all 0.2s',
               }}
             >
-              📋
+              📋 Copier
             </button>
             <button
               onClick={() => window.location.href = '/cart'}
               style={{
                 flex: 1,
-                padding: isMobile ? '6px' : '10px',
+                padding: isMobile ? '8px' : '10px',
                 background: 'rgba(255,255,255,0.15)',
                 color: '#fff',
                 border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '6px',
-                fontSize: isMobile ? '12px' : '13px',
+                borderRadius: '8px',
+                fontSize: isMobile ? '11px' : '13px',
                 fontWeight: 600,
                 cursor: 'pointer',
                 transition: 'all 0.2s',
               }}
             >
-              🛒
+              🛒 Panier
             </button>
           </div>
 
-          {/* Indicateur de drag sur desktop */}
+          {/* BOUTON FERMER (petit X) */}
+          <button
+            onClick={() => setCouponExpanded(false)}
+            style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '24px',
+              height: '24px',
+              color: '#fff',
+              fontSize: '14px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+            }}
+          >
+            ✕
+          </button>
+
+          {/* INDICATEUR DE DRAG SUR DESKTOP */}
           {!isMobile && (
             <div style={{
               position: 'absolute',
-              top: '4px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '30px',
-              height: '3px',
+              top: '50%',
+              left: '-12px',
+              transform: 'translateY(-50%)',
+              width: '4px',
+              height: '40px',
               background: 'rgba(255,255,255,0.3)',
               borderRadius: '2px',
               opacity: 0.5,
@@ -1794,6 +1848,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         }
         .chatbot-container {
           animation: slideUp 0.3s ease-out;
+        }
+        .coupon-drawer {
+          transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
         }
       `}</style>
     </>
