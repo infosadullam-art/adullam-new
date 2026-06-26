@@ -162,6 +162,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const [couponExpanded, setCouponExpanded] = useState(false)
   const [couponPos, setCouponPos] = useState<{ x: number; y: number } | null>(null)
   const [isDraggingCoupon, setIsDraggingCoupon] = useState(false)
+  const [couponSnapAnimating, setCouponSnapAnimating] = useState(false)
   const couponDragRef = useRef<{ startX: number; startY: number; originX: number; originY: number; moved: boolean } | null>(null)
   const couponRef = useRef<HTMLDivElement>(null)
   const [pendingOfferProduct, setPendingOfferProduct] = useState<Product | null>(null)
@@ -304,7 +305,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
-  // 🖱️ Drag du widget coupon
+  // 🖱️ Drag du widget coupon avec snap sur les côtés
   useEffect(() => {
     if (!isDraggingCoupon) return
     const onMove = (clientX: number, clientY: number) => {
@@ -314,14 +315,30 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       const dy = clientY - s.startY
       if (Math.abs(dx) > 4 || Math.abs(dy) > 4) s.moved = true
       const el = couponRef.current
-      const w = el?.offsetWidth ?? 200
-      const h = el?.offsetHeight ?? 80
+      const w = el?.offsetWidth ?? 320
+      const h = el?.offsetHeight ?? 200
       setCouponPos({
         x: Math.min(Math.max(8, s.originX + dx), window.innerWidth - w - 8),
         y: Math.min(Math.max(8, s.originY + dy), window.innerHeight - h - 8),
       })
     }
-    const onEnd = () => setIsDraggingCoupon(false)
+    const onEnd = () => {
+      // Snap sur les côtés
+      const el = couponRef.current
+      const w = el?.offsetWidth ?? 320
+      setCouponPos(prev => {
+        if (!prev) return prev
+        const center = prev.x + w / 2
+        const snapLeft = 8
+        const snapRight = window.innerWidth - w - 8
+        // Snap à gauche ou à droite selon la position
+        const snappedX = center < window.innerWidth / 2 ? snapLeft : snapRight
+        setCouponSnapAnimating(true)
+        setTimeout(() => setCouponSnapAnimating(false), 320)
+        return { x: snappedX, y: prev.y }
+      })
+      setIsDraggingCoupon(false)
+    }
     const onMouseMove = (e: MouseEvent) => onMove(e.clientX, e.clientY)
     const onTouchMove = (e: TouchEvent) => { if (e.touches[0]) { onMove(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault() } }
     window.addEventListener('mousemove', onMouseMove)
@@ -657,6 +674,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       setActiveCoupon(offer.coupon)
       setShowCouponBanner(true)
       setRemainingTime(offer.coupon.time_limit * 60)
+      // Initialiser la position du coupon à droite
+      if (!couponPos) {
+        setCouponPos({ x: window.innerWidth - 320 - 8, y: window.innerHeight / 2 - 100 })
+      }
       // ✅ Auto-déployer le coupon quand il est généré
       setTimeout(() => setCouponExpanded(true), 500)
     } else if (offer && offer.type !== 'none') {
@@ -675,7 +696,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       utterance.onerror = () => setIsSpeaking(false)
       speechSynthRef.current.speak(utterance)
     }
-  }, [language, voiceSupported, saveMessageToHistory])
+  }, [language, voiceSupported, saveMessageToHistory, couponPos])
 
   const openChat = useCallback(() => {
     setIsOpen(true)
@@ -847,6 +868,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         setActiveCoupon(data.coupon)
         setShowCouponBanner(true)
         setRemainingTime(data.coupon.time_limit * 60)
+        // Initialiser la position du coupon à droite
+        if (!couponPos) {
+          setCouponPos({ x: window.innerWidth - 320 - 8, y: window.innerHeight / 2 - 100 })
+        }
         // ✅ Auto-déployer
         setTimeout(() => setCouponExpanded(true), 500)
         
@@ -861,7 +886,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       console.error("Erreur génération coupon:", error)
       addAssistantMessage("Oups, erreur technique. Réessaie dans un instant !")
     }
-  }, [sessionId, userId, addAssistantMessage, saveMessageToHistory])
+  }, [sessionId, userId, addAssistantMessage, saveMessageToHistory, couponPos])
 
   const proposeOffer = useCallback((product: Product) => {
     if (hasBeenOffered || activeCoupon) {
@@ -932,6 +957,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           setActiveCoupon(offer.coupon)
           setShowCouponBanner(true)
           setRemainingTime((offer.coupon.time_limit || 20) * 60)
+          if (!couponPos) {
+            setCouponPos({ x: window.innerWidth - 320 - 8, y: window.innerHeight / 2 - 100 })
+          }
           setTimeout(() => setCouponExpanded(true), 500)
           setWaitingForOfferResponse(false)
           setPendingOfferProduct(null)
@@ -1087,6 +1115,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
+  // Déterminer si le coupon est à gauche ou à droite pour le style de l'onglet
+  const isCouponOnLeft = couponPos ? couponPos.x < window.innerWidth / 2 : false
+
   return (
     <>
       {showOfferBanner && activeOffer && offerTimer > 0 && (
@@ -1116,14 +1147,15 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               onClick={() => setCouponExpanded(true)}
               style={{
                 position: 'fixed',
-                top: '50%',
-                right: '0px',
+                top: couponPos ? Math.min(Math.max(8, couponPos.y + 80), window.innerHeight - 80) : '50%',
                 transform: 'translateY(-50%)',
+                [isCouponOnLeft ? 'left' : 'right']: '0px',
                 background: '#D4372B',
                 padding: '12px 8px',
-                borderRadius: '8px 0 0 8px',
+                borderRadius: isCouponOnLeft ? '0 8px 8px 0' : '8px 0 0 8px',
                 border: '1px solid rgba(255,255,255,0.15)',
-                borderRight: 'none',
+                borderLeft: isCouponOnLeft ? 'none' : '1px solid rgba(255,255,255,0.15)',
+                borderRight: isCouponOnLeft ? '1px solid rgba(255,255,255,0.15)' : 'none',
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
@@ -1132,6 +1164,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 minWidth: '28px',
                 boxShadow: '0 4px 20px rgba(212,55,43,0.3)',
                 zIndex: 9999,
+                transition: couponSnapAnimating ? 'left 0.3s cubic-bezier(0.22, 1, 0.36, 1), right 0.3s cubic-bezier(0.22, 1, 0.36, 1)' : 'none',
               }}
             >
               <span style={{ fontSize: '16px' }}>🎁</span>
@@ -1153,20 +1186,23 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               ref={couponRef}
               style={{
                 position: 'fixed',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                right: '0px',
+                top: couponPos ? couponPos.y : '50%',
+                left: couponPos ? couponPos.x : 'auto',
+                right: couponPos ? 'auto' : '0px',
+                transform: couponPos ? 'none' : 'translateY(-50%)',
                 zIndex: 9999,
                 width: isMobile ? '280px' : '320px',
                 background: '#D4372B',
-                borderRadius: '12px 0 0 12px',
+                borderRadius: isCouponOnLeft ? '0 12px 12px 0' : '12px 0 0 12px',
                 padding: '16px 18px',
                 color: '#fff',
                 boxShadow: '0 8px 40px rgba(212,55,43,0.4)',
                 border: '1px solid rgba(255,255,255,0.15)',
-                borderRight: 'none',
+                borderLeft: isCouponOnLeft ? 'none' : '1px solid rgba(255,255,255,0.15)',
+                borderRight: isCouponOnLeft ? '1px solid rgba(255,255,255,0.15)' : 'none',
                 cursor: isMobile ? 'default' : 'grab',
                 touchAction: 'none',
+                transition: couponSnapAnimating ? 'left 0.3s cubic-bezier(0.22, 1, 0.36, 1), right 0.3s cubic-bezier(0.22, 1, 0.36, 1)' : 'none',
               }}
               onMouseDown={isMobile ? undefined : (e) => {
                 e.preventDefault()
@@ -1289,7 +1325,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 style={{
                   position: 'absolute',
                   top: '8px',
-                  right: '8px',
+                  right: isCouponOnLeft ? '8px' : '8px',
                   background: 'rgba(255,255,255,0.15)',
                   border: 'none',
                   borderRadius: '50%',
@@ -1312,7 +1348,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 <div style={{
                   position: 'absolute',
                   top: '50%',
-                  left: '-12px',
+                  [isCouponOnLeft ? 'right' : 'left']: '-12px',
                   transform: 'translateY(-50%)',
                   width: '4px',
                   height: '40px',
