@@ -2,7 +2,7 @@
 
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// VENDEUR ULTIME - Version 5.4
+// VENDEUR ULTIME - Version 5.3
 // Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
 
 import { useState, useEffect, useRef, useCallback } from "react"
@@ -172,11 +172,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
   // ✅ TIMER BASÉ SUR expires_at
   const [remainingTime, setRemainingTime] = useState(0)
-
-  // ✅ DÉPLACEMENT VERTICAL DU DRAWER
-  const [couponY, setCouponY] = useState(50)
-  const [isDraggingY, setIsDraggingY] = useState(false)
-  const dragYRef = useRef<{ startY: number; startOffset: number } | null>(null)
 
   // Refs
   const messagesEndRef  = useRef<HTMLDivElement>(null)
@@ -1116,107 +1111,42 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         />
       )}
 
-      {/* ✅ WIDGET COUPON - DRAWER RÉTRACTABLE + DÉPLAÇABLE VERTICALEMENT */}
+      {/* ✅ WIDGET COUPON - DRAWER (rétractable sur le côté) - TIMER COHÉRENT */}
       {showCouponBanner && activeCoupon && remainingTime > 0 && (
         <div
           ref={couponRef}
           style={{
             position: 'fixed',
-            top: `${couponY}%`,
-            right: couponExpanded ? '0px' : (isMobile ? '-280px' : '-235px'),
+            top: '50%',
+            right: couponExpanded ? '0px' : '-280px',
             transform: 'translateY(-50%)',
             zIndex: 9999,
-            width: isMobile ? '280px' : '280px',
+            width: isMobile ? '280px' : '320px',
             background: '#D4372B',
             borderRadius: '12px 0 0 12px',
             padding: '16px 18px',
             color: '#fff',
             boxShadow: '0 8px 40px rgba(212,55,43,0.4)',
-            transition: isDraggingY ? 'none' : 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease',
+            transition: 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
             border: '1px solid rgba(255,255,255,0.15)',
             borderRight: 'none',
-            cursor: isDraggingY ? 'grabbing' : 'grab',
+            cursor: isMobile ? 'default' : 'grab',
             touchAction: 'none',
-            userSelect: 'none',
           }}
-          onMouseDown={(e) => {
-            e.preventDefault()
-            const startY = e.clientY
-            const rect = couponRef.current?.getBoundingClientRect()
-            const windowHeight = window.innerHeight
-            const currentY = ((rect?.top || 0) + (rect?.height || 0) / 2) / windowHeight * 100
-            dragYRef.current = { startY, startOffset: currentY }
-            setIsDraggingY(true)
-            
-            const onMove = (ev) => {
-              const diff = ev.clientY - startY
-              const windowHeight = window.innerHeight
-              const newY = Math.max(5, Math.min(95, currentY + (diff / windowHeight) * 100))
-              setCouponY(newY)
-              if (couponRef.current) {
-                couponRef.current.style.transition = 'none'
-                couponRef.current.style.top = `${newY}%`
-              }
-            }
-            
-            const onUp = () => {
-              document.removeEventListener('mousemove', onMove)
-              document.removeEventListener('mouseup', onUp)
-              setIsDraggingY(false)
-              if (couponRef.current) {
-                couponRef.current.style.transition = 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease'
-              }
-            }
-            
-            document.addEventListener('mousemove', onMove)
-            document.addEventListener('mouseup', onUp)
-          }}
-          onTouchStart={(e) => {
-            const touch = e.touches[0]
-            const startY = touch.clientY
-            const rect = couponRef.current?.getBoundingClientRect()
-            const windowHeight = window.innerHeight
-            const currentY = ((rect?.top || 0) + (rect?.height || 0) / 2) / windowHeight * 100
-            dragYRef.current = { startY, startOffset: currentY }
-            setIsDraggingY(true)
-            
-            const onMove = (ev) => {
-              const touch = ev.touches[0]
-              const diff = touch.clientY - startY
-              const windowHeight = window.innerHeight
-              const newY = Math.max(5, Math.min(95, currentY + (diff / windowHeight) * 100))
-              setCouponY(newY)
-              if (couponRef.current) {
-                couponRef.current.style.transition = 'none'
-                couponRef.current.style.top = `${newY}%`
-              }
-            }
-            
-            const onUp = () => {
-              document.removeEventListener('touchmove', onMove)
-              document.removeEventListener('touchend', onUp)
-              setIsDraggingY(false)
-              if (couponRef.current) {
-                couponRef.current.style.transition = 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease'
-              }
-            }
-            
-            document.addEventListener('touchmove', onMove, { passive: false })
-            document.addEventListener('touchend', onUp)
-            e.preventDefault()
-          }}
+          onMouseDown={isMobile ? undefined : startCouponDrag}
+          onTouchStart={isMobile ? undefined : startCouponDrag}
         >
-          {/* ✅ ONGLET DE RETRACTION (visible quand rétracté) - L'ÉLÉMENT CLÉ ! */}
+          {/* ✅ ONGLET DE RETRACTION (visible quand rétracté) */}
           {!couponExpanded && (
             <div
               onClick={() => setCouponExpanded(true)}
               style={{
                 position: 'absolute',
-                left: '-44px',
+                left: '-36px',
                 top: '50%',
                 transform: 'translateY(-50%)',
                 background: '#D4372B',
-                padding: '12px 8px',
+                padding: '10px 8px',
                 borderRadius: '8px 0 0 8px',
                 border: '1px solid rgba(255,255,255,0.15)',
                 borderRight: 'none',
@@ -1225,14 +1155,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: '4px',
-                minWidth: '32px',
-                boxShadow: '-2px 4px 12px rgba(0,0,0,0.1)',
-                zIndex: 10,
+                minWidth: '28px',
               }}
             >
-              <span style={{ fontSize: '16px' }}>🎁</span>
+              <span style={{ fontSize: '14px' }}>🎁</span>
               <span style={{ 
-                fontSize: '10px', 
+                fontSize: '9px', 
                 fontWeight: 700,
                 background: 'rgba(255,255,255,0.2)',
                 padding: '2px 4px',
@@ -1240,149 +1168,153 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               }}>
                 -{activeCoupon.discount}%
               </span>
-              <span style={{ 
-                fontSize: '7px', 
-                opacity: 0.6,
-                marginTop: '2px',
-              }}>
-                {formatTime(remainingTime)}
-              </span>
             </div>
           )}
 
           {/* ✅ CONTENU DÉPLOYÉ - TIMER COHÉRENT */}
-          {couponExpanded && (
-            <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ 
-                    fontSize: isMobile ? '8px' : '10px', 
-                    textTransform: 'uppercase', 
-                    opacity: 0.7, 
-                    letterSpacing: '0.5px',
-                    margin: 0,
-                  }}>
-                    🎁 Réduction spéciale
-                  </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <p style={{ 
-                      fontSize: isMobile ? '24px' : '28px', 
-                      fontWeight: 700, 
-                      lineHeight: 1.1,
-                      margin: 0,
-                    }}>
-                      -{activeCoupon.discount}%
-                    </p>
-                    <p style={{ 
-                      fontSize: isMobile ? '10px' : '12px', 
-                      opacity: 0.8, 
-                      margin: 0,
-                      fontFamily: 'monospace',
-                      fontWeight: 600,
-                      letterSpacing: '0.5px',
-                      background: 'rgba(255,255,255,0.15)',
-                      padding: '3px 8px',
-                      borderRadius: '4px',
-                    }}>
-                      {activeCoupon.code}
-                    </p>
-                  </div>
-                  <p style={{ 
-                    fontSize: isMobile ? '9px' : '11px', 
-                    opacity: 0.6, 
-                    margin: '2px 0 0 0',
-                  }}>
-                    {remainingTime <= 300 ? '⚠️ Expire bientôt !' : 'Valable 20min'}
-                  </p>
-                </div>
-                <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <p style={{ fontSize: isMobile ? '7px' : '10px', opacity: 0.7, margin: 0 }}>Expire</p>
-                  <p style={{ 
-                    fontSize: isMobile ? '18px' : '22px', 
-                    fontWeight: 700, 
-                    fontVariantNumeric: 'tabular-nums',
-                    margin: 0,
-                    color: remainingTime <= 300 ? '#FFD700' : '#fff',
-                  }}>
-                    {formatTime(remainingTime)}
-                  </p>
-                </div>
-              </div>
-
-              {/* BOUTONS */}
-              <div style={{ 
-                marginTop: isMobile ? '10px' : '14px', 
-                display: 'flex', 
-                gap: '6px',
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ 
+                fontSize: isMobile ? '8px' : '10px', 
+                textTransform: 'uppercase', 
+                opacity: 0.7, 
+                letterSpacing: '0.5px',
+                margin: 0,
               }}>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(activeCoupon.code)
-                    const btn = document.getElementById('copy-coupon-btn')
-                    if (btn) {
-                      btn.textContent = '✅'
-                      setTimeout(() => { btn.textContent = '📋 Copier' }, 1500)
-                    }
-                  }}
-                  id="copy-coupon-btn"
-                  style={{
-                    flex: 1,
-                    padding: isMobile ? '8px' : '10px',
-                    background: '#fff',
-                    color: '#D4372B',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: isMobile ? '11px' : '13px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  📋 Copier
-                </button>
-                <button
-                  onClick={() => window.location.href = '/cart'}
-                  style={{
-                    flex: 1,
-                    padding: isMobile ? '8px' : '10px',
-                    background: 'rgba(255,255,255,0.15)',
-                    color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    borderRadius: '8px',
-                    fontSize: isMobile ? '11px' : '13px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  🛒 Panier
-                </button>
-              </div>
-
-              {/* BOUTON FERMER (petit X) */}
-              <button
-                onClick={() => setCouponExpanded(false)}
-                style={{
-                  position: 'absolute',
-                  top: '8px',
-                  right: '8px',
+                🎁 Réduction spéciale
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <p style={{ 
+                  fontSize: isMobile ? '24px' : '28px', 
+                  fontWeight: 700, 
+                  lineHeight: 1.1,
+                  margin: 0,
+                }}>
+                  -{activeCoupon.discount}%
+                </p>
+                <p style={{ 
+                  fontSize: isMobile ? '10px' : '12px', 
+                  opacity: 0.8, 
+                  margin: 0,
+                  fontFamily: 'monospace',
+                  fontWeight: 600,
+                  letterSpacing: '0.5px',
                   background: 'rgba(255,255,255,0.15)',
-                  border: 'none',
-                  borderRadius: '50%',
-                  width: '24px',
-                  height: '24px',
-                  color: '#fff',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.2s',
-                }}
-              >
-                ✕
-              </button>
-            </>
+                  padding: '3px 8px',
+                  borderRadius: '4px',
+                }}>
+                  {activeCoupon.code}
+                </p>
+              </div>
+              <p style={{ 
+                fontSize: isMobile ? '9px' : '11px', 
+                opacity: 0.6, 
+                margin: '2px 0 0 0',
+              }}>
+                {remainingTime <= 300 ? '⚠️ Expire bientôt !' : 'Valable 20min'}
+              </p>
+            </div>
+            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+              <p style={{ fontSize: isMobile ? '7px' : '10px', opacity: 0.7, margin: 0 }}>Expire</p>
+              <p style={{ 
+                fontSize: isMobile ? '18px' : '22px', 
+                fontWeight: 700, 
+                fontVariantNumeric: 'tabular-nums',
+                margin: 0,
+                color: remainingTime <= 300 ? '#FFD700' : '#fff',
+              }}>
+                {formatTime(remainingTime)}
+              </p>
+            </div>
+          </div>
+
+          {/* BOUTONS */}
+          <div style={{ 
+            marginTop: isMobile ? '10px' : '14px', 
+            display: 'flex', 
+            gap: '6px',
+          }}>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(activeCoupon.code)
+                const btn = document.getElementById('copy-coupon-btn')
+                if (btn) {
+                  btn.textContent = '✅'
+                  setTimeout(() => { btn.textContent = '📋 Copier' }, 1500)
+                }
+              }}
+              id="copy-coupon-btn"
+              style={{
+                flex: 1,
+                padding: isMobile ? '8px' : '10px',
+                background: '#fff',
+                color: '#D4372B',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: isMobile ? '11px' : '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              📋 Copier
+            </button>
+            <button
+              onClick={() => window.location.href = '/cart'}
+              style={{
+                flex: 1,
+                padding: isMobile ? '8px' : '10px',
+                background: 'rgba(255,255,255,0.15)',
+                color: '#fff',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '8px',
+                fontSize: isMobile ? '11px' : '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              🛒 Panier
+            </button>
+          </div>
+
+          {/* BOUTON FERMER (petit X) */}
+          <button
+            onClick={() => setCouponExpanded(false)}
+            style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              background: 'rgba(255,255,255,0.15)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '24px',
+              height: '24px',
+              color: '#fff',
+              fontSize: '14px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+            }}
+          >
+            ✕
+          </button>
+
+          {/* INDICATEUR DE DRAG SUR DESKTOP */}
+          {!isMobile && (
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '-12px',
+              transform: 'translateY(-50%)',
+              width: '4px',
+              height: '40px',
+              background: 'rgba(255,255,255,0.3)',
+              borderRadius: '2px',
+              opacity: 0.5,
+            }} />
           )}
         </div>
       )}
@@ -1924,6 +1856,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         }
         .chatbot-container {
           animation: slideUp 0.3s ease-out;
+        }
+        .coupon-drawer {
+          transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
         }
       `}</style>
     </>
