@@ -160,7 +160,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const [activeCoupon, setActiveCoupon] = useState<any>(null)
   const [showCouponBanner, setShowCouponBanner] = useState(false)
   const [couponTimer, setCouponTimer] = useState<number>(0)
-  const [pendingOfferProduct, setPendingOfferProduct] = useState<Product | null>(null)
+  const [couponExpanded, setCouponExpanded] = useState(false)
+  const [couponPos, setCouponPos] = useState<{ x: number; y: number } | null>(null)
+  const [isDraggingCoupon, setIsDraggingCoupon] = useState(false)
+  const couponDragRef = useRef<{ startX: number; startY: number; originX: number; originY: number; moved: boolean } | null>(null)
+  const couponRef = useRef<HTMLDivElement>(null)
+  const pendingOfferProduct, setPendingOfferProduct] = useState<Product | null>(null)
   const [pendingOfferDiscount, setPendingOfferDiscount] = useState<number | null>(null)
   const [waitingForOfferResponse, setWaitingForOfferResponse] = useState(false)
   const [hasBeenOffered, setHasBeenOffered] = useState(false)
@@ -239,24 +244,75 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
-  // ⌨️ Gestion clavier mobile
+  // ⌨️ Gestion clavier mobile — Chrome + Safari + Firefox
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.visualViewport) return
-    const vv = window.visualViewport
+    if (typeof window === 'undefined') return
 
-    const handleViewport = () => {
-      const inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
-      setKeyboardInset(inset > 80 ? inset : 0)
+    const updateInset = () => {
+      if (window.visualViewport) {
+        const vv = window.visualViewport
+        const gap = window.innerHeight - vv.height - vv.offsetTop
+        setKeyboardInset(gap > 50 ? gap : 0)
+      }
     }
 
-    vv.addEventListener('resize', handleViewport)
-    vv.addEventListener('scroll', handleViewport)
-    handleViewport()
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', updateInset)
+      window.visualViewport.addEventListener('scroll', updateInset)
+    }
+    // Fallback focus/blur pour Chrome Android qui ne fire pas toujours resize
+    const onFocus = () => setTimeout(updateInset, 150)
+    const onBlur = () => setTimeout(() => setKeyboardInset(0), 150)
+    window.addEventListener('focusin', onFocus)
+    window.addEventListener('focusout', onBlur)
+
     return () => {
-      vv.removeEventListener('resize', handleViewport)
-      vv.removeEventListener('scroll', handleViewport)
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', updateInset)
+        window.visualViewport.removeEventListener('scroll', updateInset)
+      }
+      window.removeEventListener('focusin', onFocus)
+      window.removeEventListener('focusout', onBlur)
     }
   }, [])
+
+  // 🖱️ Drag du widget coupon
+  useEffect(() => {
+    if (!isDraggingCoupon) return
+    const onMove = (clientX: number, clientY: number) => {
+      const s = couponDragRef.current
+      if (!s) return
+      const dx = clientX - s.startX
+      const dy = clientY - s.startY
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) s.moved = true
+      const el = couponRef.current
+      const w = el?.offsetWidth ?? 200
+      const h = el?.offsetHeight ?? 80
+      setCouponPos({
+        x: Math.min(Math.max(8, s.originX + dx), window.innerWidth - w - 8),
+        y: Math.min(Math.max(8, s.originY + dy), window.innerHeight - h - 8),
+      })
+    }
+    const onEnd = () => setIsDraggingCoupon(false)
+    const onMouseMove = (e: MouseEvent) => onMove(e.clientX, e.clientY)
+    const onTouchMove = (e: TouchEvent) => { if (e.touches[0]) { onMove(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault() } }
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onEnd)
+    window.addEventListener('touchmove', onTouchMove, { passive: false })
+    window.addEventListener('touchend', onEnd)
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onEnd)
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('touchend', onEnd)
+    }
+  }, [isDraggingCoupon])
+
+  const startCouponDrag = (clientX: number, clientY: number) => {
+    const rect = couponRef.current?.getBoundingClientRect()
+    couponDragRef.current = { startX: clientX, startY: clientY, originX: rect?.left ?? 0, originY: rect?.top ?? 0, moved: false }
+    setIsDraggingCoupon(true)
+  }
 
   // 🖱️ Déplacement fluide
   useEffect(() => {
@@ -355,22 +411,30 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [offerTimer, showOfferBanner])
 
-  // Compte à rebours coupon
+  // Compte à rebours coupon + expansion auto + message urgence
   useEffect(() => {
     if (couponTimer > 0 && showCouponBanner) {
       const interval = setInterval(() => {
         setCouponTimer(prev => {
-          if (prev <= 1) {
+          const next = prev - 1
+          // Auto-expand à 10min
+          if (next === 600) setCouponExpanded(true)
+          // Message Adu à 5min
+          if (next === 300 && activeCoupon) {
+            addAssistantMessage(`⚠️ Ton coupon **${activeCoupon.code}** expire dans 5min ! Utilise-le avant qu'il disparaisse 🔥`)
+            setCouponExpanded(true)
+          }
+          if (next <= 0) {
             setShowCouponBanner(false)
             setActiveCoupon(null)
             return 0
           }
-          return prev - 1
+          return next
         })
       }, 1000)
       return () => clearInterval(interval)
     }
-  }, [couponTimer, showCouponBanner])
+  }, [couponTimer, showCouponBanner, activeCoupon])
 
   // ============================================================
   // SAUVEGARDE DES MESSAGES
