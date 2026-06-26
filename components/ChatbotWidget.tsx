@@ -906,7 +906,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
   const sendMessage = async () => {
     const text = input.trim()
-    if (!text || isTyping) return    const userMsg: Message = {
+    if (!text || isTyping) return
+    
+    const userMsg: Message = {
       id: `user_${Date.now()}`,
       role: 'user',
       content: text,
