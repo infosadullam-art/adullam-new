@@ -2,7 +2,7 @@
 
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// VENDEUR ULTIME - Version 5.3
+// VENDEUR ULTIME - Version 5.4
 // Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
 
 import { useState, useEffect, useRef, useCallback } from "react"
@@ -1111,42 +1111,115 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         />
       )}
 
-      {/* ✅ WIDGET COUPON - DRAWER (rétractable sur le côté) - TIMER COHÉRENT */}
+      {/* ✅ WIDGET COUPON - DRAWER RÉTRACTABLE ET DÉPLAÇABLE */}
       {showCouponBanner && activeCoupon && remainingTime > 0 && (
         <div
           ref={couponRef}
           style={{
             position: 'fixed',
             top: '50%',
-            right: couponExpanded ? '0px' : '-280px',
-            transform: 'translateY(-50%)',
+            right: 0,
+            transform: `translateY(-50%) translateX(${couponExpanded ? 0 : (isMobile ? -280 : -300)})`,
             zIndex: 9999,
-            width: isMobile ? '280px' : '320px',
+            width: isMobile ? '280px' : '280px',
             background: '#D4372B',
             borderRadius: '12px 0 0 12px',
             padding: '16px 18px',
             color: '#fff',
             boxShadow: '0 8px 40px rgba(212,55,43,0.4)',
-            transition: 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
+            transition: 'transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
             border: '1px solid rgba(255,255,255,0.15)',
             borderRight: 'none',
-            cursor: isMobile ? 'default' : 'grab',
+            cursor: 'ew-resize',
             touchAction: 'none',
+            userSelect: 'none',
+            marginRight: isMobile ? '0' : '-20px',
           }}
-          onMouseDown={isMobile ? undefined : startCouponDrag}
-          onTouchStart={isMobile ? undefined : startCouponDrag}
+          onMouseDown={(e) => {
+            e.preventDefault()
+            const startX = e.clientX
+            const startOffset = couponExpanded ? 0 : (isMobile ? -280 : -300)
+            
+            const onMove = (ev) => {
+              const diff = ev.clientX - startX
+              const newOffset = Math.max(isMobile ? -280 : -300, Math.min(0, startOffset + diff))
+              couponRef.current.style.transition = 'none'
+              couponRef.current.style.transform = `translateY(-50%) translateX(${newOffset}px)`
+            }
+            
+            const onUp = () => {
+              document.removeEventListener('mousemove', onMove)
+              document.removeEventListener('mouseup', onUp)
+              const rect = couponRef.current?.getBoundingClientRect()
+              if (rect) {
+                const visible = rect.left + rect.width
+                const threshold = isMobile ? 200 : 180
+                if (visible < threshold) {
+                  setCouponExpanded(false)
+                  couponRef.current.style.transform = `translateY(-50%) translateX(${isMobile ? -280 : -300}px)`
+                } else {
+                  setCouponExpanded(true)
+                  couponRef.current.style.transform = 'translateY(-50%) translateX(0px)'
+                }
+              }
+              couponRef.current.style.transition = 'transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)'
+            }
+            
+            document.addEventListener('mousemove', onMove)
+            document.addEventListener('mouseup', onUp)
+          }}
+          onTouchStart={(e) => {
+            const touch = e.touches[0]
+            const startX = touch.clientX
+            const startOffset = couponExpanded ? 0 : (isMobile ? -280 : -300)
+            
+            const onMove = (ev) => {
+              const touch = ev.touches[0]
+              const diff = touch.clientX - startX
+              const newOffset = Math.max(isMobile ? -280 : -300, Math.min(0, startOffset + diff))
+              couponRef.current.style.transition = 'none'
+              couponRef.current.style.transform = `translateY(-50%) translateX(${newOffset}px)`
+            }
+            
+            const onUp = () => {
+              document.removeEventListener('touchmove', onMove)
+              document.removeEventListener('touchend', onUp)
+              const rect = couponRef.current?.getBoundingClientRect()
+              if (rect) {
+                const visible = rect.left + rect.width
+                const threshold = isMobile ? 200 : 180
+                if (visible < threshold) {
+                  setCouponExpanded(false)
+                  couponRef.current.style.transform = `translateY(-50%) translateX(${isMobile ? -280 : -300}px)`
+                } else {
+                  setCouponExpanded(true)
+                  couponRef.current.style.transform = 'translateY(-50%) translateX(0px)'
+                }
+              }
+              couponRef.current.style.transition = 'transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)'
+            }
+            
+            document.addEventListener('touchmove', onMove, { passive: false })
+            document.addEventListener('touchend', onUp)
+            e.preventDefault()
+          }}
         >
           {/* ✅ ONGLET DE RETRACTION (visible quand rétracté) */}
           {!couponExpanded && (
             <div
-              onClick={() => setCouponExpanded(true)}
+              onClick={() => {
+                setCouponExpanded(true)
+                if (couponRef.current) {
+                  couponRef.current.style.transform = 'translateY(-50%) translateX(0px)'
+                }
+              }}
               style={{
                 position: 'absolute',
-                left: '-36px',
+                left: isMobile ? '-36px' : '-40px',
                 top: '50%',
                 transform: 'translateY(-50%)',
                 background: '#D4372B',
-                padding: '10px 8px',
+                padding: '12px 8px',
                 borderRadius: '8px 0 0 8px',
                 border: '1px solid rgba(255,255,255,0.15)',
                 borderRight: 'none',
@@ -1155,18 +1228,26 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: '4px',
-                minWidth: '28px',
+                minWidth: isMobile ? '28px' : '32px',
+                boxShadow: '-2px 4px 12px rgba(0,0,0,0.1)',
               }}
             >
-              <span style={{ fontSize: '14px' }}>🎁</span>
+              <span style={{ fontSize: isMobile ? '14px' : '16px' }}>🎁</span>
               <span style={{ 
-                fontSize: '9px', 
+                fontSize: isMobile ? '9px' : '10px', 
                 fontWeight: 700,
                 background: 'rgba(255,255,255,0.2)',
                 padding: '2px 4px',
                 borderRadius: '4px',
               }}>
                 -{activeCoupon.discount}%
+              </span>
+              <span style={{ 
+                fontSize: isMobile ? '6px' : '7px', 
+                opacity: 0.6,
+                marginTop: '2px',
+              }}>
+                {formatTime(remainingTime)}
               </span>
             </div>
           )}
@@ -1280,7 +1361,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
           {/* BOUTON FERMER (petit X) */}
           <button
-            onClick={() => setCouponExpanded(false)}
+            onClick={() => {
+              setCouponExpanded(false)
+              if (couponRef.current) {
+                couponRef.current.style.transform = `translateY(-50%) translateX(${isMobile ? -280 : -300}px)`
+              }
+            }}
             style={{
               position: 'absolute',
               top: '8px',
@@ -1301,21 +1387,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           >
             ✕
           </button>
-
-          {/* INDICATEUR DE DRAG SUR DESKTOP */}
-          {!isMobile && (
-            <div style={{
-              position: 'absolute',
-              top: '50%',
-              left: '-12px',
-              transform: 'translateY(-50%)',
-              width: '4px',
-              height: '40px',
-              background: 'rgba(255,255,255,0.3)',
-              borderRadius: '2px',
-              opacity: 0.5,
-            }} />
-          )}
         </div>
       )}
 
