@@ -1123,7 +1123,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           style={{
             position: 'fixed',
             top: `${couponY}%`,
-            right: couponExpanded ? '0px' : (isMobile ? '-280px' : '-300px'),
+            right: couponExpanded ? '0px' : (isMobile ? '-280px' : '-290px'),
             transform: 'translateY(-50%)',
             zIndex: 9999,
             width: isMobile ? '280px' : '280px',
