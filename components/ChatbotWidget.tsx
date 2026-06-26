@@ -1109,46 +1109,15 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
       {/* ✅ WIDGET COUPON - DRAWER (rétractable sur le côté) - TIMER COHÉRENT */}
       {showCouponBanner && activeCoupon && remainingTime > 0 && (
-        <div
-          ref={couponRef}
-          style={{
-            position: 'fixed',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            right: couponExpanded ? '0px' : '-280px',
-            zIndex: 9999,
-            width: isMobile ? '280px' : '320px',
-            background: '#D4372B',
-            borderRadius: '12px 0 0 12px',
-            padding: couponExpanded ? '16px 18px' : '0',
-            color: '#fff',
-            boxShadow: couponExpanded ? '0 8px 40px rgba(212,55,43,0.4)' : 'none',
-            transition: 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
-            border: couponExpanded ? '1px solid rgba(255,255,255,0.15)' : 'none',
-            borderRight: 'none',
-            cursor: isMobile ? 'default' : 'grab',
-            touchAction: 'none',
-            height: couponExpanded ? 'auto' : 'auto',
-            minHeight: couponExpanded ? 'auto' : '0',
-            overflow: 'hidden',
-          }}
-          onMouseDown={isMobile ? undefined : (e) => {
-            e.preventDefault()
-            startCouponDrag(e.clientX, e.clientY)
-          }}
-          onTouchStart={isMobile ? undefined : (e) => {
-            const touch = e.touches[0]
-            if (touch) startCouponDrag(touch.clientX, touch.clientY)
-          }}
-        >
-          {/* ✅ ONGLET DE RETRACTION (visible quand rétracté) */}
+        <>
+          {/* ✅ ONGLET DE RETRACTION (visible quand rétracté) - EN DEHORS DU DIV PRINCIPAL */}
           {!couponExpanded && (
             <div
               onClick={() => setCouponExpanded(true)}
               style={{
-                position: 'absolute',
-                left: '-36px',
+                position: 'fixed',
                 top: '50%',
+                right: '0px',
                 transform: 'translateY(-50%)',
                 background: '#D4372B',
                 padding: '12px 8px',
@@ -1162,6 +1131,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 gap: '6px',
                 minWidth: '28px',
                 boxShadow: '0 4px 20px rgba(212,55,43,0.3)',
+                zIndex: 9999,
               }}
             >
               <span style={{ fontSize: '16px' }}>🎁</span>
@@ -1177,9 +1147,36 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             </div>
           )}
 
-          {/* ✅ CONTENU DÉPLOYÉ - TIMER COHÉRENT */}
+          {/* ✅ CONTENU DÉPLOYÉ */}
           {couponExpanded && (
-            <>
+            <div
+              ref={couponRef}
+              style={{
+                position: 'fixed',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                right: '0px',
+                zIndex: 9999,
+                width: isMobile ? '280px' : '320px',
+                background: '#D4372B',
+                borderRadius: '12px 0 0 12px',
+                padding: '16px 18px',
+                color: '#fff',
+                boxShadow: '0 8px 40px rgba(212,55,43,0.4)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                borderRight: 'none',
+                cursor: isMobile ? 'default' : 'grab',
+                touchAction: 'none',
+              }}
+              onMouseDown={isMobile ? undefined : (e) => {
+                e.preventDefault()
+                startCouponDrag(e.clientX, e.clientY)
+              }}
+              onTouchStart={isMobile ? undefined : (e) => {
+                const touch = e.touches[0]
+                if (touch) startCouponDrag(touch.clientX, touch.clientY)
+              }}
+            >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ 
@@ -1324,9 +1321,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                   opacity: 0.5,
                 }} />
               )}
-            </>
+            </div>
           )}
-        </div>
+        </>
       )}
 
       {!isOpen && (
