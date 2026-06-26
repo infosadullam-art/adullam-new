@@ -2,7 +2,7 @@
 
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// VENDEUR ULTIME - Version 5.0
+// VENDEUR ULTIME - Version 5.1
 // Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
 
 import { useState, useEffect, useRef, useCallback } from "react"
@@ -195,7 +195,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const containerRef = useRef<HTMLDivElement>(null)
   const bubbleRef = useRef<HTMLButtonElement>(null)
 
-  // ⌨️ Hauteur clavier (visualViewport) façon Messenger
+  // ⌨️ Hauteur clavier (visualViewport) façon Messenger - VERSION AMÉLIORÉE CHROME
   const [keyboardInset, setKeyboardInset] = useState(0)
 
   // ============================================================
@@ -244,35 +244,71 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
-  // ⌨️ Gestion clavier mobile — Chrome + Safari + Firefox
+  // ⌨️ Gestion clavier mobile - CHROME OPTIMISÉ
   useEffect(() => {
     if (typeof window === 'undefined') return
+
+    let timeoutId: NodeJS.Timeout | null = null
 
     const updateInset = () => {
       if (window.visualViewport) {
         const vv = window.visualViewport
-        const gap = window.innerHeight - vv.height - vv.offsetTop
+        // Chrome mobile: la hauteur visible du viewport
+        // vs la hauteur totale de la fenêtre
+        const visibleHeight = vv.height
+        const totalHeight = window.innerHeight
+        let gap = totalHeight - visibleHeight
+        
+        // Ajustement pour Chrome (offsetTop peut varier)
+        if (vv.offsetTop > 0) {
+          gap = gap + vv.offsetTop
+        }
+        
         setKeyboardInset(gap > 50 ? gap : 0)
+      } else {
+        setKeyboardInset(0)
       }
     }
 
+    // Écouter les événements du viewport
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', updateInset)
       window.visualViewport.addEventListener('scroll', updateInset)
     }
-    // Fallback focus/blur pour Chrome Android qui ne fire pas toujours resize
-    const onFocus = () => setTimeout(updateInset, 150)
-    const onBlur = () => setTimeout(() => setKeyboardInset(0), 150)
-    window.addEventListener('focusin', onFocus)
-    window.addEventListener('focusout', onBlur)
+
+    // Détecter le focus sur l'input (Chrome a besoin de 2 passes)
+    const onFocus = () => {
+      if (timeoutId) clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        updateInset()
+        // Deuxième passe pour Chrome
+        setTimeout(updateInset, 300)
+      }, 100)
+    }
+    
+    const onBlur = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+        timeoutId = null
+      }
+      setTimeout(() => setKeyboardInset(0), 150)
+    }
+
+    // Utiliser 'focusin' et 'focusout' pour capturer tous les inputs
+    document.addEventListener('focusin', onFocus)
+    document.addEventListener('focusout', onBlur)
+
+    // Initialisation
+    setTimeout(updateInset, 500)
 
     return () => {
       if (window.visualViewport) {
         window.visualViewport.removeEventListener('resize', updateInset)
         window.visualViewport.removeEventListener('scroll', updateInset)
       }
-      window.removeEventListener('focusin', onFocus)
-      window.removeEventListener('focusout', onBlur)
+      document.removeEventListener('focusin', onFocus)
+      document.removeEventListener('focusout', onBlur)
+      if (timeoutId) clearTimeout(timeoutId)
     }
   }, [])
 
@@ -1034,7 +1070,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       positionStyle = { bottom: bottomPosition, left: 12, right: 12 }
       heightStyle = { height: '52px', maxHeight: '52px' }
     } else {
-      positionStyle = { top: 8, left: 12, right: 12, bottom: keyboardInset + 8 }
+      // ✅ Le chat s'adapte au clavier comme Messenger
+      const bottomInset = keyboardInset > 0 ? keyboardInset + 8 : 80
+      positionStyle = { 
+        top: 8, 
+        left: 12, 
+        right: 12, 
+        bottom: bottomInset 
+      }
       heightStyle = { height: 'auto' }
     }
   } else if (dragPos) {
@@ -1071,91 +1114,146 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         />
       )}
 
+      {/* ✅ POPUP COUPON - VERSION MOBILE COMPACTE ET DÉPLAÇABLE */}
       {showCouponBanner && activeCoupon && couponTimer > 0 && (
-        <div style={{
-          position: 'fixed',
-          bottom: '110px',
-          right: '20px',
-          zIndex: 9999,
-          maxWidth: '340px',
-          width: '100%',
-          background: '#D4372B',
-          borderRadius: '16px',
-          padding: '20px',
-          color: '#fff',
-          boxShadow: '0 8px 40px rgba(212,55,43,0.4)',
-          animation: 'slideUp 0.4s ease-out',
-          border: '1px solid rgba(255,255,255,0.15)',
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <p style={{ fontSize: '10px', textTransform: 'uppercase', opacity: 0.7, letterSpacing: '1px' }}>
-                🎁 Réduction spéciale
+        <div
+          ref={couponRef}
+          style={{
+            position: 'fixed',
+            bottom: isMobile ? '76px' : '110px',
+            right: couponPos ? 'auto' : (isMobile ? '8px' : '20px'),
+            left: couponPos ? couponPos.x : (isMobile ? '8px' : 'auto'),
+            top: couponPos ? couponPos.y : 'auto',
+            zIndex: 9999,
+            maxWidth: isMobile ? 'calc(100vw - 16px)' : '340px',
+            width: isMobile ? 'calc(100vw - 16px)' : '100%',
+            background: '#D4372B',
+            borderRadius: isMobile ? '10px' : '16px',
+            padding: isMobile ? '10px 12px' : '20px',
+            color: '#fff',
+            boxShadow: '0 8px 40px rgba(212,55,43,0.4)',
+            animation: 'slideUp 0.4s ease-out',
+            border: '1px solid rgba(255,255,255,0.15)',
+            cursor: isMobile ? 'default' : 'grab',
+            touchAction: 'none',
+            transition: isDraggingCoupon ? 'none' : 'all 0.2s ease',
+          }}
+          onMouseDown={isMobile ? undefined : startCouponDrag}
+          onTouchStart={isMobile ? undefined : startCouponDrag}
+        >
+          {/* Version mobile réduite */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ 
+                fontSize: isMobile ? '7px' : '10px', 
+                textTransform: 'uppercase', 
+                opacity: 0.7, 
+                letterSpacing: '0.5px',
+                margin: 0,
+              }}>
+                🎁 Réduction
               </p>
-              <p style={{ fontSize: '28px', fontWeight: 700, lineHeight: 1 }}>
-                -{activeCoupon.discount}%
-              </p>
-              <p style={{ fontSize: '11px', opacity: 0.8, marginTop: '2px' }}>
-                Code: <span style={{ fontFamily: 'monospace', fontWeight: 700, letterSpacing: '1px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <p style={{ 
+                  fontSize: isMobile ? '20px' : '28px', 
+                  fontWeight: 700, 
+                  lineHeight: 1.1,
+                  margin: 0,
+                }}>
+                  -{activeCoupon.discount}%
+                </p>
+                <p style={{ 
+                  fontSize: isMobile ? '9px' : '11px', 
+                  opacity: 0.8, 
+                  margin: 0,
+                  fontFamily: 'monospace',
+                  fontWeight: 600,
+                  letterSpacing: '0.5px',
+                  background: 'rgba(255,255,255,0.15)',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                }}>
                   {activeCoupon.code}
-                </span>
-              </p>
+                </p>
+              </div>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <p style={{ fontSize: '10px', opacity: 0.7 }}>Expire dans</p>
-              <p style={{ fontSize: '22px', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+              <p style={{ fontSize: isMobile ? '7px' : '10px', opacity: 0.7, margin: 0 }}>Expire</p>
+              <p style={{ 
+                fontSize: isMobile ? '16px' : '22px', 
+                fontWeight: 700, 
+                fontVariantNumeric: 'tabular-nums',
+                margin: 0,
+              }}>
                 {formatTime(couponTimer)}
               </p>
             </div>
           </div>
 
-          <div style={{ marginTop: '16px', display: 'flex', gap: '8px' }}>
+          {/* Boutons en ligne */}
+          <div style={{ 
+            marginTop: isMobile ? '8px' : '16px', 
+            display: 'flex', 
+            gap: '6px',
+          }}>
             <button
               onClick={() => {
                 navigator.clipboard.writeText(activeCoupon.code)
                 const btn = document.getElementById('copy-coupon-btn')
                 if (btn) {
-                  btn.textContent = '✅ Copié !'
-                  setTimeout(() => { btn.textContent = '📋 Copier' }, 2000)
+                  btn.textContent = '✅'
+                  setTimeout(() => { btn.textContent = '📋' }, 1500)
                 }
               }}
               id="copy-coupon-btn"
               style={{
                 flex: 1,
-                padding: '10px',
+                padding: isMobile ? '6px' : '10px',
                 background: '#fff',
                 color: '#D4372B',
                 border: 'none',
-                borderRadius: '10px',
-                fontSize: '13px',
+                borderRadius: '6px',
+                fontSize: isMobile ? '12px' : '13px',
                 fontWeight: 600,
                 cursor: 'pointer',
                 transition: 'all 0.2s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.02)' }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)' }}
             >
-              📋 Copier
+              📋
             </button>
             <button
               onClick={() => window.location.href = '/cart'}
               style={{
-                padding: '10px 16px',
+                flex: 1,
+                padding: isMobile ? '6px' : '10px',
                 background: 'rgba(255,255,255,0.15)',
                 color: '#fff',
                 border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '10px',
-                fontSize: '13px',
+                borderRadius: '6px',
+                fontSize: isMobile ? '12px' : '13px',
                 fontWeight: 600,
                 cursor: 'pointer',
                 transition: 'all 0.2s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.25)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)' }}
             >
-              🛒 Panier
+              🛒
             </button>
           </div>
+
+          {/* Indicateur de drag sur desktop */}
+          {!isMobile && (
+            <div style={{
+              position: 'absolute',
+              top: '4px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '30px',
+              height: '3px',
+              background: 'rgba(255,255,255,0.3)',
+              borderRadius: '2px',
+              opacity: 0.5,
+            }} />
+          )}
         </div>
       )}
 
