@@ -832,10 +832,28 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         const offer = data.offer || null
         addAssistantMessage(data.response, formattedProducts, offer)
 
-        if (waitingForOfferResponse && pendingOfferProduct && pendingOfferDiscount) {
+        // ✅ Si le backend a déjà généré un coupon (réponse à "oui")
+        if (offer && offer.type === 'coupon' && offer.coupon) {
+          setActiveCoupon(offer.coupon)
+          setShowCouponBanner(true)
+          setCouponTimer((offer.coupon.time_limit || 20) * 60)
+          setWaitingForOfferResponse(false)
+          setPendingOfferProduct(null)
+          setPendingOfferDiscount(null)
+        }
+
+        // ✅ Si le backend propose une offre (safe ou risky), mettre en attente
+        if (offer && (offer.type === 'safe' || offer.type === 'risky') && !waitingForOfferResponse) {
+          setWaitingForOfferResponse(true)
+          setPendingOfferDiscount(offer.discount_2 || offer.discount_1 || 10)
+          setPendingOfferProduct(formattedProducts[0] || null)
+        }
+
+        // ✅ Fallback : si le frontend gère lui-même la confirmation
+        if (waitingForOfferResponse && pendingOfferDiscount && !(offer && offer.type === 'coupon')) {
           const lowerText = text.toLowerCase()
-          if (lowerText.includes('oui') || lowerText.includes('ok') || lowerText.includes('yes') || lowerText.includes('d\'accord')) {
-            await generateCoupon(pendingOfferProduct.id, pendingOfferDiscount)
+          if (lowerText.includes('oui') || lowerText.includes('ok') || lowerText.includes('yes') || lowerText.includes('d\'accord') || lowerText.includes('je veux') || lowerText.includes('veux bien')) {
+            await generateCoupon(pendingOfferProduct?.id || 'none', pendingOfferDiscount)
             setWaitingForOfferResponse(false)
             setPendingOfferProduct(null)
             setPendingOfferDiscount(null)
