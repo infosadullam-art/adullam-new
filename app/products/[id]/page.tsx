@@ -947,16 +947,14 @@ export default function ProductPage() {
   }
 
   const handleBuyNow = () => {
-    const grandTotal = getGrandTotal()
-    if (!isMOQMet || !product || grandTotal === 0) {
-      toast.error("Veuillez sélectionner des articles")
-      return
-    }
+  const grandTotal = getGrandTotal()
+  if (!isMOQMet || !product || grandTotal === 0) {
+    toast.error("Veuillez sélectionner des articles")
+    return
+  }
 
-    handleAddToCart()
-    setTimeout(() => {
-      router.push("/cart")
-    }, 500)
+   handleAddToCart()
+   router.push("/cart")
   }
 
   const handleContactWhatsApp = () => {
