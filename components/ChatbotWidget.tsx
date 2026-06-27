@@ -204,6 +204,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
   // ⌨️ Hauteur clavier (visualViewport) - CORRIGÉ POUR ÉVITER LES SAUTS
   const [keyboardInset, setKeyboardInset] = useState(0)
+  const [windowHeight, setWindowHeight] = useState(700)
   const keyboardTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const lastKeyboardStateRef = useRef<{ height: number; timestamp: number }>({ height: 0, timestamp: 0 })
 
@@ -214,6 +215,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
+      setWindowHeight(window.innerHeight)
     }
     checkMobile()
     window.addEventListener('resize', checkMobile)
@@ -1049,17 +1051,20 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       positionStyle = { bottom: bottomPosition, left: 12, right: 12 }
       heightStyle = { height: '52px', maxHeight: '52px' }
     } else {
+      const navbarHeight = 72
+      const topMargin = 120
+      const availableHeight = keyboardInset > 0
+        ? windowHeight - keyboardInset - topMargin - 8
+        : windowHeight - navbarHeight - topMargin
       positionStyle = {
-        top: 'env(safe-area-inset-top, 44px)' as any,
-        left: 12,
-        right: 12,
-        bottom: 0,
-        transform: `translateY(-${keyboardInset > 0 ? keyboardInset + 8 : 80}px)`,
-        transition: keyboardInset > 0
-          ? 'transform 0.22s ease-out'
-          : 'transform 0.18s ease-in',
+        bottom: keyboardInset > 0 ? keyboardInset + 8 : navbarHeight,
+        left: 8,
+        right: 8,
+        transition: 'bottom 0.2s ease, height 0.2s ease',
       }
-      heightStyle = { height: 'auto' }
+      heightStyle = {
+        height: `${Math.max(300, availableHeight)}px`,
+      }
     }
   } else if (dragPos) {
     positionStyle = { top: dragPos.y, left: dragPos.x }
