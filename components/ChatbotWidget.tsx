@@ -251,11 +251,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
-  // ⌨️ Gestion clavier mobile - CHROME OPTIMISÉ
+  // ⌨️ Gestion clavier mobile - CORRIGÉ pour éviter les sauts
   useEffect(() => {
     if (typeof window === 'undefined') return
 
     let timeoutId: NodeJS.Timeout | null = null
+    let isKeyboardVisible = false
 
     const updateInset = () => {
       if (window.visualViewport) {
@@ -266,9 +267,15 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         if (vv.offsetTop > 0) {
           gap = gap + vv.offsetTop
         }
-        setKeyboardInset(gap > 50 ? gap : 0)
-      } else {
-        setKeyboardInset(0)
+        const newInset = gap > 50 ? gap : 0
+        // Ne mettre à jour que si la valeur change vraiment
+        setKeyboardInset(prev => {
+          if (Math.abs(prev - newInset) > 10) {
+            return newInset
+          }
+          return prev
+        })
+        isKeyboardVisible = newInset > 50
       }
     }
 
@@ -279,10 +286,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
     const onFocus = () => {
       if (timeoutId) clearTimeout(timeoutId)
+      // Délai plus court pour éviter le saut
       timeoutId = setTimeout(() => {
         updateInset()
-        setTimeout(updateInset, 300)
-      }, 100)
+        setTimeout(updateInset, 150)
+      }, 50)
     }
     
     const onBlur = () => {
@@ -290,13 +298,18 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         clearTimeout(timeoutId)
         timeoutId = null
       }
-      setTimeout(() => setKeyboardInset(0), 150)
+      // Retarder la fermeture pour éviter le saut
+      setTimeout(() => {
+        if (!isKeyboardVisible) {
+          setKeyboardInset(0)
+        }
+      }, 100)
     }
 
     document.addEventListener('focusin', onFocus)
     document.addEventListener('focusout', onBlur)
 
-    setTimeout(updateInset, 500)
+    setTimeout(updateInset, 300)
 
     return () => {
       if (window.visualViewport) {
@@ -1064,11 +1077,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
   let positionStyle: React.CSSProperties
   let heightStyle: React.CSSProperties
+
+  // SUR MOBILE : le chat prend toute la hauteur avec un padding pour le clavier
   if (isMobile) {
     if (isMinimized) {
       positionStyle = { bottom: bottomPosition, left: 12, right: 12 }
       heightStyle = { height: '52px', maxHeight: '52px' }
     } else {
+      // Utiliser la hauteur disponible sans saut
       const bottomInset = keyboardInset > 0 ? keyboardInset + 8 : 80
       positionStyle = { 
         top: 8, 
@@ -1091,6 +1107,40 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     const secs = seconds % 60
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
+
+  // Empêcher le scroll de la page quand on scroll dans le chat
+  const handleChatScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget
+    const isAtTop = target.scrollTop === 0
+    const isAtBottom = target.scrollHeight - target.scrollTop === target.clientHeight
+    
+    // Si on est en haut ou en bas, ne pas laisser le scroll passer à la page
+    if (isAtTop || isAtBottom) {
+      e.stopPropagation()
+    }
+  }
+
+  // Gestion du retour arrière (back button) sur mobile
+  useEffect(() => {
+    const handlePopState = () => {
+      if (isOpen && isMobile) {
+        setIsOpen(false)
+        setIsMinimized(false)
+        // Empêcher le retour de la page
+        window.history.pushState(null, '', window.location.href)
+      }
+    }
+
+    if (isOpen && isMobile) {
+      // Ajouter un état dans l'historique pour capturer le retour
+      window.history.pushState({ chatbot: true }, '', window.location.href)
+      window.addEventListener('popstate', handlePopState)
+    }
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, [isOpen, isMobile])
 
   return (
     <>
@@ -1119,10 +1169,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           style={{
             position: 'fixed',
             top: `${couponY}%`,
-            right: couponExpanded ? '0px' : (isMobile ? '0px' : '0px'),
+            right: couponExpanded ? '0px' : '0px',
             transform: 'translateY(-50%)',
             zIndex: 9999,
-            width: isMobile ? (couponExpanded ? '280px' : '44px') : (couponExpanded ? '280px' : '44px'),
+            width: couponExpanded ? '280px' : '44px',
             background: couponExpanded ? '#D4372B' : 'transparent',
             borderRadius: '12px 0 0 12px',
             padding: couponExpanded ? '16px 18px' : '0px',
@@ -1518,6 +1568,21 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             transition: isDragging ? 'none' : 'height 0.3s ease, bottom 0.25s ease',
             touchAction: isDragging ? 'none' : 'auto',
             userSelect: isDragging ? 'none' : 'auto',
+            // Empêcher le scroll de la page
+            overscrollBehavior: 'contain',
+          }}
+          // Empêcher le scroll de la page quand on scroll dans le chat
+          onWheel={(e) => {
+            const target = e.currentTarget
+            const scrollable = target.querySelector('.chat-messages') as HTMLDivElement
+            if (!scrollable) return
+            
+            const isAtTop = scrollable.scrollTop === 0
+            const isAtBottom = scrollable.scrollHeight - scrollable.scrollTop === scrollable.clientHeight
+            
+            if ((e.deltaY < 0 && isAtTop) || (e.deltaY > 0 && isAtBottom)) {
+              e.preventDefault()
+            }
           }}
         >
           <div
@@ -1596,14 +1661,30 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
           {!isMinimized && (
             <>
-              <div style={{
-                flex: 1,
-                overflowY: 'auto',
-                padding: isMobile ? '8px' : '12px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px',
-              }}>
+              <div 
+                className="chat-messages"
+                style={{
+                  flex: 1,
+                  overflowY: 'auto',
+                  padding: isMobile ? '8px' : '12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px',
+                  overscrollBehavior: 'contain',
+                  WebkitOverflowScrolling: 'touch',
+                }}
+                onScroll={handleChatScroll}
+                // Empêcher le scroll de la page
+                onTouchMove={(e) => {
+                  const target = e.currentTarget
+                  const isAtTop = target.scrollTop === 0
+                  const isAtBottom = target.scrollHeight - target.scrollTop === target.clientHeight
+                  
+                  if ((isAtTop && (e.target as HTMLElement).scrollTop === 0) || isAtBottom) {
+                    e.stopPropagation()
+                  }
+                }}
+              >
                 {messages.map((msg, idx) => (
                   <div
                     key={msg.id}
@@ -1922,6 +2003,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         }
         .chatbot-container {
           animation: slideUp 0.3s ease-out;
+        }
+        .chat-messages {
+          overscroll-behavior: contain;
+          -webkit-overflow-scrolling: touch;
         }
         .coupon-drawer {
           transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
