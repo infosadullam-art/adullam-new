@@ -2,7 +2,7 @@
 
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// VENDEUR ULTIME - Version 5.3
+// VENDEUR ULTIME - Version 5.4
 // Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
 
 import { useState, useEffect, useRef, useCallback } from "react"
@@ -160,10 +160,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const [activeCoupon, setActiveCoupon] = useState<any>(null)
   const [showCouponBanner, setShowCouponBanner] = useState(false)
   const [couponExpanded, setCouponExpanded] = useState(false)
-  const [couponY, setCouponY] = useState<number | null>(null)
-  const [isDraggingCoupon, setIsDraggingCoupon] = useState(false)
-  const couponDragRef = useRef<{ startY: number; originY: number; moved: boolean } | null>(null)
-  const couponRef = useRef<HTMLDivElement>(null)
   const [pendingOfferProduct, setPendingOfferProduct] = useState<Product | null>(null)
   const [pendingOfferDiscount, setPendingOfferDiscount] = useState<number | null>(null)
   const [waitingForOfferResponse, setWaitingForOfferResponse] = useState(false)
@@ -171,6 +167,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
   // ✅ TIMER BASÉ SUR expires_at
   const [remainingTime, setRemainingTime] = useState(0)
+
+  // ✅ DÉPLACEMENT VERTICAL DU DRAWER
+  const [couponY, setCouponY] = useState(50)
+  const [isDraggingY, setIsDraggingY] = useState(false)
+  const dragYRef = useRef<{ startY: number; startOffset: number } | null>(null)
+  const couponRef = useRef<HTMLDivElement>(null)
 
   // Refs
   const messagesEndRef  = useRef<HTMLDivElement>(null)
@@ -303,61 +305,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       if (timeoutId) clearTimeout(timeoutId)
     }
   }, [])
-
-  // 🖱️ Drag du widget coupon - VERTICAL UNIQUEMENT (CORRIGÉ)
-  useEffect(() => {
-    if (!isDraggingCoupon) return
-    
-    const onMove = (clientY: number) => {
-      const s = couponDragRef.current
-      if (!s) return
-      const dy = clientY - s.startY
-      if (Math.abs(dy) > 4) s.moved = true
-      const el = couponRef.current
-      const h = el?.offsetHeight ?? 200
-      const newY = Math.min(Math.max(8, s.originY + dy), window.innerHeight - h - 8)
-      setCouponY(newY)
-    }
-    
-    const onEnd = () => {
-      setIsDraggingCoupon(false)
-      couponDragRef.current = null
-    }
-    
-    const onMouseMove = (e: MouseEvent) => {
-      e.preventDefault()
-      onMove(e.clientY)
-    }
-    
-    const onTouchMove = (e: TouchEvent) => {
-      if (e.touches[0]) {
-        e.preventDefault()
-        onMove(e.touches[0].clientY)
-      }
-    }
-    
-    window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('mouseup', onEnd)
-    window.addEventListener('touchmove', onTouchMove, { passive: false })
-    window.addEventListener('touchend', onEnd)
-    
-    return () => {
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mouseup', onEnd)
-      window.removeEventListener('touchmove', onTouchMove)
-      window.removeEventListener('touchend', onEnd)
-    }
-  }, [isDraggingCoupon])
-
-  const startCouponDrag = (clientY: number) => {
-    const rect = couponRef.current?.getBoundingClientRect()
-    couponDragRef.current = { 
-      startY: clientY, 
-      originY: rect?.top ?? (couponY ?? window.innerHeight / 2 - 100), 
-      moved: false 
-    }
-    setIsDraggingCoupon(true)
-  }
 
   // 🖱️ Déplacement fluide
   useEffect(() => {
@@ -671,9 +618,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       setActiveCoupon(offer.coupon)
       setShowCouponBanner(true)
       setRemainingTime(offer.coupon.time_limit * 60)
-      if (couponY === null) {
-        setCouponY(window.innerHeight / 2 - 100)
-      }
       setTimeout(() => setCouponExpanded(true), 500)
     } else if (offer && offer.type !== 'none') {
       setActiveOffer(offer)
@@ -691,7 +635,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       utterance.onerror = () => setIsSpeaking(false)
       speechSynthRef.current.speak(utterance)
     }
-  }, [language, voiceSupported, saveMessageToHistory, couponY])
+  }, [language, voiceSupported, saveMessageToHistory])
 
   const openChat = useCallback(() => {
     setIsOpen(true)
@@ -863,9 +807,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         setActiveCoupon(data.coupon)
         setShowCouponBanner(true)
         setRemainingTime(data.coupon.time_limit * 60)
-        if (couponY === null) {
-          setCouponY(window.innerHeight / 2 - 100)
-        }
         setTimeout(() => setCouponExpanded(true), 500)
         
         const couponMessage = `🎉 Top ! J'ai généré un coupon spécial pour toi : **${data.coupon.code}**\nTu as **${data.coupon.discount}%** de réduction valable **${data.coupon.time_limit}min** ! ⏱️`
@@ -879,7 +820,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       console.error("Erreur génération coupon:", error)
       addAssistantMessage("Oups, erreur technique. Réessaie dans un instant !")
     }
-  }, [sessionId, userId, addAssistantMessage, saveMessageToHistory, couponY])
+  }, [sessionId, userId, addAssistantMessage, saveMessageToHistory])
 
   const proposeOffer = useCallback((product: Product) => {
     if (hasBeenOffered || activeCoupon) {
@@ -906,7 +847,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
   const sendMessage = async () => {
     const text = input.trim()
-    if (!text || isTyping) return
+    if (!text || isTyping) return;
     
     const userMsg: Message = {
       id: `user_${Date.now()}`,
@@ -950,9 +891,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           setActiveCoupon(offer.coupon)
           setShowCouponBanner(true)
           setRemainingTime((offer.coupon.time_limit || 20) * 60)
-          if (couponY === null) {
-            setCouponY(window.innerHeight / 2 - 100)
-          }
           setTimeout(() => setCouponExpanded(true), 500)
           setWaitingForOfferResponse(false)
           setPendingOfferProduct(null)
@@ -1128,17 +1066,104 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         />
       )}
 
-      {/* ✅ WIDGET COUPON - DRAG VERTICAL UNIQUEMENT - COLLÉ À DROITE */}
+      {/* ✅ WIDGET COUPON - DRAWER RÉTRACTABLE + DÉPLAÇABLE VERTICALEMENT */}
       {showCouponBanner && activeCoupon && remainingTime > 0 && (
-        <>
-          {/* ONGLET DE RETRACTION */}
+        <div
+          ref={couponRef}
+          style={{
+            position: 'fixed',
+            top: `${couponY}%`,
+            right: couponExpanded ? '0px' : (isMobile ? '-280px' : '-235px'),
+            transform: 'translateY(-50%)',
+            zIndex: 9999,
+            width: isMobile ? '280px' : '280px',
+            background: '#D4372B',
+            borderRadius: '12px 0 0 12px',
+            padding: '16px 18px',
+            color: '#fff',
+            boxShadow: '0 8px 40px rgba(212,55,43,0.4)',
+            transition: isDraggingY ? 'none' : 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease',
+            border: '1px solid rgba(255,255,255,0.15)',
+            borderRight: 'none',
+            cursor: isDraggingY ? 'grabbing' : 'grab',
+            touchAction: 'none',
+            userSelect: 'none',
+          }}
+          onMouseDown={(e) => {
+            e.preventDefault()
+            const startY = e.clientY
+            const rect = couponRef.current?.getBoundingClientRect()
+            const windowHeight = window.innerHeight
+            const currentY = ((rect?.top || 0) + (rect?.height || 0) / 2) / windowHeight * 100
+            dragYRef.current = { startY, startOffset: currentY }
+            setIsDraggingY(true)
+            
+            const onMove = (ev: MouseEvent) => {
+              const diff = ev.clientY - startY
+              const windowHeight = window.innerHeight
+              const newY = Math.max(5, Math.min(95, currentY + (diff / windowHeight) * 100))
+              setCouponY(newY)
+              if (couponRef.current) {
+                couponRef.current.style.transition = 'none'
+                couponRef.current.style.top = `${newY}%`
+              }
+            }
+            
+            const onUp = () => {
+              document.removeEventListener('mousemove', onMove)
+              document.removeEventListener('mouseup', onUp)
+              setIsDraggingY(false)
+              if (couponRef.current) {
+                couponRef.current.style.transition = 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease'
+              }
+            }
+            
+            document.addEventListener('mousemove', onMove)
+            document.addEventListener('mouseup', onUp)
+          }}
+          onTouchStart={(e) => {
+            const touch = e.touches[0]
+            const startY = touch.clientY
+            const rect = couponRef.current?.getBoundingClientRect()
+            const windowHeight = window.innerHeight
+            const currentY = ((rect?.top || 0) + (rect?.height || 0) / 2) / windowHeight * 100
+            dragYRef.current = { startY, startOffset: currentY }
+            setIsDraggingY(true)
+            
+            const onMove = (ev: TouchEvent) => {
+              const touch = ev.touches[0]
+              const diff = touch.clientY - startY
+              const windowHeight = window.innerHeight
+              const newY = Math.max(5, Math.min(95, currentY + (diff / windowHeight) * 100))
+              setCouponY(newY)
+              if (couponRef.current) {
+                couponRef.current.style.transition = 'none'
+                couponRef.current.style.top = `${newY}%`
+              }
+            }
+            
+            const onUp = () => {
+              document.removeEventListener('touchmove', onMove)
+              document.removeEventListener('touchend', onUp)
+              setIsDraggingY(false)
+              if (couponRef.current) {
+                couponRef.current.style.transition = 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease'
+              }
+            }
+            
+            document.addEventListener('touchmove', onMove, { passive: false })
+            document.addEventListener('touchend', onUp)
+            e.preventDefault()
+          }}
+        >
+          {/* ✅ ONGLET DE RETRACTION */}
           {!couponExpanded && (
             <div
               onClick={() => setCouponExpanded(true)}
               style={{
-                position: 'fixed',
-                top: couponY !== null ? couponY + 70 : '50%',
-                right: '0px',
+                position: 'absolute',
+                left: '-44px',
+                top: '50%',
                 transform: 'translateY(-50%)',
                 background: '#D4372B',
                 padding: '12px 8px',
@@ -1149,10 +1174,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '6px',
-                minWidth: '28px',
-                boxShadow: '0 4px 20px rgba(212,55,43,0.3)',
-                zIndex: 9999,
+                gap: '4px',
+                minWidth: '32px',
+                boxShadow: '-2px 4px 12px rgba(0,0,0,0.1)',
+                zIndex: 10,
               }}
             >
               <span style={{ fontSize: '16px' }}>🎁</span>
@@ -1160,45 +1185,24 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 fontSize: '10px', 
                 fontWeight: 700,
                 background: 'rgba(255,255,255,0.2)',
-                padding: '2px 6px',
+                padding: '2px 4px',
                 borderRadius: '4px',
               }}>
                 -{activeCoupon.discount}%
               </span>
+              <span style={{ 
+                fontSize: '7px', 
+                opacity: 0.6,
+                marginTop: '2px',
+              }}>
+                {formatTime(remainingTime)}
+              </span>
             </div>
           )}
 
-          {/* CONTENU DÉPLOYÉ - DRAG VERTICAL */}
+          {/* ✅ CONTENU DÉPLOYÉ */}
           {couponExpanded && (
-            <div
-              ref={couponRef}
-              style={{
-                position: 'fixed',
-                top: couponY !== null ? couponY : '50%',
-                right: '0px',
-                transform: couponY === null ? 'translateY(-50%)' : 'none',
-                zIndex: 9999,
-                width: isMobile ? '280px' : '320px',
-                background: '#D4372B',
-                borderRadius: '12px 0 0 12px',
-                padding: '16px 18px',
-                color: '#fff',
-                boxShadow: '0 8px 40px rgba(212,55,43,0.4)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                borderRight: 'none',
-                cursor: isMobile ? 'default' : 'grab',
-                touchAction: 'none',
-                userSelect: 'none',
-              }}
-              onMouseDown={isMobile ? undefined : (e) => {
-                e.preventDefault()
-                startCouponDrag(e.clientY)
-              }}
-              onTouchStart={isMobile ? undefined : (e) => {
-                const touch = e.touches[0]
-                if (touch) startCouponDrag(touch.clientY)
-              }}
-            >
+            <>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ 
@@ -1326,23 +1330,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               >
                 ✕
               </button>
-
-              {!isMobile && (
-                <div style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '-12px',
-                  transform: 'translateY(-50%)',
-                  width: '4px',
-                  height: '40px',
-                  background: 'rgba(255,255,255,0.3)',
-                  borderRadius: '2px',
-                  opacity: 0.5,
-                }} />
-              )}
-            </div>
+            </>
           )}
-        </>
+        </div>
       )}
 
       {!isOpen && (
