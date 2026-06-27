@@ -202,8 +202,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const containerRef = useRef<HTMLDivElement>(null)
   const bubbleRef = useRef<HTMLButtonElement>(null)
 
-  // ⌨️ Hauteur clavier (visualViewport) façon Messenger - VERSION AMÉLIORÉE CHROME
+  // ⌨️ Hauteur clavier (visualViewport) - CORRIGÉ POUR ÉVITER LES SAUTS
   const [keyboardInset, setKeyboardInset] = useState(0)
+  const keyboardTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const lastKeyboardStateRef = useRef<{ height: number; timestamp: number }>({ height: 0, timestamp: 0 })
 
   // ============================================================
   // HOOKS & EFFETS
@@ -251,11 +253,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
-  // ⌨️ Gestion clavier mobile - CORRIGÉ pour éviter les sauts
+  // ⌨️ Gestion clavier mobile - CORRIGÉ POUR ÉVITER LES SAUTS
   useEffect(() => {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined' || !isMobile) return
 
-    let timeoutId: NodeJS.Timeout | null = null
     let isKeyboardVisible = false
 
     const updateInset = () => {
@@ -268,13 +269,21 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           gap = gap + vv.offsetTop
         }
         const newInset = gap > 50 ? gap : 0
-        // Ne mettre à jour que si la valeur change vraiment
-        setKeyboardInset(prev => {
-          if (Math.abs(prev - newInset) > 10) {
-            return newInset
+        
+        // Ne mettre à jour que si la valeur change significativement
+        const prevHeight = lastKeyboardStateRef.current.height
+        if (Math.abs(prevHeight - newInset) > 20) {
+          lastKeyboardStateRef.current = { height: newInset, timestamp: Date.now() }
+          
+          // Mettre à jour avec un délai pour éviter les sauts
+          if (keyboardTimeoutRef.current) {
+            clearTimeout(keyboardTimeoutRef.current)
           }
-          return prev
-        })
+          keyboardTimeoutRef.current = setTimeout(() => {
+            setKeyboardInset(newInset)
+            keyboardTimeoutRef.current = null
+          }, 50)
+        }
         isKeyboardVisible = newInset > 50
       }
     }
@@ -285,30 +294,27 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
 
     const onFocus = () => {
-      if (timeoutId) clearTimeout(timeoutId)
-      // Délai plus court pour éviter le saut
-      timeoutId = setTimeout(() => {
-        updateInset()
-        setTimeout(updateInset, 150)
-      }, 50)
+      if (keyboardTimeoutRef.current) {
+        clearTimeout(keyboardTimeoutRef.current)
+        keyboardTimeoutRef.current = null
+      }
+      // Petit délai pour laisser le temps au clavier de s'afficher
+      setTimeout(updateInset, 100)
     }
     
     const onBlur = () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-        timeoutId = null
-      }
-      // Retarder la fermeture pour éviter le saut
+      // Ne pas fermer immédiatement pour éviter le saut
       setTimeout(() => {
         if (!isKeyboardVisible) {
           setKeyboardInset(0)
         }
-      }, 100)
+      }, 200)
     }
 
     document.addEventListener('focusin', onFocus)
     document.addEventListener('focusout', onBlur)
 
+    // Initialisation
     setTimeout(updateInset, 300)
 
     return () => {
@@ -318,9 +324,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       }
       document.removeEventListener('focusin', onFocus)
       document.removeEventListener('focusout', onBlur)
-      if (timeoutId) clearTimeout(timeoutId)
+      if (keyboardTimeoutRef.current) {
+        clearTimeout(keyboardTimeoutRef.current)
+        keyboardTimeoutRef.current = null
+      }
     }
-  }, [])
+  }, [isMobile])
 
   // 🖱️ Drag du widget coupon
   useEffect(() => {
@@ -1570,6 +1579,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             userSelect: isDragging ? 'none' : 'auto',
             // Empêcher le scroll de la page
             overscrollBehavior: 'contain',
+            // Éviter le repositionnement pendant l'ouverture du clavier
+            willChange: 'transform',
           }}
           // Empêcher le scroll de la page quand on scroll dans le chat
           onWheel={(e) => {
@@ -1672,6 +1683,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                   gap: '6px',
                   overscrollBehavior: 'contain',
                   WebkitOverflowScrolling: 'touch',
+                  // Éviter le repositionnement
+                  transform: 'translateZ(0)',
                 }}
                 onScroll={handleChatScroll}
                 // Empêcher le scroll de la page
@@ -1913,6 +1926,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 gap: '6px',
                 alignItems: 'center',
                 flexShrink: 0,
+                // Fixer la barre d'input en bas
+                backgroundColor: 'var(--background)',
               }}>
                 <input
                   ref={inputRef}
@@ -2007,6 +2022,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         .chat-messages {
           overscroll-behavior: contain;
           -webkit-overflow-scrolling: touch;
+          transform: translateZ(0);
         }
         .coupon-drawer {
           transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
