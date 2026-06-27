@@ -1112,41 +1112,37 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         />
       )}
 
-      {/* ✅ WIDGET COUPON - DRAWER (rétractable sur le côté) - TIMER COHÉRENT + DRAG VERTICAL */}
+      {/* ✅ WIDGET COUPON - DRAWER (rétractable sur le côté) - TIMER COHÉRENT + DRAG VERTICAL TOUJOURS ACTIF */}
       {showCouponBanner && activeCoupon && remainingTime > 0 && (
         <div
           ref={couponRef}
           style={{
             position: 'fixed',
             top: `${couponY}%`,
-            right: couponExpanded ? '0px' : (isMobile ? '-280px' : '-235px'),
+            right: couponExpanded ? '0px' : (isMobile ? '-280px' : '-44px'),
             transform: 'translateY(-50%)',
             zIndex: 9999,
             width: isMobile ? '280px' : '280px',
-            background: '#D4372B',
+            background: couponExpanded ? '#D4372B' : 'transparent',
             borderRadius: '12px 0 0 12px',
-            padding: couponExpanded ? '16px 18px' : '0px 0px 0px 0px',
+            padding: couponExpanded ? '16px 18px' : '0px',
             color: '#fff',
             boxShadow: couponExpanded ? '0 8px 40px rgba(212,55,43,0.4)' : 'none',
             transition: isDraggingY ? 'none' : 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease',
-            border: couponExpanded ? '1px solid rgba(255,255,255,0.15)' : 'none',
+            border: 'none',
             borderRight: 'none',
             cursor: isDraggingY ? 'grabbing' : 'grab',
             touchAction: 'none',
             userSelect: 'none',
-            height: couponExpanded ? 'auto' : '0px',
+            height: couponExpanded ? 'auto' : '50px',
             overflow: 'visible',
           }}
           onMouseDown={(e) => {
-            if (!couponExpanded) {
-              setCouponExpanded(true)
-              return
-            }
             e.preventDefault()
             const startY = e.clientY
             const rect = couponRef.current?.getBoundingClientRect()
             const windowHeight = window.innerHeight
-            const currentY = ((rect?.top || 0) + (rect?.height || 0) / 2) / windowHeight * 100
+            const currentY = couponY
             dragYRef.current = { startY, startOffset: currentY }
             setIsDraggingY(true)
             
@@ -1174,15 +1170,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             document.addEventListener('mouseup', onUp)
           }}
           onTouchStart={(e) => {
-            if (!couponExpanded) {
-              setCouponExpanded(true)
-              return
-            }
             const touch = e.touches[0]
             const startY = touch.clientY
             const rect = couponRef.current?.getBoundingClientRect()
             const windowHeight = window.innerHeight
-            const currentY = ((rect?.top || 0) + (rect?.height || 0) / 2) / windowHeight * 100
+            const currentY = couponY
             dragYRef.current = { startY, startOffset: currentY }
             setIsDraggingY(true)
             
@@ -1218,7 +1210,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               onClick={() => setCouponExpanded(true)}
               style={{
                 position: 'absolute',
-                left: '-44px',
+                right: '0px',
                 top: '50%',
                 transform: 'translateY(-50%)',
                 background: '#D4372B',
@@ -1388,21 +1380,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               >
                 ✕
               </button>
-
-              {/* INDICATEUR DE DRAG SUR DESKTOP */}
-              {!isMobile && (
-                <div style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '-12px',
-                  transform: 'translateY(-50%)',
-                  width: '4px',
-                  height: '40px',
-                  background: 'rgba(255,255,255,0.3)',
-                  borderRadius: '2px',
-                  opacity: 0.5,
-                }} />
-              )}
             </>
           )}
         </div>
