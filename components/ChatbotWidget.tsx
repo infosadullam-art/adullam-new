@@ -257,35 +257,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   useEffect(() => {
     if (typeof window === 'undefined' || !isMobile) return
 
-    let isKeyboardVisible = false
-
     const updateInset = () => {
-      if (window.visualViewport) {
-        const vv = window.visualViewport
-        const visibleHeight = vv.height
-        const totalHeight = window.innerHeight
-        let gap = totalHeight - visibleHeight
-        if (vv.offsetTop > 0) {
-          gap = gap + vv.offsetTop
-        }
-        const newInset = gap > 50 ? gap : 0
-        
-        // Ne mettre à jour que si la valeur change significativement
-        const prevHeight = lastKeyboardStateRef.current.height
-        if (Math.abs(prevHeight - newInset) > 20) {
-          lastKeyboardStateRef.current = { height: newInset, timestamp: Date.now() }
-          
-          // Mettre à jour avec un délai pour éviter les sauts
-          if (keyboardTimeoutRef.current) {
-            clearTimeout(keyboardTimeoutRef.current)
-          }
-          keyboardTimeoutRef.current = setTimeout(() => {
-            setKeyboardInset(newInset)
-            keyboardTimeoutRef.current = null
-          }, 50)
-        }
-        isKeyboardVisible = newInset > 50
-      }
+      if (!window.visualViewport) return
+      const vv = window.visualViewport
+      const gap = window.innerHeight - vv.height - vv.offsetTop
+      // ✅ Mise à jour directe sans timeout = pas de saut
+      setKeyboardInset(gap > 50 ? gap : 0)
     }
 
     if (window.visualViewport) {
@@ -293,29 +270,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       window.visualViewport.addEventListener('scroll', updateInset)
     }
 
-    const onFocus = () => {
-      if (keyboardTimeoutRef.current) {
-        clearTimeout(keyboardTimeoutRef.current)
-        keyboardTimeoutRef.current = null
-      }
-      // Petit délai pour laisser le temps au clavier de s'afficher
-      setTimeout(updateInset, 100)
-    }
-    
-    const onBlur = () => {
-      // Ne pas fermer immédiatement pour éviter le saut
-      setTimeout(() => {
-        if (!isKeyboardVisible) {
-          setKeyboardInset(0)
-        }
-      }, 200)
-    }
-
+    // Fallback pour Chrome Android qui rate parfois resize
+    const onFocus = () => setTimeout(updateInset, 120)
+    const onBlur = () => setTimeout(updateInset, 120)
     document.addEventListener('focusin', onFocus)
     document.addEventListener('focusout', onBlur)
-
-    // Initialisation
-    setTimeout(updateInset, 300)
 
     return () => {
       if (window.visualViewport) {
@@ -324,10 +283,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       }
       document.removeEventListener('focusin', onFocus)
       document.removeEventListener('focusout', onBlur)
-      if (keyboardTimeoutRef.current) {
-        clearTimeout(keyboardTimeoutRef.current)
-        keyboardTimeoutRef.current = null
-      }
+      if (keyboardTimeoutRef.current) clearTimeout(keyboardTimeoutRef.current)
     }
   }, [isMobile])
 
@@ -1093,13 +1049,18 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       positionStyle = { bottom: bottomPosition, left: 12, right: 12 }
       heightStyle = { height: '52px', maxHeight: '52px' }
     } else {
-      // Utiliser la hauteur disponible sans saut
-      const bottomInset = keyboardInset > 0 ? keyboardInset + 8 : 80
-      positionStyle = { 
-        top: 8, 
-        left: 12, 
-        right: 12, 
-        bottom: bottomInset 
+      // ✅ FIX CHROME MOBILE : on fixe top/left/right et on utilise
+      // translateY pour déplacer le bas vers le haut quand le clavier sort.
+      // Ça évite le re-layout et le saut visible sur Chrome Android.
+      positionStyle = {
+        top: 8,
+        left: 12,
+        right: 12,
+        bottom: 0,
+        transform: `translateY(-${keyboardInset > 0 ? keyboardInset + 8 : 80}px)`,
+        transition: keyboardInset > 0
+          ? 'transform 0.22s ease-out'
+          : 'transform 0.18s ease-in',
       }
       heightStyle = { height: 'auto' }
     }
@@ -1128,6 +1089,29 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       e.stopPropagation()
     }
   }
+
+  // ✅ FIX SAUT CHROME MOBILE : quand le chat est ouvert, on fige
+  // document.body pour que Chrome ne redimensionne pas le viewport
+  // quand le clavier apparaît. C'est la cause principale du saut.
+  useEffect(() => {
+    if (!isMobile) return
+    if (isOpen && !isMinimized) {
+      const scrollY = window.scrollY
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.left = '0'
+      document.body.style.right = '0'
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.body.style.position = ''
+        document.body.style.top = ''
+        document.body.style.left = ''
+        document.body.style.right = ''
+        document.body.style.overflow = ''
+        window.scrollTo(0, scrollY)
+      }
+    }
+  }, [isOpen, isMinimized, isMobile])
 
   // Gestion du retour arrière (back button) sur mobile
   useEffect(() => {
