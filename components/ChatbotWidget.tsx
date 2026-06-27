@@ -1049,11 +1049,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       positionStyle = { bottom: bottomPosition, left: 12, right: 12 }
       heightStyle = { height: '52px', maxHeight: '52px' }
     } else {
-      // ✅ FIX CHROME MOBILE : on fixe top/left/right et on utilise
-      // translateY pour déplacer le bas vers le haut quand le clavier sort.
-      // Ça évite le re-layout et le saut visible sur Chrome Android.
       positionStyle = {
-        top: 8,
+        top: 'env(safe-area-inset-top, 44px)' as any,
         left: 12,
         right: 12,
         bottom: 0,
