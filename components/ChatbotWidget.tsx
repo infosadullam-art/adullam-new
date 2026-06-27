@@ -1119,16 +1119,16 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           style={{
             position: 'fixed',
             top: `${couponY}%`,
-            right: couponExpanded ? '0px' : (isMobile ? '-280px' : '0px'),
+            right: couponExpanded ? '0px' : (isMobile ? '0px' : '0px'),
             transform: 'translateY(-50%)',
             zIndex: 9999,
-            width: isMobile ? '280px' : '280px',
+            width: isMobile ? (couponExpanded ? '280px' : '44px') : (couponExpanded ? '280px' : '44px'),
             background: couponExpanded ? '#D4372B' : 'transparent',
             borderRadius: '12px 0 0 12px',
             padding: couponExpanded ? '16px 18px' : '0px',
             color: '#fff',
             boxShadow: couponExpanded ? '0 8px 40px rgba(212,55,43,0.4)' : 'none',
-            transition: isDraggingY ? 'none' : 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease',
+            transition: isDraggingY ? 'none' : 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease, width 0.3s ease',
             border: 'none',
             borderRight: 'none',
             cursor: isDraggingY ? 'grabbing' : 'grab',
@@ -1162,7 +1162,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               document.removeEventListener('mouseup', onUp)
               setIsDraggingY(false)
               if (couponRef.current) {
-                couponRef.current.style.transition = 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease'
+                couponRef.current.style.transition = 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease, width 0.3s ease'
               }
             }
             
@@ -1195,7 +1195,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               document.removeEventListener('touchend', onUp)
               setIsDraggingY(false)
               if (couponRef.current) {
-                couponRef.current.style.transition = 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease'
+                couponRef.current.style.transition = 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease, width 0.3s ease'
               }
             }
             
