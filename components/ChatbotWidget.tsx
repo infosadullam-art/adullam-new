@@ -1114,15 +1114,112 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
       {/* ✅ WIDGET COUPON - DRAWER (rétractable sur le côté) - TIMER COHÉRENT + DRAG VERTICAL */}
       {showCouponBanner && activeCoupon && remainingTime > 0 && (
-        <>
-          {/* ✅ ONGLET DE RETRACTION (visible quand rétracté) - EN DEHORS DU DIV PRINCIPAL */}
+        <div
+          ref={couponRef}
+          style={{
+            position: 'fixed',
+            top: `${couponY}%`,
+            right: couponExpanded ? '0px' : (isMobile ? '-280px' : '-235px'),
+            transform: 'translateY(-50%)',
+            zIndex: 9999,
+            width: isMobile ? '280px' : '280px',
+            background: '#D4372B',
+            borderRadius: '12px 0 0 12px',
+            padding: couponExpanded ? '16px 18px' : '0px 0px 0px 0px',
+            color: '#fff',
+            boxShadow: couponExpanded ? '0 8px 40px rgba(212,55,43,0.4)' : 'none',
+            transition: isDraggingY ? 'none' : 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease',
+            border: couponExpanded ? '1px solid rgba(255,255,255,0.15)' : 'none',
+            borderRight: 'none',
+            cursor: isDraggingY ? 'grabbing' : 'grab',
+            touchAction: 'none',
+            userSelect: 'none',
+            height: couponExpanded ? 'auto' : '0px',
+            overflow: 'visible',
+          }}
+          onMouseDown={(e) => {
+            if (!couponExpanded) {
+              setCouponExpanded(true)
+              return
+            }
+            e.preventDefault()
+            const startY = e.clientY
+            const rect = couponRef.current?.getBoundingClientRect()
+            const windowHeight = window.innerHeight
+            const currentY = ((rect?.top || 0) + (rect?.height || 0) / 2) / windowHeight * 100
+            dragYRef.current = { startY, startOffset: currentY }
+            setIsDraggingY(true)
+            
+            const onMove = (ev: MouseEvent) => {
+              const diff = ev.clientY - startY
+              const windowHeight = window.innerHeight
+              const newY = Math.max(5, Math.min(95, currentY + (diff / windowHeight) * 100))
+              setCouponY(newY)
+              if (couponRef.current) {
+                couponRef.current.style.transition = 'none'
+                couponRef.current.style.top = `${newY}%`
+              }
+            }
+            
+            const onUp = () => {
+              document.removeEventListener('mousemove', onMove)
+              document.removeEventListener('mouseup', onUp)
+              setIsDraggingY(false)
+              if (couponRef.current) {
+                couponRef.current.style.transition = 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease'
+              }
+            }
+            
+            document.addEventListener('mousemove', onMove)
+            document.addEventListener('mouseup', onUp)
+          }}
+          onTouchStart={(e) => {
+            if (!couponExpanded) {
+              setCouponExpanded(true)
+              return
+            }
+            const touch = e.touches[0]
+            const startY = touch.clientY
+            const rect = couponRef.current?.getBoundingClientRect()
+            const windowHeight = window.innerHeight
+            const currentY = ((rect?.top || 0) + (rect?.height || 0) / 2) / windowHeight * 100
+            dragYRef.current = { startY, startOffset: currentY }
+            setIsDraggingY(true)
+            
+            const onMove = (ev: TouchEvent) => {
+              const touch = ev.touches[0]
+              const diff = touch.clientY - startY
+              const windowHeight = window.innerHeight
+              const newY = Math.max(5, Math.min(95, currentY + (diff / windowHeight) * 100))
+              setCouponY(newY)
+              if (couponRef.current) {
+                couponRef.current.style.transition = 'none'
+                couponRef.current.style.top = `${newY}%`
+              }
+            }
+            
+            const onUp = () => {
+              document.removeEventListener('touchmove', onMove)
+              document.removeEventListener('touchend', onUp)
+              setIsDraggingY(false)
+              if (couponRef.current) {
+                couponRef.current.style.transition = 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease'
+              }
+            }
+            
+            document.addEventListener('touchmove', onMove, { passive: false })
+            document.addEventListener('touchend', onUp)
+            e.preventDefault()
+          }}
+        >
+          {/* ✅ ONGLET DE RETRACTION (visible quand rétracté) */}
           {!couponExpanded && (
             <div
               onClick={() => setCouponExpanded(true)}
               style={{
-                position: 'fixed',
-                top: `${couponY}%`,
-                right: '0px',
+                position: 'absolute',
+                left: '-44px',
+                top: '50%',
                 transform: 'translateY(-50%)',
                 background: '#D4372B',
                 padding: '12px 8px',
@@ -1133,10 +1230,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '6px',
-                minWidth: '28px',
-                boxShadow: '0 4px 20px rgba(212,55,43,0.3)',
-                zIndex: 9999,
+                gap: '4px',
+                minWidth: '32px',
+                boxShadow: '-2px 4px 12px rgba(0,0,0,0.1)',
+                zIndex: 10,
               }}
             >
               <span style={{ fontSize: '16px' }}>🎁</span>
@@ -1144,103 +1241,24 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 fontSize: '10px', 
                 fontWeight: 700,
                 background: 'rgba(255,255,255,0.2)',
-                padding: '2px 6px',
+                padding: '2px 4px',
                 borderRadius: '4px',
               }}>
                 -{activeCoupon.discount}%
+              </span>
+              <span style={{ 
+                fontSize: '7px', 
+                opacity: 0.6,
+                marginTop: '2px',
+              }}>
+                {formatTime(remainingTime)}
               </span>
             </div>
           )}
 
           {/* ✅ CONTENU DÉPLOYÉ */}
           {couponExpanded && (
-            <div
-              ref={couponRef}
-              style={{
-                position: 'fixed',
-                top: `${couponY}%`,
-                transform: 'translateY(-50%)',
-                right: '0px',
-                zIndex: 9999,
-                width: isMobile ? '280px' : '320px',
-                background: '#D4372B',
-                borderRadius: '12px 0 0 12px',
-                padding: '16px 18px',
-                color: '#fff',
-                boxShadow: '0 8px 40px rgba(212,55,43,0.4)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                borderRight: 'none',
-                cursor: isDraggingY ? 'grabbing' : 'grab',
-                touchAction: 'none',
-                userSelect: 'none',
-              }}
-              onMouseDown={(e) => {
-                e.preventDefault()
-                const startY = e.clientY
-                const rect = couponRef.current?.getBoundingClientRect()
-                const windowHeight = window.innerHeight
-                const currentY = ((rect?.top || 0) + (rect?.height || 0) / 2) / windowHeight * 100
-                dragYRef.current = { startY, startOffset: currentY }
-                setIsDraggingY(true)
-                
-                const onMove = (ev: MouseEvent) => {
-                  const diff = ev.clientY - startY
-                  const windowHeight = window.innerHeight
-                  const newY = Math.max(5, Math.min(95, currentY + (diff / windowHeight) * 100))
-                  setCouponY(newY)
-                  if (couponRef.current) {
-                    couponRef.current.style.transition = 'none'
-                    couponRef.current.style.top = `${newY}%`
-                  }
-                }
-                
-                const onUp = () => {
-                  document.removeEventListener('mousemove', onMove)
-                  document.removeEventListener('mouseup', onUp)
-                  setIsDraggingY(false)
-                  if (couponRef.current) {
-                    couponRef.current.style.transition = 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease'
-                  }
-                }
-                
-                document.addEventListener('mousemove', onMove)
-                document.addEventListener('mouseup', onUp)
-              }}
-              onTouchStart={(e) => {
-                const touch = e.touches[0]
-                const startY = touch.clientY
-                const rect = couponRef.current?.getBoundingClientRect()
-                const windowHeight = window.innerHeight
-                const currentY = ((rect?.top || 0) + (rect?.height || 0) / 2) / windowHeight * 100
-                dragYRef.current = { startY, startOffset: currentY }
-                setIsDraggingY(true)
-                
-                const onMove = (ev: TouchEvent) => {
-                  const touch = ev.touches[0]
-                  const diff = touch.clientY - startY
-                  const windowHeight = window.innerHeight
-                  const newY = Math.max(5, Math.min(95, currentY + (diff / windowHeight) * 100))
-                  setCouponY(newY)
-                  if (couponRef.current) {
-                    couponRef.current.style.transition = 'none'
-                    couponRef.current.style.top = `${newY}%`
-                  }
-                }
-                
-                const onUp = () => {
-                  document.removeEventListener('touchmove', onMove)
-                  document.removeEventListener('touchend', onUp)
-                  setIsDraggingY(false)
-                  if (couponRef.current) {
-                    couponRef.current.style.transition = 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease'
-                  }
-                }
-                
-                document.addEventListener('touchmove', onMove, { passive: false })
-                document.addEventListener('touchend', onUp)
-                e.preventDefault()
-              }}
-            >
+            <>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ 
@@ -1385,9 +1403,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                   opacity: 0.5,
                 }} />
               )}
-            </div>
+            </>
           )}
-        </>
+        </div>
       )}
 
       {!isOpen && (
