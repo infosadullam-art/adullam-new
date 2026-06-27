@@ -202,6 +202,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const containerRef = useRef<HTMLDivElement>(null)
   const bubbleRef = useRef<HTMLButtonElement>(null)
 
+  // ⌨️ Hauteur clavier (visualViewport) - CORRIGÉ POUR ÉVITER LES SAUTS
+  const [keyboardInset, setKeyboardInset] = useState(0)
+  const keyboardTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const lastKeyboardStateRef = useRef<{ height: number; timestamp: number }>({ height: 0, timestamp: 0 })
+
   // ============================================================
   // HOOKS & EFFETS
   // ============================================================
@@ -247,6 +252,84 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       window.removeEventListener('click', trackActivity)
     }
   }, [])
+
+  // ⌨️ Gestion clavier mobile - CORRIGÉ POUR ÉVITER LES SAUTS
+  useEffect(() => {
+    if (typeof window === 'undefined' || !isMobile) return
+
+    let isKeyboardVisible = false
+
+    const updateInset = () => {
+      if (window.visualViewport) {
+        const vv = window.visualViewport
+        const visibleHeight = vv.height
+        const totalHeight = window.innerHeight
+        let gap = totalHeight - visibleHeight
+        if (vv.offsetTop > 0) {
+          gap = gap + vv.offsetTop
+        }
+        const newInset = gap > 50 ? gap : 0
+        
+        // Ne mettre à jour que si la valeur change significativement
+        const prevHeight = lastKeyboardStateRef.current.height
+        if (Math.abs(prevHeight - newInset) > 20) {
+          lastKeyboardStateRef.current = { height: newInset, timestamp: Date.now() }
+          
+          // Mettre à jour avec un délai pour éviter les sauts
+          if (keyboardTimeoutRef.current) {
+            clearTimeout(keyboardTimeoutRef.current)
+          }
+          keyboardTimeoutRef.current = setTimeout(() => {
+            setKeyboardInset(newInset)
+            keyboardTimeoutRef.current = null
+          }, 50)
+        }
+        isKeyboardVisible = newInset > 50
+      }
+    }
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', updateInset)
+      window.visualViewport.addEventListener('scroll', updateInset)
+    }
+
+    const onFocus = () => {
+      if (keyboardTimeoutRef.current) {
+        clearTimeout(keyboardTimeoutRef.current)
+        keyboardTimeoutRef.current = null
+      }
+      // Petit délai pour laisser le temps au clavier de s'afficher
+      setTimeout(updateInset, 100)
+    }
+    
+    const onBlur = () => {
+      // Ne pas fermer immédiatement pour éviter le saut
+      setTimeout(() => {
+        if (!isKeyboardVisible) {
+          setKeyboardInset(0)
+        }
+      }, 200)
+    }
+
+    document.addEventListener('focusin', onFocus)
+    document.addEventListener('focusout', onBlur)
+
+    // Initialisation
+    setTimeout(updateInset, 300)
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', updateInset)
+        window.visualViewport.removeEventListener('scroll', updateInset)
+      }
+      document.removeEventListener('focusin', onFocus)
+      document.removeEventListener('focusout', onBlur)
+      if (keyboardTimeoutRef.current) {
+        clearTimeout(keyboardTimeoutRef.current)
+        keyboardTimeoutRef.current = null
+      }
+    }
+  }, [isMobile])
 
   // 🖱️ Drag du widget coupon
   useEffect(() => {
@@ -402,9 +485,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   // 🔥 Compte à rebours coupon - avec auto-déploiement à 10min et 5min
   useEffect(() => {
     if (remainingTime > 0 && showCouponBanner) {
+      // ✅ AUTO-DÉPLOIEMENT À 10 MIN (600s)
       if (remainingTime <= 600 && !couponExpanded) {
         setCouponExpanded(true)
       }
+      
+      // ✅ MESSAGE D'URGENCE À 5 MIN (300s)
       if (remainingTime === 300 && activeCoupon) {
         addAssistantMessage(`⚠️ Ton coupon **${activeCoupon.code}** expire dans 5min ! Utilise-le vite 🔥`)
         setCouponExpanded(true)
@@ -598,6 +684,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       setActiveCoupon(offer.coupon)
       setShowCouponBanner(true)
       setRemainingTime(offer.coupon.time_limit * 60)
+      // ✅ Auto-déployer le coupon quand il est généré
       setTimeout(() => setCouponExpanded(true), 500)
     } else if (offer && offer.type !== 'none') {
       setActiveOffer(offer)
@@ -787,6 +874,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         setActiveCoupon(data.coupon)
         setShowCouponBanner(true)
         setRemainingTime(data.coupon.time_limit * 60)
+        // ✅ Auto-déployer
         setTimeout(() => setCouponExpanded(true), 500)
         
         const couponMessage = `🎉 Top ! J'ai généré un coupon spécial pour toi : **${data.coupon.code}**\nTu as **${data.coupon.discount}%** de réduction valable **${data.coupon.time_limit}min** ! ⏱️`
@@ -998,24 +1086,22 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
   let positionStyle: React.CSSProperties
   let heightStyle: React.CSSProperties
-  
+
+  // SUR MOBILE : le chat prend toute la hauteur avec un padding pour le clavier
   if (isMobile) {
     if (isMinimized) {
       positionStyle = { bottom: bottomPosition, left: 12, right: 12 }
       heightStyle = { height: '52px', maxHeight: '52px' }
     } else {
-      // ✅ HAUTEUR FIXE - PLUS DE SAUT ! 
-      // Le chat prend 70% de la hauteur de l'écran, positionné en bas
+      // Utiliser la hauteur disponible sans saut
+      const bottomInset = keyboardInset > 0 ? keyboardInset + 8 : 80
       positionStyle = { 
-        bottom: 8, 
+        top: 8, 
         left: 12, 
-        right: 12 
+        right: 12, 
+        bottom: bottomInset 
       }
-      heightStyle = { 
-        height: '70vh',
-        maxHeight: 'calc(100vh - 24px)',
-        minHeight: '300px',
-      }
+      heightStyle = { height: 'auto' }
     }
   } else if (dragPos) {
     positionStyle = { top: dragPos.y, left: dragPos.x }
@@ -1031,17 +1117,31 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
+  // Empêcher le scroll de la page quand on scroll dans le chat
+  const handleChatScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget
+    const isAtTop = target.scrollTop === 0
+    const isAtBottom = target.scrollHeight - target.scrollTop === target.clientHeight
+    
+    // Si on est en haut ou en bas, ne pas laisser le scroll passer à la page
+    if (isAtTop || isAtBottom) {
+      e.stopPropagation()
+    }
+  }
+
   // Gestion du retour arrière (back button) sur mobile
   useEffect(() => {
     const handlePopState = () => {
       if (isOpen && isMobile) {
         setIsOpen(false)
         setIsMinimized(false)
+        // Empêcher le retour de la page
         window.history.pushState(null, '', window.location.href)
       }
     }
 
     if (isOpen && isMobile) {
+      // Ajouter un état dans l'historique pour capturer le retour
       window.history.pushState({ chatbot: true }, '', window.location.href)
       window.addEventListener('popstate', handlePopState)
     }
@@ -1071,7 +1171,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         />
       )}
 
-      {/* ✅ WIDGET COUPON - DRAWER (rétractable sur le côté) */}
+      {/* ✅ WIDGET COUPON - DRAWER (rétractable sur le côté) - TIMER COHÉRENT + DRAG VERTICAL TOUJOURS ACTIF */}
       {showCouponBanner && activeCoupon && remainingTime > 0 && (
         <div
           ref={couponRef}
@@ -1099,6 +1199,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           onMouseDown={(e) => {
             e.preventDefault()
             const startY = e.clientY
+            const rect = couponRef.current?.getBoundingClientRect()
+            const windowHeight = window.innerHeight
             const currentY = couponY
             dragYRef.current = { startY, startOffset: currentY }
             setIsDraggingY(true)
@@ -1129,6 +1231,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           onTouchStart={(e) => {
             const touch = e.touches[0]
             const startY = touch.clientY
+            const rect = couponRef.current?.getBoundingClientRect()
+            const windowHeight = window.innerHeight
             const currentY = couponY
             dragYRef.current = { startY, startOffset: currentY }
             setIsDraggingY(true)
@@ -1262,6 +1366,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 </div>
               </div>
 
+              {/* BOUTONS */}
               <div style={{ 
                 marginTop: isMobile ? '10px' : '14px', 
                 display: 'flex', 
@@ -1311,6 +1416,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 </button>
               </div>
 
+              {/* BOUTON FERMER (petit X) */}
               <button
                 onClick={() => setCouponExpanded(false)}
                 style={{
@@ -1461,7 +1567,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             width: widgetWidth,
             maxWidth: 'calc(100vw - 32px)',
             background: 'var(--background)',
-            borderRadius: isMobile ? '8px' : '16px',
+            borderRadius: '16px',
             boxShadow: 'var(--shadow-lg)',
             zIndex: 1000,
             display: 'flex',
@@ -1471,7 +1577,23 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             transition: isDragging ? 'none' : 'height 0.3s ease, bottom 0.25s ease',
             touchAction: isDragging ? 'none' : 'auto',
             userSelect: isDragging ? 'none' : 'auto',
+            // Empêcher le scroll de la page
             overscrollBehavior: 'contain',
+            // Éviter le repositionnement pendant l'ouverture du clavier
+            willChange: 'transform',
+          }}
+          // Empêcher le scroll de la page quand on scroll dans le chat
+          onWheel={(e) => {
+            const target = e.currentTarget
+            const scrollable = target.querySelector('.chat-messages') as HTMLDivElement
+            if (!scrollable) return
+            
+            const isAtTop = scrollable.scrollTop === 0
+            const isAtBottom = scrollable.scrollHeight - scrollable.scrollTop === scrollable.clientHeight
+            
+            if ((e.deltaY < 0 && isAtTop) || (e.deltaY > 0 && isAtBottom)) {
+              e.preventDefault()
+            }
           }}
         >
           <div
@@ -1484,7 +1606,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               cursor: isMobile ? 'pointer' : (isDragging ? 'grabbing' : 'grab'),
               flexShrink: 0,
               touchAction: isMobile ? 'auto' : 'none',
-              borderRadius: isMobile ? '8px 8px 0 0' : '16px 16px 0 0',
             }}
             onMouseDown={e => {
               if (isMobile) return
@@ -1562,6 +1683,19 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                   gap: '6px',
                   overscrollBehavior: 'contain',
                   WebkitOverflowScrolling: 'touch',
+                  // Éviter le repositionnement
+                  transform: 'translateZ(0)',
+                }}
+                onScroll={handleChatScroll}
+                // Empêcher le scroll de la page
+                onTouchMove={(e) => {
+                  const target = e.currentTarget
+                  const isAtTop = target.scrollTop === 0
+                  const isAtBottom = target.scrollHeight - target.scrollTop === target.clientHeight
+                  
+                  if ((isAtTop && (e.target as HTMLElement).scrollTop === 0) || isAtBottom) {
+                    e.stopPropagation()
+                  }
                 }}
               >
                 {messages.map((msg, idx) => (
@@ -1792,8 +1926,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 gap: '6px',
                 alignItems: 'center',
                 flexShrink: 0,
+                // Fixer la barre d'input en bas
                 backgroundColor: 'var(--background)',
-                borderRadius: isMobile ? '0 0 8px 8px' : '0 0 16px 16px',
               }}>
                 <input
                   ref={inputRef}
@@ -1888,6 +2022,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         .chat-messages {
           overscroll-behavior: contain;
           -webkit-overflow-scrolling: touch;
+          transform: translateZ(0);
+        }
+        .coupon-drawer {
+          transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
         }
       `}</style>
     </>
