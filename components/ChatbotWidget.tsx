@@ -1051,19 +1051,18 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       positionStyle = { bottom: bottomPosition, left: 12, right: 12 }
       heightStyle = { height: '52px', maxHeight: '52px' }
     } else {
-      const navbarHeight = 72
-      const topMargin = 120
-      const availableHeight = keyboardInset > 0
-        ? windowHeight - keyboardInset - topMargin - 8
-        : windowHeight - navbarHeight - topMargin
       positionStyle = {
-        bottom: keyboardInset > 0 ? keyboardInset + 8 : navbarHeight,
+        bottom: keyboardInset > 0 ? keyboardInset + 8 : 72,
         left: 8,
         right: 8,
-        transition: 'bottom 0.2s ease, height 0.2s ease',
+        transition: 'bottom 0.2s ease',
       }
       heightStyle = {
-        height: `${Math.max(300, availableHeight)}px`,
+        // dvh = hauteur visible réelle sur Chrome mobile (exclut la barre d'adresse)
+        height: keyboardInset > 0
+          ? `${windowHeight - keyboardInset - 80}px`
+          : 'calc(100dvh - 140px)',
+        maxHeight: 'calc(100dvh - 140px)',
       }
     }
   } else if (dragPos) {
