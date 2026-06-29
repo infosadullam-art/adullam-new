@@ -202,11 +202,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const containerRef = useRef<HTMLDivElement>(null)
   const bubbleRef = useRef<HTMLButtonElement>(null)
 
-  // ⌨️ Hauteur clavier (visualViewport) - CORRIGÉ POUR ÉVITER LES SAUTS
+  // ⌨️ Hauteur clavier (visualViewport)
   const [keyboardInset, setKeyboardInset] = useState(0)
   const [windowHeight, setWindowHeight] = useState(700)
   const keyboardTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const lastKeyboardStateRef = useRef<{ height: number; timestamp: number }>({ height: 0, timestamp: 0 })
 
   // ============================================================
   // HOOKS & EFFETS
@@ -233,6 +232,16 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
+  // ✅ Désactiver l'autofill Chrome sur l'input
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.setAttribute('autocomplete', 'off')
+      inputRef.current.setAttribute('data-1p-ignore', 'true')
+      inputRef.current.setAttribute('data-lpignore', 'true')
+      inputRef.current.setAttribute('data-form-type', 'other')
+    }
+  }, [])
+
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
@@ -255,7 +264,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
-  // ⌨️ Gestion clavier mobile - CORRIGÉ POUR ÉVITER LES SAUTS
+  // ⌨️ Gestion clavier mobile
   useEffect(() => {
     if (typeof window === 'undefined' || !isMobile) return
 
@@ -263,7 +272,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       if (!window.visualViewport) return
       const vv = window.visualViewport
       const gap = window.innerHeight - vv.height - vv.offsetTop
-      // ✅ Mise à jour directe sans timeout = pas de saut
       setKeyboardInset(gap > 50 ? gap : 0)
     }
 
@@ -272,7 +280,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       window.visualViewport.addEventListener('scroll', updateInset)
     }
 
-    // Fallback pour Chrome Android qui rate parfois resize
     const onFocus = () => setTimeout(updateInset, 120)
     const onBlur = () => setTimeout(updateInset, 120)
     document.addEventListener('focusin', onFocus)
@@ -443,12 +450,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   // 🔥 Compte à rebours coupon - avec auto-déploiement à 10min et 5min
   useEffect(() => {
     if (remainingTime > 0 && showCouponBanner) {
-      // ✅ AUTO-DÉPLOIEMENT À 10 MIN (600s)
       if (remainingTime <= 600 && !couponExpanded) {
         setCouponExpanded(true)
       }
-      
-      // ✅ MESSAGE D'URGENCE À 5 MIN (300s)
       if (remainingTime === 300 && activeCoupon) {
         addAssistantMessage(`⚠️ Ton coupon **${activeCoupon.code}** expire dans 5min ! Utilise-le vite 🔥`)
         setCouponExpanded(true)
@@ -642,7 +646,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       setActiveCoupon(offer.coupon)
       setShowCouponBanner(true)
       setRemainingTime(offer.coupon.time_limit * 60)
-      // ✅ Auto-déployer le coupon quand il est généré
       setTimeout(() => setCouponExpanded(true), 500)
     } else if (offer && offer.type !== 'none') {
       setActiveOffer(offer)
@@ -832,7 +835,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         setActiveCoupon(data.coupon)
         setShowCouponBanner(true)
         setRemainingTime(data.coupon.time_limit * 60)
-        // ✅ Auto-déployer
         setTimeout(() => setCouponExpanded(true), 500)
         
         const couponMessage = `🎉 Top ! J'ai généré un coupon spécial pour toi : **${data.coupon.code}**\nTu as **${data.coupon.discount}%** de réduction valable **${data.coupon.time_limit}min** ! ⏱️`
@@ -1045,7 +1047,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   let positionStyle: React.CSSProperties
   let heightStyle: React.CSSProperties
 
-  // SUR MOBILE : le chat prend toute la hauteur avec un padding pour le clavier
   if (isMobile) {
     if (isMinimized) {
       positionStyle = { bottom: bottomPosition, left: 12, right: 12 }
@@ -1058,7 +1059,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         transition: 'bottom 0.2s ease',
       }
       heightStyle = {
-        // dvh = hauteur visible réelle sur Chrome mobile (exclut la barre d'adresse)
         height: keyboardInset > 0
           ? `${windowHeight - keyboardInset - 80}px`
           : 'calc(100dvh - 140px)',
@@ -1079,21 +1079,16 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
-  // Empêcher le scroll de la page quand on scroll dans le chat
   const handleChatScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget
     const isAtTop = target.scrollTop === 0
     const isAtBottom = target.scrollHeight - target.scrollTop === target.clientHeight
-    
-    // Si on est en haut ou en bas, ne pas laisser le scroll passer à la page
     if (isAtTop || isAtBottom) {
       e.stopPropagation()
     }
   }
 
-  // ✅ FIX SAUT CHROME MOBILE : quand le chat est ouvert, on fige
-  // document.body pour que Chrome ne redimensionne pas le viewport
-  // quand le clavier apparaît. C'est la cause principale du saut.
+  // ✅ FIX SAUT CHROME MOBILE
   useEffect(() => {
     if (!isMobile) return
     if (isOpen && !isMinimized) {
@@ -1120,13 +1115,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       if (isOpen && isMobile) {
         setIsOpen(false)
         setIsMinimized(false)
-        // Empêcher le retour de la page
         window.history.pushState(null, '', window.location.href)
       }
     }
 
     if (isOpen && isMobile) {
-      // Ajouter un état dans l'historique pour capturer le retour
       window.history.pushState({ chatbot: true }, '', window.location.href)
       window.addEventListener('popstate', handlePopState)
     }
@@ -1184,8 +1177,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           onMouseDown={(e) => {
             e.preventDefault()
             const startY = e.clientY
-            const rect = couponRef.current?.getBoundingClientRect()
-            const windowHeight = window.innerHeight
             const currentY = couponY
             dragYRef.current = { startY, startOffset: currentY }
             setIsDraggingY(true)
@@ -1216,8 +1207,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           onTouchStart={(e) => {
             const touch = e.touches[0]
             const startY = touch.clientY
-            const rect = couponRef.current?.getBoundingClientRect()
-            const windowHeight = window.innerHeight
             const currentY = couponY
             dragYRef.current = { startY, startOffset: currentY }
             setIsDraggingY(true)
@@ -1562,12 +1551,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             transition: isDragging ? 'none' : 'height 0.3s ease, bottom 0.25s ease',
             touchAction: isDragging ? 'none' : 'auto',
             userSelect: isDragging ? 'none' : 'auto',
-            // Empêcher le scroll de la page
             overscrollBehavior: 'contain',
-            // Éviter le repositionnement pendant l'ouverture du clavier
             willChange: 'transform',
           }}
-          // Empêcher le scroll de la page quand on scroll dans le chat
           onWheel={(e) => {
             const target = e.currentTarget
             const scrollable = target.querySelector('.chat-messages') as HTMLDivElement
@@ -1668,11 +1654,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                   gap: '6px',
                   overscrollBehavior: 'contain',
                   WebkitOverflowScrolling: 'touch',
-                  // Éviter le repositionnement
                   transform: 'translateZ(0)',
                 }}
                 onScroll={handleChatScroll}
-                // Empêcher le scroll de la page
                 onTouchMove={(e) => {
                   const target = e.currentTarget
                   const isAtTop = target.scrollTop === 0
@@ -1911,7 +1895,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 gap: '6px',
                 alignItems: 'center',
                 flexShrink: 0,
-                // Fixer la barre d'input en bas
                 backgroundColor: 'var(--background)',
               }}>
                 <input
@@ -1921,6 +1904,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                   onKeyDown={handleKeyDown}
                   placeholder={isRecording ? "🎤 Écoute en cours..." : "Dis-moi ce que tu cherches..."}
                   disabled={isTyping || isRecording}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck="false"
+                  name="adu-chat-input"
+                  id="adu-chat-input"
+                  form="no-form"
+                  inputMode="text"
                   style={{
                     flex: 1,
                     border: '0.5px solid var(--border)',
@@ -2011,6 +2002,28 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         }
         .coupon-drawer {
           transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* ✅ Désactiver les suggestions Chrome sur l'input du chat */
+        #adu-chat-input {
+          -webkit-user-select: none;
+          user-select: none;
+        }
+
+        #adu-chat-input:-webkit-autofill {
+          -webkit-box-shadow: 0 0 0 30px var(--surface) inset !important;
+          -webkit-text-fill-color: var(--foreground) !important;
+        }
+
+        #adu-chat-input::-webkit-contacts-auto-fill-button,
+        #adu-chat-input::-webkit-credentials-auto-fill-button {
+          display: none !important;
+          visibility: hidden !important;
+          pointer-events: none !important;
+          position: absolute !important;
+          right: 0 !important;
+          width: 0 !important;
+          height: 0 !important;
         }
       `}</style>
     </>
