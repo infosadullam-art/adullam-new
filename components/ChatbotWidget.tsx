@@ -1921,12 +1921,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                   onKeyDown={handleKeyDown}
                   placeholder={isRecording ? "🎤 Écoute en cours..." : "Dis-moi ce que tu cherches..."}
                   disabled={isTyping || isRecording}
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck="false"
-                  name="chat-input"
-                  id="chat-input"
                   style={{
                     flex: 1,
                     border: '0.5px solid var(--border)',
@@ -2017,25 +2011,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         }
         .coupon-drawer {
           transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        /* ✅ Désactiver les suggestions Chrome sur l'input du chat */
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover,
-        input:-webkit-autofill:focus,
-        input:-webkit-autofill:active {
-          -webkit-box-shadow: 0 0 0 30px var(--surface) inset !important;
-          -webkit-text-fill-color: var(--foreground) !important;
-          transition: background-color 5000s ease-in-out 0s;
-        }
-
-        input::-webkit-contacts-auto-fill-button,
-        input::-webkit-credentials-auto-fill-button {
-          display: none !important;
-          visibility: hidden;
-          pointer-events: none;
-          position: absolute;
-          right: 0;
         }
       `}</style>
     </>
