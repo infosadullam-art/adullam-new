@@ -118,11 +118,13 @@ interface ChatbotWidgetProps {
 }
 
 // ============================================================
-// CONSTANTES
+// CONSTANTES - MODIFIÉES POUR ÉVITER LE DÉCLENCHEMENT AU CHARGEMENT
 // ============================================================
 
-const TRIGGER_CHECK_INTERVAL = 30000
-const INACTIVITY_THRESHOLD   = 15
+const TRIGGER_CHECK_INTERVAL = 60000  // 60 secondes
+const INACTIVITY_THRESHOLD   = 30     // 30 secondes
+const MIN_VIEWS_BEFORE_TRIGGER = 3     // 3 produits vus minimum
+const FIRST_TRIGGER_DELAY = 30000     // 30 secondes avant le premier trigger
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.adullamarket.com'
 
 // ============================================================
@@ -263,7 +265,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       if (!window.visualViewport) return
       const vv = window.visualViewport
       const gap = window.innerHeight - vv.height - vv.offsetTop
-      // ✅ Mise à jour directe sans timeout = pas de saut
       setKeyboardInset(gap > 50 ? gap : 0)
     }
 
@@ -272,7 +273,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       window.visualViewport.addEventListener('scroll', updateInset)
     }
 
-    // Fallback pour Chrome Android qui rate parfois resize
     const onFocus = () => setTimeout(updateInset, 120)
     const onBlur = () => setTimeout(updateInset, 120)
     document.addEventListener('focusin', onFocus)
@@ -443,12 +443,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   // 🔥 Compte à rebours coupon - avec auto-déploiement à 10min et 5min
   useEffect(() => {
     if (remainingTime > 0 && showCouponBanner) {
-      // ✅ AUTO-DÉPLOIEMENT À 10 MIN (600s)
       if (remainingTime <= 600 && !couponExpanded) {
         setCouponExpanded(true)
       }
       
-      // ✅ MESSAGE D'URGENCE À 5 MIN (300s)
       if (remainingTime === 300 && activeCoupon) {
         addAssistantMessage(`⚠️ Ton coupon **${activeCoupon.code}** expire dans 5min ! Utilise-le vite 🔥`)
         setCouponExpanded(true)
@@ -555,58 +553,81 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     loadHistory()
   }, [sessionId, userId, language])
 
-  // Trigger proactif
+  // ============================================================
+  // TRIGGER PROACTIF - CORRIGÉ POUR ÉVITER LE DÉCLENCHEMENT AU CHARGEMENT
+  // ============================================================
+
   useEffect(() => {
     if (!sessionId) return
 
-    const checkTrigger = async () => {
-      if (isOpen) return
+    // ✅ DÉLAI INITIAL : attendre 30s avant le premier trigger
+    const initialDelay = setTimeout(() => {
+      
+      const checkTrigger = async () => {
+        if (isOpen) return
 
-      const inactivitySeconds = (Date.now() - lastActionRef.current) / 1000
-      if (inactivitySeconds < INACTIVITY_THRESHOLD) return
-
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/chat/trigger`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            session_id: sessionId,
-            user_id: userId || null,
-            inactivity_seconds: inactivitySeconds,
-            viewed_count: viewCountRef.current,
-            has_added_to_cart: checkCartStatus(),
-            has_visited_checkout: checkCheckoutStatus(),
-            has_come_back: true,
-          }),
-        })
-
-        const data = await res.json()
-
-        if (data.should_trigger && data.message) {
-          setProactiveMessage(data.message)
-          setHasUnread(true)
-          
-          if (data.trigger_type === 'hesitation_strong' || data.trigger_type === 'abandoned_cart') {
-            const offer: Offer = {
-              type: 'risky',
-              discount_1: 5,
-              discount_2: 10,
-              time_limit: 20,
-              urgency_message: data.message,
-              taunt_message: data.message,
-            }
-            setActiveOffer(offer)
-            setOfferTimer(20 * 60)
-            setShowOfferBanner(true)
-          }
+        const inactivitySeconds = (Date.now() - lastActionRef.current) / 1000
+        const viewedCount = viewCountRef.current
+        
+        // ✅ NE PAS DÉCLENCHER SI :
+        // - Moins de 3 produits vus
+        // - Moins de 30 secondes d'inactivité
+        if (viewedCount < MIN_VIEWS_BEFORE_TRIGGER) {
+          console.log('🤫 [SILENCE] Pas assez de vues:', viewedCount)
+          return
         }
-      } catch (error) {
-        console.error("Erreur trigger:", error)
-      }
-    }
+        
+        if (inactivitySeconds < INACTIVITY_THRESHOLD) {
+          console.log('⏳ [ATTENTE] Inactivité insuffisante:', inactivitySeconds)
+          return
+        }
 
-    triggerTimerRef.current = setInterval(checkTrigger, TRIGGER_CHECK_INTERVAL)
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/chat/trigger`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              session_id: sessionId,
+              user_id: userId || null,
+              inactivity_seconds: inactivitySeconds,
+              viewed_count: viewedCount,
+              has_added_to_cart: checkCartStatus(),
+              has_visited_checkout: checkCheckoutStatus(),
+              has_come_back: true,
+            }),
+          })
+
+          const data = await res.json()
+
+          if (data.should_trigger && data.message) {
+            setProactiveMessage(data.message)
+            setHasUnread(true)
+            
+            if (data.trigger_type === 'hesitation_strong' || data.trigger_type === 'abandoned_cart') {
+              const offer: Offer = {
+                type: 'risky',
+                discount_1: 5,
+                discount_2: 10,
+                time_limit: 20,
+                urgency_message: data.message,
+                taunt_message: data.message,
+              }
+              setActiveOffer(offer)
+              setOfferTimer(20 * 60)
+              setShowOfferBanner(true)
+            }
+          }
+        } catch (error) {
+          console.error("Erreur trigger:", error)
+        }
+      }
+
+      triggerTimerRef.current = setInterval(checkTrigger, TRIGGER_CHECK_INTERVAL)
+      
+    }, FIRST_TRIGGER_DELAY) // ✅ 30s avant le premier trigger
+
     return () => {
+      clearTimeout(initialDelay)
       if (triggerTimerRef.current) clearInterval(triggerTimerRef.current)
     }
   }, [sessionId, userId, isOpen])
@@ -642,7 +663,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       setActiveCoupon(offer.coupon)
       setShowCouponBanner(true)
       setRemainingTime(offer.coupon.time_limit * 60)
-      // ✅ Auto-déployer le coupon quand il est généré
       setTimeout(() => setCouponExpanded(true), 500)
     } else if (offer && offer.type !== 'none') {
       setActiveOffer(offer)
@@ -832,7 +852,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         setActiveCoupon(data.coupon)
         setShowCouponBanner(true)
         setRemainingTime(data.coupon.time_limit * 60)
-        // ✅ Auto-déployer
         setTimeout(() => setCouponExpanded(true), 500)
         
         const couponMessage = `🎉 Top ! J'ai généré un coupon spécial pour toi : **${data.coupon.code}**\nTu as **${data.coupon.discount}%** de réduction valable **${data.coupon.time_limit}min** ! ⏱️`
@@ -1045,7 +1064,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   let positionStyle: React.CSSProperties
   let heightStyle: React.CSSProperties
 
-  // SUR MOBILE : le chat prend toute la hauteur avec un padding pour le clavier
   if (isMobile) {
     if (isMinimized) {
       positionStyle = { bottom: bottomPosition, left: 12, right: 12 }
@@ -1058,7 +1076,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         transition: 'bottom 0.2s ease',
       }
       heightStyle = {
-        // dvh = hauteur visible réelle sur Chrome mobile (exclut la barre d'adresse)
         height: keyboardInset > 0
           ? `${windowHeight - keyboardInset - 80}px`
           : 'calc(100dvh - 140px)',
@@ -1079,21 +1096,16 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
-  // Empêcher le scroll de la page quand on scroll dans le chat
   const handleChatScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget
     const isAtTop = target.scrollTop === 0
     const isAtBottom = target.scrollHeight - target.scrollTop === target.clientHeight
     
-    // Si on est en haut ou en bas, ne pas laisser le scroll passer à la page
     if (isAtTop || isAtBottom) {
       e.stopPropagation()
     }
   }
 
-  // ✅ FIX SAUT CHROME MOBILE : quand le chat est ouvert, on fige
-  // document.body pour que Chrome ne redimensionne pas le viewport
-  // quand le clavier apparaît. C'est la cause principale du saut.
   useEffect(() => {
     if (!isMobile) return
     if (isOpen && !isMinimized) {
@@ -1114,19 +1126,16 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [isOpen, isMinimized, isMobile])
 
-  // Gestion du retour arrière (back button) sur mobile
   useEffect(() => {
     const handlePopState = () => {
       if (isOpen && isMobile) {
         setIsOpen(false)
         setIsMinimized(false)
-        // Empêcher le retour de la page
         window.history.pushState(null, '', window.location.href)
       }
     }
 
     if (isOpen && isMobile) {
-      // Ajouter un état dans l'historique pour capturer le retour
       window.history.pushState({ chatbot: true }, '', window.location.href)
       window.addEventListener('popstate', handlePopState)
     }
@@ -1156,7 +1165,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         />
       )}
 
-      {/* ✅ WIDGET COUPON - DRAWER (rétractable sur le côté) - TIMER COHÉRENT + DRAG VERTICAL TOUJOURS ACTIF */}
       {showCouponBanner && activeCoupon && remainingTime > 0 && (
         <div
           ref={couponRef}
@@ -1248,7 +1256,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             e.preventDefault()
           }}
         >
-          {/* ✅ ONGLET DE RETRACTION (visible quand rétracté) */}
           {!couponExpanded && (
             <div
               onClick={() => setCouponExpanded(true)}
@@ -1292,7 +1299,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             </div>
           )}
 
-          {/* ✅ CONTENU DÉPLOYÉ */}
           {couponExpanded && (
             <>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -1351,7 +1357,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 </div>
               </div>
 
-              {/* BOUTONS */}
               <div style={{ 
                 marginTop: isMobile ? '10px' : '14px', 
                 display: 'flex', 
@@ -1401,7 +1406,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 </button>
               </div>
 
-              {/* BOUTON FERMER (petit X) */}
               <button
                 onClick={() => setCouponExpanded(false)}
                 style={{
@@ -1562,12 +1566,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             transition: isDragging ? 'none' : 'height 0.3s ease, bottom 0.25s ease',
             touchAction: isDragging ? 'none' : 'auto',
             userSelect: isDragging ? 'none' : 'auto',
-            // Empêcher le scroll de la page
             overscrollBehavior: 'contain',
-            // Éviter le repositionnement pendant l'ouverture du clavier
             willChange: 'transform',
           }}
-          // Empêcher le scroll de la page quand on scroll dans le chat
           onWheel={(e) => {
             const target = e.currentTarget
             const scrollable = target.querySelector('.chat-messages') as HTMLDivElement
@@ -1668,11 +1669,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                   gap: '6px',
                   overscrollBehavior: 'contain',
                   WebkitOverflowScrolling: 'touch',
-                  // Éviter le repositionnement
                   transform: 'translateZ(0)',
                 }}
                 onScroll={handleChatScroll}
-                // Empêcher le scroll de la page
                 onTouchMove={(e) => {
                   const target = e.currentTarget
                   const isAtTop = target.scrollTop === 0
@@ -1911,7 +1910,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 gap: '6px',
                 alignItems: 'center',
                 flexShrink: 0,
-                // Fixer la barre d'input en bas
                 backgroundColor: 'var(--background)',
               }}>
                 <input
