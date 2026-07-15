@@ -8,11 +8,11 @@ import { motion } from "framer-motion"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
 // ════════════════════════════════════════════════════════════
-// API - Refresh toutes les 12h
+// API - Refresh toutes les 30s (TEST)
 // ════════════════════════════════════════════════════════════
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
-const REFRESH_INTERVAL = 12 * 60 * 60 * 1000 // 12 heures
+const REFRESH_INTERVAL = 30 * 1000 // 30 secondes - TEST
 
 // ════════════════════════════════════════════════════════════
 // TYPES
@@ -63,6 +63,7 @@ export function DealCountdown() {
   useEffect(() => {
     const fetchAllData = async () => {
       try {
+        console.log(`📦 [DEALS] Fetch - ${new Date().toLocaleTimeString()}`)
         setIsLoading(true)
         setError(null)
 
@@ -105,8 +106,10 @@ export function DealCountdown() {
           setHasFlashSale(flashData.hasActiveSale)
           if (flashData.hasActiveSale) setTimeLeft(flashData.timeLeft)
         }
+        
+        console.log(`✅ [DEALS] Fetch terminé - ${new Date().toLocaleTimeString()}`)
       } catch (err) {
-        console.error("Erreur chargement offres:", err)
+        console.error("❌ [DEALS] Erreur:", err)
         setError("Impossible de charger les offres")
       } finally {
         setIsLoading(false)
@@ -115,9 +118,16 @@ export function DealCountdown() {
 
     fetchAllData()
 
-    // ✅ Refresh toutes les 12h
-    const interval = setInterval(fetchAllData, REFRESH_INTERVAL)
-    return () => clearInterval(interval)
+    // ✅ Refresh toutes les 30s (TEST)
+    const interval = setInterval(() => {
+      console.log(`🔄 [DEALS] Refresh auto - ${new Date().toLocaleTimeString()}`)
+      fetchAllData()
+    }, REFRESH_INTERVAL)
+
+    return () => {
+      console.log(`🧹 [DEALS] Nettoyage du refresh`)
+      clearInterval(interval)
+    }
   }, [])
 
   useEffect(() => {
