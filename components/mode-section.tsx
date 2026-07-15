@@ -199,7 +199,7 @@ export function ModeSection() {
         <div className="px-4 py-3">
           <div className="flex items-center justify-between mb-2">
             <p style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont }}>
-              ⚡ Ventes éclair montres
+              ⚡ Ventes éclair
             </p>
             <Link href="/categorie/montres" className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1" style={{ color: "#D4372B", fontFamily: amazonFont }}>
               Voir tout <ChevronRight className="w-3 h-3" />
