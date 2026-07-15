@@ -76,7 +76,7 @@ export function ModeSection() {
         let flashList: any[] = flashData.data || flashData.products || []
         const shuffledFlash = [...flashList].sort(() => Math.random() - 0.5)
         setFlashProducts(
-          shuffledFlash.slice(0, 4).map((p: any) => ({
+          shuffledFlash.slice(0, 10).map((p: any) => ({
             id: p.id,
             name: p.title || p.name || "Produit",
             priceUSD: p.salePrice || p.price || 0,
@@ -85,7 +85,7 @@ export function ModeSection() {
             discount: p.discount || Math.round(((p.price - (p.salePrice || p.price)) / p.price) * 100) || 40,
           }))
         )
-        console.log(`📦 [MODE] ${flashList.length} montres récupérées, 4 affichées`)
+        console.log(`📦 [MODE] ${flashList.length} montres récupérées, 10 affichées`)
 
         if (modeData.success && modeData.data) {
           const md = modeData.data as ModeData
