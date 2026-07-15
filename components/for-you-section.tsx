@@ -49,10 +49,6 @@ interface SavedState {
   timestamp: number
 }
 
-// ✅ Lecture synchrone du sessionId, AVANT le premier rendu React.
-// Avant : sessionId n'était connu qu'après un useEffect, donc products
-// restait vide au premier rendu et affichait "Chargement..." même quand
-// un état sauvegardé existait, créant le flash visible au retour arrière.
 function getOrCreateSessionId(): string | null {
   if (typeof window === "undefined") return null
   let stored = localStorage.getItem("adullam_session_id")
@@ -84,9 +80,7 @@ export function ForYouSection() {
   const { formatPrice } = useCurrencyFormatter()
   const { fetchWithAuth } = useApi()
 
-  // sessionId connu dès le premier rendu (plus de round-trip useEffect)
   const [sessionId] = useState<string | null>(() => getOrCreateSessionId())
-  // état sauvegardé lu une seule fois, de façon synchrone, à la création du composant
   const [initialSavedState] = useState<SavedState | null>(() => readSavedState(sessionId))
 
   const [products, setProducts] = useState<Product[]>(initialSavedState?.products ?? [])
@@ -107,9 +101,6 @@ export function ForYouSection() {
   const trackQueueRef      = useRef<Set<string>>(new Set())
   const saveTimeoutRef     = useRef<NodeJS.Timeout>()
   const lastSavedScrollRef = useRef(0)
-  // Si on a restauré un état au montage, on applique le scroll dès la
-  // première peinture (layout effect), avant que le navigateur n'affiche
-  // quoi que ce soit d'autre — donc aucun flash de "Chargement...".
   const pendingScrollRestoreRef = useRef<number | null>(initialSavedState?.scrollPosition ?? null)
 
   const saveState = useCallback(() => {
@@ -135,9 +126,6 @@ export function ForYouSection() {
     }
   }, [sessionId])
 
-  // Applique le scroll restauré dès que possible, avant peinture visible.
-  // useLayoutEffect s'exécute de façon synchrone après le DOM mis à jour
-  // mais avant que le navigateur ne peigne l'écran.
   useLayoutEffect(() => {
     if (pendingScrollRestoreRef.current !== null && pendingScrollRestoreRef.current > 0) {
       window.scrollTo({ top: pendingScrollRestoreRef.current, behavior: "instant" })
@@ -146,7 +134,6 @@ export function ForYouSection() {
     }
   }, [])
 
-  // Sauvegarde avec debounce (seulement après que l'utilisateur a fini de scroller)
   useEffect(() => {
     const handleScroll = () => {
       if (saveTimeoutRef.current) {
@@ -155,7 +142,6 @@ export function ForYouSection() {
       
       saveTimeoutRef.current = setTimeout(() => {
         const currentScroll = window.scrollY
-        // Ne sauvegarder que si la position a changé de plus de 100px
         if (Math.abs(currentScroll - lastSavedScrollRef.current) > 100) {
           saveState()
         }
@@ -320,10 +306,6 @@ export function ForYouSection() {
     }
   }, [sessionId, fetchWithAuth, saveState])
 
-  // L'état (s'il existait) a déjà été restauré de façon synchrone à la
-  // création du composant, via initialSavedState. Ici on ne déclenche le
-  // premier fetch réseau QUE si rien n'a été restauré — sinon le scroll
-  // infini reprend directement via l'IntersectionObserver plus bas.
   useEffect(() => {
     if (!initialFetchDone.current && sessionId) {
       initialFetchDone.current = true
@@ -419,10 +401,14 @@ export function ForYouSection() {
                             <span
                               className="absolute z-10"
                               style={{
-                                top: "-4px", right: "-4px",
-                                background: badge.bg, color: badge.color,
-                                fontSize: "7px", fontWeight: 700,
-                                padding: "2px 5px", borderRadius: "20px",
+                                top: "6px",
+                                left: "6px",
+                                background: badge.bg,
+                                color: badge.color,
+                                fontSize: "7px",
+                                fontWeight: 700,
+                                padding: "2px 6px",
+                                borderRadius: "3px",
                                 fontFamily: amazonFont,
                                 border: `0.5px solid ${badge.color}20`,
                               }}
