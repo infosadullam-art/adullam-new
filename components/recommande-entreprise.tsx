@@ -5,9 +5,16 @@ import Image from "next/image"
 import Link from "next/link"
 import { Zap, ChevronRight } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
-import { apiFetch } from "@/lib/api"
 
-// Police Amazon Ember
+// ════════════════════════════════════════════════════════════
+// API - Changement de produits toutes les 10h
+// ════════════════════════════════════════════════════════════
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL
+const REFRESH_INTERVAL = 10 * 60 * 60 * 1000 // 10 heures
+
+// ════════════════════════════════════════════════════════════
+
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
 interface Product {
@@ -27,7 +34,11 @@ export function RecommandeEntreprise() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await apiFetch('/api/products?limit=10&sort=popular')
+        setIsLoading(true)
+        console.log(`📦 [ENTREPRISE] Fetch - ${new Date().toLocaleTimeString()}`)
+        
+        const timestamp = Date.now()
+        const res = await fetch(`${API_BASE}/api/products?limit=20&sort=popular&_t=${timestamp}`)
         const data = await res.json()
         
         let productsData: any[] = []
@@ -38,14 +49,16 @@ export function RecommandeEntreprise() {
         }
 
         if (productsData.length > 0) {
-          const formattedProducts = productsData.map((p: any) => ({
+          const shuffled = [...productsData].sort(() => Math.random() - 0.5)
+          const formattedProducts = shuffled.slice(0, 8).map((p: any) => ({
             id: p.id,
             name: p.title || p.name || "Produit",
             priceUSD: p.price || 0,
             image: p.images?.[0] || p.image || "/placeholder.jpg",
           }))
           
-          setProducts(formattedProducts.slice(0, 8))
+          setProducts(formattedProducts)
+          console.log(`📦 [ENTREPRISE] ${productsData.length} produits récupérés, 8 affichés`)
         }
       } catch (error) {
         console.error("Erreur chargement produits:", error)
@@ -55,6 +68,16 @@ export function RecommandeEntreprise() {
     }
 
     fetchProducts()
+
+    const interval = setInterval(() => {
+      console.log(`🔄 [ENTREPRISE] Nouveaux produits - ${new Date().toLocaleTimeString()}`)
+      fetchProducts()
+    }, REFRESH_INTERVAL)
+
+    return () => {
+      console.log(`🧹 [ENTREPRISE] Nettoyage`)
+      clearInterval(interval)
+    }
   }, [])
 
   const scroll = (direction: 'left' | 'right') => {
@@ -89,7 +112,6 @@ export function RecommandeEntreprise() {
     <section className="w-full py-3" style={{ background: "#FAFAFA" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* TITRE */}
         <div className="flex items-center justify-between mb-3">
           <div>
             <h2 className="text-lg lg:text-xl font-semibold mb-0.5" style={{ color: "#0A0A0A", fontFamily: amazonFont, letterSpacing: "-0.02em" }}>
@@ -109,7 +131,6 @@ export function RecommandeEntreprise() {
           </Link>
         </div>
 
-        {/* BANDE PRINCIPALE - avec gestion du hover pour les flèches */}
         <div
           className="rounded-md p-4 lg:p-5 relative overflow-hidden"
           style={{ 
@@ -120,7 +141,6 @@ export function RecommandeEntreprise() {
           onMouseLeave={() => setIsHovered(false)}
         >
           
-          {/* FLECHES DE NAVIGATION - apparaissent uniquement au hover */}
           <button 
             onClick={() => scroll('left')}
             className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hover:scale-105 hidden lg:block"
@@ -149,10 +169,8 @@ export function RecommandeEntreprise() {
             <ChevronRight className="w-4 h-4" />
           </button>
 
-          {/* CONTENU FLEX */}
           <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
             
-            {/* ZAP ICON + TITRE */}
             <div className="flex items-center gap-2 flex-shrink-0">
               <div
                 className="p-2 rounded"
@@ -170,7 +188,6 @@ export function RecommandeEntreprise() {
               </div>
             </div>
 
-            {/* PRODUITS EN SLIDE */}
             <div className="flex-1 w-full lg:w-auto overflow-hidden">
               <div 
                 ref={scrollRef}
