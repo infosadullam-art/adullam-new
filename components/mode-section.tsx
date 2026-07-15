@@ -8,31 +8,11 @@ import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { motion } from "framer-motion"
 
 // ════════════════════════════════════════════════════════════
-// API & CACHE - Refresh toutes les 3h
+// API - Changement de produits toutes les 3h
 // ════════════════════════════════════════════════════════════
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.adullamarket.com"
-const CACHE_TTL = 3 * 60 * 60 * 1000 // 3 heures
-
-interface CacheEntry<T> {
-  data: T
-  timestamp: number
-}
-
-const cache = new Map<string, CacheEntry<any>>()
-
-async function fetchWithCache<T>(key: string, url: string): Promise<T> {
-  const cached = cache.get(key)
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.data
-  }
-
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Erreur: ${url}`)
-  const data = await res.json()
-  cache.set(key, { data, timestamp: Date.now() })
-  return data
-}
+const API_BASE = process.env.NEXT_PUBLIC_API_URL
+const REFRESH_INTERVAL = 3 * 60 * 60 * 1000 // 3 heures
 
 // ════════════════════════════════════════════════════════════
 
@@ -83,17 +63,20 @@ export function ModeSection() {
     const fetchData = async () => {
       try {
         setIsLoading(true)
+        console.log(`📦 [MODE] Fetch - ${new Date().toLocaleTimeString()}`)
+        
+        const timestamp = Date.now()
 
-        // ✅ Cache 3h
-        const [modeData, flashData] = await Promise.all([
-          fetchWithCache("mode_categories", `${API_BASE}/api/categories/mode`),
-          // ✅ Flash - même que "Voir tout" avec l'ID de la catégorie montres
-          fetchWithCache("mode_flash", `${API_BASE}/api/products?categoryId=0ab9f059-d94f-4dca-b1b8-751ea9028c87&limit=8`),
-        ])
+        const modeRes = await fetch(`${API_BASE}/api/categories/mode?_t=${timestamp}`)
+        const modeData = await modeRes.json()
+
+        const flashRes = await fetch(`${API_BASE}/api/products?categoryId=0ab9f059-d94f-4dca-b1b8-751ea9028c87&limit=20&_t=${timestamp}`)
+        const flashData = await flashRes.json()
 
         let flashList: any[] = flashData.data || flashData.products || []
+        const shuffledFlash = [...flashList].sort(() => Math.random() - 0.5)
         setFlashProducts(
-          flashList.slice(0, 4).map((p: any) => ({
+          shuffledFlash.slice(0, 4).map((p: any) => ({
             id: p.id,
             name: p.title || p.name || "Produit",
             priceUSD: p.salePrice || p.price || 0,
@@ -102,6 +85,7 @@ export function ModeSection() {
             discount: p.discount || Math.round(((p.price - (p.salePrice || p.price)) / p.price) * 100) || 40,
           }))
         )
+        console.log(`📦 [MODE] ${flashList.length} montres récupérées, 4 affichées`)
 
         if (modeData.success && modeData.data) {
           const md = modeData.data as ModeData
@@ -117,7 +101,18 @@ export function ModeSection() {
         setIsLoading(false)
       }
     }
+
     fetchData()
+
+    const interval = setInterval(() => {
+      console.log(`🔄 [MODE] Nouveaux produits - ${new Date().toLocaleTimeString()}`)
+      fetchData()
+    }, REFRESH_INTERVAL)
+
+    return () => {
+      console.log(`🧹 [MODE] Nettoyage`)
+      clearInterval(interval)
+    }
   }, [])
 
   const h = Math.floor(timeLeft / 3600)
