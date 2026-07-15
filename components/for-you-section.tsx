@@ -22,13 +22,13 @@ interface Product {
 }
 
 const badgeConfig: Record<string, { label: string; bg: string; color: string }> = {
-  session_graph: { label: "Pour vous",  bg: "#F0F4FF", color: "#3B5BDB" },
-  session:       { label: "Pour vous",  bg: "#F0F4FF", color: "#3B5BDB" },
-  als:           { label: "Recommandé", bg: "#FFF8E1", color: "#E67700" },
-  trend:         { label: "Tendance",   bg: "#FFF0F0", color: "#D4372B" },
-  new:           { label: "Nouveau",    bg: "#F3F0FF", color: "#7048E8" },
-  random:        { label: "Découverte", bg: "#EBFBEE", color: "#2F9E44" },
-  popular:       { label: "Populaire",  bg: "#FFF4E6", color: "#E67700" },
+  session_graph: { label: "Pour vous",  bg: "#3B5BDB", color: "#FFFFFF" },
+  session:       { label: "Pour vous",  bg: "#3B5BDB", color: "#FFFFFF" },
+  als:           { label: "Recommandé", bg: "#E67700", color: "#FFFFFF" },
+  trend:         { label: "Tendance",   bg: "#D4372B", color: "#FFFFFF" },
+  new:           { label: "Nouveau",    bg: "#7048E8", color: "#FFFFFF" },
+  random:        { label: "Découverte", bg: "#2F9E44", color: "#FFFFFF" },
+  popular:       { label: "Populaire",  bg: "#E67700", color: "#FFFFFF" },
 }
 
 const TITLES = [
