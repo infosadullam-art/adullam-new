@@ -8,11 +8,11 @@ import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { motion } from "framer-motion"
 
 // ════════════════════════════════════════════════════════════
-// API & CACHE - Refresh toutes les 1h
+// API & CACHE - Refresh toutes les 3h
 // ════════════════════════════════════════════════════════════
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.adullamarket.com"
-const CACHE_TTL = 60 * 60 * 1000 // 1 heure
+const CACHE_TTL = 3 * 60 * 60 * 1000 // 3 heures
 
 interface CacheEntry<T> {
   data: T
@@ -84,10 +84,11 @@ export function ModeSection() {
       try {
         setIsLoading(true)
 
-        // ✅ Cache 1h
+        // ✅ Cache 3h - Catégories mode
         const [modeData, flashData] = await Promise.all([
           fetchWithCache("mode_categories", `${API_BASE}/api/categories/mode`),
-          fetchWithCache("mode_flash", `${API_BASE}/api/products?limit=8&sort=discount`),
+          // ✅ Flash uniquement montres avec cache 3h
+          fetchWithCache("mode_flash", `${API_BASE}/api/trending/montres?limit=8`),
         ])
 
         let flashList: any[] = flashData.data || flashData.products || []
@@ -198,9 +199,9 @@ export function ModeSection() {
         <div className="px-4 py-3">
           <div className="flex items-center justify-between mb-2">
             <p style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont }}>
-              ⚡ Ventes éclair mode
+              ⚡ Ventes éclair montres
             </p>
-            <Link href="/categorie/sacs-et-maroquinerie" className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1" style={{ color: "#D4372B", fontFamily: amazonFont }}>
+            <Link href="/categorie/montres" className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1" style={{ color: "#D4372B", fontFamily: amazonFont }}>
               Voir tout <ChevronRight className="w-3 h-3" />
             </Link>
           </div>
