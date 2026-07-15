@@ -59,6 +59,12 @@ interface Category {
   products: Product[]
 }
 
+interface ModeData {
+  men: Product[]
+  women: Product[]
+  kids: Product[]
+}
+
 export function CategoriesMode() {
   const { formatPrice } = useCurrencyFormatter()
   const [categories, setCategories] = useState<Category[]>([])
@@ -66,87 +72,81 @@ export function CategoriesMode() {
   const [visibleCards, setVisibleCards] = useState<{ [key: string]: boolean }>({})
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       try {
         setIsLoading(true)
 
-        // ✅ Routes CORRIGÉES avec cache 1h
-        const [menRes, womenRes, kidsRes] = await Promise.all([
-          fetchWithCache("categories_mode_men", `${API_BASE}/api/products?category=t-shirts-homme&limit=8&sort=popular`),
-          fetchWithCache("categories_mode_women", `${API_BASE}/api/products?category=robes&limit=8&sort=popular`),
-          fetchWithCache("categories_mode_kids", `${API_BASE}/api/products?category=chaussures&limit=8&sort=popular`),
-        ])
+        // ✅ 1 seul appel comme mode-section.tsx
+        const modeData = await fetchWithCache("categories_mode", `${API_BASE}/api/categories/mode`)
 
-        // Extraire les données
-        const menProducts = menRes.data || menRes.products || []
-        const womenProducts = womenRes.data || womenRes.products || []
-        const kidsProducts = kidsRes.data || kidsRes.products || []
+        if (modeData.success && modeData.data) {
+          const md = modeData.data as ModeData
 
-        // Formater les produits
-        const formatProducts = (products: any[]) => products.slice(0, 2).map((p: any) => ({
-          id: p.id,
-          name: p.title || p.name || "Produit",
-          priceUSD: p.price || 0,
-          image: p.images?.[0] || p.image || "/placeholder.jpg",
-        }))
+          // Formater les produits
+          const formatProducts = (products: any[]) => products.slice(0, 2).map((p: any) => ({
+            id: p.id,
+            name: p.name || p.title || "Produit",
+            priceUSD: p.priceUSD || p.price || 0,
+            image: p.image || "/placeholder.jpg",
+          }))
 
-        setCategories([
-          {
-            id: "men",
-            name: "Mode Hommes",
-            slug: "mode-hommes",
-            image: "/categories/men-fashion.jpg",
-            icon: Shirt,
-            bgColor: "#F4F4F4",
-            hoverColor: "#FAFAFA",
-            textColor: "#0A0A0A",
-            description: "Vêtements, chaussures, accessoires",
-            productCount: menProducts.length > 0 ? `${menProducts.length * 100}+` : "15k+",
-            href: "/categorie/t-shirts-homme",
-            products: formatProducts(menProducts)
-          },
-          {
-            id: "women",
-            name: "Mode Femmes",
-            slug: "mode-femmes",
-            image: "/categories/women-fashion.jpg",
-            icon: Footprints,
-            bgColor: "#F4F4F4",
-            hoverColor: "#FAFAFA",
-            textColor: "#0A0A0A",
-            description: "Robes, sacs, chaussures",
-            productCount: womenProducts.length > 0 ? `${womenProducts.length * 100}+` : "22k+",
-            href: "/categorie/robes",
-            products: formatProducts(womenProducts)
-          },
-          {
-            id: "kids",
-            name: "Mode Enfants",
-            slug: "mode-enfants",
-            image: "/categories/kids-fashion.jpg",
-            icon: Baby,
-            bgColor: "#F4F4F4",
-            hoverColor: "#FAFAFA",
-            textColor: "#0A0A0A",
-            description: "Vêtements, chaussures, accessoires",
-            productCount: kidsProducts.length > 0 ? `${kidsProducts.length * 100}+` : "8k+",
-            href: "/categorie/chaussures",
-            products: formatProducts(kidsProducts)
-          }
-        ])
+          setCategories([
+            {
+              id: "men",
+              name: "Mode Hommes",
+              slug: "mode-hommes",
+              image: "/categories/men-fashion.jpg",
+              icon: Shirt,
+              bgColor: "#F4F4F4",
+              hoverColor: "#FAFAFA",
+              textColor: "#0A0A0A",
+              description: "Vêtements, chaussures, accessoires",
+              productCount: md.men.length > 0 ? `${md.men.length * 100}+` : "15k+",
+              href: "/categorie/t-shirts-homme",
+              products: formatProducts(md.men)
+            },
+            {
+              id: "women",
+              name: "Mode Femmes",
+              slug: "mode-femmes",
+              image: "/categories/women-fashion.jpg",
+              icon: Footprints,
+              bgColor: "#F4F4F4",
+              hoverColor: "#FAFAFA",
+              textColor: "#0A0A0A",
+              description: "Robes, sacs, chaussures",
+              productCount: md.women.length > 0 ? `${md.women.length * 100}+` : "22k+",
+              href: "/categorie/robes",
+              products: formatProducts(md.women)
+            },
+            {
+              id: "kids",
+              name: "Mode Enfants",
+              slug: "mode-enfants",
+              image: "/categories/kids-fashion.jpg",
+              icon: Baby,
+              bgColor: "#F4F4F4",
+              hoverColor: "#FAFAFA",
+              textColor: "#0A0A0A",
+              description: "Vêtements, chaussures, accessoires",
+              productCount: md.kids.length > 0 ? `${md.kids.length * 100}+` : "8k+",
+              href: "/categorie/chaussures",
+              products: formatProducts(md.kids)
+            }
+          ])
 
-        setTimeout(() => setVisibleCards({ men: true }), 100)
-        setTimeout(() => setVisibleCards(prev => ({ ...prev, women: true })), 200)
-        setTimeout(() => setVisibleCards(prev => ({ ...prev, kids: true })), 300)
-
+          setTimeout(() => setVisibleCards({ men: true }), 100)
+          setTimeout(() => setVisibleCards(prev => ({ ...prev, women: true })), 200)
+          setTimeout(() => setVisibleCards(prev => ({ ...prev, kids: true })), 300)
+        }
       } catch (error) {
-        console.error("Erreur chargement produits:", error)
+        console.error("Erreur chargement données:", error)
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchProducts()
+    fetchData()
   }, [])
 
   if (isLoading) {
