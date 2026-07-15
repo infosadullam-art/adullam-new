@@ -5,9 +5,36 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight, TrendingUp } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
-import { apiFetch } from "@/lib/api"
 
-// Police Amazon Ember
+// ════════════════════════════════════════════════════════════
+// API & CACHE - Refresh toutes les 3h
+// ════════════════════════════════════════════════════════════
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.adullamarket.com"
+const CACHE_TTL = 3 * 60 * 60 * 1000 // 3 heures
+
+interface CacheEntry<T> {
+  data: T
+  timestamp: number
+}
+
+const cache = new Map<string, CacheEntry<any>>()
+
+async function fetchWithCache<T>(key: string, url: string): Promise<T> {
+  const cached = cache.get(key)
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data
+  }
+
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Erreur: ${url}`)
+  const data = await res.json()
+  cache.set(key, { data, timestamp: Date.now() })
+  return data
+}
+
+// ════════════════════════════════════════════════════════════
+
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
 interface Product {
@@ -27,8 +54,8 @@ export function MeilleuresVentesMobile() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await apiFetch("/api/deals/best-sellers/mobile")
-        const data = await res.json()
+        setIsLoading(true)
+        const data = await fetchWithCache("best_sellers_mobile", `${API_BASE}/api/deals/best-sellers/mobile`)
         if (data.success && data.data) setProducts(data.data)
       } catch (error) {
         console.error("Erreur chargement produits:", error)
@@ -49,7 +76,6 @@ export function MeilleuresVentesMobile() {
     }
   }, [hasAnimated, products])
 
-  // ── Skeleton ────────────────────────────────────────────────
   if (isLoading) {
     return (
       <section className="w-full lg:hidden" style={{ background: "#FAFAFA" }}>
@@ -86,7 +112,6 @@ export function MeilleuresVentesMobile() {
     <section className="w-full lg:hidden" style={{ background: "#FAFAFA" }}>
       <div className="px-4 py-2">
 
-        {/* Header */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <div
@@ -113,7 +138,6 @@ export function MeilleuresVentesMobile() {
           </Link>
         </div>
 
-        {/* Carrousel */}
         <div
           ref={scrollRef}
           className="flex gap-2 overflow-x-auto pb-1"
@@ -130,7 +154,6 @@ export function MeilleuresVentesMobile() {
                 className="overflow-hidden transition-all duration-200 hover:shadow-sm"
                 style={{ borderRadius: "6px", border: "0.5px solid #ECECEC", background: "#fff" }}
               >
-                {/* Rang */}
                 <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
                   {index < 3 && (
                     <span
@@ -149,7 +172,6 @@ export function MeilleuresVentesMobile() {
                   />
                 </div>
 
-                {/* Infos */}
                 <div className="px-1.5 py-1.5">
                   <p
                     className="truncate mb-0.5"
@@ -168,7 +190,6 @@ export function MeilleuresVentesMobile() {
           ))}
         </div>
 
-        {/* Indicateur scroll */}
         <div className="flex items-center justify-center gap-1 mt-1.5">
           {[0,1,2,3].map(i => (
             <div key={i} className="rounded-full" style={{ width: i === 3 ? "12px" : "3px", height: "2px", background: i === 3 ? "#D4372B" : "#ECECEC", transition: "all 0.3s" }} />
