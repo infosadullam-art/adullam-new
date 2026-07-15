@@ -82,7 +82,6 @@ export function CategoriesMode() {
         if (modeData.success && modeData.data) {
           const md = modeData.data as ModeData
 
-          // Formater les produits
           const formatProducts = (products: any[]) => products.slice(0, 2).map((p: any) => ({
             id: p.id,
             name: p.name || p.title || "Produit",
