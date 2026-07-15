@@ -6,9 +6,36 @@ import Link from "next/link"
 import { useLocale } from "@/context/LocaleProvider"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { ChevronRight, TrendingUp, MapPin } from "lucide-react"
-import { apiFetch } from "@/lib/api"
 
-// Police Amazon Ember
+// ════════════════════════════════════════════════════════════
+// API & CACHE - Refresh toutes les 3h
+// ════════════════════════════════════════════════════════════
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.adullamarket.com"
+const CACHE_TTL = 3 * 60 * 60 * 1000 // 3 heures
+
+interface CacheEntry<T> {
+  data: T
+  timestamp: number
+}
+
+const cache = new Map<string, CacheEntry<any>>()
+
+async function fetchWithCache<T>(key: string, url: string): Promise<T> {
+  const cached = cache.get(key)
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data
+  }
+
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Erreur: ${url}`)
+  const data = await res.json()
+  cache.set(key, { data, timestamp: Date.now() })
+  return data
+}
+
+// ════════════════════════════════════════════════════════════
+
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
 interface TrendingProduct {
@@ -90,8 +117,8 @@ export function TendanceParPays() {
     const fetchTrends = async () => {
       try {
         setIsLoading(true)
-        const res = await apiFetch(`/api/graph/trending?country=${selectedCountry}&limit=6`)
-        const data = await res.json()
+        // ✅ Cache 3h
+        const data = await fetchWithCache(`trending_${selectedCountry}`, `${API_BASE}/api/graph/trending?country=${selectedCountry}&limit=6`)
         if (data.success) setTrends(data.trend)
         else setTrends(fallbackTrends[selectedCountry as keyof typeof fallbackTrends] || fallbackTrends.CI)
       } catch {
@@ -103,7 +130,6 @@ export function TendanceParPays() {
     fetchTrends()
   }, [selectedCountry])
 
-  // ── Sélecteur pays ─────────────────────────────────────────
   const CountrySelector = () => (
     <div className="relative">
       <button
@@ -143,7 +169,6 @@ export function TendanceParPays() {
     </div>
   )
 
-  // ── Loading ─────────────────────────────────────────────────
   if (isLoading) {
     return (
       <section className="w-full" style={{ background: "#fff" }}>
@@ -178,10 +203,8 @@ export function TendanceParPays() {
 
   if (!trends) return null
 
-  // ── MOBILE ─────────────────────────────────────────────────
   const MobileTrend = () => (
     <div className="lg:hidden px-4 py-3">
-      {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <div className="flex items-center justify-center w-7 h-7" style={{ background: "#FFF0F0", borderRadius: "4px" }}>
@@ -199,7 +222,6 @@ export function TendanceParPays() {
         <CountrySelector />
       </div>
 
-      {/* Scroll horizontal */}
       <div className="overflow-x-auto -mx-4 px-4 pb-1" style={{ scrollbarWidth: "none" }}>
         <div className="flex gap-2 min-w-max">
           {trends.products.map((product) => (
@@ -229,7 +251,6 @@ export function TendanceParPays() {
         </div>
       </div>
 
-      {/* Footer */}
       <div className="flex items-center justify-between pt-2">
         <div className="flex items-center gap-1">
           <div className="w-1 h-1 rounded-full" style={{ background: "#D4372B" }} />
@@ -242,7 +263,6 @@ export function TendanceParPays() {
     </div>
   )
 
-  // ── DESKTOP (inchangé pour l'instant) ─────────────────────────────
   const DesktopTrend = () => (
     <div className="hidden lg:block rounded-xl p-5" style={{ border: "0.5px solid #ECECEC", background: "#fff" }}>
       <div className="flex items-center justify-between mb-5">
