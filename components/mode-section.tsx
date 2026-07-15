@@ -5,10 +5,37 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight, Zap, Tag, Truck, Percent, Shirt, Footprints, Baby } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
-import { apiFetch } from "@/lib/api"
 import { motion } from "framer-motion"
 
-// Police Amazon Ember
+// ════════════════════════════════════════════════════════════
+// API & CACHE - Refresh toutes les 1h
+// ════════════════════════════════════════════════════════════
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.adullamarket.com"
+const CACHE_TTL = 60 * 60 * 1000 // 1 heure
+
+interface CacheEntry<T> {
+  data: T
+  timestamp: number
+}
+
+const cache = new Map<string, CacheEntry<any>>()
+
+async function fetchWithCache<T>(key: string, url: string): Promise<T> {
+  const cached = cache.get(key)
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data
+  }
+
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Erreur: ${url}`)
+  const data = await res.json()
+  cache.set(key, { data, timestamp: Date.now() })
+  return data
+}
+
+// ════════════════════════════════════════════════════════════
+
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
 interface Product {
@@ -56,12 +83,13 @@ export function ModeSection() {
     const fetchData = async () => {
       try {
         setIsLoading(true)
-        const [modeRes, flashRes] = await Promise.all([
-          apiFetch("/api/categories/mode"),
-          apiFetch("/api/products?limit=8&sort=discount"),
+
+        // ✅ Cache 1h
+        const [modeData, flashData] = await Promise.all([
+          fetchWithCache("mode_categories", `${API_BASE}/api/categories/mode`),
+          fetchWithCache("mode_flash", `${API_BASE}/api/products?limit=8&sort=discount`),
         ])
 
-        const flashData = await flashRes.json()
         let flashList: any[] = flashData.data || flashData.products || []
         setFlashProducts(
           flashList.slice(0, 4).map((p: any) => ({
@@ -74,7 +102,6 @@ export function ModeSection() {
           }))
         )
 
-        const modeData = await modeRes.json()
         if (modeData.success && modeData.data) {
           const md = modeData.data as ModeData
           setCategories([
@@ -122,7 +149,6 @@ export function ModeSection() {
   return (
     <section className="w-full" style={{ background: "#fff" }}>
 
-      {/* ── HEADER FLASH ──────────────────────────────────────── */}
       <div style={{ background: "#0A0A0A", padding: "12px 16px" }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -149,7 +175,6 @@ export function ModeSection() {
         </div>
       </div>
 
-      {/* ── FILTRES ─────────────────────────────────────────────── */}
       <div className="flex gap-2 overflow-x-auto px-4 py-2" style={{ scrollbarWidth: "none", borderBottom: "0.5px solid #F0F0F0" }}>
         {filters.map(({ id, label, icon: Icon }) => (
           <button
@@ -169,7 +194,6 @@ export function ModeSection() {
         ))}
       </div>
 
-      {/* ── VENTES ÉCLAIR ─────────────────────────────────────── */}
       {flashProducts.length > 0 && (
         <div className="px-4 py-3">
           <div className="flex items-center justify-between mb-2">
@@ -207,7 +231,6 @@ export function ModeSection() {
         </div>
       )}
 
-      {/* ── CATÉGORIES MODE ─────────────────────────────────────── */}
       {categories.length > 0 && (
         <div className="px-4 pb-3" style={{ background: "#FAFAFA" }}>
           <div className="flex items-center justify-between py-2 mb-2">
@@ -254,7 +277,6 @@ export function ModeSection() {
         </div>
       )}
 
-      {/* ── BANNIÈRE PROMO AVEC ANIMATION EN BOUCLE ─────────── */}
       <motion.div
         animate={{
           background: ["#0A0A0A", "#1A0A0A", "#0A0A0A"],
