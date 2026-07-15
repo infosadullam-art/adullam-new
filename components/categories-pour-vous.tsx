@@ -7,31 +7,11 @@ import { ChevronRight } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
 // ════════════════════════════════════════════════════════════
-// API & CACHE - Refresh toutes les 3h
+// API - Changement de produits toutes les 10h
 // ════════════════════════════════════════════════════════════
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.adullamarket.com"
-const CACHE_TTL = 3 * 60 * 60 * 1000 // 3 heures
-
-interface CacheEntry<T> {
-  data: T
-  timestamp: number
-}
-
-const cache = new Map<string, CacheEntry<any>>()
-
-async function fetchWithCache<T>(key: string, url: string): Promise<T> {
-  const cached = cache.get(key)
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.data
-  }
-
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Erreur: ${url}`)
-  const data = await res.json()
-  cache.set(key, { data, timestamp: Date.now() })
-  return data
-}
+const API_BASE = process.env.NEXT_PUBLIC_API_URL
+const REFRESH_INTERVAL = 10 * 60 * 60 * 1000 // 10 heures
 
 // ════════════════════════════════════════════════════════════
 
@@ -62,15 +42,23 @@ export function CategoriesPourVous() {
     const fetchProducts = async () => {
       try {
         setIsLoading(true)
-        // ✅ Cache 3h
-        const data = await fetchWithCache("categories_pour_vous", `${API_BASE}/api/trending/cuisine?limit=4`)
+        console.log(`📦 [CATEGORIES] Fetch - ${new Date().toLocaleTimeString()}`)
+        
+        const timestamp = Date.now()
+        const res = await fetch(`${API_BASE}/api/trending/cuisine?limit=20&_t=${timestamp}`)
+        const data = await res.json()
+        
         if (data.success && data.data) {
-          setProducts(data.data.map((p: any) => ({
-            id: p.id,
-            name: p.name || p.title || "Produit",
-            price: p.price || 0,
-            image: p.image || "/placeholder.jpg",
-          })))
+          const shuffled = [...data.data].sort(() => Math.random() - 0.5)
+          setProducts(
+            shuffled.slice(0, 4).map((p: any) => ({
+              id: p.id,
+              name: p.name || p.title || "Produit",
+              price: p.price || 0,
+              image: p.image || "/placeholder.jpg",
+            }))
+          )
+          console.log(`📦 [CATEGORIES] ${data.data.length} produits récupérés, 4 affichés`)
         }
       } catch (error) {
         console.error("Erreur chargement produits:", error)
@@ -78,7 +66,18 @@ export function CategoriesPourVous() {
         setIsLoading(false)
       }
     }
+
     fetchProducts()
+
+    const interval = setInterval(() => {
+      console.log(`🔄 [CATEGORIES] Nouveaux produits - ${new Date().toLocaleTimeString()}`)
+      fetchProducts()
+    }, REFRESH_INTERVAL)
+
+    return () => {
+      console.log(`🧹 [CATEGORIES] Nettoyage`)
+      clearInterval(interval)
+    }
   }, [])
 
   useEffect(() => {
