@@ -2,8 +2,9 @@
 
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// VENDEUR ULTIME - Version 5.3
+// VENDEUR ULTIME - Version 5.4
 // Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
+// FIX: Transmission du pays pour alignement devise backend/frontend
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { OfferBanner } from "@/components/OfferBanner"
@@ -118,7 +119,7 @@ interface ChatbotWidgetProps {
 }
 
 // ============================================================
-// CONSTANTES - MODIFIÉES POUR ÉVITER LE DÉCLENCHEMENT AU CHARGEMENT
+// CONSTANTES
 // ============================================================
 
 const TRIGGER_CHECK_INTERVAL = 60000  // 60 secondes
@@ -554,7 +555,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   }, [sessionId, userId, language])
 
   // ============================================================
-  // TRIGGER PROACTIF - CORRIGÉ POUR ÉVITER LE DÉCLENCHEMENT AU CHARGEMENT
+  // TRIGGER PROACTIF - AVEC PAYS
   // ============================================================
 
   useEffect(() => {
@@ -594,6 +595,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               has_added_to_cart: checkCartStatus(),
               has_visited_checkout: checkCheckoutStatus(),
               has_come_back: true,
+              country: country, // ✅ FIX: Transmission du pays pour alignement devise
             }),
           })
 
@@ -630,7 +632,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       clearTimeout(initialDelay)
       if (triggerTimerRef.current) clearInterval(triggerTimerRef.current)
     }
-  }, [sessionId, userId, isOpen])
+  }, [sessionId, userId, isOpen, country]) // ✅ Ajout de country comme dépendance
 
   const checkCartStatus = () => {
     return messages.some(m => m.products && m.products.length > 0 && m.role === 'assistant')
@@ -813,6 +815,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           product_id: product.id,
           weight: 5.0,
           limit: 3,
+          country: country, // ✅ FIX: Transmission du pays
         })
       })
       const data = await response.json()
@@ -827,7 +830,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
 
     window.location.href = `/products/${product.id}`
-  }, [sessionId, userId, addAssistantMessage])
+  }, [sessionId, userId, addAssistantMessage, country])
 
   // ============================================================
   // COUPONS 🎫
@@ -843,6 +846,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           session_id: sessionId,
           product_id: productId,
           discount: discount,
+          country: country, // ✅ FIX: Transmission du pays
         }),
       })
 
@@ -865,7 +869,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       console.error("Erreur génération coupon:", error)
       addAssistantMessage("Oups, erreur technique. Réessaie dans un instant !")
     }
-  }, [sessionId, userId, addAssistantMessage, saveMessageToHistory])
+  }, [sessionId, userId, addAssistantMessage, saveMessageToHistory, country])
 
   const proposeOffer = useCallback((product: Product) => {
     if (hasBeenOffered || activeCoupon) {
@@ -887,7 +891,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   }, [addAssistantMessage, hasBeenOffered, activeCoupon])
 
   // ============================================================
-  // ENVOI DE MESSAGE
+  // ENVOI DE MESSAGE - AVEC PAYS
   // ============================================================
 
   const sendMessage = async () => {
@@ -915,6 +919,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           user_id: userId || null,
           language: language,
           token: token || null,
+          country: country, // ✅ FIX: Transmission du pays pour alignement devise
         }),
       })
 
@@ -924,7 +929,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         const formattedProducts = data.suggested_products?.map((p: any) => ({
           id: p.id,
           title: p.title || p.name,
-          price: p.price,
+          price: p.price,        // ← utilise UNIQUEMENT ce champ (USD brut)
           image: p.image,
           reason: p.reason,
         })) || []
@@ -975,6 +980,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 language: language,
                 user_type: data.user_context?.user_type || 'particular',
                 business_name: data.user_context?.business_name || null,
+                country: country, // ✅ Ajout du pays dans les métadonnées
               }
             })
           })
@@ -1013,6 +1019,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           categories: categories,
           limit: 12,
           seen_ids: seenIds,
+          country: country, // ✅ FIX: Transmission du pays
         }),
       })
 
@@ -1031,7 +1038,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       console.error("Erreur chargement plus:", error)
       addAssistantMessage("Oups, erreur de chargement. Réessaie !")
     }
-  }, [sessionId, userId, addAssistantMessage, scrollToBottom, messages])
+  }, [sessionId, userId, addAssistantMessage, scrollToBottom, messages, country])
 
   // ============================================================
   // VOIX
