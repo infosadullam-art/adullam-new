@@ -67,10 +67,13 @@ export function DealCountdown() {
         setIsLoading(true)
         setError(null)
 
+        // ✅ Ajout d'un timestamp pour éviter le cache
+        const timestamp = Date.now()
+
         const [featuredRes, bestSellersRes, flashRes] = await Promise.all([
-          fetch(`${API_BASE}/api/deals/featured?limit=6`),
-          fetch(`${API_BASE}/api/deals/best-sellers?limit=6`),
-          fetch(`${API_BASE}/api/deals/flash-sales/current`),
+          fetch(`${API_BASE}/api/deals/featured?limit=6&_t=${timestamp}`),
+          fetch(`${API_BASE}/api/deals/best-sellers?limit=6&_t=${timestamp}`),
+          fetch(`${API_BASE}/api/deals/flash-sales/current?_t=${timestamp}`),
         ])
 
         const featuredData = await featuredRes.json()
@@ -78,7 +81,6 @@ export function DealCountdown() {
         const flashData = await flashRes.json()
 
         if (featuredData.success && featuredData.data) {
-          // ✅ Mélange aléatoire
           const shuffled = [...featuredData.data].sort(() => Math.random() - 0.5)
           setFeaturedProducts(
             shuffled.slice(0, 6).map((p: any) => ({
@@ -89,10 +91,10 @@ export function DealCountdown() {
               badge: p.badge,
             }))
           )
+          console.log(`📦 [DEALS] ${shuffled.length} produits featured`)
         }
 
         if (bestSellersData.success && bestSellersData.data) {
-          // ✅ Mélange aléatoire
           const shuffled = [...bestSellersData.data].sort(() => Math.random() - 0.5)
           setBestSellers(
             shuffled.slice(0, 6).map((p: any) => ({
@@ -103,6 +105,7 @@ export function DealCountdown() {
               badge: p.badge || (p.purchaseCount > 1000 ? "Best-seller" : undefined),
             }))
           )
+          console.log(`📦 [DEALS] ${shuffled.length} produits best-sellers`)
         }
 
         if (flashData.success) {
@@ -122,7 +125,6 @@ export function DealCountdown() {
 
     fetchAllData()
 
-    // ✅ Refresh toutes les 30s avec mélange
     const interval = setInterval(() => {
       console.log(`🔄 [DEALS] Nouveaux produits - ${new Date().toLocaleTimeString()}`)
       fetchAllData()
