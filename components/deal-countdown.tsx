@@ -8,11 +8,11 @@ import { motion } from "framer-motion"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
 // ════════════════════════════════════════════════════════════
-// API - Refresh toutes les 30s (TEST)
+// API - Changement de produits toutes les 6h
 // ════════════════════════════════════════════════════════════
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
-const REFRESH_INTERVAL = 30 * 1000 // 30 secondes - TEST
+const REFRESH_INTERVAL = 6 * 60 * 60 * 1000 // 6 heures
 
 // ════════════════════════════════════════════════════════════
 // TYPES
@@ -124,6 +124,7 @@ export function DealCountdown() {
 
     fetchAllData()
 
+    // ✅ Changement de produits toutes les 6h
     const interval = setInterval(() => {
       console.log(`🔄 [DEALS] Nouveaux produits - ${new Date().toLocaleTimeString()}`)
       fetchAllData()
