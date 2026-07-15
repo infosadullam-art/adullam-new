@@ -78,8 +78,10 @@ export function DealCountdown() {
         const flashData = await flashRes.json()
 
         if (featuredData.success && featuredData.data) {
+          // ✅ Mélange aléatoire
+          const shuffled = [...featuredData.data].sort(() => Math.random() - 0.5)
           setFeaturedProducts(
-            featuredData.data.map((p: any) => ({
+            shuffled.slice(0, 6).map((p: any) => ({
               id: p.id,
               name: p.title || p.name,
               price: p.price,
@@ -90,8 +92,10 @@ export function DealCountdown() {
         }
 
         if (bestSellersData.success && bestSellersData.data) {
+          // ✅ Mélange aléatoire
+          const shuffled = [...bestSellersData.data].sort(() => Math.random() - 0.5)
           setBestSellers(
-            bestSellersData.data.map((p: any) => ({
+            shuffled.slice(0, 6).map((p: any) => ({
               id: p.id,
               name: p.title || p.name,
               price: p.price,
@@ -118,14 +122,14 @@ export function DealCountdown() {
 
     fetchAllData()
 
-    // ✅ Refresh toutes les 30s (TEST)
+    // ✅ Refresh toutes les 30s avec mélange
     const interval = setInterval(() => {
-      console.log(`🔄 [DEALS] Refresh auto - ${new Date().toLocaleTimeString()}`)
+      console.log(`🔄 [DEALS] Nouveaux produits - ${new Date().toLocaleTimeString()}`)
       fetchAllData()
     }, REFRESH_INTERVAL)
 
     return () => {
-      console.log(`🧹 [DEALS] Nettoyage du refresh`)
+      console.log(`🧹 [DEALS] Nettoyage`)
       clearInterval(interval)
     }
   }, [])
