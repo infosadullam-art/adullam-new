@@ -7,31 +7,11 @@ import { ChevronRight, Sparkles, Shirt, Footprints, Baby } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
 // ════════════════════════════════════════════════════════════
-// API & CACHE - Refresh toutes les 1h
+// API - Changement de produits toutes les 10h
 // ════════════════════════════════════════════════════════════
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.adullamarket.com"
-const CACHE_TTL = 60 * 60 * 1000 // 1 heure
-
-interface CacheEntry<T> {
-  data: T
-  timestamp: number
-}
-
-const cache = new Map<string, CacheEntry<any>>()
-
-async function fetchWithCache<T>(key: string, url: string): Promise<T> {
-  const cached = cache.get(key)
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.data
-  }
-
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Erreur: ${url}`)
-  const data = await res.json()
-  cache.set(key, { data, timestamp: Date.now() })
-  return data
-}
+const API_BASE = process.env.NEXT_PUBLIC_API_URL
+const REFRESH_INTERVAL = 10 * 60 * 60 * 1000 // 10 heures
 
 // ════════════════════════════════════════════════════════════
 
@@ -75,19 +55,25 @@ export function CategoriesMode() {
     const fetchData = async () => {
       try {
         setIsLoading(true)
-
-        // ✅ 1 seul appel comme mode-section.tsx
-        const modeData = await fetchWithCache("categories_mode", `${API_BASE}/api/categories/mode`)
+        console.log(`📦 [CATEGORIES-MODE] Fetch - ${new Date().toLocaleTimeString()}`)
+        
+        const timestamp = Date.now()
+        const res = await fetch(`${API_BASE}/api/categories/mode?_t=${timestamp}`)
+        const modeData = await res.json()
 
         if (modeData.success && modeData.data) {
           const md = modeData.data as ModeData
 
-          const formatProducts = (products: any[]) => products.slice(0, 2).map((p: any) => ({
-            id: p.id,
-            name: p.name || p.title || "Produit",
-            priceUSD: p.priceUSD || p.price || 0,
-            image: p.image || "/placeholder.jpg",
-          }))
+          // ✅ Mélange aléatoire pour chaque catégorie
+          const formatProducts = (products: any[]) => {
+            const shuffled = [...products].sort(() => Math.random() - 0.5)
+            return shuffled.slice(0, 2).map((p: any) => ({
+              id: p.id,
+              name: p.name || p.title || "Produit",
+              priceUSD: p.priceUSD || p.price || 0,
+              image: p.image || "/placeholder.jpg",
+            }))
+          }
 
           setCategories([
             {
@@ -134,6 +120,8 @@ export function CategoriesMode() {
             }
           ])
 
+          console.log(`📦 [CATEGORIES-MODE] ${md.men.length} hommes, ${md.women.length} femmes, ${md.kids.length} enfants`)
+
           setTimeout(() => setVisibleCards({ men: true }), 100)
           setTimeout(() => setVisibleCards(prev => ({ ...prev, women: true })), 200)
           setTimeout(() => setVisibleCards(prev => ({ ...prev, kids: true })), 300)
@@ -146,6 +134,16 @@ export function CategoriesMode() {
     }
 
     fetchData()
+
+    const interval = setInterval(() => {
+      console.log(`🔄 [CATEGORIES-MODE] Nouveaux produits - ${new Date().toLocaleTimeString()}`)
+      fetchData()
+    }, REFRESH_INTERVAL)
+
+    return () => {
+      console.log(`🧹 [CATEGORIES-MODE] Nettoyage`)
+      clearInterval(interval)
+    }
   }, [])
 
   if (isLoading) {
