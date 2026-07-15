@@ -2,14 +2,16 @@
 
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// VENDEUR ULTIME - Version 5.4
+// VENDEUR ULTIME - Version 5.5
 // Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
 // FIX: Transmission du pays pour alignement devise backend/frontend
+// FIX: Support du markdown (gras, italique, listes)
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { OfferBanner } from "@/components/OfferBanner"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useLocale } from "@/context/LocaleProvider"
+import ReactMarkdown from 'react-markdown'
 
 // ============================================================
 // ICÔNES PRO (SVG inline, aucune dépendance)
@@ -1152,6 +1154,29 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [isOpen, isMobile])
 
+  // Composant Markdown pour les messages assistant
+  const MarkdownMessage = ({ content }: { content: string }) => {
+    return (
+      <ReactMarkdown
+        components={{
+          p: ({ children }) => <p style={{ margin: '4px 0', lineHeight: 1.5 }}>{children}</p>,
+          strong: ({ children }) => <strong style={{ fontWeight: 700, color: 'var(--accent)' }}>{children}</strong>,
+          em: ({ children }) => <em style={{ fontStyle: 'italic' }}>{children}</em>,
+          ul: ({ children }) => <ul style={{ margin: '6px 0', paddingLeft: '20px', listStyle: 'disc' }}>{children}</ul>,
+          ol: ({ children }) => <ol style={{ margin: '6px 0', paddingLeft: '20px', listStyle: 'decimal' }}>{children}</ol>,
+          li: ({ children }) => <li style={{ margin: '2px 0' }}>{children}</li>,
+          h1: ({ children }) => <h1 style={{ fontSize: '1.2em', fontWeight: 700, margin: '6px 0' }}>{children}</h1>,
+          h2: ({ children }) => <h2 style={{ fontSize: '1.1em', fontWeight: 600, margin: '4px 0' }}>{children}</h2>,
+          h3: ({ children }) => <h3 style={{ fontSize: '1em', fontWeight: 600, margin: '4px 0' }}>{children}</h3>,
+          a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>{children}</a>,
+          code: ({ children }) => <code style={{ background: 'var(--surface-sunken)', padding: '1px 4px', borderRadius: '3px', fontFamily: 'monospace' }}>{children}</code>,
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    )
+  }
+
   return (
     <>
       {showOfferBanner && activeOffer && offerTimer > 0 && (
@@ -1723,9 +1748,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                       background: msg.role === 'user' ? 'var(--accent)' : 'var(--surface)',
                       color: msg.role === 'user' ? 'var(--accent-foreground)' : 'var(--foreground)',
                       fontSize: isMobile ? '11px' : '12px',
-                      lineHeight: 1.4,
+                      lineHeight: 1.5,
                     }}>
-                      {msg.content}
+                      {msg.role === 'assistant' ? (
+                        <MarkdownMessage content={msg.content} />
+                      ) : (
+                        msg.content
+                      )}
                       
                       {msg.products && msg.products.length > 0 && (
                         <div style={{
