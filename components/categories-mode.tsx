@@ -5,9 +5,36 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight, Sparkles, Shirt, Footprints, Baby } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
-import { apiFetch } from "@/lib/api"
 
-// Police Amazon Ember
+// ════════════════════════════════════════════════════════════
+// API & CACHE - Refresh toutes les 1h
+// ════════════════════════════════════════════════════════════
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.adullamarket.com"
+const CACHE_TTL = 60 * 60 * 1000 // 1 heure
+
+interface CacheEntry<T> {
+  data: T
+  timestamp: number
+}
+
+const cache = new Map<string, CacheEntry<any>>()
+
+async function fetchWithCache<T>(key: string, url: string): Promise<T> {
+  const cached = cache.get(key)
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data
+  }
+
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Erreur: ${url}`)
+  const data = await res.json()
+  cache.set(key, { data, timestamp: Date.now() })
+  return data
+}
+
+// ════════════════════════════════════════════════════════════
+
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
 interface Product {
@@ -41,85 +68,77 @@ export function CategoriesMode() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await apiFetch('/api/products?limit=20&sort=popular')
-        const data = await res.json()
-        
-        let products: any[] = []
-        if (data.data && Array.isArray(data.data)) {
-          products = data.data
-        } else if (data.products && Array.isArray(data.products)) {
-          products = data.products
-        }
+        setIsLoading(true)
 
-        if (products.length > 0) {
-          const menProducts = products.filter((_, i) => i % 3 === 0).slice(0, 2)
-          const womenProducts = products.filter((_, i) => i % 3 === 1).slice(0, 2)
-          const kidsProducts = products.filter((_, i) => i % 3 === 2).slice(0, 2)
+        // ✅ Routes CORRIGÉES avec cache 1h
+        const [menRes, womenRes, kidsRes] = await Promise.all([
+          fetchWithCache("categories_mode_men", `${API_BASE}/api/products?category=t-shirts-homme&limit=8&sort=popular`),
+          fetchWithCache("categories_mode_women", `${API_BASE}/api/products?category=robes&limit=8&sort=popular`),
+          fetchWithCache("categories_mode_kids", `${API_BASE}/api/products?category=chaussures&limit=8&sort=popular`),
+        ])
 
-          setCategories([
-            {
-              id: "men",
-              name: "Mode Hommes",
-              slug: "mode-hommes",
-              image: "/categories/men-fashion.jpg",
-              icon: Shirt,
-              bgColor: "#F4F4F4",
-              hoverColor: "#FAFAFA",
-              textColor: "#0A0A0A",
-              description: "Vêtements, chaussures, accessoires",
-              productCount: "15k+",
-              href: "/categorie/mode-hommes",
-              products: menProducts.map((p: any) => ({
-                id: p.id,
-                name: p.title || p.name,
-                priceUSD: p.price,
-                image: p.images?.[0] || p.image || "/placeholder.jpg",
-              }))
-            },
-            {
-              id: "women",
-              name: "Mode Femmes",
-              slug: "mode-femmes",
-              image: "/categories/women-fashion.jpg",
-              icon: Footprints,
-              bgColor: "#F4F4F4",
-              hoverColor: "#FAFAFA",
-              textColor: "#0A0A0A",
-              description: "Robes, sacs, chaussures",
-              productCount: "22k+",
-              href: "/categorie/mode-femmes",
-              products: womenProducts.map((p: any) => ({
-                id: p.id,
-                name: p.title || p.name,
-                priceUSD: p.price,
-                image: p.images?.[0] || p.image || "/placeholder.jpg",
-              }))
-            },
-            {
-              id: "kids",
-              name: "Mode Enfants",
-              slug: "mode-enfants",
-              image: "/categories/kids-fashion.jpg",
-              icon: Baby,
-              bgColor: "#F4F4F4",
-              hoverColor: "#FAFAFA",
-              textColor: "#0A0A0A",
-              description: "Vêtements, chaussures, accessoires",
-              productCount: "8k+",
-              href: "/categorie/mode-enfants",
-              products: kidsProducts.map((p: any) => ({
-                id: p.id,
-                name: p.title || p.name,
-                priceUSD: p.price,
-                image: p.images?.[0] || p.image || "/placeholder.jpg",
-              }))
-            }
-          ])
+        // Extraire les données
+        const menProducts = menRes.data || menRes.products || []
+        const womenProducts = womenRes.data || womenRes.products || []
+        const kidsProducts = kidsRes.data || kidsRes.products || []
 
-          setTimeout(() => setVisibleCards({ men: true }), 100)
-          setTimeout(() => setVisibleCards(prev => ({ ...prev, women: true })), 200)
-          setTimeout(() => setVisibleCards(prev => ({ ...prev, kids: true })), 300)
-        }
+        // Formater les produits
+        const formatProducts = (products: any[]) => products.slice(0, 2).map((p: any) => ({
+          id: p.id,
+          name: p.title || p.name || "Produit",
+          priceUSD: p.price || 0,
+          image: p.images?.[0] || p.image || "/placeholder.jpg",
+        }))
+
+        setCategories([
+          {
+            id: "men",
+            name: "Mode Hommes",
+            slug: "mode-hommes",
+            image: "/categories/men-fashion.jpg",
+            icon: Shirt,
+            bgColor: "#F4F4F4",
+            hoverColor: "#FAFAFA",
+            textColor: "#0A0A0A",
+            description: "Vêtements, chaussures, accessoires",
+            productCount: menProducts.length > 0 ? `${menProducts.length * 100}+` : "15k+",
+            href: "/categorie/t-shirts-homme",
+            products: formatProducts(menProducts)
+          },
+          {
+            id: "women",
+            name: "Mode Femmes",
+            slug: "mode-femmes",
+            image: "/categories/women-fashion.jpg",
+            icon: Footprints,
+            bgColor: "#F4F4F4",
+            hoverColor: "#FAFAFA",
+            textColor: "#0A0A0A",
+            description: "Robes, sacs, chaussures",
+            productCount: womenProducts.length > 0 ? `${womenProducts.length * 100}+` : "22k+",
+            href: "/categorie/robes",
+            products: formatProducts(womenProducts)
+          },
+          {
+            id: "kids",
+            name: "Mode Enfants",
+            slug: "mode-enfants",
+            image: "/categories/kids-fashion.jpg",
+            icon: Baby,
+            bgColor: "#F4F4F4",
+            hoverColor: "#FAFAFA",
+            textColor: "#0A0A0A",
+            description: "Vêtements, chaussures, accessoires",
+            productCount: kidsProducts.length > 0 ? `${kidsProducts.length * 100}+` : "8k+",
+            href: "/categorie/chaussures",
+            products: formatProducts(kidsProducts)
+          }
+        ])
+
+        setTimeout(() => setVisibleCards({ men: true }), 100)
+        setTimeout(() => setVisibleCards(prev => ({ ...prev, women: true })), 200)
+        setTimeout(() => setVisibleCards(prev => ({ ...prev, kids: true })), 300)
+
       } catch (error) {
         console.error("Erreur chargement produits:", error)
       } finally {
@@ -150,7 +169,6 @@ export function CategoriesMode() {
     <section className="w-full py-2" style={{ background: "#FAFAFA" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Header - tailles augmentées */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <div className="p-1 rounded" style={{ background: "#FFF0F0", borderRadius: "4px" }}>
@@ -175,7 +193,6 @@ export function CategoriesMode() {
           </Link>
         </div>
 
-        {/* Grille catégories */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {categories.map((category, index) => {
             const Icon = category.icon
@@ -205,7 +222,6 @@ export function CategoriesMode() {
                   e.currentTarget.style.boxShadow = "none"
                 }}
               >
-                {/* Carte catégorie principale */}
                 <Link href={category.href} className="group block">
                   <div
                     className="relative bg-white overflow-hidden transition-all duration-300"
@@ -253,7 +269,6 @@ export function CategoriesMode() {
                   </div>
                 </Link>
 
-                {/* Produits associés */}
                 <div className="grid grid-cols-2 gap-2">
                   {category.products.slice(0, 2).map((product) => (
                     <Link
