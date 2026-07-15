@@ -7,31 +7,11 @@ import { ChevronRight, TrendingUp } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
 // ════════════════════════════════════════════════════════════
-// API & CACHE - Refresh toutes les 3h
+// API - Changement de produits toutes les 6h
 // ════════════════════════════════════════════════════════════
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.adullamarket.com"
-const CACHE_TTL = 3 * 60 * 60 * 1000 // 3 heures
-
-interface CacheEntry<T> {
-  data: T
-  timestamp: number
-}
-
-const cache = new Map<string, CacheEntry<any>>()
-
-async function fetchWithCache<T>(key: string, url: string): Promise<T> {
-  const cached = cache.get(key)
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.data
-  }
-
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Erreur: ${url}`)
-  const data = await res.json()
-  cache.set(key, { data, timestamp: Date.now() })
-  return data
-}
+const API_BASE = process.env.NEXT_PUBLIC_API_URL
+const REFRESH_INTERVAL = 6 * 60 * 60 * 1000 // 6 heures
 
 // ════════════════════════════════════════════════════════════
 
@@ -55,15 +35,35 @@ export function MeilleuresVentesMobile() {
     const fetchProducts = async () => {
       try {
         setIsLoading(true)
-        const data = await fetchWithCache("best_sellers_mobile", `${API_BASE}/api/deals/best-sellers/mobile`)
-        if (data.success && data.data) setProducts(data.data)
+        console.log(`📦 [BESTSELLERS] Fetch - ${new Date().toLocaleTimeString()}`)
+        
+        const timestamp = Date.now()
+        const res = await fetch(`${API_BASE}/api/deals/best-sellers/mobile?limit=20&_t=${timestamp}`)
+        const data = await res.json()
+        
+        if (data.success && data.data) {
+          const shuffled = [...data.data].sort(() => Math.random() - 0.5)
+          setProducts(shuffled.slice(0, 10))
+          console.log(`📦 [BESTSELLERS] ${data.data.length} récupérés, 10 affichés`)
+        }
       } catch (error) {
         console.error("Erreur chargement produits:", error)
       } finally {
         setIsLoading(false)
       }
     }
+
     fetchProducts()
+
+    const interval = setInterval(() => {
+      console.log(`🔄 [BESTSELLERS] Nouveaux produits - ${new Date().toLocaleTimeString()}`)
+      fetchProducts()
+    }, REFRESH_INTERVAL)
+
+    return () => {
+      console.log(`🧹 [BESTSELLERS] Nettoyage`)
+      clearInterval(interval)
+    }
   }, [])
 
   useEffect(() => {
