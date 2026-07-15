@@ -84,11 +84,10 @@ export function ModeSection() {
       try {
         setIsLoading(true)
 
-        // ✅ Cache 3h - Catégories mode
         const [modeData, flashData] = await Promise.all([
           fetchWithCache("mode_categories", `${API_BASE}/api/categories/mode`),
-          // ✅ Flash uniquement montres avec cache 3h
-          fetchWithCache("mode_flash", `${API_BASE}/api/trending/montres?limit=8`),
+          // ✅ Route montres
+          fetchWithCache("mode_flash", `${API_BASE}/api/products?category=montres&limit=8&sort=discount`),
         ])
 
         let flashList: any[] = flashData.data || flashData.products || []
