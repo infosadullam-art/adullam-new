@@ -5,9 +5,36 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
-import { apiFetch } from "@/lib/api"
 
-// Police Amazon Ember
+// ════════════════════════════════════════════════════════════
+// API & CACHE - Refresh toutes les 3h
+// ════════════════════════════════════════════════════════════
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.adullamarket.com"
+const CACHE_TTL = 3 * 60 * 60 * 1000 // 3 heures
+
+interface CacheEntry<T> {
+  data: T
+  timestamp: number
+}
+
+const cache = new Map<string, CacheEntry<any>>()
+
+async function fetchWithCache<T>(key: string, url: string): Promise<T> {
+  const cached = cache.get(key)
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data
+  }
+
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Erreur: ${url}`)
+  const data = await res.json()
+  cache.set(key, { data, timestamp: Date.now() })
+  return data
+}
+
+// ════════════════════════════════════════════════════════════
+
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
 interface Product {
@@ -34,8 +61,9 @@ export function CategoriesPourVous() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await apiFetch("/api/trending/cuisine?limit=4")
-        const data = await res.json()
+        setIsLoading(true)
+        // ✅ Cache 3h
+        const data = await fetchWithCache("categories_pour_vous", `${API_BASE}/api/trending/cuisine?limit=4`)
         if (data.success && data.data) {
           setProducts(data.data.map((p: any) => ({
             id: p.id,
@@ -92,7 +120,6 @@ export function CategoriesPourVous() {
     <section className="w-full" style={{ background: "#0A0A0A" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
 
-        {/* Header */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <span style={{ display: "inline-block", width: "3px", height: "16px", background: "#D4372B", borderRadius: "2px" }} />
@@ -114,10 +141,8 @@ export function CategoriesPourVous() {
           </Link>
         </div>
 
-        {/* Grille 4 produits + slide */}
         <div className="grid grid-cols-6 gap-2">
 
-          {/* Produits — 4 colonnes */}
           <div className="col-span-4" ref={productContainerRef}>
             <div className="grid grid-cols-4 gap-2">
               {products.slice(0, 4).map((product) => (
@@ -151,7 +176,6 @@ export function CategoriesPourVous() {
             </div>
           </div>
 
-          {/* Slide — 2 colonnes */}
           <div className="col-span-2">
             <div
               className="relative overflow-hidden"
@@ -181,7 +205,6 @@ export function CategoriesPourVous() {
                 </Link>
               ))}
 
-              {/* Dots */}
               <div className="absolute bottom-2 right-2 z-20 flex gap-1">
                 {slides.map((_, i) => (
                   <button
