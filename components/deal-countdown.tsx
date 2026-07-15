@@ -6,9 +6,38 @@ import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
-import { apiFetch } from "@/lib/api"
 
-// Types
+// ════════════════════════════════════════════════════════════
+// API & CACHE - Refresh toutes les 12h
+// ════════════════════════════════════════════════════════════
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.adullamarket.com"
+const CACHE_TTL = 12 * 60 * 60 * 1000 // 12 heures
+
+interface CacheEntry<T> {
+  data: T
+  timestamp: number
+}
+
+const cache = new Map<string, CacheEntry<any>>()
+
+async function fetchWithCache<T>(key: string, url: string): Promise<T> {
+  const cached = cache.get(key)
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data
+  }
+
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Erreur: ${url}`)
+  const data = await res.json()
+  cache.set(key, { data, timestamp: Date.now() })
+  return data
+}
+
+// ════════════════════════════════════════════════════════════
+// TYPES
+// ════════════════════════════════════════════════════════════
+
 interface Product {
   id: string
   name: string
@@ -35,6 +64,10 @@ interface FlashSaleData {
   }
 }
 
+// ════════════════════════════════════════════════════════════
+// COMPOSANT
+// ════════════════════════════════════════════════════════════
+
 export function DealCountdown() {
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 })
   const [hasFlashSale, setHasFlashSale] = useState(false)
@@ -45,7 +78,6 @@ export function DealCountdown() {
   const [error, setError] = useState<string | null>(null)
 
   const { formatPrice } = useCurrencyFormatter()
-
   const brandAccent = "#D4372B"
 
   useEffect(() => {
@@ -54,49 +86,38 @@ export function DealCountdown() {
         setIsLoading(true)
         setError(null)
 
-        const [featuredRes, bestSellersRes, flashSaleRes] = await Promise.all([
-          apiFetch("/api/deals/featured?limit=6"),
-          apiFetch("/api/deals/best-sellers?limit=6"),
-          apiFetch("/api/deals/flash-sales/current"),
-        ])
+        const featuredData = await fetchWithCache("deals_featured", `${API_BASE}/api/deals/featured?limit=6`)
+        const bestSellersData = await fetchWithCache("deals_bestsellers", `${API_BASE}/api/deals/best-sellers?limit=6`)
+        const flashData = await fetchWithCache("deals_flash", `${API_BASE}/api/deals/flash-sales/current`)
 
-        if (featuredRes.ok) {
-          const featuredData = await featuredRes.json()
-          if (featuredData.success && featuredData.data) {
-            setFeaturedProducts(
-              featuredData.data.map((p: any) => ({
-                id: p.id,
-                name: p.title || p.name,
-                price: p.price,
-                image: p.image || "/placeholder.jpg",
-                badge: p.badge,
-              })),
-            )
-          }
+        if (featuredData.success && featuredData.data) {
+          setFeaturedProducts(
+            featuredData.data.map((p: any) => ({
+              id: p.id,
+              name: p.title || p.name,
+              price: p.price,
+              image: p.image || "/placeholder.jpg",
+              badge: p.badge,
+            }))
+          )
         }
 
-        if (bestSellersRes.ok) {
-          const bestSellersData = await bestSellersRes.json()
-          if (bestSellersData.success && bestSellersData.data) {
-            setBestSellers(
-              bestSellersData.data.map((p: any) => ({
-                id: p.id,
-                name: p.title || p.name,
-                price: p.price,
-                image: p.image || "/placeholder.jpg",
-                badge: p.badge || (p.purchaseCount > 1000 ? "Best-seller" : undefined),
-              })),
-            )
-          }
+        if (bestSellersData.success && bestSellersData.data) {
+          setBestSellers(
+            bestSellersData.data.map((p: any) => ({
+              id: p.id,
+              name: p.title || p.name,
+              price: p.price,
+              image: p.image || "/placeholder.jpg",
+              badge: p.badge || (p.purchaseCount > 1000 ? "Best-seller" : undefined),
+            }))
+          )
         }
 
-        if (flashSaleRes.ok) {
-          const flashData = await flashSaleRes.json()
-          if (flashData.success) {
-            setFlashSaleData(flashData)
-            setHasFlashSale(flashData.hasActiveSale)
-            if (flashData.hasActiveSale) setTimeLeft(flashData.timeLeft)
-          }
+        if (flashData.success) {
+          setFlashSaleData(flashData)
+          setHasFlashSale(flashData.hasActiveSale)
+          if (flashData.hasActiveSale) setTimeLeft(flashData.timeLeft)
         }
       } catch (err) {
         console.error("Erreur chargement offres:", err)
@@ -217,7 +238,6 @@ export function DealCountdown() {
 
   return (
     <div className="w-full lg:-mx-0 -mx-4" style={{ background: "#FAFAFA", width: "calc(100% + 32px)" }}>
-      {/* ══ BLOC CHRONO ════════════════════════════════════════ */}
       <div className="relative overflow-hidden" style={{ background: "#fff" }}>
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.04] animate-pulse-slow"
@@ -226,7 +246,6 @@ export function DealCountdown() {
           }}
         />
 
-        {/* MOBILE - full width */}
         <div className="py-3 lg:hidden">
           <div className="flex items-center justify-between px-4 mb-2">
             <div className="flex items-center gap-2">
@@ -265,7 +284,6 @@ export function DealCountdown() {
           </div>
         </div>
 
-        {/* DESKTOP */}
         <div className="hidden lg:block mx-auto max-w-6xl px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -315,8 +333,6 @@ export function DealCountdown() {
         </div>
       </div>
 
-      {/* ══ BLOCS PRODUITS ════════════════════════════════════════ */}
-      {/* MOBILE - full width */}
       <div className="lg:hidden">
         <div className="grid grid-cols-2 gap-2 p-2">
           <div
@@ -384,7 +400,6 @@ export function DealCountdown() {
         </div>
       </div>
 
-      {/* DESKTOP */}
       <div className="hidden lg:block mx-auto max-w-6xl px-8 py-4">
         <div className="grid grid-cols-2 gap-3">
           <div
@@ -450,27 +465,14 @@ export function DealCountdown() {
 
       <style jsx global>{`
         @keyframes pulse {
-          0%,
-          100% {
-            opacity: 0.04;
-          }
-          50% {
-            opacity: 0.08;
-          }
+          0%, 100% { opacity: 0.04; }
+          50% { opacity: 0.08; }
         }
-
         @keyframes pulseBlock {
-          0% {
-            background: #fff;
-          }
-          50% {
-            background: #FFF5F5;
-          }
-          100% {
-            background: #fff;
-          }
+          0% { background: #fff; }
+          50% { background: #FFF5F5; }
+          100% { background: #fff; }
         }
-
         .animate-pulse-slow {
           animation: pulse 4s ease-in-out infinite;
         }
