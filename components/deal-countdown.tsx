@@ -67,12 +67,11 @@ export function DealCountdown() {
         setIsLoading(true)
         setError(null)
 
-        // ✅ Ajout d'un timestamp pour éviter le cache
         const timestamp = Date.now()
 
         const [featuredRes, bestSellersRes, flashRes] = await Promise.all([
-          fetch(`${API_BASE}/api/deals/featured?limit=6&_t=${timestamp}`),
-          fetch(`${API_BASE}/api/deals/best-sellers?limit=6&_t=${timestamp}`),
+          fetch(`${API_BASE}/api/deals/featured?limit=20&_t=${timestamp}`),
+          fetch(`${API_BASE}/api/deals/best-sellers?limit=20&_t=${timestamp}`),
           fetch(`${API_BASE}/api/deals/flash-sales/current?_t=${timestamp}`),
         ])
 
@@ -91,7 +90,7 @@ export function DealCountdown() {
               badge: p.badge,
             }))
           )
-          console.log(`📦 [DEALS] ${shuffled.length} produits featured`)
+          console.log(`📦 [DEALS] ${featuredData.data.length} featured récupérés, 6 affichés`)
         }
 
         if (bestSellersData.success && bestSellersData.data) {
@@ -105,7 +104,7 @@ export function DealCountdown() {
               badge: p.badge || (p.purchaseCount > 1000 ? "Best-seller" : undefined),
             }))
           )
-          console.log(`📦 [DEALS] ${shuffled.length} produits best-sellers`)
+          console.log(`📦 [DEALS] ${bestSellersData.data.length} best-sellers récupérés, 6 affichés`)
         }
 
         if (flashData.success) {
