@@ -8,31 +8,11 @@ import { motion } from "framer-motion"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
 // ════════════════════════════════════════════════════════════
-// API & CACHE - Refresh toutes les 12h
+// API - Refresh toutes les 12h
 // ════════════════════════════════════════════════════════════
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.adullamarket.com"
-const CACHE_TTL = 12 * 60 * 60 * 1000 // 12 heures
-
-interface CacheEntry<T> {
-  data: T
-  timestamp: number
-}
-
-const cache = new Map<string, CacheEntry<any>>()
-
-async function fetchWithCache<T>(key: string, url: string): Promise<T> {
-  const cached = cache.get(key)
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.data
-  }
-
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Erreur: ${url}`)
-  const data = await res.json()
-  cache.set(key, { data, timestamp: Date.now() })
-  return data
-}
+const API_BASE = process.env.NEXT_PUBLIC_API_URL
+const REFRESH_INTERVAL = 12 * 60 * 60 * 1000 // 12 heures
 
 // ════════════════════════════════════════════════════════════
 // TYPES
@@ -86,9 +66,15 @@ export function DealCountdown() {
         setIsLoading(true)
         setError(null)
 
-        const featuredData = await fetchWithCache("deals_featured", `${API_BASE}/api/deals/featured?limit=6`)
-        const bestSellersData = await fetchWithCache("deals_bestsellers", `${API_BASE}/api/deals/best-sellers?limit=6`)
-        const flashData = await fetchWithCache("deals_flash", `${API_BASE}/api/deals/flash-sales/current`)
+        const [featuredRes, bestSellersRes, flashRes] = await Promise.all([
+          fetch(`${API_BASE}/api/deals/featured?limit=6`),
+          fetch(`${API_BASE}/api/deals/best-sellers?limit=6`),
+          fetch(`${API_BASE}/api/deals/flash-sales/current`),
+        ])
+
+        const featuredData = await featuredRes.json()
+        const bestSellersData = await bestSellersRes.json()
+        const flashData = await flashRes.json()
 
         if (featuredData.success && featuredData.data) {
           setFeaturedProducts(
@@ -128,6 +114,10 @@ export function DealCountdown() {
     }
 
     fetchAllData()
+
+    // ✅ Refresh toutes les 12h
+    const interval = setInterval(fetchAllData, REFRESH_INTERVAL)
+    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
