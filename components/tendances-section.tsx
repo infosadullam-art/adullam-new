@@ -8,31 +8,11 @@ import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { ChevronRight, TrendingUp, MapPin } from "lucide-react"
 
 // ════════════════════════════════════════════════════════════
-// API & CACHE - Refresh toutes les 3h
+// API - Changement de produits toutes les 10h
 // ════════════════════════════════════════════════════════════
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.adullamarket.com"
-const CACHE_TTL = 3 * 60 * 60 * 1000 // 3 heures
-
-interface CacheEntry<T> {
-  data: T
-  timestamp: number
-}
-
-const cache = new Map<string, CacheEntry<any>>()
-
-async function fetchWithCache<T>(key: string, url: string): Promise<T> {
-  const cached = cache.get(key)
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.data
-  }
-
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Erreur: ${url}`)
-  const data = await res.json()
-  cache.set(key, { data, timestamp: Date.now() })
-  return data
-}
+const API_BASE = process.env.NEXT_PUBLIC_API_URL
+const REFRESH_INTERVAL = 10 * 60 * 60 * 1000 // 10 heures
 
 // ════════════════════════════════════════════════════════════
 
@@ -117,17 +97,42 @@ export function TendanceParPays() {
     const fetchTrends = async () => {
       try {
         setIsLoading(true)
-        // ✅ Cache 3h
-        const data = await fetchWithCache(`trending_${selectedCountry}`, `${API_BASE}/api/graph/trending?country=${selectedCountry}&limit=6`)
-        if (data.success) setTrends(data.trend)
-        else setTrends(fallbackTrends[selectedCountry as keyof typeof fallbackTrends] || fallbackTrends.CI)
+        console.log(`📦 [TRENDS] Fetch - ${new Date().toLocaleTimeString()}`)
+        
+        const timestamp = Date.now()
+        const res = await fetch(`${API_BASE}/api/graph/trending?country=${selectedCountry}&limit=20&_t=${timestamp}`)
+        const data = await res.json()
+        
+        if (data.success) {
+          const shuffled = [...data.trend.products].sort(() => Math.random() - 0.5)
+          const trendCopy = { ...data.trend, products: shuffled }
+          setTrends(trendCopy)
+          console.log(`📦 [TRENDS] ${data.trend.products.length} produits récupérés, mélangés`)
+        } else {
+          const fallback = fallbackTrends[selectedCountry as keyof typeof fallbackTrends] || fallbackTrends.CI
+          const shuffled = [...fallback.products].sort(() => Math.random() - 0.5)
+          setTrends({ ...fallback, products: shuffled })
+        }
       } catch {
-        setTrends(fallbackTrends[selectedCountry as keyof typeof fallbackTrends] || fallbackTrends.CI)
+        const fallback = fallbackTrends[selectedCountry as keyof typeof fallbackTrends] || fallbackTrends.CI
+        const shuffled = [...fallback.products].sort(() => Math.random() - 0.5)
+        setTrends({ ...fallback, products: shuffled })
       } finally {
         setIsLoading(false)
       }
     }
+
     fetchTrends()
+
+    const interval = setInterval(() => {
+      console.log(`🔄 [TRENDS] Nouveaux produits - ${new Date().toLocaleTimeString()}`)
+      fetchTrends()
+    }, REFRESH_INTERVAL)
+
+    return () => {
+      console.log(`🧹 [TRENDS] Nettoyage`)
+      clearInterval(interval)
+    }
   }, [selectedCountry])
 
   const CountrySelector = () => (
