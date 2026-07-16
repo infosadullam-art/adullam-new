@@ -35,16 +35,17 @@ export function PaymentButton({
     
     setLoading(true);
     try {
-      // 🔥 Appel direct à GeniusPay
       const payload = {
         email,
-        amount: Math.round(amount * 600), // Conversion USD → XOF
-        currency: 'XOF',
+        amount, // ✅ Envoie en USD
+        currency, // ✅ Envoie la devise (XOF, NGN, GHS, etc.)
         orderId,
-        name: email.split('@')[0] || 'Client',
+        couponCode,
+        couponDiscount,
       };
-      console.log("💳 Payload GeniusPay:", payload);
+      console.log("💳 Payload complet:", payload);
 
+      // 🔥 UNIQUEMENT ce changement : l'endpoint
       const response = await apiFetch('/api/payment/genius', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -52,8 +53,9 @@ export function PaymentButton({
       });
 
       const data = await response.json();
-      console.log("💳 Réponse GeniusPay:", data);
+      console.log("💳 Réponse API:", data);
 
+      // 🔥 UNIQUEMENT ce changement : checkoutUrl au lieu de authorization_url
       if (data.success && data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       } else {
