@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { useLocale } from '@/context/LocaleProvider';
-import { useCurrencyFormatter } from '@/hooks/useCurrencyFormatter'; // ✅ IMPORT
 
 interface PaymentButtonProps {
   email: string;
@@ -29,7 +28,6 @@ export function PaymentButton({
 }: PaymentButtonProps) {
   const [loading, setLoading] = useState(false);
   const { currency } = useLocale();
-  const { convertFromUSD, getCurrentRate } = useCurrencyFormatter(); // ✅ Récupérer le taux
 
   const handlePayment = async () => {
     console.log("💳 PaymentButton - Devise:", currency);
@@ -37,20 +35,17 @@ export function PaymentButton({
     
     setLoading(true);
     try {
-      // ✅ Convertir USD → XOF avec le taux exact du checkout
-      const amountInXOF = Math.round(convertFromUSD(amount));
-      console.log("💳 Montant en XOF:", amountInXOF);
-
       const payload = {
         email,
-        amount: amountInXOF, // ✅ Envoie en XOF
-        currency: 'XOF', // ✅ Forcer XOF
+        amount, // ✅ Envoie en USD
+        currency, // ✅ Envoie la devise (XOF, NGN, GHS, etc.)
         orderId,
         couponCode,
         couponDiscount,
       };
-      console.log("💳 Payload GeniusPay:", payload);
+      console.log("💳 Payload complet:", payload);
 
+      // 🔥 UNIQUEMENT ce changement : l'endpoint
       const response = await apiFetch('/api/payment/genius', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -58,8 +53,9 @@ export function PaymentButton({
       });
 
       const data = await response.json();
-      console.log("💳 Réponse GeniusPay:", data);
+      console.log("💳 Réponse API:", data);
 
+      // 🔥 UNIQUEMENT ce changement : checkoutUrl au lieu de authorization_url
       if (data.success && data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       } else {
