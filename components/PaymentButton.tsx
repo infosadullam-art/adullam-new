@@ -29,11 +29,13 @@ export function PaymentButton({
   children 
 }: PaymentButtonProps) {
   const [loading, setLoading] = useState(false);
-  const [method, setMethod] = useState<PaymentMethod>('paystack');
+  // 🔥 FORCER GeniusPay uniquement (pas de sélection)
+  const method = 'geniuspay';
   const { currency } = useLocale();
 
-  // Vérifier si GeniusPay est activé (depuis Vercel)
-  const isGeniusEnabled = process.env.NEXT_PUBLIC_GENIUS_ENABLED === 'true';
+  // 🔥 Désactiver Paystack temporairement
+  // const isGeniusEnabled = process.env.NEXT_PUBLIC_GENIUS_ENABLED === 'true';
+  const isGeniusEnabled = true; // Forcé à true
 
   const handlePayment = async () => {
     console.log("💳 PaymentButton - Devise:", currency);
@@ -42,31 +44,18 @@ export function PaymentButton({
     
     setLoading(true);
     try {
-      // Choisir le bon endpoint selon la méthode
-      const endpoint = method === 'paystack' 
-        ? '/api/payment/initialize' 
-        : '/api/payment/genius';
+      // 🔥 Utiliser UNIQUEMENT GeniusPay
+      const endpoint = '/api/payment/genius';
 
       const payload: any = {
         email,
-        amount, // Envoie en USD (Paystack gère la conversion)
-        currency, // XOF, NGN, GHS, etc.
+        amount: Math.round(amount * 600), // Conversion USD → XOF
+        currency: 'XOF',
         orderId,
-        couponCode,
-        couponDiscount,
+        name: email.split('@')[0] || 'Client',
       };
 
-      // Pour GeniusPay, on ajoute le nom et la devise en XOF
-      if (method === 'geniuspay') {
-        payload.name = email.split('@')[0] || 'Client';
-        payload.currency = 'XOF'; // GeniusPay travaille en XOF
-        // On convertit le montant USD en XOF (taux approximatif 1 USD = 600 XOF)
-        payload.amount = Math.round(amount * 600);
-        delete payload.couponCode;
-        delete payload.couponDiscount;
-      }
-
-      console.log("💳 Payload complet:", payload);
+      console.log("💳 Payload GeniusPay:", payload);
 
       const response = await apiFetch(endpoint, {
         method: 'POST',
@@ -75,14 +64,10 @@ export function PaymentButton({
       });
 
       const data = await response.json();
-      console.log("💳 Réponse API:", data);
+      console.log("💳 Réponse GeniusPay:", data);
 
       if (data.success && data.checkoutUrl) {
-        // Rediriger vers la page de paiement (Paystack ou GeniusPay)
         window.location.href = data.checkoutUrl;
-      } else if (data.success && data.authorization_url) {
-        // Pour Paystack (ancien format)
-        window.location.href = data.authorization_url;
       } else {
         onError?.(data.error || 'Erreur d\'initialisation du paiement');
       }
@@ -96,37 +81,12 @@ export function PaymentButton({
 
   return (
     <div className="space-y-4">
-      {/* Sélection du moyen de paiement */}
-      <div className="grid grid-cols-2 gap-3">
-        {/* Paystack */}
-        <button
-          type="button"
-          onClick={() => setMethod('paystack')}
-          className={`px-4 py-3 rounded-xl border-2 transition-all text-left ${
-            method === 'paystack' 
-              ? 'border-[#2B4F3C] bg-[#2B4F3C]/5 ring-2 ring-[#2B4F3C]/20' 
-              : 'border-gray-200 hover:border-gray-300'
-          }`}
-        >
-          <div className="font-medium text-gray-800 text-sm">💳 Carte</div>
-          <div className="text-xs text-gray-500">Paystack</div>
-        </button>
-
-        {/* GeniusPay (visible seulement si activé) */}
-        {isGeniusEnabled && (
-          <button
-            type="button"
-            onClick={() => setMethod('geniuspay')}
-            className={`px-4 py-3 rounded-xl border-2 transition-all text-left ${
-              method === 'geniuspay' 
-                ? 'border-green-500 bg-green-50 ring-2 ring-green-200' 
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-          >
-            <div className="font-medium text-gray-800 text-sm">📱 Mobile Money</div>
-            <div className="text-xs text-gray-500">GeniusPay</div>
-          </button>
-        )}
+      {/* 🔥 Supprimer la sélection, afficher uniquement GeniusPay */}
+      <div className="grid grid-cols-1 gap-3">
+        <div className="px-4 py-3 rounded-xl border-2 border-green-500 bg-green-50 ring-2 ring-green-200 text-left">
+          <div className="font-medium text-gray-800 text-sm">📱 Mobile Money</div>
+          <div className="text-xs text-gray-500">GeniusPay</div>
+        </div>
       </div>
 
       {/* Bouton de paiement */}
@@ -134,10 +94,7 @@ export function PaymentButton({
         onClick={handlePayment}
         disabled={loading}
         className="w-full px-4 py-3 text-sm font-medium text-white rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        style={{ background: method === 'geniuspay' 
-          ? 'linear-gradient(135deg, #059669 0%, #10B981 100%)' 
-          : 'linear-gradient(135deg, #2B4F3C 0%, #3A6B4E 100%)' 
-        }}
+        style={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)' }}
       >
         {loading ? (
           <>
@@ -149,12 +106,9 @@ export function PaymentButton({
         )}
       </button>
 
-      {/* Indicateur de méthode sélectionnée */}
+      {/* Indicateur */}
       <p className="text-xs text-gray-400 text-center">
-        {method === 'paystack' 
-          ? '🔒 Paiement sécurisé par Paystack (Carte)' 
-          : '📱 Paiement sécurisé par GeniusPay (Mobile Money)'
-        }
+        📱 Paiement sécurisé par GeniusPay (Mobile Money)
       </p>
     </div>
   );
