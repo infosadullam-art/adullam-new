@@ -29,7 +29,7 @@ export function PaymentButton({
   children 
 }: PaymentButtonProps) {
   const [loading, setLoading] = useState(false);
-  // 🔥 FORCER GeniusPay uniquement (pas de sélection)
+  // 🔥 FORCER GeniusPay uniquement
   const method = 'geniuspay';
   const { currency } = useLocale();
 
@@ -81,12 +81,18 @@ export function PaymentButton({
 
   return (
     <div className="space-y-4">
-      {/* 🔥 Supprimer la sélection, afficher uniquement GeniusPay */}
-      <div className="grid grid-cols-1 gap-3">
-        <div className="px-4 py-3 rounded-xl border-2 border-green-500 bg-green-50 ring-2 ring-green-200 text-left">
-          <div className="font-medium text-gray-800 text-sm">📱 Mobile Money</div>
-          <div className="text-xs text-gray-500">GeniusPay</div>
-        </div>
+      {/* Sélection du moyen de paiement - UNIQUEMENT GeniusPay affiché */}
+      <div className="grid grid-cols-2 gap-3">
+        {/* GeniusPay (visible seulement si activé) */}
+        {isGeniusEnabled && (
+          <button
+            type="button"
+            className="px-4 py-3 rounded-xl border-2 border-green-500 bg-green-50 ring-2 ring-green-200 text-left cursor-default col-span-2"
+          >
+            <div className="font-medium text-gray-800 text-sm">📱 Mobile Money</div>
+            <div className="text-xs text-gray-500">GeniusPay</div>
+          </button>
+        )}
       </div>
 
       {/* Bouton de paiement */}
@@ -106,7 +112,7 @@ export function PaymentButton({
         )}
       </button>
 
-      {/* Indicateur */}
+      {/* Indicateur de méthode sélectionnée */}
       <p className="text-xs text-gray-400 text-center">
         📱 Paiement sécurisé par GeniusPay (Mobile Money)
       </p>
