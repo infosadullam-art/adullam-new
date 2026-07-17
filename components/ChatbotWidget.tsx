@@ -2,16 +2,17 @@
 
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// VENDEUR ULTIME - Version 5.5
+// VENDEUR ULTIME - Version 6.0
+// ✅ Support des tableaux Markdown (remark-gfm)
+// ✅ Détection automatique du pays et de la devise
 // Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
-// FIX: Transmission du pays pour alignement devise backend/frontend
-// FIX: Support du markdown (gras, italique, listes)
 
 import { useState, useEffect, useRef, useCallback } from "react"
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'  // ✅ Pour les tableaux Markdown
 import { OfferBanner } from "@/components/OfferBanner"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useLocale } from "@/context/LocaleProvider"
-import ReactMarkdown from 'react-markdown'
 
 // ============================================================
 // ICÔNES PRO (SVG inline, aucune dépendance)
@@ -135,11 +136,11 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.adullamarke
 // ============================================================
 
 export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: ChatbotWidgetProps) {
-  // ✅ Hooks
-  const { formatPrice, getCurrencySymbol } = useCurrencyFormatter()
+  // ✅ Hooks - Détection automatique du pays et de la devise
+  const { formatPrice, getCurrencySymbol, getCurrentRate } = useCurrencyFormatter()
   const { country, currency, locale } = useLocale()
 
-  // ✅ États principaux
+  // États principaux
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
@@ -151,17 +152,17 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const [isMobile, setIsMobile] = useState(false)
   const [loadOffset, setLoadOffset] = useState(3)
   
-  // 🎤 Vocal
+  // Vocal
   const [isRecording, setIsRecording] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(true)
 
-  // 🏷️ Offres
+  // Offres
   const [activeOffer, setActiveOffer] = useState<Offer | null>(null)
   const [offerTimer, setOfferTimer] = useState<number>(0)
   const [showOfferBanner, setShowOfferBanner] = useState(false)
 
-  // 🎫 Coupons
+  // Coupons
   const [activeCoupon, setActiveCoupon] = useState<any>(null)
   const [showCouponBanner, setShowCouponBanner] = useState(false)
   const [couponExpanded, setCouponExpanded] = useState(false)
@@ -174,10 +175,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const [waitingForOfferResponse, setWaitingForOfferResponse] = useState(false)
   const [hasBeenOffered, setHasBeenOffered] = useState(false)
 
-  // ✅ TIMER BASÉ SUR expires_at
+  // Timer basé sur expires_at
   const [remainingTime, setRemainingTime] = useState(0)
 
-  // ✅ DÉPLACEMENT VERTICAL DU DRAWER
+  // Déplacement vertical du drawer
   const [couponY, setCouponY] = useState(50)
   const [isDraggingY, setIsDraggingY] = useState(false)
   const dragYRef = useRef<{ startY: number; startOffset: number } | null>(null)
@@ -191,7 +192,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const recognitionRef  = useRef<any>(null)
   const speechSynthRef  = useRef<SpeechSynthesis | null>(null)
 
-  // 🖱️ Déplacement (drag) façon Messenger
+  // Drag
   const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null)
   const [bubblePos, setBubblePos] = useState<{ x: number; y: number } | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -207,11 +208,110 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const containerRef = useRef<HTMLDivElement>(null)
   const bubbleRef = useRef<HTMLButtonElement>(null)
 
-  // ⌨️ Hauteur clavier (visualViewport) - CORRIGÉ POUR ÉVITER LES SAUTS
+  // Clavier
   const [keyboardInset, setKeyboardInset] = useState(0)
   const [windowHeight, setWindowHeight] = useState(700)
   const keyboardTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const lastKeyboardStateRef = useRef<{ height: number; timestamp: number }>({ height: 0, timestamp: 0 })
+
+  // ============================================================
+  // MARKDOWN AVEC SUPPORT DES TABLEAUX
+  // ============================================================
+
+  const MarkdownMessage = ({ content }: { content: string }) => {
+    return (
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}  // ✅ Support des tableaux
+        components={{
+          p: ({ children }) => <p style={{ margin: '4px 0', lineHeight: 1.5 }}>{children}</p>,
+          strong: ({ children }) => <strong style={{ fontWeight: 700, color: 'var(--accent)' }}>{children}</strong>,
+          em: ({ children }) => <em style={{ fontStyle: 'italic' }}>{children}</em>,
+          ul: ({ children }) => <ul style={{ margin: '6px 0', paddingLeft: '20px', listStyle: 'disc' }}>{children}</ul>,
+          ol: ({ children }) => <ol style={{ margin: '6px 0', paddingLeft: '20px', listStyle: 'decimal' }}>{children}</ol>,
+          li: ({ children }) => <li style={{ margin: '2px 0' }}>{children}</li>,
+          h1: ({ children }) => <h1 style={{ fontSize: '1.2em', fontWeight: 700, margin: '6px 0' }}>{children}</h1>,
+          h2: ({ children }) => <h2 style={{ fontSize: '1.1em', fontWeight: 600, margin: '4px 0' }}>{children}</h2>,
+          h3: ({ children }) => <h3 style={{ fontSize: '1em', fontWeight: 600, margin: '4px 0' }}>{children}</h3>,
+          // ✅ TABLEAUX - Support complet avec scroll horizontal
+          table: ({ children }) => (
+            <div style={{ overflowX: 'auto', margin: '8px 0', WebkitOverflowScrolling: 'touch' }}>
+              <table style={{ 
+                width: '100%', 
+                borderCollapse: 'collapse', 
+                fontSize: '10px',
+                border: '1px solid var(--border)',
+                minWidth: '300px',
+              }}>
+                {children}
+              </table>
+            </div>
+          ),
+          thead: ({ children }) => (
+            <thead style={{ background: 'var(--surface-sunken)' }}>
+              {children}
+            </thead>
+          ),
+          tbody: ({ children }) => (
+            <tbody>
+              {children}
+            </tbody>
+          ),
+          tr: ({ children }) => (
+            <tr style={{ borderBottom: '1px solid var(--border)' }}>
+              {children}
+            </tr>
+          ),
+          th: ({ children }) => (
+            <th style={{ 
+              padding: '4px 6px', 
+              border: '1px solid var(--border)',
+              fontWeight: 600,
+              textAlign: 'left',
+              fontSize: '9px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.3px',
+              color: 'var(--muted-foreground)',
+            }}>
+              {children}
+            </th>
+          ),
+          td: ({ children }) => (
+            <td style={{ 
+              padding: '4px 6px', 
+              border: '1px solid var(--border)',
+              fontSize: '9px',
+              whiteSpace: 'nowrap',
+            }}>
+              {children}
+            </td>
+          ),
+          a: ({ href, children }) => (
+            <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
+              {children}
+            </a>
+          ),
+          code: ({ children }) => (
+            <code style={{ background: 'var(--surface-sunken)', padding: '1px 4px', borderRadius: '3px', fontFamily: 'monospace' }}>
+              {children}
+            </code>
+          ),
+          // ✅ Support des div avec overflow-x auto
+          div: ({ children, ...props }) => {
+            const style = props.style as React.CSSProperties
+            if (style?.overflowX === 'auto') {
+              return (
+                <div style={{ overflowX: 'auto', margin: '8px 0', WebkitOverflowScrolling: 'touch' }}>
+                  {children}
+                </div>
+              )
+            }
+            return <div {...props}>{children}</div>
+          },
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    )
+  }
 
   // ============================================================
   // HOOKS & EFFETS
@@ -260,7 +360,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
-  // ⌨️ Gestion clavier mobile - CORRIGÉ POUR ÉVITER LES SAUTS
+  // Clavier mobile
   useEffect(() => {
     if (typeof window === 'undefined' || !isMobile) return
 
@@ -292,7 +392,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [isMobile])
 
-  // 🖱️ Drag du widget coupon
+  // Drag du widget coupon
   useEffect(() => {
     if (!isDraggingCoupon) return
     const onMove = (clientX: number, clientY: number) => {
@@ -330,7 +430,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     setIsDraggingCoupon(true)
   }
 
-  // 🖱️ Déplacement fluide
+  // Drag fluide
   useEffect(() => {
     if (!isDragging) return
 
@@ -427,7 +527,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [offerTimer, showOfferBanner])
 
-  // ✅ TIMER COUPON BASÉ SUR expires_at (cohérent)
+  // Timer coupon basé sur expires_at
   useEffect(() => {
     if (!activeCoupon?.expires_at) return
     const updateRemaining = () => {
@@ -443,7 +543,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     return () => clearInterval(interval)
   }, [activeCoupon?.expires_at])
 
-  // 🔥 Compte à rebours coupon - avec auto-déploiement à 10min et 5min
+  // Compte à rebours coupon
   useEffect(() => {
     if (remainingTime > 0 && showCouponBanner) {
       if (remainingTime <= 600 && !couponExpanded) {
@@ -483,6 +583,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             },
             language: language,
             user_type: 'particular',
+            country: country, // ✅ Pays détecté automatiquement
           }
         })
       })
@@ -490,7 +591,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     } catch (e) {
       console.debug('⚠️ Erreur sauvegarde message:', e)
     }
-  }, [sessionId, userId, language])
+  }, [sessionId, userId, language, country])
 
   // ============================================================
   // CHARGER HISTORIQUE
@@ -557,13 +658,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   }, [sessionId, userId, language])
 
   // ============================================================
-  // TRIGGER PROACTIF - AVEC PAYS
+  // TRIGGER PROACTIF
   // ============================================================
 
   useEffect(() => {
     if (!sessionId) return
 
-    // ✅ DÉLAI INITIAL : attendre 30s avant le premier trigger
     const initialDelay = setTimeout(() => {
       
       const checkTrigger = async () => {
@@ -572,9 +672,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         const inactivitySeconds = (Date.now() - lastActionRef.current) / 1000
         const viewedCount = viewCountRef.current
         
-        // ✅ NE PAS DÉCLENCHER SI :
-        // - Moins de 3 produits vus
-        // - Moins de 30 secondes d'inactivité
         if (viewedCount < MIN_VIEWS_BEFORE_TRIGGER) {
           console.log('🤫 [SILENCE] Pas assez de vues:', viewedCount)
           return
@@ -597,7 +694,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               has_added_to_cart: checkCartStatus(),
               has_visited_checkout: checkCheckoutStatus(),
               has_come_back: true,
-              country: country, // ✅ FIX: Transmission du pays pour alignement devise
+              country: country, // ✅ Pays détecté automatiquement
             }),
           })
 
@@ -628,13 +725,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
 
       triggerTimerRef.current = setInterval(checkTrigger, TRIGGER_CHECK_INTERVAL)
       
-    }, FIRST_TRIGGER_DELAY) // ✅ 30s avant le premier trigger
+    }, FIRST_TRIGGER_DELAY)
 
     return () => {
       clearTimeout(initialDelay)
       if (triggerTimerRef.current) clearInterval(triggerTimerRef.current)
     }
-  }, [sessionId, userId, isOpen, country]) // ✅ Ajout de country comme dépendance
+  }, [sessionId, userId, isOpen, country])
 
   const checkCartStatus = () => {
     return messages.some(m => m.products && m.products.length > 0 && m.role === 'assistant')
@@ -802,6 +899,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             message_id: messageId,
             source: 'chatbot_recommendation',
             reason: product.reason,
+            country: country, // ✅ Pays détecté automatiquement
           }
         })
       })
@@ -817,7 +915,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           product_id: product.id,
           weight: 5.0,
           limit: 3,
-          country: country, // ✅ FIX: Transmission du pays
+          country: country, // ✅ Pays détecté automatiquement
         })
       })
       const data = await response.json()
@@ -848,7 +946,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           session_id: sessionId,
           product_id: productId,
           discount: discount,
-          country: country, // ✅ FIX: Transmission du pays
+          country: country, // ✅ Pays détecté automatiquement
         }),
       })
 
@@ -893,7 +991,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   }, [addAssistantMessage, hasBeenOffered, activeCoupon])
 
   // ============================================================
-  // ENVOI DE MESSAGE - AVEC PAYS
+  // ENVOI DE MESSAGE
   // ============================================================
 
   const sendMessage = async () => {
@@ -921,7 +1019,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           user_id: userId || null,
           language: language,
           token: token || null,
-          country: country, // ✅ FIX: Transmission du pays pour alignement devise
+          country: country, // ✅ Pays détecté automatiquement
         }),
       })
 
@@ -931,7 +1029,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         const formattedProducts = data.suggested_products?.map((p: any) => ({
           id: p.id,
           title: p.title || p.name,
-          price: p.price,        // ← utilise UNIQUEMENT ce champ (USD brut)
+          price: p.price,
           image: p.image,
           reason: p.reason,
         })) || []
@@ -982,7 +1080,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 language: language,
                 user_type: data.user_context?.user_type || 'particular',
                 business_name: data.user_context?.business_name || null,
-                country: country, // ✅ Ajout du pays dans les métadonnées
+                country: country, // ✅ Pays détecté automatiquement
+                currency: currency, // ✅ Devise détectée automatiquement
               }
             })
           })
@@ -1021,7 +1120,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           categories: categories,
           limit: 12,
           seen_ids: seenIds,
-          country: country, // ✅ FIX: Transmission du pays
+          country: country, // ✅ Pays détecté automatiquement
         }),
       })
 
@@ -1057,6 +1156,16 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
       e.preventDefault()
       sendMessage()
     }
+  }
+
+  // ============================================================
+  // FORMATAGE
+  // ============================================================
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
   // ============================================================
@@ -1097,12 +1206,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   } else {
     positionStyle = { bottom: bottomPosition, right: rightPosition }
     heightStyle = { height: isMinimized ? '52px' : widgetHeight, maxHeight: 'calc(100vh - 48px)' }
-  }
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
   const handleChatScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -1154,28 +1257,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [isOpen, isMobile])
 
-  // Composant Markdown pour les messages assistant
-  const MarkdownMessage = ({ content }: { content: string }) => {
-    return (
-      <ReactMarkdown
-        components={{
-          p: ({ children }) => <p style={{ margin: '4px 0', lineHeight: 1.5 }}>{children}</p>,
-          strong: ({ children }) => <strong style={{ fontWeight: 700, color: 'var(--accent)' }}>{children}</strong>,
-          em: ({ children }) => <em style={{ fontStyle: 'italic' }}>{children}</em>,
-          ul: ({ children }) => <ul style={{ margin: '6px 0', paddingLeft: '20px', listStyle: 'disc' }}>{children}</ul>,
-          ol: ({ children }) => <ol style={{ margin: '6px 0', paddingLeft: '20px', listStyle: 'decimal' }}>{children}</ol>,
-          li: ({ children }) => <li style={{ margin: '2px 0' }}>{children}</li>,
-          h1: ({ children }) => <h1 style={{ fontSize: '1.2em', fontWeight: 700, margin: '6px 0' }}>{children}</h1>,
-          h2: ({ children }) => <h2 style={{ fontSize: '1.1em', fontWeight: 600, margin: '4px 0' }}>{children}</h2>,
-          h3: ({ children }) => <h3 style={{ fontSize: '1em', fontWeight: 600, margin: '4px 0' }}>{children}</h3>,
-          a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>{children}</a>,
-          code: ({ children }) => <code style={{ background: 'var(--surface-sunken)', padding: '1px 4px', borderRadius: '3px', fontFamily: 'monospace' }}>{children}</code>,
-        }}
-      >
-        {content}
-      </ReactMarkdown>
-    )
-  }
+  // ============================================================
+  // RENDU PRINCIPAL
+  // ============================================================
 
   return (
     <>
@@ -1827,16 +1911,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                                 }}>
                                   {p.title || p.name || 'Produit'}
                                 </p>
-                                {p.price && (
-                                  <p style={{
-                                    margin: '2px 0 0 0',
-                                    fontSize: isMobile ? '11px' : '12px',
-                                    color: 'var(--accent)',
-                                    fontWeight: 600,
-                                  }}>
-                                    {formatPrice(p.price)}
-                                  </p>
-                                )}
+                                <p style={{
+                                  margin: '2px 0 0 0',
+                                  fontSize: isMobile ? '11px' : '12px',
+                                  color: 'var(--accent)',
+                                  fontWeight: 600,
+                                }}>
+                                  {formatPrice(p.price)}
+                                </p>
                                 <p style={{
                                   margin: '1px 0 0 0',
                                   fontSize: isMobile ? '8px' : '9px',
@@ -2045,6 +2127,39 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         }
         .coupon-drawer {
           transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        /* ✅ Styles pour les tableaux dans le chatbot */
+        .chat-messages table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 10px;
+          border: 1px solid var(--border);
+          min-width: 300px;
+        }
+        .chat-messages th {
+          padding: 4px 6px;
+          border: 1px solid var(--border);
+          background: var(--surface-sunken);
+          font-weight: 600;
+          text-align: left;
+          font-size: 9px;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+          color: var(--muted-foreground);
+        }
+        .chat-messages td {
+          padding: 4px 6px;
+          border: 1px solid var(--border);
+          font-size: 9px;
+          white-space: nowrap;
+        }
+        .chat-messages tr {
+          border-bottom: 1px solid var(--border);
+        }
+        .chat-messages div[style*="overflow-x: auto"] {
+          overflow-x: auto;
+          margin: 8px 0;
+          -webkit-overflow-scrolling: touch;
         }
       `}</style>
     </>
