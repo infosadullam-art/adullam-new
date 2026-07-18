@@ -9,13 +9,13 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'  // ✅ Pour les tableaux Markdown
+import remarkGfm from 'remark-gfm'
 import { OfferBanner } from "@/components/OfferBanner"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useLocale } from "@/context/LocaleProvider"
 
 // ============================================================
-// ICÔNES PRO (SVG inline, aucune dépendance)
+// ICÔNES
 // ============================================================
 
 function BotIcon({ size = 22, color = "#fff" }: { size?: number; color?: string }) {
@@ -125,10 +125,10 @@ interface ChatbotWidgetProps {
 // CONSTANTES
 // ============================================================
 
-const TRIGGER_CHECK_INTERVAL = 60000  // 60 secondes
-const INACTIVITY_THRESHOLD   = 30     // 30 secondes
-const MIN_VIEWS_BEFORE_TRIGGER = 3     // 3 produits vus minimum
-const FIRST_TRIGGER_DELAY = 30000     // 30 secondes avant le premier trigger
+const TRIGGER_CHECK_INTERVAL = 60000
+const INACTIVITY_THRESHOLD   = 30
+const MIN_VIEWS_BEFORE_TRIGGER = 3
+const FIRST_TRIGGER_DELAY = 30000
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.adullamarket.com'
 
 // ============================================================
@@ -136,11 +136,9 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.adullamarke
 // ============================================================
 
 export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: ChatbotWidgetProps) {
-  // ✅ Hooks - Détection automatique du pays et de la devise
-  const { formatPrice, getCurrencySymbol, getCurrentRate } = useCurrencyFormatter()
-  const { country, currency, locale } = useLocale()
+  const { formatPrice } = useCurrencyFormatter()
+  const { country, currency } = useLocale()
 
-  // États principaux
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
@@ -152,17 +150,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const [isMobile, setIsMobile] = useState(false)
   const [loadOffset, setLoadOffset] = useState(3)
   
-  // Vocal
   const [isRecording, setIsRecording] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(true)
 
-  // Offres
   const [activeOffer, setActiveOffer] = useState<Offer | null>(null)
   const [offerTimer, setOfferTimer] = useState<number>(0)
   const [showOfferBanner, setShowOfferBanner] = useState(false)
 
-  // Coupons
   const [activeCoupon, setActiveCoupon] = useState<any>(null)
   const [showCouponBanner, setShowCouponBanner] = useState(false)
   const [couponExpanded, setCouponExpanded] = useState(false)
@@ -175,15 +170,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const [waitingForOfferResponse, setWaitingForOfferResponse] = useState(false)
   const [hasBeenOffered, setHasBeenOffered] = useState(false)
 
-  // Timer basé sur expires_at
   const [remainingTime, setRemainingTime] = useState(0)
-
-  // Déplacement vertical du drawer
   const [couponY, setCouponY] = useState(50)
   const [isDraggingY, setIsDraggingY] = useState(false)
   const dragYRef = useRef<{ startY: number; startOffset: number } | null>(null)
 
-  // Refs
   const messagesEndRef  = useRef<HTMLDivElement>(null)
   const inputRef        = useRef<HTMLInputElement>(null)
   const lastActionRef   = useRef<number>(Date.now())
@@ -192,7 +183,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const recognitionRef  = useRef<any>(null)
   const speechSynthRef  = useRef<SpeechSynthesis | null>(null)
 
-  // Drag
   const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null)
   const [bubblePos, setBubblePos] = useState<{ x: number; y: number } | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -208,19 +198,18 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   const containerRef = useRef<HTMLDivElement>(null)
   const bubbleRef = useRef<HTMLButtonElement>(null)
 
-  // Clavier
   const [keyboardInset, setKeyboardInset] = useState(0)
   const [windowHeight, setWindowHeight] = useState(700)
   const keyboardTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // ============================================================
-  // MARKDOWN AVEC SUPPORT DES TABLEAUX
+  // MARKDOWN
   // ============================================================
 
   const MarkdownMessage = ({ content }: { content: string }) => {
     return (
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}  // ✅ Support des tableaux
+        remarkPlugins={[remarkGfm]}
         components={{
           p: ({ children }) => <p style={{ margin: '4px 0', lineHeight: 1.5 }}>{children}</p>,
           strong: ({ children }) => <strong style={{ fontWeight: 700, color: 'var(--accent)' }}>{children}</strong>,
@@ -231,7 +220,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           h1: ({ children }) => <h1 style={{ fontSize: '1.2em', fontWeight: 700, margin: '6px 0' }}>{children}</h1>,
           h2: ({ children }) => <h2 style={{ fontSize: '1.1em', fontWeight: 600, margin: '4px 0' }}>{children}</h2>,
           h3: ({ children }) => <h3 style={{ fontSize: '1em', fontWeight: 600, margin: '4px 0' }}>{children}</h3>,
-          // ✅ TABLEAUX - Support complet avec scroll horizontal
           table: ({ children }) => (
             <div style={{ overflowX: 'auto', margin: '8px 0', WebkitOverflowScrolling: 'touch' }}>
               <table style={{ 
@@ -245,21 +233,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               </table>
             </div>
           ),
-          thead: ({ children }) => (
-            <thead style={{ background: 'var(--surface-sunken)' }}>
-              {children}
-            </thead>
-          ),
-          tbody: ({ children }) => (
-            <tbody>
-              {children}
-            </tbody>
-          ),
-          tr: ({ children }) => (
-            <tr style={{ borderBottom: '1px solid var(--border)' }}>
-              {children}
-            </tr>
-          ),
+          thead: ({ children }) => <thead style={{ background: 'var(--surface-sunken)' }}>{children}</thead>,
+          tbody: ({ children }) => <tbody>{children}</tbody>,
+          tr: ({ children }) => <tr style={{ borderBottom: '1px solid var(--border)' }}>{children}</tr>,
           th: ({ children }) => (
             <th style={{ 
               padding: '4px 6px', 
@@ -294,7 +270,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               {children}
             </code>
           ),
-          // ✅ Support des div avec overflow-x auto
           div: ({ children, ...props }) => {
             const style = props.style as React.CSSProperties
             if (style?.overflowX === 'auto') {
@@ -314,7 +289,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   }
 
   // ============================================================
-  // HOOKS & EFFETS
+  // HOOKS
   // ============================================================
 
   useEffect(() => {
@@ -328,9 +303,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   }, [])
 
   useEffect(() => {
-    const hasSpeechRecognition = !!(
-      window.SpeechRecognition || window.webkitSpeechRecognition
-    )
+    const hasSpeechRecognition = !!(window.SpeechRecognition || window.webkitSpeechRecognition)
     const hasSpeechSynthesis = !!window.speechSynthesis
     setVoiceSupported(hasSpeechRecognition && hasSpeechSynthesis)
     if (window.speechSynthesis) {
@@ -347,9 +320,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   }, [messages, scrollToBottom])
 
   useEffect(() => {
-    const trackActivity = () => {
-      lastActionRef.current = Date.now()
-    }
+    const trackActivity = () => { lastActionRef.current = Date.now() }
     window.addEventListener('mousemove', trackActivity)
     window.addEventListener('scroll', trackActivity)
     window.addEventListener('click', trackActivity)
@@ -360,7 +331,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [])
 
-  // Clavier mobile
   useEffect(() => {
     if (typeof window === 'undefined' || !isMobile) return
 
@@ -392,7 +362,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [isMobile])
 
-  // Drag du widget coupon
   useEffect(() => {
     if (!isDraggingCoupon) return
     const onMove = (clientX: number, clientY: number) => {
@@ -430,7 +399,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     setIsDraggingCoupon(true)
   }
 
-  // Drag fluide
   useEffect(() => {
     if (!isDragging) return
 
@@ -510,7 +478,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     setIsDragging(true)
   }, [])
 
-  // Compte à rebours offre
   useEffect(() => {
     if (offerTimer > 0 && showOfferBanner) {
       const interval = setInterval(() => {
@@ -527,7 +494,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     }
   }, [offerTimer, showOfferBanner])
 
-  // Timer coupon basé sur expires_at
   useEffect(() => {
     if (!activeCoupon?.expires_at) return
     const updateRemaining = () => {
@@ -543,7 +509,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
     return () => clearInterval(interval)
   }, [activeCoupon?.expires_at])
 
-  // Compte à rebours coupon
   useEffect(() => {
     if (remainingTime > 0 && showCouponBanner) {
       if (remainingTime <= 600 && !couponExpanded) {
@@ -558,7 +523,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   }, [remainingTime, showCouponBanner, activeCoupon, couponExpanded])
 
   // ============================================================
-  // SAUVEGARDE DES MESSAGES
+  // SAUVEGARDE
   // ============================================================
 
   const saveMessageToHistory = useCallback(async (content: string, products?: Product[], offer?: Offer, couponCode?: string) => {
@@ -583,22 +548,30 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             },
             language: language,
             user_type: 'particular',
-            country: country, // ✅ Pays détecté automatiquement
+            country: country,
           }
         })
       })
-      console.log('✅ Message assistant sauvegardé')
     } catch (e) {
       console.debug('⚠️ Erreur sauvegarde message:', e)
     }
   }, [sessionId, userId, language, country])
 
   // ============================================================
-  // CHARGER HISTORIQUE
+  // CHARGER HISTORIQUE - FIX : vide immédiatement l'affichage
   // ============================================================
 
   useEffect(() => {
     if (!sessionId) return
+
+    // ✅ FIX : on vide IMMÉDIATEMENT l'affichage dès que sessionId, userId
+    // ou language change (ex: déconnexion/connexion d'un autre compte).
+    // Sans ça, si le nouvel utilisateur n'a pas encore d'historique côté
+    // serveur, les anciens messages du compte précédent restaient affichés
+    // indéfiniment.
+    setMessages([])
+    setProactiveMessage(null)
+    setHasUnread(false)
 
     const loadHistory = async () => {
       try {
@@ -606,8 +579,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         const res = await fetch(url)
         const data = await res.json()
 
+        let loaded: Message[] = []
+
         if (data.success && data.history?.length > 0) {
-          const loaded: Message[] = data.history.map((m: any, i: number) => ({
+          loaded = data.history.map((m: any, i: number) => ({
             id: `history_${i}`,
             role: m.role,
             content: m.content,
@@ -616,9 +591,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             offer: m.offer || null,
           }))
           setMessages(loaded)
-          
-          const lastCoupon = loaded.find(m => 
-            m.content.includes('coupon spécial') && 
+
+          const lastCoupon = loaded.find(m =>
+            m.content.includes('coupon spécial') &&
             m.content.includes('ADU-')
           )
           if (lastCoupon) {
@@ -630,11 +605,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         }
 
         const justClickedProduct = sessionStorage.getItem('just_clicked_product') === 'true'
-        
-        if (data.welcome_back_message && !justClickedProduct && messages.length === 0) {
+
+        if (data.welcome_back_message && !justClickedProduct && loaded.length === 0) {
           setProactiveMessage(data.welcome_back_message)
           setHasUnread(true)
-        } else if (messages.length === 0) {
+        } else if (loaded.length === 0) {
           const welcomes = {
             fr: "Salut ! 👋 Je suis Adu, ton vendeur Adullam. Dis-moi ce que tu cherches, je suis là pour t'aider !",
             en: "Hey! 👋 I'm Adu, your Adullam seller. Tell me what you're looking for!",
@@ -642,15 +617,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           }
           addAssistantMessage(welcomes[language] || welcomes.fr)
         }
-        
+
         if (justClickedProduct) {
           sessionStorage.removeItem('just_clicked_product')
         }
       } catch (error) {
         console.error("Erreur chargement historique:", error)
-        if (messages.length === 0) {
-          addAssistantMessage("Salut ! 👋 Je suis Adu, ton vendeur Adullam. Comment puis-je t'aider ?")
-        }
+        addAssistantMessage("Salut ! 👋 Je suis Adu, ton vendeur Adullam. Comment puis-je t'aider ?")
       }
     }
 
@@ -672,15 +645,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         const inactivitySeconds = (Date.now() - lastActionRef.current) / 1000
         const viewedCount = viewCountRef.current
         
-        if (viewedCount < MIN_VIEWS_BEFORE_TRIGGER) {
-          console.log('🤫 [SILENCE] Pas assez de vues:', viewedCount)
-          return
-        }
-        
-        if (inactivitySeconds < INACTIVITY_THRESHOLD) {
-          console.log('⏳ [ATTENTE] Inactivité insuffisante:', inactivitySeconds)
-          return
-        }
+        if (viewedCount < MIN_VIEWS_BEFORE_TRIGGER) return
+        if (inactivitySeconds < INACTIVITY_THRESHOLD) return
 
         try {
           const res = await fetch(`${API_BASE_URL}/api/chat/trigger`, {
@@ -694,7 +660,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
               has_added_to_cart: checkCartStatus(),
               has_visited_checkout: checkCheckoutStatus(),
               has_come_back: true,
-              country: country, // ✅ Pays détecté automatiquement
+              country: country,
             }),
           })
 
@@ -899,7 +865,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             message_id: messageId,
             source: 'chatbot_recommendation',
             reason: product.reason,
-            country: country, // ✅ Pays détecté automatiquement
+            country: country,
           }
         })
       })
@@ -915,7 +881,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           product_id: product.id,
           weight: 5.0,
           limit: 3,
-          country: country, // ✅ Pays détecté automatiquement
+          country: country,
         })
       })
       const data = await response.json()
@@ -933,7 +899,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   }, [sessionId, userId, addAssistantMessage, country])
 
   // ============================================================
-  // COUPONS 🎫
+  // COUPONS
   // ============================================================
 
   const generateCoupon = useCallback(async (productId: string, discount: number) => {
@@ -946,7 +912,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           session_id: sessionId,
           product_id: productId,
           discount: discount,
-          country: country, // ✅ Pays détecté automatiquement
+          country: country,
         }),
       })
 
@@ -972,9 +938,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
   }, [sessionId, userId, addAssistantMessage, saveMessageToHistory, country])
 
   const proposeOffer = useCallback((product: Product) => {
-    if (hasBeenOffered || activeCoupon) {
-      return
-    }
+    if (hasBeenOffered || activeCoupon) return
     
     const discounts = [5, 6, 7, 8, 9, 10]
     const discount = discounts[Math.floor(Math.random() * discounts.length)]
@@ -1019,7 +983,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           user_id: userId || null,
           language: language,
           token: token || null,
-          country: country, // ✅ Pays détecté automatiquement
+          country: country,
         }),
       })
 
@@ -1080,8 +1044,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
                 language: language,
                 user_type: data.user_context?.user_type || 'particular',
                 business_name: data.user_context?.business_name || null,
-                country: country, // ✅ Pays détecté automatiquement
-                currency: currency, // ✅ Devise détectée automatiquement
+                country: country,
+                currency: currency,
               }
             })
           })
@@ -1120,7 +1084,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           categories: categories,
           limit: 12,
           seen_ids: seenIds,
-          country: country, // ✅ Pays détecté automatiquement
+          country: country,
         }),
       })
 
@@ -1308,16 +1272,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           onMouseDown={(e) => {
             e.preventDefault()
             const startY = e.clientY
-            const rect = couponRef.current?.getBoundingClientRect()
-            const windowHeight = window.innerHeight
             const currentY = couponY
             dragYRef.current = { startY, startOffset: currentY }
             setIsDraggingY(true)
             
             const onMove = (ev: MouseEvent) => {
               const diff = ev.clientY - startY
-              const windowHeight = window.innerHeight
-              const newY = Math.max(5, Math.min(95, currentY + (diff / windowHeight) * 100))
+              const newY = Math.max(5, Math.min(95, currentY + (diff / window.innerHeight) * 100))
               setCouponY(newY)
               if (couponRef.current) {
                 couponRef.current.style.transition = 'none'
@@ -1340,8 +1301,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
           onTouchStart={(e) => {
             const touch = e.touches[0]
             const startY = touch.clientY
-            const rect = couponRef.current?.getBoundingClientRect()
-            const windowHeight = window.innerHeight
             const currentY = couponY
             dragYRef.current = { startY, startOffset: currentY }
             setIsDraggingY(true)
@@ -1349,8 +1308,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
             const onMove = (ev: TouchEvent) => {
               const touch = ev.touches[0]
               const diff = touch.clientY - startY
-              const windowHeight = window.innerHeight
-              const newY = Math.max(5, Math.min(95, currentY + (diff / windowHeight) * 100))
+              const newY = Math.max(5, Math.min(95, currentY + (diff / window.innerHeight) * 100))
               setCouponY(newY)
               if (couponRef.current) {
                 couponRef.current.style.transition = 'none'
@@ -2128,7 +2086,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token }: Cha
         .coupon-drawer {
           transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
         }
-        /* ✅ Styles pour les tableaux dans le chatbot */
         .chat-messages table {
           width: 100%;
           border-collapse: collapse;
