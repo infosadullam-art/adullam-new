@@ -2,25 +2,22 @@
 
 import { useEffect, useState } from "react"
 import { ChatbotWidget } from "./ChatbotWidget"
-import { useAuth } from "@/lib/admin/auth-context" // ← Ajouter
+import { useAuth } from "@/lib/admin/auth-context"
 
 export function ChatbotProvider() {
   const [sessionId, setSessionId] = useState<string>("")
   const [userId, setUserId] = useState<string | undefined>(undefined)
-  const { user } = useAuth() // ← Récupérer l'utilisateur
+  const { user } = useAuth()
 
   useEffect(() => {
     if (user?.id) {
-      // ✅ Connecté → utiliser user_id comme session
+      // ✅ Connecté : session = user_id
       setUserId(user.id)
       setSessionId(`user_${user.id}`)
     } else {
-      // ✅ Déconnecté → générer un nouveau sessionId
-      let id = localStorage.getItem("chat_session_id")
-      if (!id) {
-        id = crypto.randomUUID()
-        localStorage.setItem("chat_session_id", id)
-      }
+      // ✅ Déconnecté : NOUVEAU sessionId (pas l'ancien !)
+      const id = crypto.randomUUID() // ← Toujours un nouveau !
+      localStorage.setItem("chat_session_id", id)
       setSessionId(id)
       setUserId(undefined)
     }
