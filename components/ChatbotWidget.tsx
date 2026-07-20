@@ -2,12 +2,13 @@
 
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// VENDEUR ULTIME - Version 6.1
+// VENDEUR ULTIME - Version 6.2
 // ✅ Support des tableaux Markdown (remark-gfm)
 // ✅ Détection automatique du pays et de la devise
 // Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
 // ✅ FIX : sauvegarde et restauration des produits dans l'historique
 // ✅ FIX : déconnexion - efface l'historique de la session
+// ✅ FIX : TOUS les produits affichés en cartes cliquables (même le premier)
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import ReactMarkdown from 'react-markdown'
@@ -121,7 +122,7 @@ interface ChatbotWidgetProps {
   userId?: string
   language?: 'fr' | 'en' | 'pt'
   token?: string
-  onLogout?: () => void  // ✅ Ajouté pour la déconnexion
+  onLogout?: () => void
 }
 
 // ============================================================
@@ -526,7 +527,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [remainingTime, showCouponBanner, activeCoupon, couponExpanded])
 
   // ============================================================
-  // SAUVEGARDE - ✅ FIX : sauvegarde les produits dans le message
+  // SAUVEGARDE
   // ============================================================
 
   const saveMessageToHistory = useCallback(async (content: string, products?: Product[], offer?: Offer, couponCode?: string) => {
@@ -543,7 +544,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           metadata: {
             user_message: couponCode ? `coupon_${couponCode}` : 'assistant_message',
             assistant_message: content.slice(0, 500),
-            // ✅ FIX : sauvegarder les produits dans l'historique
             products: products?.map(p => ({
               id: p.id,
               title: p.title || p.name,
@@ -569,7 +569,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [sessionId, userId, language, country])
 
   // ============================================================
-  // CHARGER HISTORIQUE - ✅ FIX : restaure les produits
+  // CHARGER HISTORIQUE
   // ============================================================
 
   useEffect(() => {
@@ -589,7 +589,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
 
         if (data.success && data.history?.length > 0) {
           loaded = data.history.map((m: any, i: number) => {
-            // ✅ Récupérer les produits depuis le metadata
             const products = m.metadata?.products || m.products || []
             
             return {
@@ -637,37 +636,32 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [sessionId, userId, language])
 
   // ============================================================
-  // DÉCONNEXION - ✅ FIX : efface l'historique de la session
+  // DÉCONNEXION (CORRIGÉE)
   // ============================================================
 
-  const clearChatHistory = useCallback(async () => {
-    if (!sessionId) return
-    try {
-      await fetch(`${API_BASE_URL}/api/chat/history/session/${sessionId}`, {
-        method: 'DELETE'
-      })
-      console.log('🗑️ Historique du chat effacé')
-    } catch (e) {
-      console.debug('⚠️ Erreur effacement historique:', e)
-    }
-  }, [sessionId])
-
-  // ✅ Exposer la fonction de déconnexion au parent via onLogout
-  useEffect(() => {
-    if (onLogout) {
-      // On remplace la fonction de déconnexion du parent par notre version
-      const originalLogout = onLogout
-      // On ne peut pas remplacer directement, on passe par un appel
-    }
-  }, [onLogout])
-
-  // ✅ Fonction de déconnexion complète
   const handleLogout = useCallback(async () => {
-    await clearChatHistory()
+    // ✅ 1. Effacer l'historique côté serveur
+    if (sessionId) {
+      try {
+        await fetch(`${API_BASE_URL}/api/chat/history/session/${sessionId}`, {
+          method: 'DELETE'
+        })
+        console.log('🗑️ Historique du chat effacé')
+      } catch (e) {
+        console.debug('⚠️ Erreur effacement historique:', e)
+      }
+    }
+    
+    // ✅ 2. VIDER LES MESSAGES LOCALEMENT
+    setMessages([])
+    setProactiveMessage(null)
+    setHasUnread(false)
+    
+    // ✅ 3. Appeler la fonction de déconnexion du parent
     if (onLogout) {
       onLogout()
     }
-  }, [clearChatHistory, onLogout])
+  }, [sessionId, onLogout])
 
   // ============================================================
   // TRIGGER PROACTIF
@@ -1837,6 +1831,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                         msg.content
                       )}
                       
+                      {/* ✅ FIX : TOUS les produits affichés en cartes cliquables */}
                       {msg.products && msg.products.length > 0 && (
                         <div style={{
                           marginTop: '8px',
@@ -2140,7 +2135,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           text-align: left;
           font-size: 9px;
           text-transform: uppercase;
-          letter-spacing: 0.3px;
+          letterSpacing: 0.3px;
           color: var(--muted-foreground);
         }
         .chat-messages td {
