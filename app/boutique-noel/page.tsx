@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Header } from "@/components/header"
 import { MobileHeader } from "@/components/mobile-header"
@@ -33,11 +33,6 @@ import {
   UserPlus,
   ChevronDown,
   ChevronUp,
-  Grid3x3,
-  Home,
-  Newspaper,
-  Bell,
-  User
 } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
@@ -47,7 +42,6 @@ import { fr } from "date-fns/locale"
 import { sourcingApi } from "@/lib/admin/api-client"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
-// Imports pour les composants UI
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -82,7 +76,7 @@ interface SourcingNeed {
   company?: string | null
 }
 
-// Couleurs de la charte
+// Couleurs de la charte - EN DEHORS du composant
 const brandColor = "#D4372B"
 const bgGray = "#FAFAFA"
 const surfaceGray = "#F4F4F4"
@@ -90,7 +84,8 @@ const textPrimary = "#0A0A0A"
 const textSecondary = "#AAAAAA"
 const borderColor = "#ECECEC"
 
-export default function SourcingPage() {
+// ✅ COMPOSANT CONTENU - avec useSearchParams
+function SourcingContent() {
   console.log("🚀🚀🚀 [SOURCING PAGE] COMPOSANT CHARGÉ - VERSION DEBUG FINALE 🚀🚀🚀")
   
   const { user, isLoading: authLoading } = useAuth()
@@ -112,17 +107,12 @@ export default function SourcingPage() {
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
   const [expandedNeedId, setExpandedNeedId] = useState<string | null>(null)
   
-  // États pour les données
   const [needs, setNeeds] = useState<SourcingNeed[]>([])
-  
-  // États de chargement
   const [isLoadingNeeds, setIsLoadingNeeds] = useState(true)
   
-  // États pour les formulaires
   const [budgetMinLocal, setBudgetMinLocal] = useState("")
   const [budgetMaxLocal, setBudgetMaxLocal] = useState("")
   
-  // ✅ Formulaire pré-rempli avec les paramètres URL
   const [formData, setFormData] = useState({
     title: productParam || "",
     productType: "",
@@ -139,7 +129,6 @@ export default function SourcingPage() {
     company: ""
   })
 
-  // ✅ Mettre à jour le formulaire quand les paramètres changent
   useEffect(() => {
     if (productParam || quantityParam) {
       setFormData(prev => ({
@@ -151,7 +140,6 @@ export default function SourcingPage() {
     }
   }, [productParam, quantityParam, productIdParam])
 
-  // ✅ Ouvrir le formulaire automatiquement si des paramètres sont présents
   useEffect(() => {
     if (productParam && user) {
       setShowForm(true)
@@ -163,14 +151,12 @@ export default function SourcingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   
-  // Filtres
   const [showFilters, setShowFilters] = useState(false)
   const [statusFilter, setStatusFilter] = useState<string>("")
   const [priorityFilter, setPriorityFilter] = useState<string>("")
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
 
-  // Stats
   const [stats, setStats] = useState({
     besoinsEnCours: 0,
     devisAEtudier: 0,
@@ -188,7 +174,6 @@ export default function SourcingPage() {
       })
       return
     }
-    
     const total = needs.length
     setStats({
       besoinsEnCours: total,
@@ -405,7 +390,6 @@ export default function SourcingPage() {
         setShowForm(false)
         resetForm()
         loadNeeds()
-        // ✅ Rediriger vers la liste après création
         router.push('/sourcing')
       } else {
         setSubmitError(response.error || "Erreur lors de la création")
@@ -513,7 +497,6 @@ export default function SourcingPage() {
       </div>
 
       <main className="pb-20 lg:pb-8">
-        {/* Hero Section - Responsive avec nouvelle charte */}
         <div style={{ background: textPrimary }}>
           <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-8 lg:py-12">
             <Package className="w-10 h-10 lg:w-12 lg:h-12 mb-3 lg:mb-4" style={{ color: brandColor }} />
@@ -538,7 +521,6 @@ export default function SourcingPage() {
           </div>
         </div>
 
-        {/* Stats Cards - Responsive */}
         {user ? (
           <div className="max-w-[1440px] mx-auto px-4 lg:px-6 -mt-6 lg:-mt-8">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
@@ -601,7 +583,6 @@ export default function SourcingPage() {
           </div>
         )}
 
-        {/* Tabs et contenu */}
         {user && (
           <>
             <div className="max-w-[1440px] mx-auto px-4 lg:px-6 mt-6 lg:mt-8">
@@ -618,12 +599,9 @@ export default function SourcingPage() {
                 </button>
               </div>
 
-              {/* Liste des besoins */}
               {activeTab === "besoins" && (
                 <div className="mt-4 lg:mt-6">
-                  {/* Filtres - Version mobile avec toggle */}
                   <div className="rounded-lg p-3 lg:p-4 border mb-4 lg:mb-6" style={{ background: "#fff", borderColor: borderColor }}>
-                    {/* Barre de recherche toujours visible */}
                     <div className="relative">
                       <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: textSecondary }} />
                       <input
@@ -636,7 +614,6 @@ export default function SourcingPage() {
                       />
                     </div>
                     
-                    {/* Bouton toggle filtres - mobile */}
                     <button
                       onClick={() => setShowFilters(!showFilters)}
                       className="lg:hidden flex items-center justify-between w-full mt-3 pt-2"
@@ -654,7 +631,6 @@ export default function SourcingPage() {
                       {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </button>
                     
-                    {/* Filtres - responsive */}
                     <div className={`${showFilters ? 'block' : 'hidden'} lg:grid lg:grid-cols-3 gap-4 mt-3 lg:mt-4`}>
                       <select 
                         className="w-full px-3 py-2 rounded-lg text-sm"
@@ -703,7 +679,6 @@ export default function SourcingPage() {
                     </div>
                   </div>
 
-                  {/* Liste - Version mobile optimisée */}
                   {isLoadingNeeds ? (
                     <div className="flex justify-center py-12">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: brandColor }}></div>
@@ -732,10 +707,8 @@ export default function SourcingPage() {
                         
                         return (
                           <div key={need.id} className="rounded-lg border overflow-hidden" style={{ background: "#fff", borderColor: borderColor }}>
-                            {/* Carte compacte - toujours visible */}
                             <div className="p-4 lg:p-6">
                               <div className="flex flex-col gap-3">
-                                {/* En-tête avec référence et statuts */}
                                 <div className="flex flex-wrap items-center gap-2">
                                   <span className="text-xs font-mono" style={{ color: textSecondary }}>{need.reference}</span>
                                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusStyle}`}>
@@ -746,10 +719,8 @@ export default function SourcingPage() {
                                   </span>
                                 </div>
                                 
-                                {/* Titre */}
                                 <h3 className="text-base lg:text-lg font-semibold" style={{ color: textPrimary }}>{need.title}</h3>
                                 
-                                {/* Infos clés - version mobile en grille 2x2 */}
                                 <div className="grid grid-cols-2 gap-2 text-sm">
                                   <div className="flex items-center gap-1.5" style={{ color: textSecondary }}>
                                     <Package className="w-3.5 h-3.5" />
@@ -771,7 +742,6 @@ export default function SourcingPage() {
                                   </div>
                                 </div>
                                 
-                                {/* Boutons d'action */}
                                 <div className="flex items-center justify-between pt-2" style={{ borderTop: `0.5px solid ${borderColor}` }}>
                                   <button
                                     onClick={() => setExpandedNeedId(isExpanded ? null : need.id)}
@@ -792,17 +762,14 @@ export default function SourcingPage() {
                               </div>
                             </div>
                             
-                            {/* Détails étendus - visible quand expansé */}
                             {isExpanded && (
                               <div className="border-t p-4 lg:p-6" style={{ borderColor: borderColor, background: bgGray }}>
                                 <div className="space-y-4">
-                                  {/* Description */}
                                   <div>
                                     <h4 className="text-sm font-semibold mb-2" style={{ color: textPrimary }}>Description</h4>
                                     <p className="text-sm" style={{ color: textSecondary }}>{need.description}</p>
                                   </div>
                                   
-                                  {/* Infos client */}
                                   <div>
                                     <h4 className="text-sm font-semibold mb-2" style={{ color: textPrimary }}>Contact</h4>
                                     <div className="space-y-1 text-sm">
@@ -826,7 +793,6 @@ export default function SourcingPage() {
                                     </div>
                                   </div>
                                   
-                                  {/* Documents si disponibles */}
                                   {need.documents && need.documents.length > 0 && (
                                     <div>
                                       <h4 className="text-sm font-semibold mb-2" style={{ color: textPrimary }}>Documents</h4>
@@ -852,7 +818,6 @@ export default function SourcingPage() {
               )}
             </div>
 
-            {/* Modal Formulaire - Version responsive avec nouvelle charte */}
             {showForm && (
               <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                 <div className="bg-white rounded-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -1042,7 +1007,6 @@ export default function SourcingPage() {
                       </div>
                     </div>
 
-                    {/* Section client */}
                     <div className="pt-4" style={{ borderTop: `0.5px solid ${borderColor}` }}>
                       <h4 className="font-semibold mb-3 flex items-center gap-2 text-sm lg:text-base" style={{ color: textPrimary }}>
                         <Phone className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: brandColor }} />
@@ -1104,7 +1068,6 @@ export default function SourcingPage() {
                       </div>
                     </div>
 
-                    {/* Upload fichiers */}
                     <div>
                       <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>
                         Documents (max 10 Mo par fichier)
@@ -1200,7 +1163,6 @@ export default function SourcingPage() {
           </>
         )}
 
-        {/* Modal d'authentification */}
         <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
@@ -1213,13 +1175,13 @@ export default function SourcingPage() {
                 Pour créer un besoin d'approvisionnement, veuillez vous connecter ou créer un compte.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button asChild className="gap-2" style={{ background: brandColor, color: "#fff" }} onClick={() => setShowAuthModal(false)}>
+                <Button asChild className="gap-2" style={{ background: brandColor, color: "#fff" }}>
                   <Link href={`/account?mode=login&redirect=${encodeURIComponent('/sourcing')}`}>
                     <LogIn className="w-4 h-4" />
                     Se connecter
                   </Link>
                 </Button>
-                <Button asChild variant="outline" className="gap-2" onClick={() => setShowAuthModal(false)}>
+                <Button asChild variant="outline" className="gap-2">
                   <Link href={`/account?mode=register&redirect=${encodeURIComponent('/sourcing')}`}>
                     <UserPlus className="w-4 h-4" />
                     Créer un compte
@@ -1236,5 +1198,18 @@ export default function SourcingPage() {
         <MobileNav />
       </div>
     </div>
+  )
+}
+
+// ✅ PAGE PRINCIPALE AVEC SUSPENSE
+export default function SourcingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center" style={{ background: bgGray }}>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: brandColor }}></div>
+      </div>
+    }>
+      <SourcingContent />
+    </Suspense>
   )
 }
