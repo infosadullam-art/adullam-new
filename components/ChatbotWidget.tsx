@@ -2,13 +2,14 @@
 
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// VENDEUR ULTIME - Version 6.2
+// VENDEUR ULTIME - Version 6.3
 // ✅ Support des tableaux Markdown (remark-gfm)
 // ✅ Détection automatique du pays et de la devise
 // Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
 // ✅ FIX : sauvegarde et restauration des produits dans l'historique
 // ✅ FIX : déconnexion - efface l'historique de la session
 // ✅ FIX : TOUS les produits affichés en cartes cliquables (même le premier)
+// ✅ FIX : Réception des messages depuis la page produit (MOQ)
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import ReactMarkdown from 'react-markdown'
@@ -178,6 +179,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   const [couponY, setCouponY] = useState(50)
   const [isDraggingY, setIsDraggingY] = useState(false)
   const dragYRef = useRef<{ startY: number; startOffset: number } | null>(null)
+
+  // ✅ État pour recevoir les messages de la page produit
+  const [pendingProductFromPage, setPendingProductFromPage] = useState<any>(null)
 
   const messagesEndRef  = useRef<HTMLDivElement>(null)
   const inputRef        = useRef<HTMLInputElement>(null)
@@ -1093,6 +1097,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       addAssistantMessage("Oups, un souci de connexion. Réessaie dans un instant 😅")
     } finally {
       setIsTyping(false)
+      // ✅ Réinitialiser le produit en attente après envoi
+      setPendingProductFromPage(null)
     }
   }
 
@@ -1139,6 +1145,39 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [sessionId, userId, addAssistantMessage, scrollToBottom, messages, country])
 
   // ============================================================
+  // ÉCOUTEUR D'ÉVÉNEMENT POUR LE PRE-REMPLISSAGE DEPUIS LA PAGE PRODUIT
+  // ============================================================
+  
+  useEffect(() => {
+    const handleOpenChatWithMessage = (event: CustomEvent) => {
+      const { message, product } = event.detail || {}
+      
+      if (!message) return
+      
+      // Ouvrir le chat
+      setIsOpen(true)
+      setIsMinimized(false)
+      setHasUnread(false)
+      
+      // Pré-remplir l'input
+      setInput(message)
+      
+      // Si un produit est fourni, le stocker
+      if (product) {
+        setPendingProductFromPage(product)
+      }
+      
+      // Envoyer automatiquement après un court délai
+      setTimeout(() => {
+        sendMessage()
+      }, 800)
+    }
+    
+    window.addEventListener('openChatbotWithMessage' as any, handleOpenChatWithMessage)
+    return () => window.removeEventListener('openChatbotWithMessage' as any, handleOpenChatWithMessage)
+  }, [sendMessage])
+
+  // ============================================================
   // VOIX
   // ============================================================
 
@@ -1146,7 +1185,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     const handleVoiceSend = () => sendMessage()
     window.addEventListener('send-voice-message' as any, handleVoiceSend)
     return () => window.removeEventListener('send-voice-message' as any, handleVoiceSend)
-  }, [input, sendMessage])
+  }, [sendMessage])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {

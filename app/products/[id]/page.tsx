@@ -959,31 +959,30 @@ export default function ProductPage() {
     }, 500)
   }
 
-  const handleContactWhatsApp = () => {
+  // ✅ NOUVELLE FONCTION : Envoyer au chatbot au lieu de WhatsApp
+  const handleContactChatbot = () => {
     if (!product) return
 
     const grandTotal = getGrandTotal()
-    let selectionsText = ""
-
-    if (!product.variants || product.variants.length === 0) {
-      selectionsText = `${simpleQuantity} pièce(s)`
-    } else if (Object.keys(simpleVariantQuantities).length > 0) {
-      selectionsText = Object.entries(simpleVariantQuantities)
-        .filter(([_, qty]) => qty > 0)
-        .map(([value, qty]) => `${primaryAttrName} ${value}: ${qty} pièces`)
-        .join("\n")
-    } else {
-      selectionsText = Object.entries(complexSelections)
-        .flatMap(([primaryValue, secondarySelections]) =>
-          Object.entries(secondarySelections)
-            .filter(([_, qty]) => qty > 0)
-            .map(([secondaryValue, qty]) => `${primaryAttrName} ${primaryValue}, ${secondaryAttrName} ${secondaryValue}: ${qty} pièces`),
-        )
-        .join("\n")
-    }
-
-    const message = `Bonjour, je souhaite commander:\n${selectionsText}\nTotal: ${grandTotal} pièces\nPays: ${country}\nMerci de me confirmer la disponibilité.`
-    window.open(`https://wa.me/2250564749151?text=${encodeURIComponent(message)}`, "_blank")
+    const productName = product.title || product.name || "Produit"
+    const priceFormatted = formatPrice(product.price)
+    
+    // ✅ Construire le message pour le chatbot
+    const message = `Bonjour Adu, je souhaite commander le produit : ${productName}\nQuantité : ${grandTotal} pièces\nPrix unitaire : ${priceFormatted}\nPays : ${country}\n\nJe n'atteins pas la quantité minimum (${minQuantity} pièces). Peux-tu m'aider ?`
+    
+    // ✅ Déclencher un événement personnalisé pour ouvrir le chatbot avec le message
+    const event = new CustomEvent('openChatbotWithMessage', { 
+      detail: { 
+        message: message,
+        product: {
+          id: product.id,
+          title: productName,
+          price: product.price,
+          quantity: grandTotal
+        }
+      } 
+    })
+    window.dispatchEvent(event)
   }
 
   const scrollThumbnails = (direction: "left" | "right") => {
@@ -1614,7 +1613,7 @@ export default function ProductPage() {
                 <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-3 lg:relative lg:border-0 lg:p-0 z-50 shadow-lg">
                   <div className="flex gap-2 max-w-[1440px] mx-auto">
                     <button
-                      onClick={isMOQMet && grandTotal > 0 ? handleAddToCart : handleContactWhatsApp}
+                      onClick={isMOQMet && grandTotal > 0 ? handleAddToCart : handleContactChatbot}
                       className="flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] text-white"
                       style={{ background: isMOQMet && grandTotal > 0 ? brandColor : accentColor }}
                     >
@@ -2387,7 +2386,7 @@ export default function ProductPage() {
 
                   <div className="flex gap-2">
                     <button
-                      onClick={isMOQMet && grandTotal > 0 ? handleAddToCart : handleContactWhatsApp}
+                      onClick={isMOQMet && grandTotal > 0 ? handleAddToCart : handleContactChatbot}
                       className="flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 text-white hover:opacity-90"
                       style={{ background: isMOQMet && grandTotal > 0 ? brandColor : accentColor }}
                     >

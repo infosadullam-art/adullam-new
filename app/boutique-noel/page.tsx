@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Header } from "@/components/header"
 import { MobileHeader } from "@/components/mobile-header"
 import MobileNav from "@/components/mobile-nav"
@@ -95,6 +95,13 @@ export default function SourcingPage() {
   
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // ✅ Récupérer les paramètres URL pour le pré-remplissage
+  const productParam = searchParams?.get('product') || ''
+  const quantityParam = searchParams?.get('quantity') || ''
+  const priceParam = searchParams?.get('price') || ''
+  const productIdParam = searchParams?.get('product_id') || ''
 
   // Hook de devise dynamique
   const { formatPrice, getCurrencySymbol, convertToUSD } = useCurrencyFormatter()
@@ -115,11 +122,12 @@ export default function SourcingPage() {
   const [budgetMinLocal, setBudgetMinLocal] = useState("")
   const [budgetMaxLocal, setBudgetMaxLocal] = useState("")
   
+  // ✅ Formulaire pré-rempli avec les paramètres URL
   const [formData, setFormData] = useState({
-    title: "",
+    title: productParam || "",
     productType: "",
-    description: "",
-    quantity: "",
+    description: productParam ? `Je souhaite me renseigner sur le produit : ${productParam}${productIdParam ? ` (ID: ${productIdParam})` : ''}` : "",
+    quantity: quantityParam || "",
     quantityUnit: "pièces",
     budgetMin: "",
     budgetMax: "",
@@ -130,6 +138,26 @@ export default function SourcingPage() {
     phone: user?.phone || "",
     company: ""
   })
+
+  // ✅ Mettre à jour le formulaire quand les paramètres changent
+  useEffect(() => {
+    if (productParam || quantityParam) {
+      setFormData(prev => ({
+        ...prev,
+        title: productParam || prev.title,
+        quantity: quantityParam || prev.quantity,
+        description: productParam ? `Je souhaite me renseigner sur le produit : ${productParam}${productIdParam ? ` (ID: ${productIdParam})` : ''}` : prev.description
+      }))
+    }
+  }, [productParam, quantityParam, productIdParam])
+
+  // ✅ Ouvrir le formulaire automatiquement si des paramètres sont présents
+  useEffect(() => {
+    if (productParam && user) {
+      setShowForm(true)
+    }
+  }, [productParam, user])
+
   const [files, setFiles] = useState<File[]>([])
   const [uploadProgress, setUploadProgress] = useState<number>(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -377,6 +405,8 @@ export default function SourcingPage() {
         setShowForm(false)
         resetForm()
         loadNeeds()
+        // ✅ Rediriger vers la liste après création
+        router.push('/sourcing')
       } else {
         setSubmitError(response.error || "Erreur lors de la création")
         toast.error(response.error || "Erreur création")
