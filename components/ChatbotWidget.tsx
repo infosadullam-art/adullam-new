@@ -269,7 +269,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
             </td>
           ),
           a: ({ href, children }) => (
-            <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
+            <a href={href} style={{ color: 'var(--accent)', textDecoration: 'underline', cursor: 'pointer' }}>
               {children}
             </a>
           ),
