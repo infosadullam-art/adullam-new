@@ -1021,6 +1021,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           language: language,
           token: token || null,
           country: country,
+          // ✅ Ajout du produit depuis la page produit
+          product_from_page: pendingProductFromPage || null,
         }),
       })
 
@@ -2164,27 +2166,27 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           border-collapse: collapse;
           font-size: 10px;
           border: 1px solid var(--border);
-          min-width: 300px;
+          minWidth: 300px;
         }
         .chat-messages th {
           padding: 4px 6px;
           border: 1px solid var(--border);
           background: var(--surface-sunken);
-          font-weight: 600;
-          text-align: left;
-          font-size: 9px;
-          text-transform: uppercase;
+          fontWeight: 600;
+          textAlign: left;
+          fontSize: 9px;
+          textTransform: uppercase;
           letterSpacing: 0.3px;
           color: var(--muted-foreground);
         }
         .chat-messages td {
           padding: 4px 6px;
           border: 1px solid var(--border);
-          font-size: 9px;
-          white-space: nowrap;
+          fontSize: 9px;
+          whiteSpace: nowrap;
         }
         .chat-messages tr {
-          border-bottom: 1px solid var(--border);
+          borderBottom: 1px solid var(--border);
         }
         .chat-messages div[style*="overflow-x: auto"] {
           overflow-x: auto;
