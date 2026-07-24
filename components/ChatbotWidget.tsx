@@ -2,7 +2,7 @@
 
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// VENDEUR ULTIME - Version 6.3
+// VENDEUR ULTIME - Version 6.4
 // ✅ Support des tableaux Markdown (remark-gfm)
 // ✅ Détection automatique du pays et de la devise
 // Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
@@ -10,6 +10,7 @@
 // ✅ FIX : déconnexion - efface l'historique de la session
 // ✅ FIX : TOUS les produits affichés en cartes cliquables (même le premier)
 // ✅ FIX : Réception des messages depuis la page produit (MOQ)
+// ✅ FIX : Correction des endpoints API pour la persistance de session
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import ReactMarkdown from 'react-markdown'
@@ -573,7 +574,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [sessionId, userId, language, country])
 
   // ============================================================
-  // CHARGER HISTORIQUE
+  // CHARGER HISTORIQUE - ✅ ENDPOINT CORRIGÉ
   // ============================================================
 
   useEffect(() => {
@@ -585,7 +586,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
 
     const loadHistory = async () => {
       try {
-        const url = `${API_BASE_URL}/api/chat?sessionId=${sessionId}${userId ? `&userId=${userId}` : ''}`
+        // ✅ ENDPOINT CORRIGÉ : utilisation de /api/chat/history/{sessionId}
+        const url = `${API_BASE_URL}/api/chat/history/${sessionId}${userId ? `?user_id=${userId}` : ''}`
         const res = await fetch(url)
         const data = await res.json()
 
@@ -640,11 +642,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [sessionId, userId, language])
 
   // ============================================================
-  // DÉCONNEXION (CORRIGÉE)
+  // DÉCONNEXION
   // ============================================================
 
   const handleLogout = useCallback(async () => {
-    // ✅ 1. Effacer l'historique côté serveur
     if (sessionId) {
       try {
         await fetch(`${API_BASE_URL}/api/chat/history/session/${sessionId}`, {
@@ -656,12 +657,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       }
     }
     
-    // ✅ 2. VIDER LES MESSAGES LOCALEMENT
     setMessages([])
     setProactiveMessage(null)
     setHasUnread(false)
     
-    // ✅ 3. Appeler la fonction de déconnexion du parent
     if (onLogout) {
       onLogout()
     }
@@ -686,7 +685,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
         if (inactivitySeconds < INACTIVITY_THRESHOLD) return
 
         try {
-          const res = await fetch(`${API_BASE_URL}/api/chat/trigger`, {
+          const res = await fetch(`${API_BASE_URL}/api/chat/trigger-check`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -992,7 +991,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [addAssistantMessage, hasBeenOffered, activeCoupon])
 
   // ============================================================
-  // ENVOI DE MESSAGE
+  // ENVOI DE MESSAGE - ✅ ENDPOINT CORRIGÉ
   // ============================================================
 
   const sendMessage = async () => {
@@ -1011,7 +1010,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     lastActionRef.current = Date.now()
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/chat`, {
+      // ✅ ENDPOINT CORRIGÉ : utilisation de /api/chat/message
+      const res = await fetch(`${API_BASE_URL}/api/chat/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1021,7 +1021,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           language: language,
           token: token || null,
           country: country,
-          // ✅ Ajout du produit depuis la page produit
           product_from_page: pendingProductFromPage || null,
         }),
       })
@@ -1099,7 +1098,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       addAssistantMessage("Oups, un souci de connexion. Réessaie dans un instant 😅")
     } finally {
       setIsTyping(false)
-      // ✅ Réinitialiser le produit en attente après envoi
       setPendingProductFromPage(null)
     }
   }
@@ -1156,20 +1154,16 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       
       if (!message) return
       
-      // Ouvrir le chat
       setIsOpen(true)
       setIsMinimized(false)
       setHasUnread(false)
       
-      // Pré-remplir l'input
       setInput(message)
       
-      // Si un produit est fourni, le stocker
       if (product) {
         setPendingProductFromPage(product)
       }
       
-      // Envoyer automatiquement après un court délai
       setTimeout(() => {
         sendMessage()
       }, 800)
@@ -1872,7 +1866,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                         msg.content
                       )}
                       
-                      {/* ✅ FIX : TOUS les produits affichés en cartes cliquables */}
                       {msg.products && msg.products.length > 0 && (
                         <div style={{
                           marginTop: '8px',
