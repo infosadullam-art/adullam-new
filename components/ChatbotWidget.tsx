@@ -591,7 +591,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
 
         if (data.success && data.history?.length > 0) {
           loaded = data.history.map((m: any, i: number) => {
-            const products = m.metadata?.products || m.products || []
+            const products = data.conversation_state?.products_offered || []
             
             return {
               id: `history_${i}`,
