@@ -8,6 +8,7 @@
 // ✅ FIX : déconnexion - efface l'historique de la session
 // ✅ FIX : TOUS les produits affichés en cartes cliquables (même le premier)
 // ✅ FIX : Réception des messages depuis la page produit (MOQ)
+// ✅ FIX : Les produits ne sont affichés que dans le dernier message assistant
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import ReactMarkdown from 'react-markdown'
@@ -571,7 +572,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [sessionId, userId, language, country])
 
   // ============================================================
-  // CHARGER HISTORIQUE
+  // CHARGER HISTORIQUE - ✅ CORRIGÉ
   // ============================================================
 
   useEffect(() => {
@@ -590,8 +591,15 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
         let loaded: Message[] = []
 
         if (data.success && data.history?.length > 0) {
+          // ✅ Récupérer les produits du dernier message SEULEMENT
+          const lastProducts = data.conversation_state?.products_offered || []
+          
           loaded = data.history.map((m: any, i: number) => {
-            const products = data.conversation_state?.products_offered || []
+            // ✅ SEULEMENT le dernier message assistant reçoit les produits
+            let products: any[] = []
+            if (m.role === 'assistant' && i === data.history.length - 1) {
+              products = lastProducts
+            }
             
             return {
               id: `history_${i}`,
@@ -1870,7 +1878,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                         msg.content
                       )}
                       
-                      {/* ✅ FIX : TOUS les produits affichés en cartes cliquables */}
+                      {/* ✅ FIX : TOUS les produits affichés en cartes cliquables - UNIQUEMENT pour le dernier message assistant */}
                       {msg.products && msg.products.length > 0 && (
                         <div style={{
                           marginTop: '8px',
