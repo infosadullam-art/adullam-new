@@ -1,8 +1,6 @@
-"use client"
-
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// VENDEUR ULTIME - Version 6.5
+// VENDEUR ULTIME - Version 6.3
 // ✅ Support des tableaux Markdown (remark-gfm)
 // ✅ Détection automatique du pays et de la devise
 // Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
@@ -10,7 +8,6 @@
 // ✅ FIX : déconnexion - efface l'historique de la session
 // ✅ FIX : TOUS les produits affichés en cartes cliquables (même le premier)
 // ✅ FIX : Réception des messages depuis la page produit (MOQ)
-// ✅ FIX : Correction des endpoints API (sans /api)
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import ReactMarkdown from 'react-markdown'
@@ -135,8 +132,7 @@ const TRIGGER_CHECK_INTERVAL = 60000
 const INACTIVITY_THRESHOLD   = 30
 const MIN_VIEWS_BEFORE_TRIGGER = 3
 const FIRST_TRIGGER_DELAY = 30000
-// ✅ SUPPRIMER API_BASE_URL - utiliser des chemins relatifs
-const API_BASE_URL = ''
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.adullamarket.com'
 
 // ============================================================
 // COMPOSANT PRINCIPAL
@@ -533,12 +529,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [remainingTime, showCouponBanner, activeCoupon, couponExpanded])
 
   // ============================================================
-  // SAUVEGARDE - ✅ CORRIGÉ
+  // SAUVEGARDE
   // ============================================================
 
   const saveMessageToHistory = useCallback(async (content: string, products?: Product[], offer?: Offer, couponCode?: string) => {
     try {
-      await fetch(`/track`, {
+      await fetch(`${API_BASE_URL}/api/track`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -575,7 +571,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [sessionId, userId, language, country])
 
   // ============================================================
-  // CHARGER HISTORIQUE - ✅ CORRIGÉ
+  // CHARGER HISTORIQUE
   // ============================================================
 
   useEffect(() => {
@@ -587,8 +583,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
 
     const loadHistory = async () => {
       try {
-        // ✅ ENDPOINT CORRIGÉ : /api/chat → /chat/history/{sessionId}
-        const url = `/chat/history/${sessionId}${userId ? `?user_id=${userId}` : ''}`
+        const url = `${API_BASE_URL}/api/chat?sessionId=${sessionId}${userId ? `&userId=${userId}` : ''}`
         const res = await fetch(url)
         const data = await res.json()
 
@@ -643,13 +638,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [sessionId, userId, language])
 
   // ============================================================
-  // DÉCONNEXION - ✅ CORRIGÉ
+  // DÉCONNEXION (CORRIGÉE)
   // ============================================================
 
   const handleLogout = useCallback(async () => {
+    // ✅ 1. Effacer l'historique côté serveur
     if (sessionId) {
       try {
-        await fetch(`/chat/history/session/${sessionId}`, {
+        await fetch(`${API_BASE_URL}/api/chat/history/session/${sessionId}`, {
           method: 'DELETE'
         })
         console.log('🗑️ Historique du chat effacé')
@@ -658,17 +654,19 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       }
     }
     
+    // ✅ 2. VIDER LES MESSAGES LOCALEMENT
     setMessages([])
     setProactiveMessage(null)
     setHasUnread(false)
     
+    // ✅ 3. Appeler la fonction de déconnexion du parent
     if (onLogout) {
       onLogout()
     }
   }, [sessionId, onLogout])
 
   // ============================================================
-  // TRIGGER PROACTIF - ✅ CORRIGÉ
+  // TRIGGER PROACTIF
   // ============================================================
 
   useEffect(() => {
@@ -686,8 +684,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
         if (inactivitySeconds < INACTIVITY_THRESHOLD) return
 
         try {
-          // ✅ ENDPOINT CORRIGÉ : /api/chat/trigger → /chat/trigger-check
-          const res = await fetch(`/chat/trigger-check`, {
+          const res = await fetch(`${API_BASE_URL}/api/chat/trigger`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -876,7 +873,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [])
 
   // ============================================================
-  // PRODUITS - ✅ RECOMMEND ENDPOINT CORRIGÉ
+  // PRODUITS
   // ============================================================
 
   const handleProductClick = useCallback(async (product: Product, messageId: string) => {
@@ -890,7 +887,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     localStorage.setItem('checkout_visited', 'true')
 
     try {
-      await fetch(`/track`, {
+      await fetch(`${API_BASE_URL}/api/track`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -910,8 +907,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     } catch (e) {}
 
     try {
-      // ✅ ENDPOINT CORRIGÉ : /api/chat/recommend → /chat/recommend
-      const response = await fetch(`/chat/recommend`, {
+      const response = await fetch(`${API_BASE_URL}/api/chat/recommend`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -938,12 +934,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [sessionId, userId, addAssistantMessage, country])
 
   // ============================================================
-  // COUPONS - ✅ CORRIGÉ
+  // COUPONS
   // ============================================================
 
   const generateCoupon = useCallback(async (productId: string, discount: number) => {
     try {
-      const res = await fetch(`/coupons/generate`, {
+      const res = await fetch(`${API_BASE_URL}/api/coupons/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -994,7 +990,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [addAssistantMessage, hasBeenOffered, activeCoupon])
 
   // ============================================================
-  // ENVOI DE MESSAGE - ✅ CORRIGÉ
+  // ENVOI DE MESSAGE
   // ============================================================
 
   const sendMessage = async () => {
@@ -1013,8 +1009,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     lastActionRef.current = Date.now()
 
     try {
-      // ✅ ENDPOINT CORRIGÉ : /api/chat → /chat/message
-      const res = await fetch(`/chat/message`, {
+      const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1024,6 +1019,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           language: language,
           token: token || null,
           country: country,
+          // ✅ Ajout du produit depuis la page produit
           product_from_page: pendingProductFromPage || null,
         }),
       })
@@ -1069,7 +1065,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
         }
 
         try {
-          await fetch(`/track`, {
+          await fetch(`${API_BASE_URL}/api/track`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1101,12 +1097,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       addAssistantMessage("Oups, un souci de connexion. Réessaie dans un instant 😅")
     } finally {
       setIsTyping(false)
+      // ✅ Réinitialiser le produit en attente après envoi
       setPendingProductFromPage(null)
     }
   }
 
   // ============================================================
-  // LOAD MORE - ✅ CORRIGÉ
+  // LOAD MORE
   // ============================================================
 
   const loadMoreProducts = useCallback(async (query: string, categories: string[] = []) => {
@@ -1116,8 +1113,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
         .filter(Boolean)
         .join(',')
 
-      // ✅ ENDPOINT CORRIGÉ : /api/chat/more → /chat/more
-      const res = await fetch(`/chat/more`, {
+      const res = await fetch(`${API_BASE_URL}/api/chat/more`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1158,16 +1154,20 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       
       if (!message) return
       
+      // Ouvrir le chat
       setIsOpen(true)
       setIsMinimized(false)
       setHasUnread(false)
       
+      // Pré-remplir l'input
       setInput(message)
       
+      // Si un produit est fourni, le stocker
       if (product) {
         setPendingProductFromPage(product)
       }
       
+      // Envoyer automatiquement après un court délai
       setTimeout(() => {
         sendMessage()
       }, 800)
@@ -1294,7 +1294,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [isOpen, isMobile])
 
   // ============================================================
-  // RENDU PRINCIPAL (inchangé sauf les endpoints corrigés ci-dessus)
+  // RENDU PRINCIPAL
   // ============================================================
 
   return (
@@ -1870,7 +1870,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                         msg.content
                       )}
                       
-                      {/* ✅ TOUS les produits affichés en cartes cliquables */}
+                      {/* ✅ FIX : TOUS les produits affichés en cartes cliquables */}
                       {msg.products && msg.products.length > 0 && (
                         <div style={{
                           marginTop: '8px',
