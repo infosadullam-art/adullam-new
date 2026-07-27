@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { useLocale } from "./LocaleProvider";
 import { apiFetch } from "@/lib/api";
+import { getAccessToken } from "@/lib/auth";
 
 // ============================================================
 // TYPES POUR LES ARTICLES DU PANIER
@@ -53,15 +54,63 @@ type CartContextType = {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 // ============================================================
+// SYNCHRONISATION SERVEUR (utilisateurs connectés uniquement)
+// ============================================================
+function serverCartItemToCartItem(item: any): CartItem {
+  const attrs = item.attributes || {};
+  return {
+    id: item.productId,
+    name: item.productName,
+    price: item.price,
+    quantity: item.quantity,
+    image: item.image || "/placeholder.svg",
+    weight: item.weight,
+    color: attrs.color,
+    eurSize: attrs.eurSize,
+    variantKey: item.variantKey,
+    attributes: attrs,
+    shippingMode: item.shippingMode,
+    shippingCostUSD: item.shippingCostUSD,
+    portePorteCostUSD: item.portePorteCostUSD,
+  };
+}
+
+async function fetchServerCart(): Promise<CartItem[] | null> {
+  try {
+    const res = await apiFetch("/api/cart");
+    if (!res.ok) return null;
+    const data = await res.json();
+    const items = data?.data?.items || [];
+    return items.map(serverCartItemToCartItem);
+  } catch {
+    return null;
+  }
+}
+
+async function syncCartToServer(items: CartItem[]): Promise<void> {
+  try {
+    await apiFetch("/api/cart", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items }),
+    });
+  } catch {
+    // Non-bloquant : le localStorage reste la source de vérité en cas d'échec réseau
+  }
+}
+
+// ============================================================
 // PROVIDER PRINCIPAL
 // ============================================================
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const { country } = useLocale();
-  
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [shippingMode, setShippingMode] = useState<ShippingMode>("bateau");
   const [ready, setReady] = useState(false);
   const [cache, setCache] = useState<Map<string, { shippingCost: number; portePorte: number; totalWeight: number }>>(new Map());
+  const hasHydratedFromServer = useRef(false);
+  const syncDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -69,9 +118,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const storedCart = localStorage.getItem("cart");
     const storedShipping = localStorage.getItem("shippingMode");
 
+    let localCart: CartItem[] = [];
     if (storedCart) {
       try {
-        setCart(JSON.parse(storedCart));
+        localCart = JSON.parse(storedCart);
+        setCart(localCart);
       } catch {
         setCart([]);
       }
@@ -86,6 +137,22 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
 
     setReady(true);
+
+    // ✅ Hydratation depuis le serveur pour les utilisateurs connectés
+    const token = getAccessToken();
+    if (token && !hasHydratedFromServer.current) {
+      hasHydratedFromServer.current = true;
+      fetchServerCart().then((serverItems) => {
+        if (serverItems === null) return; // échec réseau, on garde le local
+        if (serverItems.length > 0) {
+          // Le serveur a des articles : il devient la source de vérité
+          setCart(serverItems);
+        } else if (localCart.length > 0) {
+          // Le serveur est vide mais le local a des articles : on pousse le local
+          syncCartToServer(localCart);
+        }
+      });
+    }
   }, []);
 
   useEffect(() => {
@@ -97,6 +164,26 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (!ready) return;
     localStorage.setItem("shippingMode", shippingMode);
   }, [shippingMode, ready]);
+
+  // ✅ Synchronise vers le serveur à chaque changement de panier (avec debounce
+  // pour éviter un appel réseau à chaque clic rapproché sur +/-)
+  useEffect(() => {
+    if (!ready) return;
+    if (!getAccessToken()) return;
+
+    if (syncDebounceRef.current) {
+      clearTimeout(syncDebounceRef.current);
+    }
+    syncDebounceRef.current = setTimeout(() => {
+      syncCartToServer(cart);
+    }, 800);
+
+    return () => {
+      if (syncDebounceRef.current) {
+        clearTimeout(syncDebounceRef.current);
+      }
+    };
+  }, [cart, ready]);
 
   // ✅ Appel à l'API logistique avec le mode sélectionné - CORRIGÉ avec apiFetch
   const fetchShippingEstimate = async (
@@ -122,10 +209,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       if (data.success && data.data) {
         const shipping = data.data.shipping;
         const weight = data.data.weight;
-        
-        // ✅ Utilise le mode sélectionné
+
         const selectedShipping = shipping[mode as keyof typeof shipping];
-        
+
         return {
           shippingCost: selectedShipping?.transportCost || selectedShipping?.cost || 0,
           portePorte: selectedShipping?.portePorteCost || 0,
@@ -139,10 +225,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // ✅ Calcule les frais de livraison via l'API (ou cache) avec le mode
   const calculateItemCosts = async (item: CartItem, mode: ShippingMode): Promise<{ shippingCost: number; portePorte: number; totalWeight: number }> => {
     const cacheKey = `${item.id}_${item.variantKey}_${mode}_${country}_${item.quantity}`;
-    
+
     if (cache.has(cacheKey)) {
       return cache.get(cacheKey)!;
     }
@@ -161,7 +246,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       return result;
     }
 
-    // Fallback si l'API échoue
     const itemWeight = (item.weight || 0.5) * item.quantity;
     const roundedWeight = Math.ceil(itemWeight);
     return {
@@ -171,7 +255,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     };
   };
 
-  // Mettre à jour un item avec ses frais
   const updateItemWithCosts = async (item: CartItem, mode: ShippingMode): Promise<CartItem> => {
     const costs = await calculateItemCosts(item, mode);
     return {
@@ -193,7 +276,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         { ...existingItem, quantity: newQuantity },
         existingItem.shippingMode || shippingMode
       );
-      
+
       const newCart = [...cart];
       newCart[existingIndex] = updatedItem;
       setCart(newCart);
@@ -247,13 +330,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setCart([]);
     localStorage.removeItem("cart");
     setCache(new Map());
+    if (getAccessToken()) {
+      apiFetch("/api/cart", { method: "DELETE" }).catch(() => {});
+    }
   };
 
   // Recalculer tous les items quand le pays change
   useEffect(() => {
     const recalcAllItems = async () => {
       if (!ready || cart.length === 0) return;
-      
+
       const updatedCart = await Promise.all(
         cart.map(async (item) => {
           return await updateItemWithCosts(item, item.shippingMode || shippingMode);
@@ -261,7 +347,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       );
       setCart(updatedCart);
     };
-    
+
     recalcAllItems();
   }, [country, ready]);
 
