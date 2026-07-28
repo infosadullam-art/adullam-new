@@ -9,6 +9,7 @@
 // ✅ FIX : TOUS les produits affichés en cartes cliquables (même le premier)
 // ✅ FIX : Réception des messages depuis la page produit (MOQ)
 // ✅ FIX : Les produits ne sont affichés que dans le dernier message assistant
+// ✅ FIX : Compteur de vues produit réellement alimenté (déclenchement proactif)
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import ReactMarkdown from 'react-markdown'
@@ -336,6 +337,16 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       window.removeEventListener('scroll', trackActivity)
       window.removeEventListener('click', trackActivity)
     }
+  }, [])
+
+  // ✅ Incrémente le compteur de vues produit réel (émis par ForYouSection
+  // et potentiellement d'autres sources futures) pour alimenter le trigger proactif.
+  useEffect(() => {
+    const handleProductViewed = () => {
+      viewCountRef.current += 1
+    }
+    window.addEventListener('adullam:product-viewed', handleProductViewed)
+    return () => window.removeEventListener('adullam:product-viewed', handleProductViewed)
   }, [])
 
   useEffect(() => {

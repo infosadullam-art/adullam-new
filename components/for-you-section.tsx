@@ -202,6 +202,9 @@ export function ForYouSection() {
           if (id && !viewedProducts.current.has(id)) {
             viewedProducts.current.add(id)
             trackInteraction(id, "VIEW")
+            // ✅ Informe le chatbot qu'une vue produit réelle vient d'avoir lieu,
+            // pour alimenter son compteur de déclenchement proactif.
+            window.dispatchEvent(new CustomEvent("adullam:product-viewed", { detail: { productId: id } }))
           }
         }
       })
