@@ -229,6 +229,41 @@ export default function ProductPage() {
   }, [id])
 
   // ============================================================
+  // TRACKING VIEW SUR LA PAGE PRODUIT (alimente le cycle vertueux :
+  // ALS, session graph, et le compteur de déclenchement proactif du chat)
+  // ============================================================
+  const hasTrackedViewRef = useRef(false)
+
+  useEffect(() => {
+    if (!product?.id || hasTrackedViewRef.current) return
+    hasTrackedViewRef.current = true
+
+    let sessionId = localStorage.getItem("adullam_session_id")
+    if (!sessionId) {
+      sessionId = crypto.randomUUID()
+      localStorage.setItem("adullam_session_id", sessionId)
+    }
+    document.cookie = `sessionId=${sessionId}; path=/; max-age=86400; SameSite=Lax`
+
+    apiFetch("/api/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        productId: product.id,
+        type: "VIEW",
+        context: "PRODUCT_PAGE",
+        sessionId,
+      }),
+    }).catch(() => {
+      // Silencieux
+    })
+
+    // ✅ Informe le chatbot qu'une vue produit réelle vient d'avoir lieu,
+    // pour alimenter son compteur de déclenchement proactif.
+    window.dispatchEvent(new CustomEvent("adullam:product-viewed", { detail: { productId: product.id } }))
+  }, [product?.id])
+
+  // ============================================================
   // CHARGEMENT DES AVIS CLIENTS
   // ============================================================
   useEffect(() => {
