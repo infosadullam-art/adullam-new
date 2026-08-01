@@ -1,6 +1,6 @@
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// VENDEUR ULTIME - Version 6.3
+// VENDEUR ULTIME - Version 6.4
 // ✅ Support des tableaux Markdown (remark-gfm)
 // ✅ Détection automatique du pays et de la devise
 // Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
@@ -10,6 +10,8 @@
 // ✅ FIX : Réception des messages depuis la page produit (MOQ)
 // ✅ FIX : Les produits ne sont affichés que dans le dernier message assistant
 // ✅ FIX : Compteur de vues produit réellement alimenté (déclenchement proactif)
+// ✅ FIX : Suppression de la détection d'offre dupliquée côté client — le
+//    serveur est l'unique source de vérité pour hésitation/offre/coupon.
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import ReactMarkdown from 'react-markdown'
@@ -154,7 +156,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   const [isFirstOpen, setIsFirstOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
   const [loadOffset, setLoadOffset] = useState(3)
-  
+
   const [isRecording, setIsRecording] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(true)
@@ -170,10 +172,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   const [isDraggingCoupon, setIsDraggingCoupon] = useState(false)
   const couponDragRef = useRef<{ startX: number; startY: number; originX: number; originY: number; moved: boolean } | null>(null)
   const couponRef = useRef<HTMLDivElement>(null)
-  const [pendingOfferProduct, setPendingOfferProduct] = useState<Product | null>(null)
-  const [pendingOfferDiscount, setPendingOfferDiscount] = useState<number | null>(null)
-  const [waitingForOfferResponse, setWaitingForOfferResponse] = useState(false)
-  const [hasBeenOffered, setHasBeenOffered] = useState(false)
 
   const [remainingTime, setRemainingTime] = useState(0)
   const [couponY, setCouponY] = useState(50)
@@ -230,9 +228,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           h3: ({ children }) => <h3 style={{ fontSize: '1em', fontWeight: 600, margin: '4px 0' }}>{children}</h3>,
           table: ({ children }) => (
             <div style={{ overflowX: 'auto', margin: '8px 0', WebkitOverflowScrolling: 'touch' }}>
-              <table style={{ 
-                width: '100%', 
-                borderCollapse: 'collapse', 
+              <table style={{
+                width: '100%',
+                borderCollapse: 'collapse',
                 fontSize: '10px',
                 border: '1px solid var(--border)',
                 minWidth: '300px',
@@ -245,8 +243,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           tbody: ({ children }) => <tbody>{children}</tbody>,
           tr: ({ children }) => <tr style={{ borderBottom: '1px solid var(--border)' }}>{children}</tr>,
           th: ({ children }) => (
-            <th style={{ 
-              padding: '4px 6px', 
+            <th style={{
+              padding: '4px 6px',
               border: '1px solid var(--border)',
               fontWeight: 600,
               textAlign: 'left',
@@ -259,8 +257,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
             </th>
           ),
           td: ({ children }) => (
-            <td style={{ 
-              padding: '4px 6px', 
+            <td style={{
+              padding: '4px 6px',
               border: '1px solid var(--border)',
               fontSize: '9px',
               whiteSpace: 'nowrap',
@@ -339,8 +337,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     }
   }, [])
 
-  // ✅ Incrémente le compteur de vues produit réel (émis par ForYouSection
-  // et potentiellement d'autres sources futures) pour alimenter le trigger proactif.
+  // ✅ Incrémente le compteur de vues produit réel (émis par ForYouSection,
+  // la page produit, et potentiellement d'autres sources futures) pour
+  // alimenter le trigger proactif.
   useEffect(() => {
     const handleProductViewed = () => {
       viewCountRef.current += 1
@@ -410,12 +409,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       window.removeEventListener('touchend', onEnd)
     }
   }, [isDraggingCoupon])
-
-  const startCouponDrag = (clientX: number, clientY: number) => {
-    const rect = couponRef.current?.getBoundingClientRect()
-    couponDragRef.current = { startX: clientX, startY: clientY, originX: rect?.left ?? 0, originY: rect?.top ?? 0, moved: false }
-    setIsDraggingCoupon(true)
-  }
 
   useEffect(() => {
     if (!isDragging) return
@@ -532,7 +525,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       if (remainingTime <= 600 && !couponExpanded) {
         setCouponExpanded(true)
       }
-      
+
       if (remainingTime === 300 && activeCoupon) {
         addAssistantMessage(`⚠️ Ton coupon **${activeCoupon.code}** expire dans 5min ! Utilise-le vite 🔥`)
         setCouponExpanded(true)
@@ -583,7 +576,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [sessionId, userId, language, country])
 
   // ============================================================
-  // CHARGER HISTORIQUE - ✅ CORRIGÉ
+  // CHARGER HISTORIQUE
   // ============================================================
 
   useEffect(() => {
@@ -602,16 +595,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
         let loaded: Message[] = []
 
         if (data.success && data.history?.length > 0) {
-          // ✅ Récupérer les produits du dernier message SEULEMENT
           const lastProducts = data.conversation_state?.products_offered || []
-          
+
           loaded = data.history.map((m: any, i: number) => {
-            // ✅ SEULEMENT le dernier message assistant reçoit les produits
             let products: any[] = []
             if (m.role === 'assistant' && i === data.history.length - 1) {
               products = lastProducts
             }
-            
+
             return {
               id: `history_${i}`,
               role: m.role,
@@ -657,11 +648,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [sessionId, userId, language])
 
   // ============================================================
-  // DÉCONNEXION (CORRIGÉE)
+  // DÉCONNEXION
   // ============================================================
 
   const handleLogout = useCallback(async () => {
-    // ✅ 1. Effacer l'historique côté serveur
     if (sessionId) {
       try {
         await fetch(`${API_BASE_URL}/api/chat/history/session/${sessionId}`, {
@@ -672,13 +662,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
         console.debug('⚠️ Erreur effacement historique:', e)
       }
     }
-    
-    // ✅ 2. VIDER LES MESSAGES LOCALEMENT
+
     setMessages([])
     setProactiveMessage(null)
     setHasUnread(false)
-    
-    // ✅ 3. Appeler la fonction de déconnexion du parent
+
     if (onLogout) {
       onLogout()
     }
@@ -692,13 +680,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     if (!sessionId) return
 
     const initialDelay = setTimeout(() => {
-      
+
       const checkTrigger = async () => {
         if (isOpen) return
 
         const inactivitySeconds = (Date.now() - lastActionRef.current) / 1000
         const viewedCount = viewCountRef.current
-        
+
         if (viewedCount < MIN_VIEWS_BEFORE_TRIGGER) return
         if (inactivitySeconds < INACTIVITY_THRESHOLD) return
 
@@ -723,7 +711,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           if (data.should_trigger && data.message) {
             setProactiveMessage(data.message)
             setHasUnread(true)
-            
+
             if (data.trigger_type === 'hesitation_strong' || data.trigger_type === 'abandoned_cart') {
               const offer: Offer = {
                 type: 'risky',
@@ -744,7 +732,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       }
 
       triggerTimerRef.current = setInterval(checkTrigger, TRIGGER_CHECK_INTERVAL)
-      
+
     }, FIRST_TRIGGER_DELAY)
 
     return () => {
@@ -775,11 +763,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       offer,
     }
     setMessages(prev => [...prev, msg])
-    
+
     if (content.length > 5 && !content.includes('...')) {
       saveMessageToHistory(content, products, offer)
     }
-    
+
+    // ✅ Seule source de vérité pour l'affichage offre/coupon : ce que le
+    // serveur a décidé et renvoyé dans `offer`. Aucune détection côté client.
     if (offer && offer.type === 'coupon' && offer.coupon) {
       setActiveCoupon(offer.coupon)
       setShowCouponBanner(true)
@@ -790,7 +780,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       setOfferTimer(offer.time_limit * 60)
       setShowOfferBanner(true)
     }
-    
+
     if (voiceSupported && speechSynthRef.current) {
       const utterance = new SpeechSynthesisUtterance(content)
       utterance.lang = language === 'fr' ? 'fr-FR' : language === 'pt' ? 'pt-PT' : 'en-US'
@@ -852,7 +842,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       setInput(transcript)
       setIsRecording(false)
       recognitionRef.current = null
-      
+
       setTimeout(() => {
         if (transcript.trim()) {
           const sendEvent = new Event('send-voice-message')
@@ -865,7 +855,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       console.error("Erreur reconnaissance vocale:", event.error)
       setIsRecording(false)
       recognitionRef.current = null
-      
+
       if (event.error === 'not-allowed') {
         alert("Veuillez autoriser l'accès au microphone pour utiliser la voix.")
       }
@@ -953,67 +943,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [sessionId, userId, addAssistantMessage, country])
 
   // ============================================================
-  // COUPONS
-  // ============================================================
-
-  const generateCoupon = useCallback(async (productId: string, discount: number) => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/coupons/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: userId || null,
-          session_id: sessionId,
-          product_id: productId,
-          discount: discount,
-          country: country,
-        }),
-      })
-
-      const data = await res.json()
-      
-      if (data.success) {
-        setActiveCoupon(data.coupon)
-        setShowCouponBanner(true)
-        setRemainingTime(data.coupon.time_limit * 60)
-        setTimeout(() => setCouponExpanded(true), 500)
-        
-        const couponMessage = `🎉 Top ! J'ai généré un coupon spécial pour toi : **${data.coupon.code}**\nTu as **${data.coupon.discount}%** de réduction valable **${data.coupon.time_limit}min** ! ⏱️`
-        
-        await saveMessageToHistory(couponMessage, undefined, undefined, data.coupon.code)
-        addAssistantMessage(couponMessage)
-      } else {
-        addAssistantMessage("Désolé, je n'ai pas pu générer le coupon. Réessaie ! 🙏")
-      }
-    } catch (error) {
-      console.error("Erreur génération coupon:", error)
-      addAssistantMessage("Oups, erreur technique. Réessaie dans un instant !")
-    }
-  }, [sessionId, userId, addAssistantMessage, saveMessageToHistory, country])
-
-  const proposeOffer = useCallback((product: Product) => {
-    if (hasBeenOffered || activeCoupon) return
-    
-    const discounts = [5, 6, 7, 8, 9, 10]
-    const discount = discounts[Math.floor(Math.random() * discounts.length)]
-    
-    setHasBeenOffered(true)
-    
-    const offerMessage = `Je vois que tu hésites sur ce produit... 👀\nJe peux te faire un petit geste : **${discount}%** de réduction.\nTu es intéressé ? 😊`
-    
-    addAssistantMessage(offerMessage)
-    
-    setPendingOfferProduct(product)
-    setPendingOfferDiscount(discount)
-    setWaitingForOfferResponse(true)
-  }, [addAssistantMessage, hasBeenOffered, activeCoupon])
-
-  // ============================================================
   // ENVOI DE MESSAGE
   // ============================================================
+  // ✅ Accepte un texte optionnel (utilisé par le banner d'offre pour envoyer
+  // une confirmation sans que l'utilisateur ait à taper). Sans argument,
+  // utilise le contenu de l'input comme avant.
 
-  const sendMessage = async () => {
-    const text = input.trim()
+  const sendMessage = async (overrideText?: string) => {
+    const text = (overrideText ?? input).trim()
     if (!text || isTyping) return
 
     const userMsg: Message = {
@@ -1038,7 +975,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           language: language,
           token: token || null,
           country: country,
-          // ✅ Ajout du produit depuis la page produit
           product_from_page: pendingProductFromPage || null,
         }),
       })
@@ -1054,34 +990,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           reason: p.reason,
         })) || []
 
+        // ✅ Le serveur décide seul de l'offre/coupon (hésitation réelle,
+        // mémoire de conversation) — addAssistantMessage se charge de
+        // l'afficher correctement selon offer.type.
         const offer = data.offer || null
         addAssistantMessage(data.response, formattedProducts, offer)
-
-        if (offer && offer.type === 'coupon' && offer.coupon) {
-          setActiveCoupon(offer.coupon)
-          setShowCouponBanner(true)
-          setRemainingTime((offer.coupon.time_limit || 20) * 60)
-          setTimeout(() => setCouponExpanded(true), 500)
-          setWaitingForOfferResponse(false)
-          setPendingOfferProduct(null)
-          setPendingOfferDiscount(null)
-        }
-
-        if (offer && (offer.type === 'safe' || offer.type === 'risky') && !waitingForOfferResponse) {
-          setWaitingForOfferResponse(true)
-          setPendingOfferDiscount(offer.discount_2 || offer.discount_1 || 10)
-          setPendingOfferProduct(formattedProducts[0] || null)
-        }
-
-        if (waitingForOfferResponse && pendingOfferDiscount && !(offer && offer.type === 'coupon')) {
-          const lowerText = text.toLowerCase()
-          if (lowerText.includes('oui') || lowerText.includes('ok') || lowerText.includes('yes') || lowerText.includes('d\'accord') || lowerText.includes('je veux') || lowerText.includes('veux bien')) {
-            await generateCoupon(pendingOfferProduct?.id || 'none', pendingOfferDiscount)
-            setWaitingForOfferResponse(false)
-            setPendingOfferProduct(null)
-            setPendingOfferDiscount(null)
-          }
-        }
 
         try {
           await fetch(`${API_BASE_URL}/api/track`, {
@@ -1116,10 +1029,25 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       addAssistantMessage("Oups, un souci de connexion. Réessaie dans un instant 😅")
     } finally {
       setIsTyping(false)
-      // ✅ Réinitialiser le produit en attente après envoi
       setPendingProductFromPage(null)
     }
   }
+
+  // ✅ Le client accepte l'offre affichée dans le banner : on envoie une
+  // vraie confirmation au serveur (qui gère memory.get_offer_waiting +
+  // is_offer_confirmation) au lieu de sauter directement sur /cart sans
+  // jamais générer de coupon réel.
+  const acceptOffer = useCallback(() => {
+    setShowOfferBanner(false)
+    setActiveOffer(null)
+    sendMessage("Oui, je suis intéressé par cette offre !")
+  }, [sendMessage])
+
+  const declineOffer = useCallback(() => {
+    setShowOfferBanner(false)
+    setActiveOffer(null)
+    sendMessage("Non merci, pas maintenant.")
+  }, [sendMessage])
 
   // ============================================================
   // LOAD MORE
@@ -1166,32 +1094,28 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   // ============================================================
   // ÉCOUTEUR D'ÉVÉNEMENT POUR LE PRE-REMPLISSAGE DEPUIS LA PAGE PRODUIT
   // ============================================================
-  
+
   useEffect(() => {
     const handleOpenChatWithMessage = (event: CustomEvent) => {
       const { message, product } = event.detail || {}
-      
+
       if (!message) return
-      
-      // Ouvrir le chat
+
       setIsOpen(true)
       setIsMinimized(false)
       setHasUnread(false)
-      
-      // Pré-remplir l'input
+
       setInput(message)
-      
-      // Si un produit est fourni, le stocker
+
       if (product) {
         setPendingProductFromPage(product)
       }
-      
-      // Envoyer automatiquement après un court délai
+
       setTimeout(() => {
         sendMessage()
       }, 800)
     }
-    
+
     window.addEventListener('openChatbotWithMessage' as any, handleOpenChatWithMessage)
     return () => window.removeEventListener('openChatbotWithMessage' as any, handleOpenChatWithMessage)
   }, [sendMessage])
@@ -1267,7 +1191,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     const target = e.currentTarget
     const isAtTop = target.scrollTop === 0
     const isAtBottom = target.scrollHeight - target.scrollTop === target.clientHeight
-    
+
     if (isAtTop || isAtBottom) {
       e.stopPropagation()
     }
@@ -1324,15 +1248,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           timeLimit={offerTimer}
           message={activeOffer.taunt_message || `-${activeOffer.discount_2}% si vous validez maintenant !`}
           variant={activeOffer.type === 'risky' ? 'risky' : 'safe'}
-          onAccept={() => {
-            setShowOfferBanner(false)
-            setActiveOffer(null)
-            window.location.href = '/cart'
-          }}
-          onDecline={() => {
-            setShowOfferBanner(false)
-            setActiveOffer(null)
-          }}
+          onAccept={acceptOffer}
+          onDecline={declineOffer}
         />
       )}
 
@@ -1366,7 +1283,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
             const currentY = couponY
             dragYRef.current = { startY, startOffset: currentY }
             setIsDraggingY(true)
-            
+
             const onMove = (ev: MouseEvent) => {
               const diff = ev.clientY - startY
               const newY = Math.max(5, Math.min(95, currentY + (diff / window.innerHeight) * 100))
@@ -1376,7 +1293,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                 couponRef.current.style.top = `${newY}%`
               }
             }
-            
+
             const onUp = () => {
               document.removeEventListener('mousemove', onMove)
               document.removeEventListener('mouseup', onUp)
@@ -1385,7 +1302,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                 couponRef.current.style.transition = 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease, width 0.3s ease'
               }
             }
-            
+
             document.addEventListener('mousemove', onMove)
             document.addEventListener('mouseup', onUp)
           }}
@@ -1395,7 +1312,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
             const currentY = couponY
             dragYRef.current = { startY, startOffset: currentY }
             setIsDraggingY(true)
-            
+
             const onMove = (ev: TouchEvent) => {
               const touch = ev.touches[0]
               const diff = touch.clientY - startY
@@ -1406,7 +1323,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                 couponRef.current.style.top = `${newY}%`
               }
             }
-            
+
             const onUp = () => {
               document.removeEventListener('touchmove', onMove)
               document.removeEventListener('touchend', onUp)
@@ -1415,7 +1332,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                 couponRef.current.style.transition = 'right 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.1s ease, width 0.3s ease'
               }
             }
-            
+
             document.addEventListener('touchmove', onMove, { passive: false })
             document.addEventListener('touchend', onUp)
             e.preventDefault()
@@ -1445,8 +1362,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
               }}
             >
               <span style={{ fontSize: '16px' }}>🎁</span>
-              <span style={{ 
-                fontSize: '10px', 
+              <span style={{
+                fontSize: '10px',
                 fontWeight: 700,
                 background: 'rgba(255,255,255,0.2)',
                 padding: '2px 4px',
@@ -1454,8 +1371,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
               }}>
                 -{activeCoupon.discount}%
               </span>
-              <span style={{ 
-                fontSize: '7px', 
+              <span style={{
+                fontSize: '7px',
                 opacity: 0.6,
                 marginTop: '2px',
               }}>
@@ -1468,27 +1385,27 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
             <>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ 
-                    fontSize: isMobile ? '8px' : '10px', 
-                    textTransform: 'uppercase', 
-                    opacity: 0.7, 
+                  <p style={{
+                    fontSize: isMobile ? '8px' : '10px',
+                    textTransform: 'uppercase',
+                    opacity: 0.7,
                     letterSpacing: '0.5px',
                     margin: 0,
                   }}>
                     🎁 Réduction spéciale
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <p style={{ 
-                      fontSize: isMobile ? '24px' : '28px', 
-                      fontWeight: 700, 
+                    <p style={{
+                      fontSize: isMobile ? '24px' : '28px',
+                      fontWeight: 700,
                       lineHeight: 1.1,
                       margin: 0,
                     }}>
                       -{activeCoupon.discount}%
                     </p>
-                    <p style={{ 
-                      fontSize: isMobile ? '10px' : '12px', 
-                      opacity: 0.8, 
+                    <p style={{
+                      fontSize: isMobile ? '10px' : '12px',
+                      opacity: 0.8,
                       margin: 0,
                       fontFamily: 'monospace',
                       fontWeight: 600,
@@ -1500,9 +1417,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                       {activeCoupon.code}
                     </p>
                   </div>
-                  <p style={{ 
-                    fontSize: isMobile ? '9px' : '11px', 
-                    opacity: 0.6, 
+                  <p style={{
+                    fontSize: isMobile ? '9px' : '11px',
+                    opacity: 0.6,
                     margin: '2px 0 0 0',
                   }}>
                     {remainingTime <= 300 ? '⚠️ Expire bientôt !' : 'Valable 20min'}
@@ -1510,9 +1427,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <p style={{ fontSize: isMobile ? '7px' : '10px', opacity: 0.7, margin: 0 }}>Expire</p>
-                  <p style={{ 
-                    fontSize: isMobile ? '18px' : '22px', 
-                    fontWeight: 700, 
+                  <p style={{
+                    fontSize: isMobile ? '18px' : '22px',
+                    fontWeight: 700,
                     fontVariantNumeric: 'tabular-nums',
                     margin: 0,
                     color: remainingTime <= 300 ? '#FFD700' : '#fff',
@@ -1522,9 +1439,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                 </div>
               </div>
 
-              <div style={{ 
-                marginTop: isMobile ? '10px' : '14px', 
-                display: 'flex', 
+              <div style={{
+                marginTop: isMobile ? '10px' : '14px',
+                display: 'flex',
                 gap: '6px',
               }}>
                 <button
@@ -1738,10 +1655,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
             const target = e.currentTarget
             const scrollable = target.querySelector('.chat-messages') as HTMLDivElement
             if (!scrollable) return
-            
+
             const isAtTop = scrollable.scrollTop === 0
             const isAtBottom = scrollable.scrollHeight - scrollable.scrollTop === scrollable.clientHeight
-            
+
             if ((e.deltaY < 0 && isAtTop) || (e.deltaY > 0 && isAtBottom)) {
               e.preventDefault()
             }
@@ -1823,7 +1740,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
 
           {!isMinimized && (
             <>
-              <div 
+              <div
                 className="chat-messages"
                 style={{
                   flex: 1,
@@ -1841,7 +1758,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                   const target = e.currentTarget
                   const isAtTop = target.scrollTop === 0
                   const isAtBottom = target.scrollHeight - target.scrollTop === target.clientHeight
-                  
+
                   if ((isAtTop && (e.target as HTMLElement).scrollTop === 0) || isAtBottom) {
                     e.stopPropagation()
                   }
@@ -1888,8 +1805,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                       ) : (
                         msg.content
                       )}
-                      
-                      {/* ✅ FIX : TOUS les produits affichés en cartes cliquables - UNIQUEMENT pour le dernier message assistant */}
+
                       {msg.products && msg.products.length > 0 && (
                         <div style={{
                           marginTop: '8px',
@@ -1948,7 +1864,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                                   <span style={{ fontSize: '24px' }}>📦</span>
                                 )}
                               </div>
-                              
+
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <p style={{
                                   margin: 0,
@@ -1977,7 +1893,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                                   💡 {p.reason || 'Recommandé pour vous'}
                                 </p>
                               </div>
-                              
+
                               <div style={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -1995,7 +1911,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                               </div>
                             </div>
                           ))}
-                          
+
                           {msg.products.length > (isMobile ? 2 : 3) && (
                             <button
                               onClick={() => {
@@ -2030,7 +1946,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                     </div>
                   </div>
                 ))}
-                
+
                 {isTyping && (
                   <div style={{
                     display: 'flex',
@@ -2099,7 +2015,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                     color: 'var(--foreground)',
                   }}
                 />
-                
+
                 {voiceSupported && (
                   <button
                     onClick={startVoiceRecognition}
@@ -2123,9 +2039,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                     <MicIcon size={isMobile ? 14 : 16} color={isRecording ? '#fff' : 'var(--ink-2)'} active={isRecording} />
                   </button>
                 )}
-                
+
                 <button
-                  onClick={sendMessage}
+                  onClick={() => sendMessage()}
                   disabled={!input.trim() || isTyping}
                   style={{
                     width: isMobile ? '30px' : '34px',
