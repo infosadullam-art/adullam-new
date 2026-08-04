@@ -110,10 +110,51 @@ export default function ProductDetailPage() {
     setIsLoading(true)
     try {
       const response = await productsApi.get(productId)
+      
+      console.log("📦 [ProductDetail] Réponse API:", response)
+      
       if (response.success) {
-        setProduct(response.data as Product)
-        if (response.data.images?.length > 0) {
-          setSelectedImage(response.data.images[0].url)
+        const productData = response.data as any
+        
+        console.log("📦 [ProductDetail] Images brutes:", productData.images)
+        
+        // ✅ NORMALISER LES IMAGES
+        if (productData.images) {
+          // Si les images sont un tableau de strings
+          if (Array.isArray(productData.images) && typeof productData.images[0] === 'string') {
+            productData.images = productData.images.map((url: string, index: number) => ({
+              url,
+              position: index
+            }))
+          }
+          // Si les images sont un objet avec url
+          else if (Array.isArray(productData.images) && typeof productData.images[0] === 'object') {
+            // Déjà au bon format, ne rien faire
+          }
+          // Si les images sont un objet simple
+          else if (typeof productData.images === 'object' && !Array.isArray(productData.images)) {
+            productData.images = [{
+              url: productData.images.url || productData.images,
+              position: 0
+            }]
+          }
+          // Si les images est une string unique
+          else if (typeof productData.images === 'string') {
+            productData.images = [{
+              url: productData.images,
+              position: 0
+            }]
+          }
+        } else {
+          productData.images = []
+        }
+        
+        console.log("📦 [ProductDetail] Images normalisées:", productData.images)
+        
+        setProduct(productData as Product)
+        
+        if (productData.images?.length > 0) {
+          setSelectedImage(productData.images[0].url)
         }
       } else {
         toast.error("Failed to load product")
@@ -241,7 +282,7 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* Thumbnails */}
-                {product.images?.length > 0 && (
+                {product.images && product.images.length > 0 && (
                   <div className="grid grid-cols-5 gap-2 mt-4">
                     {product.images.map((image, index) => (
                       <button
