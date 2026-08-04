@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft, Save, X, Plus, Trash2, Truck, Ship, Navigation, Send, Home, Package, Clock, CheckCircle } from "lucide-react"
-import { ordersApi, productsApi } from "@/lib/admin/api-client"
+import { ordersApi } from "@/lib/admin/api-client"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/admin/auth-context"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -43,8 +43,7 @@ interface Order {
   paymentStatus: string
   paymentMethod: string
   subtotal: number
-  tax: number
-  shipping: number
+  shippingCost: number
   discount: number
   total: number
   items: OrderItem[]
@@ -54,24 +53,16 @@ interface Order {
     email: string
     phone?: string
   }
-  shippingAddress?: {
-    name: string
-    address1: string
-    address2?: string
+  shippingInfo?: {
+    firstName: string
+    lastName: string
+    email: string
+    phone: string
+    address: string
     city: string
-    state: string
-    postalCode: string
     country: string
-    phone?: string
-  }
-  billingAddress?: {
-    name: string
-    address1: string
-    address2?: string
-    city: string
-    state: string
     postalCode: string
-    country: string
+    notes?: string
   }
   notes?: string
   defaultShippingMode?: string
@@ -80,7 +71,7 @@ interface Order {
 
 const adminPath = "/admin/dashboard"
 
-// Statuts de commande avec icônes et libellés
+// Statuts de commande
 const ORDER_STATUSES = [
   { value: "PENDING", label: "En attente", icon: Clock, color: "text-yellow-600" },
   { value: "CONFIRMED", label: "Confirmée", icon: CheckCircle, color: "text-green-600" },
@@ -93,7 +84,6 @@ const ORDER_STATUSES = [
   { value: "REFUNDED", label: "Remboursée", icon: X, color: "text-red-600" },
 ]
 
-// Statuts de paiement
 const PAYMENT_STATUSES = [
   { value: "PENDING", label: "En attente", color: "text-yellow-600" },
   { value: "PAID", label: "Payé", color: "text-green-600" },
@@ -101,7 +91,6 @@ const PAYMENT_STATUSES = [
   { value: "REFUNDED", label: "Remboursé", color: "text-orange-600" },
 ]
 
-// Modes de livraison
 const SHIPPING_MODES = [
   { value: "bateau", label: "Maritime", icon: Ship, days: "35-50j" },
   { value: "avion", label: "Aérien", icon: Truck, days: "15-20j" },
@@ -121,31 +110,21 @@ export default function EditOrderPage() {
     paymentStatus: "PENDING",
     paymentMethod: "",
     subtotal: 0,
-    tax: 0,
-    shipping: 0,
+    shippingCost: 0,
     discount: 0,
     total: 0,
     items: [],
     notes: "",
     defaultShippingMode: "bateau",
-    shippingAddress: {
-      name: "",
-      address1: "",
-      address2: "",
-      city: "",
-      state: "",
-      postalCode: "",
-      country: "CI",
+    shippingInfo: {
+      firstName: "",
+      lastName: "",
+      email: "",
       phone: "",
-    },
-    billingAddress: {
-      name: "",
-      address1: "",
-      address2: "",
+      address: "",
       city: "",
-      state: "",
-      postalCode: "",
       country: "CI",
+      postalCode: "",
     },
   })
 
@@ -163,6 +142,7 @@ export default function EditOrderPage() {
 
   const loadOrder = async () => {
     try {
+      // ✅ Utiliser ordersApi.get avec l'ID en paramètre
       const response = await ordersApi.get(orderId)
       if (response.success && response.data) {
         const order = response.data
@@ -171,8 +151,7 @@ export default function EditOrderPage() {
           paymentStatus: order.paymentStatus,
           paymentMethod: order.paymentMethod,
           subtotal: order.subtotal,
-          tax: order.tax || 0,
-          shipping: order.shippingCost || 0,
+          shippingCost: order.shippingCost || 0,
           discount: order.discount || 0,
           total: order.total,
           items: order.items.map((item: any) => ({
@@ -188,15 +167,16 @@ export default function EditOrderPage() {
           notes: order.notes,
           defaultShippingMode: order.defaultShippingMode || "bateau",
           trackingNumber: order.trackingNumber,
-          shippingAddress: order.shippingInfo ? {
-            name: `${order.shippingInfo.firstName} ${order.shippingInfo.lastName}`,
-            address1: order.shippingInfo.address,
-            address2: order.shippingInfo.quartier || "",
-            city: order.shippingInfo.city,
-            state: order.shippingInfo.city,
-            postalCode: order.shippingInfo.postalCode || "",
+          shippingInfo: order.shippingInfo ? {
+            firstName: order.shippingInfo.firstName || "",
+            lastName: order.shippingInfo.lastName || "",
+            email: order.shippingInfo.email || "",
+            phone: order.shippingInfo.phone || "",
+            address: order.shippingInfo.address || "",
+            city: order.shippingInfo.city || "",
             country: order.shippingInfo.country || "CI",
-            phone: order.shippingInfo.phone,
+            postalCode: order.shippingInfo.postalCode || "",
+            notes: order.shippingInfo.notes || "",
           } : undefined,
         })
       } else {
@@ -217,22 +197,17 @@ export default function EditOrderPage() {
     setIsSaving(true)
     
     try {
-      // Préparer les données pour l'API
+      // ✅ Utiliser updateStatus (la seule méthode disponible)
       const updateData = {
         status: formData.status,
         paymentStatus: formData.paymentStatus,
         paymentMethod: formData.paymentMethod,
-        subtotal: formData.subtotal,
-        tax: formData.tax,
-        shippingCost: formData.shipping,
-        discount: formData.discount,
-        total: formData.total,
+        trackingNumber: formData.trackingNumber,
         notes: formData.notes,
         defaultShippingMode: formData.defaultShippingMode,
-        trackingNumber: formData.trackingNumber,
       }
       
-      const response = await ordersApi.update(orderId, updateData)
+      const response = await ordersApi.updateStatus(orderId, updateData)
       if (response.success) {
         toast.success("Commande mise à jour avec succès")
         router.push(`${adminPath}/orders/${orderId}`)
@@ -249,7 +224,7 @@ export default function EditOrderPage() {
 
   const calculateTotals = (items: OrderItem[]) => {
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-    const total = subtotal + (formData.tax || 0) + (formData.shipping || 0) - (formData.discount || 0)
+    const total = subtotal + (formData.shippingCost || 0) - (formData.discount || 0)
     setFormData({
       ...formData,
       items,
@@ -334,140 +309,12 @@ export default function EditOrderPage() {
 
       <div className="p-6">
         <form onSubmit={handleSubmit}>
-          <Tabs defaultValue="items" className="space-y-6">
+          <Tabs defaultValue="status" className="space-y-6">
             <TabsList>
-              <TabsTrigger value="items">Articles</TabsTrigger>
               <TabsTrigger value="status">Statut</TabsTrigger>
               <TabsTrigger value="shipping">Livraison</TabsTrigger>
-              <TabsTrigger value="customer">Client</TabsTrigger>
               <TabsTrigger value="notes">Notes</TabsTrigger>
             </TabsList>
-
-            <TabsContent value="items">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle>Articles de la commande</CardTitle>
-                  <Button type="button" variant="outline" size="sm" onClick={addItem}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Ajouter un article
-                  </Button>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {formData.items?.map((item, index) => (
-                    <div key={index} className="flex gap-4 items-start">
-                      <div className="flex-1">
-                        <Label>Produit</Label>
-                        <Input
-                          value={item.productTitle}
-                          onChange={(e) => updateItem(index, 'productTitle', e.target.value)}
-                          placeholder="Nom du produit"
-                        />
-                        {item.variantSummary && (
-                          <p className="text-xs text-muted-foreground mt-1">{item.variantSummary}</p>
-                        )}
-                      </div>
-                      <div className="w-24">
-                        <Label>Quantité</Label>
-                        <Input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 0)}
-                        />
-                      </div>
-                      <div className="w-32">
-                        <Label>Prix unitaire</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={item.price}
-                          onChange={(e) => updateItem(index, 'price', parseFloat(e.target.value) || 0)}
-                        />
-                      </div>
-                      <div className="w-32">
-                        <Label>Total</Label>
-                        <Input
-                          type="number"
-                          value={item.total}
-                          disabled
-                          className="bg-muted"
-                        />
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="mt-6"
-                        onClick={() => removeItem(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-
-                  {formData.items?.length === 0 && (
-                    <p className="text-center text-muted-foreground py-8">
-                      Aucun article dans cette commande
-                    </p>
-                  )}
-
-                  <Separator className="my-4" />
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Sous-total</span>
-                      <span className="font-medium">${formData.subtotal?.toFixed(2)}</span>
-                    </div>
-                    <div className="flex gap-4 items-center">
-                      <div className="flex-1">
-                        <Label>Frais de livraison</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={formData.shipping}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            shipping: parseFloat(e.target.value) || 0,
-                            total: (formData.subtotal || 0) + (parseFloat(e.target.value) || 0) + (formData.tax || 0) - (formData.discount || 0)
-                          })}
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <Label>Taxes</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={formData.tax}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            tax: parseFloat(e.target.value) || 0,
-                            total: (formData.subtotal || 0) + (formData.shipping || 0) + (parseFloat(e.target.value) || 0) - (formData.discount || 0)
-                          })}
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <Label>Réduction</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={formData.discount}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            discount: parseFloat(e.target.value) || 0,
-                            total: (formData.subtotal || 0) + (formData.shipping || 0) + (formData.tax || 0) - (parseFloat(e.target.value) || 0)
-                          })}
-                        />
-                      </div>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between font-bold">
-                      <span>Total</span>
-                      <span className="text-lg">${formData.total?.toFixed(2)}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
 
             <TabsContent value="status">
               <Card>
@@ -519,7 +366,7 @@ export default function EditOrderPage() {
                   <div className="space-y-2">
                     <Label>Méthode de paiement</Label>
                     <Input
-                      value={formData.paymentMethod}
+                      value={formData.paymentMethod || ''}
                       onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
                       placeholder="ex: MTN Money, Orange Money, Wave, Visa"
                     />
@@ -576,116 +423,93 @@ export default function EditOrderPage() {
                   <CardTitle>Adresse de livraison</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Nom complet</Label>
-                    <Input
-                      value={formData.shippingAddress?.name || ''}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        shippingAddress: { ...formData.shippingAddress!, name: e.target.value }
-                      })}
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Prénom</Label>
+                      <Input
+                        value={formData.shippingInfo?.firstName || ''}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          shippingInfo: { ...formData.shippingInfo!, firstName: e.target.value }
+                        })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Nom</Label>
+                      <Input
+                        value={formData.shippingInfo?.lastName || ''}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          shippingInfo: { ...formData.shippingInfo!, lastName: e.target.value }
+                        })}
+                      />
+                    </div>
                   </div>
+
                   <div className="space-y-2">
                     <Label>Adresse</Label>
                     <Input
-                      value={formData.shippingAddress?.address1 || ''}
+                      value={formData.shippingInfo?.address || ''}
                       onChange={(e) => setFormData({
                         ...formData,
-                        shippingAddress: { ...formData.shippingAddress!, address1: e.target.value }
+                        shippingInfo: { ...formData.shippingInfo!, address: e.target.value }
                       })}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label>Complément (Optionnel)</Label>
-                    <Input
-                      value={formData.shippingAddress?.address2 || ''}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        shippingAddress: { ...formData.shippingAddress!, address2: e.target.value }
-                      })}
-                    />
-                  </div>
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Ville</Label>
                       <Input
-                        value={formData.shippingAddress?.city || ''}
+                        value={formData.shippingInfo?.city || ''}
                         onChange={(e) => setFormData({
                           ...formData,
-                          shippingAddress: { ...formData.shippingAddress!, city: e.target.value }
+                          shippingInfo: { ...formData.shippingInfo!, city: e.target.value }
                         })}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label>Code postal</Label>
                       <Input
-                        value={formData.shippingAddress?.postalCode || ''}
+                        value={formData.shippingInfo?.postalCode || ''}
                         onChange={(e) => setFormData({
                           ...formData,
-                          shippingAddress: { ...formData.shippingAddress!, postalCode: e.target.value }
+                          shippingInfo: { ...formData.shippingInfo!, postalCode: e.target.value }
                         })}
                       />
                     </div>
                   </div>
+
                   <div className="space-y-2">
                     <Label>Pays</Label>
                     <Input
-                      value={formData.shippingAddress?.country || ''}
+                      value={formData.shippingInfo?.country || ''}
                       onChange={(e) => setFormData({
                         ...formData,
-                        shippingAddress: { ...formData.shippingAddress!, country: e.target.value }
+                        shippingInfo: { ...formData.shippingInfo!, country: e.target.value }
                       })}
                     />
                   </div>
+
                   <div className="space-y-2">
                     <Label>Téléphone</Label>
                     <Input
-                      value={formData.shippingAddress?.phone || ''}
+                      value={formData.shippingInfo?.phone || ''}
                       onChange={(e) => setFormData({
                         ...formData,
-                        shippingAddress: { ...formData.shippingAddress!, phone: e.target.value }
+                        shippingInfo: { ...formData.shippingInfo!, phone: e.target.value }
                       })}
                     />
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
 
-            <TabsContent value="customer">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Informations client</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Nom</Label>
-                    <Input
-                      value={formData.shippingAddress?.name || ''}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        shippingAddress: { ...formData.shippingAddress!, name: e.target.value }
-                      })}
-                    />
-                  </div>
                   <div className="space-y-2">
                     <Label>Email</Label>
                     <Input
                       type="email"
-                      value={formData.customer?.email || ''}
+                      value={formData.shippingInfo?.email || ''}
                       onChange={(e) => setFormData({
                         ...formData,
-                        customer: { ...formData.customer!, email: e.target.value }
-                      })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Téléphone</Label>
-                    <Input
-                      value={formData.shippingAddress?.phone || ''}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        shippingAddress: { ...formData.shippingAddress!, phone: e.target.value }
+                        shippingInfo: { ...formData.shippingInfo!, email: e.target.value }
                       })}
                     />
                   </div>
