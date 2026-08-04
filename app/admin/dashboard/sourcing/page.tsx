@@ -336,9 +336,11 @@ export default function SourcingPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => router.push(`${adminPath}/sourcing/${request.id}`)}>
-              <Eye className="mr-2 h-4 w-4" />
-              Détails
+            <DropdownMenuItem asChild>
+              <Link href={`${adminPath}/sourcing/${request.id}`}>
+                <Eye className="mr-2 h-4 w-4" />
+                Détails
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleProcessRequest(request)}>
               <MessageCircle className="mr-2 h-4 w-4" />
