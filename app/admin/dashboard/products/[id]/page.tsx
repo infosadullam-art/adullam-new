@@ -23,7 +23,10 @@ import {
   Eye,
   Copy,
   Archive,
-  AlertCircle
+  AlertCircle,
+  Weight,
+  Ruler,
+  Box
 } from "lucide-react"
 import { productsApi } from "@/lib/admin/api-client"
 import { toast } from "sonner"
@@ -120,26 +123,17 @@ export default function ProductDetailPage() {
         
         // ✅ NORMALISER LES IMAGES
         if (productData.images) {
-          // Si les images sont un tableau de strings
           if (Array.isArray(productData.images) && typeof productData.images[0] === 'string') {
             productData.images = productData.images.map((url: string, index: number) => ({
               url,
               position: index
             }))
-          }
-          // Si les images sont un objet avec url
-          else if (Array.isArray(productData.images) && typeof productData.images[0] === 'object') {
-            // Déjà au bon format, ne rien faire
-          }
-          // Si les images sont un objet simple
-          else if (typeof productData.images === 'object' && !Array.isArray(productData.images)) {
+          } else if (typeof productData.images === 'object' && !Array.isArray(productData.images)) {
             productData.images = [{
               url: productData.images.url || productData.images,
               position: 0
             }]
-          }
-          // Si les images est une string unique
-          else if (typeof productData.images === 'string') {
+          } else if (typeof productData.images === 'string') {
             productData.images = [{
               url: productData.images,
               position: 0
@@ -191,6 +185,26 @@ export default function ProductDetailPage() {
     }
   }
 
+  // Calcul du volume en m³
+  const calculateVolume = () => {
+    if (!product) return null
+    const { height, width, depth } = product
+    if (height && width && depth) {
+      return (height * width * depth) / 1000000 // cm³ → m³
+    }
+    return null
+  }
+
+  // Calcul du poids volumétrique (pour transport aérien)
+  const calculateVolumetricWeight = () => {
+    if (!product) return null
+    const { height, width, depth } = product
+    if (height && width && depth) {
+      return (height * width * depth) / 6000 // cm³ / 6000
+    }
+    return null
+  }
+
   if (isLoading || authLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -218,6 +232,9 @@ export default function ProductDetailPage() {
   }
 
   if (!product) return null
+
+  const volume = calculateVolume()
+  const volumetricWeight = calculateVolumetricWeight()
 
   return (
     <div className="min-h-screen bg-background">
@@ -380,20 +397,70 @@ export default function ProductDetailPage() {
                   </TabsContent>
                   
                   <TabsContent value="shipping" className="mt-0">
-                    <dl className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <dt className="text-sm text-muted-foreground">Weight (kg)</dt>
-                        <dd className="font-medium">{product.weight ? `${product.weight} kg` : "-"}</dd>
+                    <div className="space-y-4">
+                      {/* Poids */}
+                      <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
+                        <Weight className="h-5 w-5 text-muted-foreground mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium">Poids réel</p>
+                          <p className="text-lg font-semibold">
+                            {product.weight ? `${product.weight} kg` : "-"}
+                          </p>
+                        </div>
                       </div>
-                      <div className="space-y-1">
-                        <dt className="text-sm text-muted-foreground">Dimensions</dt>
-                        <dd className="font-medium">
-                          {product.height || product.width || product.depth ? (
-                            `${product.height || '-'} × ${product.width || '-'} × ${product.depth || '-'} cm`
-                          ) : "-"}
-                        </dd>
+
+                      {/* Dimensions */}
+                      <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
+                        <Ruler className="h-5 w-5 text-muted-foreground mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium">Dimensions (L × l × H)</p>
+                          <p className="text-lg font-semibold">
+                            {product.height || product.width || product.depth ? (
+                              `${product.height || '-'} × ${product.width || '-'} × ${product.depth || '-'} cm`
+                            ) : "-"}
+                          </p>
+                        </div>
                       </div>
-                    </dl>
+
+                      {/* Volume */}
+                      <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
+                        <Box className="h-5 w-5 text-muted-foreground mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium">Volume</p>
+                          <p className="text-lg font-semibold">
+                            {volume !== null ? `${volume.toFixed(3)} m³` : "-"}
+                          </p>
+                          {volume !== null && (
+                            <p className="text-xs text-muted-foreground">
+                              Calculé à partir des dimensions
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Poids volumétrique */}
+                      {volumetricWeight !== null && (
+                        <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <Package className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                              Poids volumétrique (aérien)
+                            </p>
+                            <p className="text-lg font-semibold text-blue-700 dark:text-blue-300">
+                              {volumetricWeight.toFixed(2)} kg
+                            </p>
+                            <p className="text-xs text-blue-600 dark:text-blue-400">
+                              Formule: (L × l × H) / 6000
+                            </p>
+                            {product.weight && volumetricWeight > product.weight && (
+                              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                                ⚠️ Poids volumétrique plus élevé que le poids réel
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </TabsContent>
                 </CardContent>
               </Tabs>
