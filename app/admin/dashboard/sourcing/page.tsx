@@ -341,11 +341,9 @@ export default function SourcingPage() {
               Traiter
             </DropdownMenuItem>
             
-            <DropdownMenuItem asChild>
-              <Link href={`${adminPath}/sourcing/${request.id}`}>
-                <Eye className="mr-2 h-4 w-4" />
-                Détails
-              </Link>
+            <DropdownMenuItem onClick={() => router.push(`${adminPath}/sourcing/${request.id}`)}>
+              <Eye className="mr-2 h-4 w-4" />
+              Détails
             </DropdownMenuItem>
 
             <DropdownMenuItem onClick={() => handleDelete(request.id)} className="text-destructive">
