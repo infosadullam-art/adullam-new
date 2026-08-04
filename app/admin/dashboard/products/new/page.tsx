@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { AdminHeader } from "@/components/admin/header"
@@ -22,11 +22,12 @@ import { ArrowLeft, Save, X } from "lucide-react"
 import { productsApi } from "@/lib/admin/api-client"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/admin/auth-context"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const adminPath = "/admin/dashboard"
 
 export default function NewProductPage() {
-  const { user } = useAuth()
+  const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
   const [formData, setFormData] = useState({
@@ -40,6 +41,17 @@ export default function NewProductPage() {
     status: "DRAFT",
     featured: false,
   })
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/admin/login")
+      return
+    }
+    if (user?.role !== "ADMIN") {
+      router.replace("/admin/login")
+      return
+    }
+  }, [authLoading, user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -66,6 +78,19 @@ export default function NewProductPage() {
     } finally {
       setIsSaving(false)
     }
+  }
+
+  if (authLoading) {
+    return (
+      <div className="p-6 space-y-6">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-96 w-full" />
+      </div>
+    )
+  }
+
+  if (!user || user.role !== "ADMIN") {
+    return null
   }
 
   return (
