@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { categoriesApi, productsApi } from "@/lib/admin/api-client"
+import { categoriesApi } from "@/lib/admin/api-client"
 import { Plus, MoreHorizontal, Pencil, Trash2, Eye, Search, FolderTree, Calendar } from "lucide-react"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/admin/auth-context"
@@ -28,7 +28,9 @@ interface Category {
   image?: string
   createdAt: string
   updatedAt: string
-  productCount?: number // Sera ajouté après calcul
+  _count?: {
+    products: number
+  }
 }
 
 interface Meta {
@@ -38,7 +40,6 @@ interface Meta {
   totalPages: number
 }
 
-// 🔹 Base path pour les routes admin
 const adminPath = "/admin/dashboard"
 
 function formatDate(dateString: string): string {
@@ -58,9 +59,7 @@ export default function CategoriesPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
-  const [productCounts, setProductCounts] = useState<Record<string, number>>({})
 
-  // 🔹 Vérifie l'auth
   useEffect(() => {
     if (!authLoading) {
       if (!user) {
@@ -80,28 +79,6 @@ export default function CategoriesPage() {
     }
   }, [page, search, user])
 
-  // Charger le nombre de produits pour chaque catégorie
-  const loadProductCounts = async (categories: Category[]) => {
-    const counts: Record<string, number> = {}
-    
-    for (const category of categories) {
-      try {
-        const response = await productsApi.list({ 
-          categoryId: category.id,
-          limit: 1 // On veut juste le count, pas les produits
-        })
-        if (response.success && response.meta) {
-          counts[category.id] = response.meta.total
-        }
-      } catch (error) {
-        console.error(`Failed to load product count for category ${category.id}:`, error)
-        counts[category.id] = 0
-      }
-    }
-    
-    setProductCounts(counts)
-  }
-
   async function loadCategories() {
     setIsLoading(true)
     try {
@@ -113,12 +90,8 @@ export default function CategoriesPage() {
 
       const response = await categoriesApi.list(params)
       if (response.success) {
-        const categoriesData = response.data as Category[]
-        setCategories(categoriesData)
+        setCategories(response.data as Category[])
         setMeta(response.meta as Meta)
-        
-        // Charger les compteurs de produits
-        await loadProductCounts(categoriesData)
       } else {
         toast.error(response.error || "Failed to load categories")
       }
@@ -215,7 +188,8 @@ export default function CategoriesPage() {
       key: "products",
       header: "Products",
       cell: (category: Category) => {
-        const count = productCounts[category.id] || 0
+        // ✅ Utilisation directe de _count.products depuis l'API
+        const count = category._count?.products ?? 0
         return (
           <Link 
             href={`${adminPath}/products?category=${category.id}`}
@@ -278,7 +252,6 @@ export default function CategoriesPage() {
     },
   ]
 
-  // Loading state
   if (authLoading) {
     return (
       <div className="p-6 space-y-6">
@@ -293,7 +266,6 @@ export default function CategoriesPage() {
     )
   }
 
-  // Auth check
   if (!user || user.role !== "ADMIN") {
     return null
   }
