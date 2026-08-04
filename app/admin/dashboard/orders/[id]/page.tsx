@@ -245,6 +245,7 @@ export default function OrderDetailPage() {
   const loadOrder = async () => {
     setIsLoading(true)
     try {
+      // ✅ Utiliser ordersApi.get avec l'ID en paramètre
       const response = await ordersApi.get(orderId)
       if (response.success && response.data) {
         setOrder(response.data as Order)
@@ -264,33 +265,14 @@ export default function OrderDetailPage() {
   const handleStatusUpdate = async (newStatus: string) => {
     setIsUpdating(true)
     try {
-      const token = localStorage.getItem('adullam_token')
+      // ✅ Utiliser ordersApi.updateStatus
+      const response = await ordersApi.updateStatus(orderId, { status: newStatus })
       
-      console.log('🔴 [FRONTEND] ========== MISE À JOUR STATUT ==========')
-      console.log('🔴 [FRONTEND] Token présent:', !!token)
-      console.log('🔴 [FRONTEND] Token (premiers 30):', token ? token.substring(0, 30) + '...' : 'ABSENT')
-      console.log('🔴 [FRONTEND] Nouveau statut:', newStatus)
-      console.log('🔴 [FRONTEND] URL:', `/api/orders/${orderId}`)
-      
-      const response = await fetch(`/api/orders/${orderId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ status: newStatus })
-      })
-      
-      console.log('🔴 [FRONTEND] Response status:', response.status)
-      const data = await response.json()
-      console.log('🔴 [FRONTEND] Response data:', data)
-      console.log('🔴 [FRONTEND] ========== FIN ==========')
-      
-      if (response.ok && data.success) {
+      if (response.success) {
         toast.success(`Commande marquée comme ${getStatusLabel(newStatus)}`)
         loadOrder()
       } else {
-        toast.error(data.error || "Erreur lors de la mise à jour")
+        toast.error(response.error || "Erreur lors de la mise à jour")
       }
     } catch (error) {
       console.error("Failed to update order:", error)
@@ -315,25 +297,13 @@ export default function OrderDetailPage() {
 
   const handleDelete = async () => {
     try {
-      const token = localStorage.getItem('adullam_token')
-      
-      console.log('🔴 [FRONTEND] ========== SUPPRESSION ==========')
-      console.log('🔴 [FRONTEND] Token présent:', !!token)
-      
-      const response = await fetch(`/api/orders/${orderId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      
-      console.log('🔴 [FRONTEND] Response status:', response.status)
-      
-      if (response.ok) {
+      // ✅ Utiliser ordersApi.delete
+      const response = await ordersApi.delete(orderId)
+      if (response.success) {
         toast.success("Commande supprimée avec succès")
         router.push(`${adminPath}/orders`)
       } else {
-        toast.error("Erreur lors de la suppression")
+        toast.error(response.error || "Erreur lors de la suppression")
       }
     } catch (error) {
       console.error("Failed to delete order:", error)
@@ -604,7 +574,6 @@ export default function OrderDetailPage() {
                   <span className="text-muted-foreground">Porte-à-porte</span>
                   <span>{formatCurrency(portePorteFromItems)}</span>
                 </div>
-                {/* 🔥 COUPON APPLIQUÉ */}
                 {order.couponCode && (
                   <div className="flex justify-between text-green-600">
                     <span className="text-muted-foreground flex items-center gap-1">
@@ -670,7 +639,6 @@ export default function OrderDetailPage() {
           </Card>
         </div>
 
-        {/* Coupon Information Card (optionnel) */}
         {order.couponCode && (
           <Card className="mb-6">
             <CardHeader>
