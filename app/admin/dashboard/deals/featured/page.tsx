@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { ArrowLeft, Star, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/admin/auth-context"
+import { productsApi } from "@/lib/admin/api-client"
 import Image from "next/image"
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd"
 
@@ -26,7 +27,6 @@ interface Product {
 
 const adminPath = "/admin/dashboard"
 
-// Fonction pour formater les prix en USD
 const formatUSD = (price: number) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -38,7 +38,7 @@ const formatUSD = (price: number) => {
 export default function FeaturedProductsPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
-  
+
   const [products, setProducts] = useState<Product[]>([])
   const [allProducts, setAllProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -53,30 +53,25 @@ export default function FeaturedProductsPage() {
       router.replace("/admin/login")
       return
     }
-    
+
     loadData()
   }, [authLoading, user])
 
   const loadData = async () => {
     setLoading(true)
     try {
-      // Charger tous les produits pour la recherche (limité à 100)
-      const allRes = await fetch('/api/products?limit=100')
-      const allData = await allRes.json()
-      
-      if (allData.success) {
-        // Gérer le format de réponse paginé
-        const productsList = allData.data?.data || allData.data || []
+      // ✅ Utiliser productsApi au lieu de fetch
+      const allResponse = await productsApi.list({ limit: 100 })
+      if (allResponse.success) {
+        const productsList = allResponse.data || []
         setAllProducts(productsList)
         console.log(`📦 ${productsList.length} produits chargés pour la recherche`)
       }
 
-      // ✅ CHARGER SEULEMENT 10 PRODUITS FEATURED
-      const featuredRes = await fetch('/api/products?featured=true&limit=10')
-      const featuredData = await featuredRes.json()
-      
-      if (featuredData.success) {
-        const featuredList = featuredData.data?.data || featuredData.data || []
+      // ✅ Charger les produits featured
+      const featuredResponse = await productsApi.list({ featured: true, limit: 10 })
+      if (featuredResponse.success) {
+        const featuredList = featuredResponse.data || []
         setProducts(featuredList)
         console.log(`⭐ ${featuredList.length} produits featured chargés`)
       } else {
@@ -92,19 +87,14 @@ export default function FeaturedProductsPage() {
 
   const toggleFeatured = async (productId: string, currentValue: boolean) => {
     try {
-      const res = await fetch(`/api/products/${productId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ featured: !currentValue })
-      })
-      
-      const data = await res.json()
-      
-      if (data.success) {
+      // ✅ Utiliser productsApi.update
+      const response = await productsApi.update(productId, { featured: !currentValue })
+
+      if (response.success) {
         toast.success(currentValue ? "Retiré de la sélection" : "Ajouté à la sélection")
-        loadData() // Recharger les données
+        loadData()
       } else {
-        toast.error(data.error || "Erreur lors de la mise à jour")
+        toast.error(response.error || "Erreur lors de la mise à jour")
       }
     } catch (error) {
       console.error("❌ Erreur:", error)
@@ -124,22 +114,15 @@ export default function FeaturedProductsPage() {
     items.splice(result.destination.index, 0, reorderedItem)
 
     setProducts(items)
-
-    // Optionnel : sauvegarder l'ordre
-    // await fetch('/api/deals/featured/reorder', {
-    //   method: 'POST',
-    //   body: JSON.stringify({ order: items.map(p => p.id) })
-    // })
   }
 
-  // Filtrer les produits non featured pour la recherche
   const availableProducts = allProducts
-    .filter(p => !p.featured) // Exclure ceux déjà featured
-    .filter(p => 
+    .filter(p => !p.featured)
+    .filter(p =>
       p.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.id.includes(searchTerm)
     )
-    .slice(0, 10) // Limiter à 10 résultats de recherche
+    .slice(0, 10)
 
   if (loading || authLoading) {
     return (
@@ -162,8 +145,8 @@ export default function FeaturedProductsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AdminHeader 
-        title="Sélection du moment"
+      <AdminHeader
+        title="⭐ Sélection du moment"
         description="Gérez les produits mis en avant sur la page d'accueil"
       />
 
@@ -178,7 +161,6 @@ export default function FeaturedProductsPage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          {/* Colonne gauche - Produits sélectionnés (max 10) */}
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
@@ -250,7 +232,6 @@ export default function FeaturedProductsPage() {
             </Card>
           </div>
 
-          {/* Colonne droite - Ajout de produits */}
           <div className="lg:col-span-1">
             <Card>
               <CardHeader>
