@@ -336,46 +336,38 @@ export default function SourcingPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleProcessRequest(request)}>
-              <MessageCircle className="mr-2 h-4 w-4" />
-              Traiter
-            </DropdownMenuItem>
-            
             <DropdownMenuItem onClick={() => router.push(`${adminPath}/sourcing/${request.id}`)}>
               <Eye className="mr-2 h-4 w-4" />
               Détails
             </DropdownMenuItem>
-
+            <DropdownMenuItem onClick={() => handleProcessRequest(request)}>
+              <MessageCircle className="mr-2 h-4 w-4" />
+              Traiter
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleQuickStatusChange(request.id, "PENDING")}>
+              <Clock className="mr-2 h-4 w-4" />
+              En attente
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleQuickStatusChange(request.id, "IN_REVIEW")}>
+              <Clock className="mr-2 h-4 w-4" />
+              En cours
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleQuickStatusChange(request.id, "QUOTED")}>
+              <Clock className="mr-2 h-4 w-4" />
+              Devis envoyé
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleQuickStatusChange(request.id, "RESPONDED")}>
+              <Clock className="mr-2 h-4 w-4" />
+              Répondu
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleQuickStatusChange(request.id, "CLOSED")}>
+              <Clock className="mr-2 h-4 w-4" />
+              Clôturé
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleDelete(request.id)} className="text-destructive">
               <Trash2 className="mr-2 h-4 w-4" />
               Supprimer
             </DropdownMenuItem>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger className="w-full">
-                <div className="flex items-center px-2 py-1.5 text-sm">
-                  <Clock className="mr-2 h-4 w-4" />
-                  Changer statut
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="right">
-                <DropdownMenuItem onClick={() => handleQuickStatusChange(request.id, "PENDING")}>
-                  En attente
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleQuickStatusChange(request.id, "IN_REVIEW")}>
-                  En cours
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleQuickStatusChange(request.id, "QUOTED")}>
-                  Devis envoyé
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleQuickStatusChange(request.id, "RESPONDED")}>
-                  Répondu
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleQuickStatusChange(request.id, "CLOSED")}>
-                  Clôturé
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </DropdownMenuContent>
         </DropdownMenu>
       ),
