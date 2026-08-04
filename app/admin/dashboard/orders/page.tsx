@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { AdminHeader } from "@/components/admin/header"
 import { DataTable } from "@/components/admin/data-table"
 import { Badge } from "@/components/ui/badge"
@@ -11,6 +12,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ordersApi } from "@/lib/admin/api-client"
 import { MoreHorizontal, Eye, Truck, CheckCircle, XCircle } from "lucide-react"
 import { toast } from "sonner"
+import { useAuth } from "@/lib/admin/auth-context"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface OrderItem {
   product: { title: string; images: string[] }
@@ -33,9 +36,9 @@ interface Order {
 interface Meta {
   page: number
   totalPages: number
+  total: number
 }
 
-// 🔹 Base path pour les routes admin
 const adminPath = "/admin/dashboard"
 
 function formatCurrency(value: number) {
@@ -70,6 +73,9 @@ function getPaymentBadge(status: string) {
 }
 
 export default function OrdersPage() {
+  const { user, isLoading: authLoading } = useAuth()
+  const router = useRouter()
+  
   const [orders, setOrders] = useState<Order[]>([])
   const [meta, setMeta] = useState<Meta | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -77,8 +83,16 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all")
 
   useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/admin/login")
+      return
+    }
+    if (user?.role !== "ADMIN") {
+      router.replace("/admin/login")
+      return
+    }
     loadOrders()
-  }, [page, statusFilter])
+  }, [authLoading, user, page, statusFilter])
 
   async function loadOrders() {
     setIsLoading(true)
@@ -106,12 +120,32 @@ export default function OrdersPage() {
 
   async function updateStatus(id: string, status: string) {
     try {
-      await ordersApi.updateStatus(id, { status })
-      toast.success(`Order marked as ${status}`)
-      loadOrders()
+      const response = await ordersApi.updateStatus(id, { status })
+      if (response.success) {
+        toast.success(`Order marked as ${status}`)
+        loadOrders()
+      } else {
+        toast.error(response.error || "Failed to update order")
+      }
     } catch (error) {
       toast.error("Failed to update order")
     }
+  }
+
+  if (authLoading || isLoading) {
+    return (
+      <div>
+        <AdminHeader title="Orders" description="Manage customer orders" />
+        <div className="p-6 space-y-4">
+          <Skeleton className="h-10 w-[180px]" />
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const columns = [
@@ -180,7 +214,7 @@ export default function OrdersPage() {
       key: "payment",
       header: "Payment",
       cell: (order: Order) => (
-        <Link href={`${adminPath}/orders?payment=${order.paymentStatus}`} className="block hover:opacity-80">
+        <Link href={`${adminPath}/orders?paymentStatus=${order.paymentStatus}`} className="block hover:opacity-80">
           {getPaymentBadge(order.paymentStatus)}
         </Link>
       ),
@@ -238,7 +272,7 @@ export default function OrdersPage() {
       <AdminHeader title="Orders" description="Manage customer orders" />
 
       <div className="p-6">
-        <div className="mb-6">
+        <div className="mb-6 flex items-center gap-4">
           <Select
             value={statusFilter}
             onValueChange={(v) => {
@@ -259,6 +293,12 @@ export default function OrdersPage() {
               <SelectItem value="CANCELLED">Cancelled</SelectItem>
             </SelectContent>
           </Select>
+          
+          {meta && (
+            <Badge variant="outline" className="ml-2">
+              Total: {meta.total} orders
+            </Badge>
+          )}
         </div>
 
         <DataTable
