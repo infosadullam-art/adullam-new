@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { ArrowLeft, Save } from "lucide-react"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/admin/auth-context"
+import { categoriesApi } from "@/lib/admin/api-client"
 
 interface Category {
   id: string
@@ -30,18 +31,13 @@ interface Category {
 
 const adminPath = "/admin/dashboard"
 
-// ✅ Fonction pour générer un slug valide (sans accents, & devient "et")
 const generateSlug = (name: string): string => {
   return name
     .toLowerCase()
-    // Étape 1: Remplacer & par "et" (doit être AVANT la suppression des caractères spéciaux)
     .replace(/&/g, 'et')
-    // Étape 2: Enlever les accents
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, '')
-    // Étape 3: Remplacer tout ce qui n'est pas alphanumérique par des tirets
     .replace(/[^a-z0-9]+/g, '-')
-    // Étape 4: Enlever les tirets au début et à la fin
     .replace(/^-|-$/g, '')
 }
 
@@ -79,19 +75,16 @@ export default function EditCategoryPage() {
   const loadData = async () => {
     setIsLoading(true)
     try {
-      const token = localStorage.getItem("adullam_token")
-      const res = await fetch(`/api/categories`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      })
-      const data = await res.json()
+      // ✅ Utilisation de categoriesApi au lieu de fetch direct
+      const response = await categoriesApi.list()
       
-      if (!data.success || !data.data) {
+      if (!response.success || !response.data) {
         toast.error("Erreur lors du chargement des catégories")
         router.push(`${adminPath}/categories`)
         return
       }
       
-      const allCats = data.data as Category[]
+      const allCats = response.data as Category[]
       const categoryData = allCats.find(c => c.id === categoryId)
       
       if (!categoryData) {
@@ -102,7 +95,6 @@ export default function EditCategoryPage() {
       
       setCategory(categoryData)
       
-      // ✅ Amélioration: Nettoyer le slug existant au chargement
       const cleanSlug = generateSlug(categoryData.slug || categoryData.name)
       
       setFormData({
@@ -139,7 +131,6 @@ export default function EditCategoryPage() {
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     
-    // Auto-générer le slug quand le nom change
     if (field === "name" && value) {
       const newSlug = generateSlug(value)
       setFormData(prev => ({ ...prev, slug: newSlug }))
@@ -157,56 +148,25 @@ export default function EditCategoryPage() {
     setIsSaving(true)
     
     try {
-      // ✅ FORCER un slug propre à partir du nom ou du slug saisi
       const finalSlug = generateSlug(formData.slug || formData.name)
       
       const updateData = {
-        name: formData.name, // Garde les accents et & dans le nom
-        slug: finalSlug,     // Slug nettoyé pour l'URL
+        name: formData.name,
+        slug: finalSlug,
         description: formData.description || undefined,
         parentId: formData.parentId !== "none" ? formData.parentId : undefined,
         image: formData.image || undefined
       }
       
-      console.log("📤 Nom original:", updateData.name)
-      console.log("📤 Slug final:", updateData.slug)
-      console.log("📤 Catégorie ID:", categoryId)
+      // ✅ Utilisation de categoriesApi.update
+      const response = await categoriesApi.update(categoryId, updateData)
       
-      const token = localStorage.getItem("adullam_token")
-      
-      if (!token) {
-        toast.error("Vous n'êtes pas connecté")
-        router.push("/admin/login")
-        return
-      }
-      
-      const response = await fetch(`/api/categories/${categoryId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(updateData),
-      })
-      
-      console.log("📦 Status:", response.status)
-      
-      if (response.status === 403) {
-        toast.error("Session expirée - Veuillez vous reconnecter")
-        localStorage.removeItem("adullam_token")
-        router.push("/admin/login")
-        return
-      }
-      
-      const data = await response.json()
-      console.log("📦 Réponse:", data)
-      
-      if (response.ok && data.success) {
+      if (response.success) {
         toast.success("Catégorie mise à jour avec succès")
         router.push(`${adminPath}/categories/${categoryId}`)
         router.refresh()
       } else {
-        toast.error(data.error || `Erreur ${response.status}`)
+        toast.error(response.error || "Erreur lors de la mise à jour")
       }
     } catch (error) {
       console.error("❌ Erreur:", error)
@@ -248,7 +208,6 @@ export default function EditCategoryPage() {
             </CardHeader>
             
             <CardContent className="space-y-4">
-              {/* Nom - GARDE les accents */}
               <div className="space-y-2">
                 <Label htmlFor="name">Nom *</Label>
                 <Input
@@ -263,7 +222,6 @@ export default function EditCategoryPage() {
                 </p>
               </div>
 
-              {/* Slug - PROPRE pour l'URL */}
               <div className="space-y-2">
                 <Label htmlFor="slug">
                   Slug 
@@ -292,23 +250,8 @@ export default function EditCategoryPage() {
                 <p className="text-xs text-muted-foreground">
                   URL finale: /categorie/{formData.slug || "slug"}
                 </p>
-                <div className="text-xs space-y-1">
-                  {formData.slug && formData.slug.includes('&') && (
-                    <p className="text-red-500">❌ Le slug ne doit pas contenir de &</p>
-                  )}
-                  {formData.slug && /[éèêëàâäùûüîïç]/.test(formData.slug) && (
-                    <p className="text-red-500">❌ Le slug ne doit pas contenir d'accents</p>
-                  )}
-                  {formData.slug && !/^[a-z0-9-]+$/.test(formData.slug) && (
-                    <p className="text-red-500">❌ Le slug ne doit contenir que des lettres minuscules, chiffres et tirets</p>
-                  )}
-                  {formData.slug && /^-|-$/.test(formData.slug) && (
-                    <p className="text-red-500">❌ Le slug ne peut pas commencer ou finir par un tiret</p>
-                  )}
-                </div>
               </div>
 
-              {/* Description */}
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea
@@ -320,7 +263,6 @@ export default function EditCategoryPage() {
                 />
               </div>
 
-              {/* Catégorie parente */}
               <div className="space-y-2">
                 <Label htmlFor="parent">Catégorie parente</Label>
                 <Select
@@ -341,7 +283,6 @@ export default function EditCategoryPage() {
                 </Select>
               </div>
 
-              {/* Image */}
               <div className="space-y-2">
                 <Label htmlFor="image">URL de l'image</Label>
                 <Input
