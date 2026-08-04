@@ -37,7 +37,7 @@ import {
   Phone,
   Building2,
   Filter,
-  Trash2  // ✅ AJOUTÉ ICI
+  Trash2
 } from "lucide-react"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/admin/auth-context"
@@ -61,15 +61,6 @@ function formatCurrency(value: number) {
 }
 
 function getStatusBadge(status: string) {
-  const variants: Record<string, "default" | "secondary" | "destructive" | "outline" | "warning"> = {
-    PENDING: "warning",
-    IN_REVIEW: "secondary",
-    QUOTED: "default",
-    RESPONDED: "success",
-    CLOSED: "outline",
-    ARCHIVED: "outline",
-  }
-
   const labels: Record<string, string> = {
     PENDING: "En attente",
     IN_REVIEW: "En cours",
@@ -79,19 +70,17 @@ function getStatusBadge(status: string) {
     ARCHIVED: "Archivé",
   }
 
-  const icons: Record<string, any> = {
-    PENDING: Clock,
-    IN_REVIEW: Eye,
-    QUOTED: FileText,
-    RESPONDED: CheckCircle,
-    CLOSED: CheckCircle,
+  const colors: Record<string, string> = {
+    PENDING: "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100",
+    IN_REVIEW: "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100",
+    QUOTED: "bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100",
+    RESPONDED: "bg-green-100 text-green-800 border-green-200 hover:bg-green-100",
+    CLOSED: "bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-100",
+    ARCHIVED: "bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-50",
   }
 
-  const Icon = icons[status]
-  
   return (
-    <Badge variant={variants[status] || "outline"} className="flex items-center gap-1 w-fit">
-      {Icon && <Icon className="w-3 h-3" />}
+    <Badge variant="outline" className={colors[status] || "bg-gray-100"}>
       {labels[status] || status}
     </Badge>
   )
@@ -359,6 +348,11 @@ export default function SourcingPage() {
               </Link>
             </DropdownMenuItem>
 
+            <DropdownMenuItem onClick={() => handleDelete(request.id)} className="text-destructive">
+              <Trash2 className="mr-2 h-4 w-4" />
+              Supprimer
+            </DropdownMenuItem>
+
             <DropdownMenu>
               <DropdownMenuTrigger className="w-full">
                 <div className="flex items-center px-2 py-1.5 text-sm">
@@ -384,14 +378,6 @@ export default function SourcingPage() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
-            <DropdownMenuItem 
-              onClick={() => handleDelete(request.id)} 
-              className="text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Supprimer
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       ),
