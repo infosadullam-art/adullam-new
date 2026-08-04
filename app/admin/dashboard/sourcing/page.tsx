@@ -9,34 +9,21 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { sourcingApi, type SourcingRequest, type SourcingStats } from "@/lib/admin/api-client"
 import { 
-  Plus, 
-  MoreHorizontal, 
   Eye, 
   Search, 
   Package, 
   Clock, 
-  CheckCircle, 
-  XCircle,
   MessageCircle,
   FileText,
   Download,
   RefreshCw,
-  ChevronLeft,
-  ChevronRight,
-  Calendar,
-  DollarSign,
   User,
-  Mail,
-  Phone,
-  Building2,
-  Filter,
   Trash2
 } from "lucide-react"
 import { toast } from "sonner"
@@ -326,52 +313,55 @@ export default function SourcingPage() {
     },
     {
       key: "actions",
-      header: "",
-      className: "w-[100px]",
+      header: "Actions",
+      className: "w-[200px]",
       cell: (request: SourcingRequest) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="hover:bg-muted">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link href={`${adminPath}/sourcing/${request.id}`}>
-                <Eye className="mr-2 h-4 w-4" />
-                Détails
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleProcessRequest(request)}>
-              <MessageCircle className="mr-2 h-4 w-4" />
-              Traiter
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleQuickStatusChange(request.id, "PENDING")}>
-              <Clock className="mr-2 h-4 w-4" />
-              En attente
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleQuickStatusChange(request.id, "IN_REVIEW")}>
-              <Clock className="mr-2 h-4 w-4" />
-              En cours
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleQuickStatusChange(request.id, "QUOTED")}>
-              <Clock className="mr-2 h-4 w-4" />
-              Devis envoyé
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleQuickStatusChange(request.id, "RESPONDED")}>
-              <Clock className="mr-2 h-4 w-4" />
-              Répondu
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleQuickStatusChange(request.id, "CLOSED")}>
-              <Clock className="mr-2 h-4 w-4" />
-              Clôturé
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(request.id)} className="text-destructive">
-              <Trash2 className="mr-2 h-4 w-4" />
-              Supprimer
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push(`${adminPath}/sourcing/${request.id}`)}
+            className="h-8 px-2"
+            title="Voir les détails"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleProcessRequest(request)}
+            className="h-8 px-2"
+            title="Traiter la demande"
+          >
+            <MessageCircle className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDelete(request.id)}
+            className="h-8 px-2 text-destructive hover:text-destructive"
+            title="Supprimer"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+          <Select
+            value=""
+            onValueChange={(value) => {
+              if (value) handleQuickStatusChange(request.id, value)
+            }}
+          >
+            <SelectTrigger className="h-8 w-8 p-0 border-0 hover:bg-muted">
+              <Clock className="h-4 w-4" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="PENDING">En attente</SelectItem>
+              <SelectItem value="IN_REVIEW">En cours</SelectItem>
+              <SelectItem value="QUOTED">Devis envoyé</SelectItem>
+              <SelectItem value="RESPONDED">Répondu</SelectItem>
+              <SelectItem value="CLOSED">Clôturé</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       ),
     },
   ]
