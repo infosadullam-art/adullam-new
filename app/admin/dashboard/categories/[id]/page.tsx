@@ -16,7 +16,8 @@ import {
   Package,
   Eye,
   Calendar,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from "lucide-react"
 import { categoriesApi, productsApi } from "@/lib/admin/api-client"
 import { toast } from "sonner"
@@ -68,6 +69,13 @@ interface Product {
   }
 }
 
+interface PaginationMeta {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+}
+
 const adminPath = "/admin/dashboard"
 
 function formatCurrency(value: number): string {
@@ -106,7 +114,11 @@ export default function CategoryDetailPage() {
 
   const [category, setCategory] = useState<Category | null>(null)
   const [products, setProducts] = useState<Product[]>([])
+  const [meta, setMeta] = useState<PaginationMeta | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   useEffect(() => {
@@ -121,24 +133,18 @@ export default function CategoryDetailPage() {
     loadCategory()
   }, [authLoading, user, categoryId])
 
-  // ✅ VERSION CORRIGÉE : Charge TOUTES les catégories et trouve celle avec le bon ID
   const loadCategory = async () => {
     setIsLoading(true)
     try {
-      // Récupérer TOUTES les catégories (pas une seule)
       const response = await categoriesApi.list()
-      console.log("📦 Toutes les catégories:", response)
       
       if (response.success && response.data) {
-        // 🔍 Chercher celle qui a le bon ID
         const categoryData = (response.data as Category[]).find(c => c.id === categoryId)
         
         if (categoryData) {
-          console.log("✅ Catégorie trouvée:", categoryData.name)
           setCategory(categoryData)
-          await loadProducts(categoryId)
+          await loadProducts(categoryId, 1, true)
         } else {
-          console.error("❌ Catégorie non trouvée avec ID:", categoryId)
           toast.error("Category not found")
           router.push(`${adminPath}/categories`)
         }
@@ -155,30 +161,49 @@ export default function CategoryDetailPage() {
     }
   }
 
-  const loadProducts = async (catId: string) => {
+  const loadProducts = async (catId: string, pageNum: number, reset: boolean = false) => {
     try {
-      console.log("🔍 Recherche produits pour catégorie ID:", catId)
-      
-      // Charger les produits avec le bon paramètre
-      const response = await productsApi.list({ 
-        categoryId: catId,
-        limit: 100 
-      })
-      
-      console.log("📦 Réponse produits avec filtre:", response)
-      
-      if (response.success && response.data) {
-        const filteredProducts = response.data as Product[]
-        console.log(`✅ ${filteredProducts.length} produits trouvés pour catégorie ${catId}`)
-        setProducts(filteredProducts)
+      if (reset) {
+        setIsLoading(true)
       } else {
-        console.log("❌ Aucun produit trouvé avec le filtre")
-        setProducts([])
+        setIsLoadingMore(true)
+      }
+
+      const response = await productsApi.list({
+        categoryId: catId,
+        page: pageNum,
+        limit: 20
+      })
+
+      if (response.success && response.data) {
+        const newProducts = response.data as Product[]
+        const metaData = response.meta as PaginationMeta
+        
+        if (reset) {
+          setProducts(newProducts)
+        } else {
+          setProducts(prev => [...prev, ...newProducts])
+        }
+        
+        setMeta(metaData)
+        setHasMore(metaData.page < metaData.totalPages)
+        setPage(metaData.page)
+      } else {
+        if (reset) setProducts([])
+        setHasMore(false)
       }
     } catch (error) {
       console.error("Failed to load products:", error)
-      setProducts([])
+      if (reset) setProducts([])
+    } finally {
+      setIsLoading(false)
+      setIsLoadingMore(false)
     }
+  }
+
+  const loadMoreProducts = () => {
+    if (!hasMore || isLoadingMore) return
+    loadProducts(categoryId, page + 1, false)
   }
 
   const handleDelete = async () => {
@@ -296,16 +321,16 @@ export default function CategoryDetailPage() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Products in this Category</CardTitle>
                 <Button variant="outline" size="sm" asChild>
-                  <Link href={`${adminPath}/products?category=${category.id}`}>
+                  <Link href={`${adminPath}/products?categoryId=${category.id}`}>
                     <Eye className="mr-2 h-4 w-4" />
-                    View All ({products.length})
+                    View All ({meta?.total || 0})
                   </Link>
                 </Button>
               </CardHeader>
               <CardContent>
                 {products.length > 0 ? (
                   <div className="space-y-4">
-                    {products.slice(0, 10).map((product) => (
+                    {products.map((product) => (
                       <Link
                         key={product.id}
                         href={`${adminPath}/products/${product.id}`}
@@ -335,12 +360,29 @@ export default function CategoryDetailPage() {
                       </Link>
                     ))}
                     
-                    {products.length > 10 && (
-                      <Button variant="ghost" className="w-full" asChild>
-                        <Link href={`${adminPath}/products?category=${category.id}`}>
-                          View {products.length - 10} more products...
-                        </Link>
+                    {/* Load More Button */}
+                    {hasMore && (
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={loadMoreProducts}
+                        disabled={isLoadingMore}
+                      >
+                        {isLoadingMore ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Loading...
+                          </>
+                        ) : (
+                          `Load More (${(meta?.total || 0) - products.length} remaining)`
+                        )}
                       </Button>
+                    )}
+
+                    {!hasMore && products.length > 0 && (
+                      <p className="text-center text-sm text-muted-foreground py-2">
+                        Showing all {products.length} products
+                      </p>
                     )}
                   </div>
                 ) : (
@@ -348,7 +390,7 @@ export default function CategoryDetailPage() {
                     <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">No products in this category</p>
                     <Button variant="outline" className="mt-4" asChild>
-                      <Link href={`${adminPath}/products/new?category=${category.id}`}>
+                      <Link href={`${adminPath}/products/new?categoryId=${category.id}`}>
                         Add Product
                       </Link>
                     </Button>
@@ -394,8 +436,8 @@ export default function CategoryDetailPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Total Products</span>
-                  <Badge variant={products.length > 0 ? "default" : "secondary"}>
-                    {products.length}
+                  <Badge variant={(meta?.total || 0) > 0 ? "default" : "secondary"}>
+                    {meta?.total || 0}
                   </Badge>
                 </div>
                 {category.children && (
@@ -444,13 +486,13 @@ export default function CategoryDetailPage() {
               </CardHeader>
               <CardContent className="space-y-2">
                 <Button variant="outline" className="w-full justify-start" asChild>
-                  <Link href={`${adminPath}/products?category=${category.id}`}>
+                  <Link href={`${adminPath}/products?categoryId=${category.id}`}>
                     <Package className="mr-2 h-4 w-4" />
                     View All Products
                   </Link>
                 </Button>
                 <Button variant="outline" className="w-full justify-start" asChild>
-                  <Link href={`${adminPath}/products/new?category=${category.id}`}>
+                  <Link href={`${adminPath}/products/new?categoryId=${category.id}`}>
                     <Package className="mr-2 h-4 w-4" />
                     Add Product
                   </Link>
@@ -474,11 +516,11 @@ export default function CategoryDetailPage() {
             <AlertDialogTitle>Delete Category</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete "{category.name}"? This action cannot be undone.
-              {products.length > 0 && (
+              {(meta?.total || 0) > 0 && (
                 <div className="mt-4 p-4 bg-destructive/10 rounded-lg">
                   <div className="flex items-center gap-2 text-destructive">
                     <AlertCircle className="h-5 w-5" />
-                    <p className="font-medium">Warning: This category contains {products.length} products.</p>
+                    <p className="font-medium">Warning: This category contains {meta?.total || 0} products.</p>
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">
                     These products will need to be reassigned to another category.
