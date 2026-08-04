@@ -10,6 +10,13 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { sourcingApi, type SourcingRequest } from "@/lib/admin/api-client"
 import { 
   ArrowLeft,
@@ -63,7 +70,6 @@ function getStatusBadge(status: string) {
   return variants[status] || "bg-gray-100 text-gray-800"
 }
 
-// ✅ Fonction utilitaire pour corriger les URLs des documents
 const getDocumentUrl = (url: string): string => {
   if (url.startsWith('/uploads/')) {
     return `/api${url}`;
@@ -79,7 +85,6 @@ export default function SourcingDetailPage({ params }: PageProps) {
   const [error, setError] = useState<string | null>(null)
   const [id, setId] = useState<string | null>(null)
 
-  // Résoudre la Promise params
   useEffect(() => {
     const unwrapParams = async () => {
       try {
@@ -239,17 +244,22 @@ export default function SourcingDetailPage({ params }: PageProps) {
                 </span>
               </div>
               <div className="flex gap-2">
-                <select 
-                  className="px-3 py-2 border rounded-lg text-sm"
+                <Select
                   value={request.status}
-                  onChange={(e) => handleStatusChange(e.target.value)}
+                  onValueChange={handleStatusChange}
                 >
-                  <option value="PENDING">En attente</option>
-                  <option value="IN_REVIEW">En cours</option>
-                  <option value="QUOTED">Devis envoyé</option>
-                  <option value="RESPONDED">Répondu</option>
-                  <option value="CLOSED">Clôturé</option>
-                </select>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PENDING">En attente</SelectItem>
+                    <SelectItem value="IN_REVIEW">En cours</SelectItem>
+                    <SelectItem value="QUOTED">Devis envoyé</SelectItem>
+                    <SelectItem value="RESPONDED">Répondu</SelectItem>
+                    <SelectItem value="CLOSED">Clôturé</SelectItem>
+                    <SelectItem value="ARCHIVED">Archivé</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </CardContent>
@@ -337,7 +347,7 @@ export default function SourcingDetailPage({ params }: PageProps) {
           </CardContent>
         </Card>
 
-        {/* ✅ Documents joints avec correction d'URL */}
+        {/* Documents joints */}
         {request.documents && (
           <Card>
             <CardHeader>
@@ -349,7 +359,6 @@ export default function SourcingDetailPage({ params }: PageProps) {
             <CardContent>
               <div className="space-y-2">
                 {JSON.parse(request.documents).map((doc: any, i: number) => {
-                  // ✅ Correction de l'URL
                   const fileUrl = getDocumentUrl(doc.url);
                   
                   return (
