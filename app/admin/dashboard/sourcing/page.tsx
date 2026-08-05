@@ -306,11 +306,16 @@ export default function SourcingPage() {
       header: "",
       className: "w-[50px]",
       cell: (request: SourcingRequest) => (
-        <Link href={`${adminPath}/sourcing/${request.id}`}>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Eye className="h-4 w-4" />
-          </Button>
-        </Link>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => {
+            window.open(`${adminPath}/sourcing/${request.id}`, "_self")
+          }}
+        >
+          <Eye className="h-4 w-4" />
+        </Button>
       ),
     },
   ]
