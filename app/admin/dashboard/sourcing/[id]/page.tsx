@@ -64,13 +64,6 @@ function getStatusBadge(status: string) {
   return variants[status] || "bg-gray-100 text-gray-800"
 }
 
-const getDocumentUrl = (url: string): string => {
-  if (url.startsWith('/uploads/')) {
-    return `/api${url}`;
-  }
-  return url;
-}
-
 export default function SourcingDetailPage({ params }: { params: { id: string } }) {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
@@ -335,30 +328,26 @@ export default function SourcingDetailPage({ params }: { params: { id: string } 
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {JSON.parse(request.documents).map((doc: any, i: number) => {
-                  const fileUrl = getDocumentUrl(doc.url);
-                  
-                  return (
-                    <a
-                      key={i}
-                      href={fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <FileText className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">{doc.fileName}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {Math.round(doc.size / 1024)} Ko
-                          </p>
-                        </div>
+                {JSON.parse(request.documents).map((doc: any, i: number) => (
+                  <a
+                    key={i}
+                    href={doc.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">{doc.fileName}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {Math.round(doc.size / 1024)} Ko
+                        </p>
                       </div>
-                      <Download className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </a>
-                  );
-                })}
+                    </div>
+                    <Download className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </a>
+                ))}
               </div>
             </CardContent>
           </Card>
