@@ -200,7 +200,7 @@ export const authApi = {
       success: boolean
       user: any
       accessToken: string
-    }>("/api/auth/login", {  // ✅ AJOUTÉ /api
+    }>("/api/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     })
@@ -221,26 +221,26 @@ export const authApi = {
     console.log("🟡 [authApi] Logout")
     inMemoryAccessToken = null
     setStoredToken(null)
-    return apiClient<{ success: boolean }>("/api/auth/logout", { method: "POST" })  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean }>("/api/auth/logout", { method: "POST" })
   },
 
   me: async () => {
     console.log("🟡 [authApi] Appel à me()")
     return apiClient<{ success: boolean; user?: any; accessToken?: string }>(
-      "/api/auth/me"  // ✅ AJOUTÉ /api
+      "/api/auth/me"
     )
   },
 
   refresh: () => {
     console.log("🟡 [authApi] Appel à refresh()")
-    return apiClient<{ success: boolean; accessToken: string }>("/api/auth/refresh", {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; accessToken: string }>("/api/auth/refresh", {
       method: "POST",
     })
   },
 
   register: (name: string, email: string, password: string, phone?: string) => {
     console.log("🟡 [authApi] Tentative d'inscription:", email)
-    return apiClient<{ success: boolean; user?: any; accessToken?: string }>("/api/auth/register", {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; user?: any; accessToken?: string }>("/api/auth/register", {
       method: "POST",
       body: JSON.stringify({ name, email, password, phone }),
     })
@@ -249,43 +249,43 @@ export const authApi = {
   verifyToken: (token: string) => {
     console.log("🟡 [authApi] Vérification de token")
     return apiClient<{ success: boolean; data: any }>(
-      `/api/auth/verify?token=${token}`,  // ✅ AJOUTÉ /api
+      `/api/auth/verify?token=${token}`,
       { method: "GET" }
     )
   },
 }
 
-// ------------------- Dashboard (métriques Python) -------------------
+// ------------------- Dashboard (métriques) -------------------
 export const dashboardApi = {
   getStats: (startDate?: string, endDate?: string) => {
     console.log("🟡 [dashboardApi] getStats")
-    return apiClient<{ success: boolean; data: any }>("/api/admin/dashboard", {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>("/api/admin/dashboard", {
       params: { startDate, endDate },
     })
   },
   getCycleMetrics: async () => {
-    console.log("🟡 [dashboardApi] getCycleMetrics -> Python Service")
-    return pythonApiClient("/admin/cycle/metrics")
+    console.log("🟡 [dashboardApi] getCycleMetrics -> Next.js API")
+    return apiClient<{ success: boolean; data: any }>("/api/admin/cycle/metrics")
   },
   getQualityMetrics: async () => {
-    console.log("🟡 [dashboardApi] getQualityMetrics -> Python Service")
-    return pythonApiClient("/admin/cycle/quality")
+    console.log("🟡 [dashboardApi] getQualityMetrics -> Next.js API")
+    return apiClient<{ success: boolean; data: any }>("/api/admin/cycle/quality")
   },
   getColdStartMetrics: async () => {
-    console.log("🟡 [dashboardApi] getColdStartMetrics -> Python Service")
-    return pythonApiClient("/admin/cycle/coldstart")
+    console.log("🟡 [dashboardApi] getColdStartMetrics -> Next.js API")
+    return apiClient<{ success: boolean; data: any }>("/api/admin/cycle/coldstart")
   },
   getDiversityMetrics: async () => {
-    console.log("🟡 [dashboardApi] getDiversityMetrics -> Python Service")
-    return pythonApiClient("/admin/cycle/diversity")
+    console.log("🟡 [dashboardApi] getDiversityMetrics -> Next.js API")
+    return apiClient<{ success: boolean; data: any }>("/api/admin/cycle/diversity")
   },
   getScrollMetrics: async () => {
-    console.log("🟡 [dashboardApi] getScrollMetrics -> Python Service")
-    return pythonApiClient("/admin/cycle/scroll")
+    console.log("🟡 [dashboardApi] getScrollMetrics -> Next.js API")
+    return apiClient<{ success: boolean; data: any }>("/api/admin/cycle/scroll")
   },
   getAlerts: async () => {
-    console.log("🟡 [dashboardApi] getAlerts -> Python Service")
-    return pythonApiClient("/admin/cycle/alerts")
+    console.log("🟡 [dashboardApi] getAlerts -> Next.js API")
+    return apiClient<{ success: boolean; data: any }>("/api/admin/cycle/alerts")
   },
 }
 
@@ -294,37 +294,37 @@ export const productsApi = {
   list: (params?: Record<string, string | number | boolean | undefined>) => {
     console.log("🟡 [productsApi] list")
     return apiClient<{ success: boolean; data: any[]; meta: any }>(
-      "/api/products",  // ✅ AJOUTÉ /api
+      "/api/products",
       { params }
     )
   },
   get: (id: string) => {
     console.log("🟡 [productsApi] get:", id)
-    return apiClient<{ success: boolean; data: any }>(`/api/products/${id}`)  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>(`/api/products/${id}`)
   },
   create: (data: any) => {
     console.log("🟡 [productsApi] create")
-    return apiClient<{ success: boolean; data: any }>("/api/products", {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>("/api/products", {
       method: "POST",
       body: JSON.stringify(data),
     })
   },
   update: (id: string, data: any) => {
     console.log("🟡 [productsApi] update:", id)
-    return apiClient<{ success: boolean; data: any }>(`/api/products/${id}`, {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>(`/api/products/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     })
   },
   delete: (id: string) => {
     console.log("🟡 [productsApi] delete:", id)
-    return apiClient<{ success: boolean }>(`/api/products/${id}`, {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean }>(`/api/products/${id}`, {
       method: "DELETE",
     })
   },
   stats: () => {
     console.log("🟡 [productsApi] stats")
-    return apiClient<{ success: boolean; data: any }>("/api/products/stats")  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>("/api/products/stats")
   },
 }
 
@@ -332,11 +332,11 @@ export const productsApi = {
 export const categoriesApi = {
   list: () => {
     console.log("🟡 [categoriesApi] list")
-    return apiClient<{ success: boolean; data: any[] }>("/api/categories")  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any[] }>("/api/categories")
   },
   create: (data: any) => {
     console.log("🟡 [categoriesApi] create")
-    return apiClient<{ success: boolean; data: any }>("/api/categories", {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>("/api/categories", {
       method: "POST",
       body: JSON.stringify(data),
     })
@@ -344,7 +344,7 @@ export const categoriesApi = {
   update: (id: string, data: any) => {
     console.log("🟡 [categoriesApi] update:", id)
     return apiClient<{ success: boolean; data: any }>(
-      `/api/categories/${id}`,  // ✅ AJOUTÉ /api
+      `/api/categories/${id}`,
       {
         method: "PATCH",
         body: JSON.stringify(data),
@@ -353,7 +353,7 @@ export const categoriesApi = {
   },
   delete: (id: string) => {
     console.log("🟡 [categoriesApi] delete:", id)
-    return apiClient<{ success: boolean }>(`/api/categories/${id}`, {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean }>(`/api/categories/${id}`, {
       method: "DELETE",
     })
   },
@@ -364,24 +364,24 @@ export const ordersApi = {
   list: (params?: Record<string, string | number | boolean | undefined>) => {
     console.log("🟡 [ordersApi] list")
     return apiClient<{ success: boolean; data: any[]; meta: any }>(
-      "/api/orders",  // ✅ AJOUTÉ /api
+      "/api/orders",
       { params }
     )
   },
   get: (id: string) => {
     console.log("🟡 [ordersApi] get:", id)
-    return apiClient<{ success: boolean; data: any }>(`/api/orders/${id}`)  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>(`/api/orders/${id}`)
   },
   updateStatus: (id: string, data: any) => {
     console.log("🟡 [ordersApi] updateStatus:", id)
-    return apiClient<{ success: boolean; data: any }>(`/api/orders/${id}`, {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>(`/api/orders/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     })
   },
   stats: (startDate?: string, endDate?: string) => {
     console.log("🟡 [ordersApi] stats")
-    return apiClient<{ success: boolean; data: any }>("/api/orders/stats", {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>("/api/orders/stats", {
       params: { startDate, endDate },
     })
   },
@@ -408,29 +408,29 @@ export interface Address {
 export const addressesApi = {
   list: () => {
     console.log("🟡 [addressesApi] list")
-    return apiClient<{ success: boolean; addresses: Address[] }>("/api/user/addresses")  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; addresses: Address[] }>("/api/user/addresses")
   },
   get: (id: string) => {
     console.log("🟡 [addressesApi] get:", id)
-    return apiClient<{ success: boolean; address: Address }>(`/api/user/addresses/${id}`)  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; address: Address }>(`/api/user/addresses/${id}`)
   },
   create: (data: Partial<Address>) => {
     console.log("🟡 [addressesApi] create")
-    return apiClient<{ success: boolean; address: Address; message: string }>("/api/user/addresses", {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; address: Address; message: string }>("/api/user/addresses", {
       method: "POST",
       body: JSON.stringify(data),
     })
   },
   update: (id: string, data: Partial<Address>) => {
     console.log("🟡 [addressesApi] update:", id)
-    return apiClient<{ success: boolean; address: Address; message: string }>(`/api/user/addresses/${id}`, {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; address: Address; message: string }>(`/api/user/addresses/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     })
   },
   delete: (id: string) => {
     console.log("🟡 [addressesApi] delete:", id)
-    return apiClient<{ success: boolean; message: string }>(`/api/user/addresses/${id}`, {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; message: string }>(`/api/user/addresses/${id}`, {
       method: "DELETE",
     })
   },
@@ -440,18 +440,18 @@ export const addressesApi = {
 export const wishlistApi = {
   list: () => {
     console.log("🟡 [wishlistApi] list")
-    return apiClient<{ success: boolean; data: any[] }>("/api/user/wishlist")  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any[] }>("/api/user/wishlist")
   },
   add: (productId: string) => {
     console.log("🟡 [wishlistApi] add:", productId)
-    return apiClient<{ success: boolean; message: string }>("/api/user/wishlist", {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; message: string }>("/api/user/wishlist", {
       method: "POST",
       body: JSON.stringify({ productId }),
     })
   },
   remove: (productId: string) => {
     console.log("🟡 [wishlistApi] remove:", productId)
-    return apiClient<{ success: boolean; message: string }>(`/api/user/wishlist?productId=${productId}`, {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; message: string }>(`/api/user/wishlist?productId=${productId}`, {
       method: "DELETE",
     })
   },
@@ -462,24 +462,24 @@ export const importApi = {
   list: (params?: Record<string, string | number | boolean | undefined>) => {
     console.log("🟡 [importApi] list")
     return apiClient<{ success: boolean; data: any[]; meta: any }>(
-      "/api/import",  // ✅ AJOUTÉ /api
+      "/api/import",
       { params }
     )
   },
   get: (id: string) => {
     console.log("🟡 [importApi] get:", id)
-    return apiClient<{ success: boolean; data: any }>(`/api/import/${id}`)  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>(`/api/import/${id}`)
   },
   create: (data: any) => {
     console.log("🟡 [importApi] create")
-    return apiClient<{ success: boolean; data: any }>("/api/import", {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>("/api/import", {
       method: "POST",
       body: JSON.stringify(data),
     })
   },
   stats: () => {
     console.log("🟡 [importApi] stats")
-    return apiClient<{ success: boolean; data: any }>("/api/import/stats")  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>("/api/import/stats")
   },
 }
 
@@ -488,20 +488,20 @@ export const jobsApi = {
   list: (params?: Record<string, string | number | boolean | undefined>) => {
     console.log("🟡 [jobsApi] list")
     return apiClient<{ success: boolean; data: any[]; meta: any }>(
-      "/api/jobs",  // ✅ AJOUTÉ /api
+      "/api/jobs",
       { params }
     )
   },
   trigger: (queue: string, job: string, payload?: any) => {
     console.log("🟡 [jobsApi] trigger:", queue, job)
-    return apiClient<{ success: boolean; data: any }>("/api/jobs/trigger", {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>("/api/jobs/trigger", {
       method: "POST",
       body: JSON.stringify({ queue, job, payload }),
     })
   },
   stats: () => {
     console.log("🟡 [jobsApi] stats")
-    return apiClient<{ success: boolean; data: any }>("/api/jobs/stats")  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>("/api/jobs/stats")
   },
 }
 
@@ -510,13 +510,13 @@ export const notificationsApi = {
   list: (params?: Record<string, string | number | boolean | undefined>) => {
     console.log("🟡 [notificationsApi] list")
     return apiClient<{ success: boolean; data: any[]; meta: any }>(
-      "/api/notifications",  // ✅ AJOUTÉ /api
+      "/api/notifications",
       { params }
     )
   },
   stats: () => {
     console.log("🟡 [notificationsApi] stats")
-    return apiClient<{ success: boolean; data: any }>("/api/notifications/stats")  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>("/api/notifications/stats")
   },
 }
 
@@ -525,13 +525,13 @@ export const adsApi = {
   list: (params?: Record<string, string | number | boolean | undefined>) => {
     console.log("🟡 [adsApi] list")
     return apiClient<{ success: boolean; data: any[]; meta: any }>(
-      "/api/ads",  // ✅ AJOUTÉ /api
+      "/api/ads",
       { params }
     )
   },
   performance: (params?: Record<string, string | number | boolean | undefined>) => {
     console.log("🟡 [adsApi] performance")
-    return apiClient<{ success: boolean; data: any }>("/api/ads/performance", {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>("/api/ads/performance", {
       params,
     })
   },
@@ -541,7 +541,7 @@ export const adsApi = {
 export const feedApi = {
   stats: () => {
     console.log("🟡 [feedApi] stats")
-    return apiClient<{ success: boolean; data: any }>("/api/feed/stats")  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>("/api/feed/stats")
   },
 }
 
@@ -550,7 +550,7 @@ export const interactionsApi = {
   stats: (startDate?: string, endDate?: string) => {
     console.log("🟡 [interactionsApi] stats")
     return apiClient<{ success: boolean; data: any }>(
-      "/api/interactions/stats",  // ✅ AJOUTÉ /api
+      "/api/interactions/stats",
       { params: { startDate, endDate } }
     )
   },
@@ -561,27 +561,27 @@ export const videosApi = {
   list: (params?: Record<string, string | number | boolean | undefined>) => {
     console.log("🟡 [videosApi] list")
     return apiClient<{ success: boolean; data: any[]; meta: any }>(
-      "/api/videos",  // ✅ AJOUTÉ /api
+      "/api/videos",
       { params }
     )
   },
   create: (data: any) => {
     console.log("🟡 [videosApi] create")
-    return apiClient<{ success: boolean; data: any }>("/api/videos", {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>("/api/videos", {
       method: "POST",
       body: JSON.stringify(data),
     })
   },
   update: (id: string, data: any) => {
     console.log("🟡 [videosApi] update:", id)
-    return apiClient<{ success: boolean; data: any }>(`/api/videos/${id}`, {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>(`/api/videos/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     })
   },
   delete: (id: string) => {
     console.log("🟡 [videosApi] delete:", id)
-    return apiClient<{ success: boolean }>(`/api/videos/${id}`, {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean }>(`/api/videos/${id}`, {
       method: "DELETE",
     })
   },
@@ -592,23 +592,23 @@ export const usersApi = {
   list: (params?: Record<string, string | number | boolean | undefined>) => {
     console.log("🟡 [usersApi] list")
     return apiClient<{ success: boolean; data: any[]; meta?: any }>(
-      "/api/admin/users",  // ✅ AJOUTÉ /api
+      "/api/admin/users",
       { params }
     )
   },
   get: (id: string) => {
     console.log("🟡 [usersApi] get:", id)
-    return apiClient<{ success: boolean; data: any }>(`/api/admin/users/${id}`)  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>(`/api/admin/users/${id}`)
   },
   ban: (id: string) => {
     console.log("🟡 [usersApi] ban:", id)
-    return apiClient<{ success: boolean }>(`/api/admin/users/${id}/ban`, {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean }>(`/api/admin/users/${id}/ban`, {
       method: "POST",
     })
   },
   activate: (id: string) => {
     console.log("🟡 [usersApi] activate:", id)
-    return apiClient<{ success: boolean }>(`/api/admin/users/${id}/activate`, {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean }>(`/api/admin/users/${id}/activate`, {
       method: "POST",
     })
   },
@@ -669,32 +669,32 @@ export interface SourcingFilters {
 export const sourcingApi = {
   list: (params?: SourcingFilters): Promise<{ success: boolean; data: SourcingRequest[]; meta: any }> => {
     console.log("🟡 [sourcingApi] list", params)
-    return apiClient("/api/sourcing", { params })  // ✅ AJOUTÉ /api
+    return apiClient("/api/sourcing", { params })
   },
   getStats: (): Promise<{ success: boolean; data: SourcingStats }> => {
     console.log("🟡 [sourcingApi] getStats")
-    return apiClient("/api/sourcing", { params: { stats: "true" } })  // ✅ AJOUTÉ /api
+    return apiClient("/api/sourcing", { params: { stats: "true" } })
   },
   getById: (id: string): Promise<{ success: boolean; data: SourcingRequest }> => {
     console.log("🟡 [sourcingApi] getById:", id)
-    return apiClient(`/api/sourcing/${id}`)  // ✅ AJOUTÉ /api
+    return apiClient(`/api/sourcing/${id}`)
   },
   update: (id: string, data: Partial<SourcingRequest>): Promise<{ success: boolean; data: SourcingRequest }> => {
     console.log("🟡 [sourcingApi] update:", id)
-    return apiClient(`/api/sourcing/${id}`, {  // ✅ AJOUTÉ /api
+    return apiClient(`/api/sourcing/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     })
   },
   delete: (id: string): Promise<{ success: boolean }> => {
     console.log("🟡 [sourcingApi] delete:", id)
-    return apiClient(`/api/sourcing/${id}`, {  // ✅ AJOUTÉ /api
+    return apiClient(`/api/sourcing/${id}`, {
       method: "DELETE",
     })
   },
   markAsViewed: (id: string): Promise<{ success: boolean; data: SourcingRequest }> => {
     console.log("🟡 [sourcingApi] markAsViewed:", id)
-    return apiClient(`/api/sourcing/${id}`, {  // ✅ AJOUTÉ /api
+    return apiClient(`/api/sourcing/${id}`, {
       method: "PATCH",
       body: JSON.stringify({ markAsViewed: true }),
     })
@@ -704,7 +704,7 @@ export const sourcingApi = {
     try {
       const token = inMemoryAccessToken || getStoredToken()
       
-      const response = await fetch(buildUrl(API_BASE, "/api/sourcing/needs"), {  // ✅ AJOUTÉ /api
+      const response = await fetch(buildUrl(API_BASE, "/api/sourcing/needs"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -733,7 +733,7 @@ export const sourcingApi = {
     try {
       const token = inMemoryAccessToken || getStoredToken()
       
-      const response = await fetch(buildUrl(API_BASE, "/api/sourcing/needs"), {  // ✅ AJOUTÉ /api
+      const response = await fetch(buildUrl(API_BASE, "/api/sourcing/needs"), {
         method: "POST",
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {})
@@ -771,37 +771,37 @@ export const reviewsApi = {
   list: (params?: Record<string, string | number | boolean | undefined>) => {
     console.log("🟡 [reviewsApi] list")
     return apiClient<{ success: boolean; data: any[]; meta: any }>(
-      "/api/reviews",  // ✅ AJOUTÉ /api
+      "/api/reviews",
       { params }
     )
   },
   get: (id: string) => {
     console.log("🟡 [reviewsApi] get:", id)
-    return apiClient<{ success: boolean; data: any }>(`/api/reviews/${id}`)  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>(`/api/reviews/${id}`)
   },
   create: (data: any) => {
     console.log("🟡 [reviewsApi] create")
-    return apiClient<{ success: boolean; data: any }>("/api/reviews", {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>("/api/reviews", {
       method: "POST",
       body: JSON.stringify(data),
     })
   },
   update: (id: string, data: any) => {
     console.log("🟡 [reviewsApi] update:", id)
-    return apiClient<{ success: boolean; data: any }>(`/api/reviews/${id}`, {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>(`/api/reviews/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     })
   },
   delete: (id: string) => {
     console.log("🟡 [reviewsApi] delete:", id)
-    return apiClient<{ success: boolean }>(`/api/reviews/${id}`, {  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean }>(`/api/reviews/${id}`, {
       method: "DELETE",
     })
   },
   stats: () => {
     console.log("🟡 [reviewsApi] stats")
-    return apiClient<{ success: boolean; data: any }>("/api/reviews/stats")  // ✅ AJOUTÉ /api
+    return apiClient<{ success: boolean; data: any }>("/api/reviews/stats")
   },
 }
 
