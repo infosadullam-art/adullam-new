@@ -1,4 +1,3 @@
-// app/admin/dashboard/ia/quality/page.tsx
 "use client"
 
 import { useEffect, useState } from "react"
@@ -7,7 +6,7 @@ import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { dashboardApi } from "@/lib/admin/api-client"
-import { Target, RefreshCw, TrendingUp } from "lucide-react"
+import { Target, RefreshCw, TrendingUp, MessageCircle } from "lucide-react"
 
 export default function IaQualityPage() {
   const [data, setData] = useState<any>(null)
@@ -53,6 +52,7 @@ export default function IaQualityPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
+        {/* Taux de clic (CTR) */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Taux de clic (CTR)</CardTitle>
@@ -61,26 +61,27 @@ export default function IaQualityPage() {
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span>Prédictions</span>
-                <span className="font-medium">{data?.ctr?.prediction}%</span>
+                <span className="font-medium">{data?.ctr?.prediction || 0}%</span>
               </div>
-              <Progress value={data?.ctr?.prediction * 5} className="h-2" />
+              <Progress value={(data?.ctr?.prediction || 0) * 5} className="h-2" />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span>Diversité</span>
-                <span className="font-medium">{data?.ctr?.diversity}%</span>
+                <span className="font-medium">{data?.ctr?.diversity || 0}%</span>
               </div>
-              <Progress value={data?.ctr?.diversity * 5} className="h-2" />
+              <Progress value={(data?.ctr?.diversity || 0) * 5} className="h-2" />
             </div>
             <div className="pt-2 border-t">
               <div className="flex justify-between font-medium">
                 <span>Global</span>
-                <span>{data?.ctr?.overall}%</span>
+                <span>{data?.ctr?.overall || 0}%</span>
               </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Conversion */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Conversion</CardTitle>
@@ -89,20 +90,21 @@ export default function IaQualityPage() {
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span>Prédictions</span>
-                <span className="font-medium">{data?.conversion?.prediction}%</span>
+                <span className="font-medium">{data?.conversion?.prediction || 0}%</span>
               </div>
-              <Progress value={data?.conversion?.prediction * 10} className="h-2" />
+              <Progress value={(data?.conversion?.prediction || 0) * 10} className="h-2" />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span>Diversité</span>
-                <span className="font-medium">{data?.conversion?.diversity}%</span>
+                <span className="font-medium">{data?.conversion?.diversity || 0}%</span>
               </div>
-              <Progress value={data?.conversion?.diversity * 10} className="h-2" />
+              <Progress value={(data?.conversion?.diversity || 0) * 10} className="h-2" />
             </div>
           </CardContent>
         </Card>
 
+        {/* Diversité → Prédiction */}
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="text-base">Diversité → Prédiction</CardTitle>
@@ -120,6 +122,50 @@ export default function IaQualityPage() {
               <div>
                 <p className="text-2xl font-light">{data?.diversityToPrediction?.rate || 0}%</p>
                 <p className="text-xs text-muted-foreground">Taux d'adoption</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* ✅ Chatbot - Qualité */}
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <MessageCircle className="h-4 w-4 text-green-500" />
+              Chatbot - Qualité
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Satisfaction</span>
+                  <span className="font-medium">{data?.chatbot?.satisfaction || 0}%</span>
+                </div>
+                <Progress value={(data?.chatbot?.satisfaction || 0) * 1.1} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Taux de résolution</span>
+                  <span className="font-medium">{data?.chatbot?.resolutionRate || 0}%</span>
+                </div>
+                <Progress value={(data?.chatbot?.resolutionRate || 0) * 1.1} className="h-2" />
+              </div>
+            </div>
+            <div className="pt-2 border-t">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className="text-2xl font-light">{data?.chatbot?.messages || 0}</p>
+                  <p className="text-xs text-muted-foreground">Messages</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-light">{data?.chatbot?.sessions || 0}</p>
+                  <p className="text-xs text-muted-foreground">Sessions</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-light">{data?.chatbot?.avgResponseTime || 0}ms</p>
+                  <p className="text-xs text-muted-foreground">Temps de réponse</p>
+                </div>
               </div>
             </div>
           </CardContent>
