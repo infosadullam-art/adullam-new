@@ -549,6 +549,38 @@ export const feedApi = {
   },
 }
 
+// ------------------- For You / Recommendations -------------------
+export const recommendationsApi = {
+  getStats: (period?: string) => {
+    console.log("🟡 [recommendationsApi] getStats")
+    return apiClient<{ success: boolean; data: any }>("/api/admin/recommendations/stats", {
+      params: { period }
+    })
+  },
+  getTopProducts: (limit?: number) => {
+    console.log("🟡 [recommendationsApi] getTopProducts")
+    return apiClient<{ success: boolean; data: any }>("/api/admin/recommendations/top", {
+      params: { limit: limit || 10 }
+    })
+  },
+  getSegmentPerformance: () => {
+    console.log("🟡 [recommendationsApi] getSegmentPerformance")
+    return apiClient<{ success: boolean; data: any }>("/api/admin/recommendations/segments")
+  },
+  getRecentActivity: (limit?: number) => {
+    console.log("🟡 [recommendationsApi] getRecentActivity")
+    return apiClient<{ success: boolean; data: any }>("/api/admin/recommendations/activity", {
+      params: { limit: limit || 20 }
+    })
+  },
+  triggerScoring: () => {
+    console.log("🟡 [recommendationsApi] triggerScoring")
+    return apiClient<{ success: boolean; message: string }>("/api/admin/recommendations/score", {
+      method: "POST"
+    })
+  }
+}
+
 // ------------------- Interactions -------------------
 export const interactionsApi = {
   stats: (startDate?: string, endDate?: string) => {
