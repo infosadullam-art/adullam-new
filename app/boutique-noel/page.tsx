@@ -815,7 +815,7 @@ function SourcingContent() {
                                     </div>
                                   </div>
                                   
-                                  {need.documents && need.documents.length > 0 && (
+                                  {need.documents && Array.isArray(need.documents) && need.documents.length > 0 && (
                                     <div>
                                       <h4 className="text-sm font-semibold mb-2" style={{ color: textPrimary }}>Documents</h4>
                                       <div className="space-y-1">
