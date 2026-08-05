@@ -85,26 +85,6 @@ interface ViewsData {
   }>
 }
 
-// Interface pour la réponse de feedApi.stats()
-interface FeedStatsResponse {
-  totalVideos: number
-  totalViews: number
-  totalLikes: number
-  topVideos: Array<{
-    id: string
-    viewCount: number
-    likeCount: number
-    product: {
-      id: string
-      title: string
-      images?: string[]
-    }
-    video?: {
-      duration?: number
-    }
-  }>
-}
-
 const adminPath = "/admin/dashboard"
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
@@ -150,46 +130,34 @@ export default function AnalyticsViewsPage() {
     else setIsLoading(true)
     
     try {
-      // Utiliser feedApi.stats() qui existe
       const response = await feedApi.stats()
       
       if (response.success && response.data) {
-        const feedData = response.data as FeedStatsResponse
+        const feedData = response.data
         
-        // Transformer les données pour le format ViewsData
-        const viewsData: ViewsData = {
+        setData({
           overview: {
             totalViews: feedData.totalViews || 0,
-            uniqueViewers: Math.round((feedData.totalViews || 0) * 0.7), // Estimation 70% uniques
-            avgWatchTime: 45, // Valeur par défaut
-            completionRate: 65, // Valeur par défaut
-            trend: {
-              daily: 12,
-              weekly: 8,
-              monthly: 15
-            }
+            uniqueViewers: feedData.uniqueViewers || 0,
+            avgWatchTime: feedData.avgWatchTime || 0,
+            completionRate: feedData.completionRate || 0,
+            trend: feedData.trend || { daily: 0, weekly: 0, monthly: 0 }
           },
-          dailyViews: generateDailyViews(30),
-          topVideos: (feedData.topVideos || []).map(v => ({
+          dailyViews: feedData.dailyViews || [],
+          topVideos: (feedData.topVideos || []).map((v: any) => ({
             id: v.id,
             title: v.product?.title || 'Untitled',
             views: v.viewCount || 0,
-            uniqueViewers: Math.round((v.viewCount || 0) * 0.7),
-            avgWatchTime: v.video?.duration ? Math.round(v.video.duration * 0.6) : 30,
+            uniqueViewers: v.uniqueViewers || 0,
+            avgWatchTime: v.avgWatchTime || 0,
             product: v.product ? {
               id: v.product.id,
               title: v.product.title
             } : undefined
           })),
-          viewsByHour: generateViewsByHour(),
-          viewsByDevice: [
-            { device: 'Mobile', views: Math.round((feedData.totalViews || 0) * 0.55), percentage: 55 },
-            { device: 'Desktop', views: Math.round((feedData.totalViews || 0) * 0.35), percentage: 35 },
-            { device: 'Tablet', views: Math.round((feedData.totalViews || 0) * 0.1), percentage: 10 }
-          ]
-        }
-        
-        setData(viewsData)
+          viewsByHour: feedData.viewsByHour || [],
+          viewsByDevice: feedData.viewsByDevice || []
+        })
       } else {
         toast.error(response.error || "Failed to load analytics")
       }
@@ -200,40 +168,6 @@ export default function AnalyticsViewsPage() {
       setIsLoading(false)
       setIsRefreshing(false)
     }
-  }
-
-  // Fonction utilitaire pour générer des données dailyViews
-  const generateDailyViews = (days: number) => {
-    const data = []
-    const now = new Date()
-    for (let i = days; i >= 0; i--) {
-      const date = new Date(now)
-      date.setDate(date.getDate() - i)
-      data.push({
-        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        views: Math.round(1000 + Math.random() * 5000),
-        unique: Math.round(700 + Math.random() * 3000)
-      })
-    }
-    return data
-  }
-
-  // Fonction utilitaire pour générer des données viewsByHour
-  const generateViewsByHour = () => {
-    const data = []
-    for (let hour = 0; hour < 24; hour++) {
-      let views = 100
-      if (hour >= 10 && hour <= 14) views = 800 // Pic midi
-      else if (hour >= 18 && hour <= 22) views = 1200 // Pic soirée
-      else if (hour >= 0 && hour <= 5) views = 50 // Nuit
-      else views = 300
-      
-      data.push({
-        hour,
-        views: Math.round(views + Math.random() * 200)
-      })
-    }
-    return data
   }
 
   const handleExport = () => {
@@ -328,7 +262,7 @@ export default function AnalyticsViewsPage() {
                 <Users className="h-8 w-8 text-muted-foreground" />
               </div>
               <div className="mt-2 text-xs text-muted-foreground">
-                {((data.overview.uniqueViewers / data.overview.totalViews) * 100).toFixed(1)}% return rate
+                {data.overview.totalViews > 0 ? ((data.overview.uniqueViewers / data.overview.totalViews) * 100).toFixed(1) : 0}% return rate
               </div>
             </CardContent>
           </Card>
@@ -451,11 +385,7 @@ export default function AnalyticsViewsPage() {
                         formatter={(value: any) => formatNumber(value)}
                         labelFormatter={(hour) => `${hour}:00 - ${hour + 1}:00`}
                       />
-                      <Bar dataKey="views" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]}>
-                        {data.viewsByHour.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Bar>
+                      <Bar dataKey="views" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -504,7 +434,7 @@ export default function AnalyticsViewsPage() {
           </TabsContent>
         </Tabs>
 
-        {/* Top Videos - CORRIGÉ : plus de liens imbriqués */}
+        {/* Top Videos */}
         <Card>
           <CardHeader>
             <CardTitle>Top Performing Videos</CardTitle>
