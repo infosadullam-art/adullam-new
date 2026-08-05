@@ -287,6 +287,10 @@ export const dashboardApi = {
     console.log("🟡 [dashboardApi] getAlerts -> Next.js API")
     return apiClient<{ success: boolean; data: any }>("/api/admin/cycle/alerts")
   },
+  getPerformanceMetrics: async () => {
+    console.log("🟡 [dashboardApi] getPerformanceMetrics -> Next.js API")
+    return apiClient<{ success: boolean; data: any }>("/api/admin/cycle/performance")
+  },
 }
 
 // ------------------- Products -------------------
