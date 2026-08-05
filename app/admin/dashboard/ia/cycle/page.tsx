@@ -5,7 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { dashboardApi } from "@/lib/admin/api-client"
-import { Brain, RefreshCw, TrendingUp, Users, Database, Zap, Target, AlertTriangle, AlertCircle, Info } from "lucide-react"
+import { 
+  Brain, 
+  RefreshCw, 
+  TrendingUp, 
+  Users, 
+  Database, 
+  Zap, 
+  Target, 
+  AlertTriangle, 
+  AlertCircle, 
+  Info,
+  MessageCircle
+} from "lucide-react"
 import Link from "next/link"
 
 export default function IaCyclePage() {
@@ -233,6 +245,40 @@ export default function IaCyclePage() {
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Latence</span>
                 <span className="font-medium">{data?.redis?.latency ?? 0}ms</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* IA #3 - Chatbot */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <MessageCircle className="h-4 w-4 text-green-500" />
+              IA #3 - Chatbot
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Messages</span>
+                <span className="font-medium">{data?.ia3?.messages ?? 0}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Sessions actives</span>
+                <span className="font-medium">{data?.ia3?.activeSessions ?? 0}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Temps de réponse</span>
+                <span className="font-medium">{data?.ia3?.avgResponseTime ?? 0}ms</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Satisfaction</span>
+                <span className="font-medium">{data?.ia3?.satisfaction ?? 0}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Dernière activité</span>
+                <span className="font-medium text-xs">{data?.ia3?.lastActivity ? new Date(data.ia3.lastActivity).toLocaleString() : '-'}</span>
               </div>
             </div>
           </CardContent>
