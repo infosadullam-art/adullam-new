@@ -39,12 +39,6 @@ import { useAuth } from "@/lib/admin/auth-context"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 
-interface PageProps {
-  params: Promise<{
-    id: string
-  }>
-}
-
 function formatDate(date: string) {
   return format(new Date(date), "dd MMM yyyy HH:mm", { locale: fr })
 }
@@ -77,27 +71,14 @@ const getDocumentUrl = (url: string): string => {
   return url;
 }
 
-export default function SourcingDetailPage({ params }: PageProps) {
+export default function SourcingDetailPage({ params }: { params: { id: string } }) {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
+  const { id } = params
+  
   const [request, setRequest] = useState<SourcingRequest | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [id, setId] = useState<string | null>(null)
-
-  useEffect(() => {
-    const unwrapParams = async () => {
-      try {
-        const resolvedParams = await params
-        setId(resolvedParams.id)
-      } catch (error) {
-        console.error("Erreur résolution params:", error)
-        setError("Erreur lors du chargement de l'ID")
-        setIsLoading(false)
-      }
-    }
-    unwrapParams()
-  }, [params])
 
   useEffect(() => {
     if (!authLoading && id) {
@@ -233,7 +214,6 @@ export default function SourcingDetailPage({ params }: PageProps) {
       />
 
       <div className="p-6 space-y-6">
-        {/* Status Bar */}
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
@@ -265,7 +245,6 @@ export default function SourcingDetailPage({ params }: PageProps) {
           </CardContent>
         </Card>
 
-        {/* Informations Client */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -303,7 +282,6 @@ export default function SourcingDetailPage({ params }: PageProps) {
           </CardContent>
         </Card>
 
-        {/* Détails du produit */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -347,7 +325,6 @@ export default function SourcingDetailPage({ params }: PageProps) {
           </CardContent>
         </Card>
 
-        {/* Documents joints */}
         {request.documents && (
           <Card>
             <CardHeader>
@@ -387,7 +364,6 @@ export default function SourcingDetailPage({ params }: PageProps) {
           </Card>
         )}
 
-        {/* Historique */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -427,7 +403,6 @@ export default function SourcingDetailPage({ params }: PageProps) {
           </CardContent>
         </Card>
 
-        {/* Réponse et notes admin */}
         {(request.response || request.adminNotes) && (
           <div className="grid gap-6 md:grid-cols-2">
             {request.response && (
