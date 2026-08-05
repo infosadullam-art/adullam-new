@@ -32,12 +32,22 @@ import {
   FileText,
   Download,
   MessageCircle,
-  CheckCircle
+  CheckCircle,
+  Send,
+  Plus,
+  X
 } from "lucide-react"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/admin/auth-context"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 interface PageProps {
   params: Promise<{
@@ -85,6 +95,14 @@ export default function SourcingDetailPage({ params }: PageProps) {
   const [error, setError] = useState<string | null>(null)
   const [id, setId] = useState<string | null>(null)
 
+  // ✅ État pour la réponse
+  const [responseText, setResponseText] = useState("")
+  const [isSending, setIsSending] = useState(false)
+  const [showResponseDialog, setShowResponseDialog] = useState(false)
+  const [showNoteDialog, setShowNoteDialog] = useState(false)
+  const [noteText, setNoteText] = useState("")
+  const [isSavingNote, setIsSavingNote] = useState(false)
+
   useEffect(() => {
     const unwrapParams = async () => {
       try {
@@ -125,6 +143,13 @@ export default function SourcingDetailPage({ params }: PageProps) {
       
       if (response.success && response.data) {
         setRequest(response.data)
+        // Pré-remplir la réponse si elle existe
+        if (response.data.response) {
+          setResponseText(response.data.response)
+        }
+        if (response.data.adminNotes) {
+          setNoteText(response.data.adminNotes)
+        }
       } else {
         const errorMsg = response.error || "Demande non trouvée"
         setError(errorMsg)
@@ -152,6 +177,77 @@ export default function SourcingDetailPage({ params }: PageProps) {
       }
     } catch (error) {
       toast.error("Erreur mise à jour")
+    }
+  }
+
+  // ✅ Envoyer une réponse
+  const handleSendResponse = async () => {
+    if (!request || !responseText.trim()) {
+      toast.error("Veuillez écrire un message")
+      return
+    }
+
+    setIsSending(true)
+    try {
+      const response = await sourcingApi.update(request.id, {
+        response: responseText,
+        status: "RESPONDED",
+        respondedAt: new Date().toISOString()
+      })
+
+      if (response.success) {
+        toast.success("Réponse envoyée au client")
+        setShowResponseDialog(false)
+        loadRequest()
+      } else {
+        toast.error(response.error || "Erreur lors de l'envoi")
+      }
+    } catch (error) {
+      console.error("Erreur envoi réponse:", error)
+      toast.error("Erreur lors de l'envoi")
+    } finally {
+      setIsSending(false)
+    }
+  }
+
+  // ✅ Ajouter une note privée
+  const handleSaveNote = async () => {
+    if (!request) return
+
+    setIsSavingNote(true)
+    try {
+      const response = await sourcingApi.update(request.id, {
+        adminNotes: noteText
+      })
+
+      if (response.success) {
+        toast.success("Note sauvegardée")
+        setShowNoteDialog(false)
+        loadRequest()
+      } else {
+        toast.error(response.error || "Erreur lors de l'enregistrement")
+      }
+    } catch (error) {
+      console.error("Erreur sauvegarde note:", error)
+      toast.error("Erreur lors de l'enregistrement")
+    } finally {
+      setIsSavingNote(false)
+    }
+  }
+
+  // ✅ Marquer comme vu
+  const handleMarkAsViewed = async () => {
+    if (!request) return
+    try {
+      const response = await sourcingApi.update(request.id, {
+        markAsViewed: true
+      })
+      if (response.success) {
+        toast.success("Demande marquée comme vue")
+        loadRequest()
+      }
+    } catch (error) {
+      toast.error("Erreur")
     }
   }
 
@@ -242,6 +338,9 @@ export default function SourcingDetailPage({ params }: PageProps) {
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(request.status)}`}>
                   {request.status}
                 </span>
+                {!request.viewedAt && request.status === "PENDING" && (
+                  <Badge variant="destructive" className="ml-2">Nouveau</Badge>
+                )}
               </div>
               <div className="flex gap-2">
                 <Select
@@ -260,6 +359,12 @@ export default function SourcingDetailPage({ params }: PageProps) {
                     <SelectItem value="ARCHIVED">Archivé</SelectItem>
                   </SelectContent>
                 </Select>
+                {!request.viewedAt && (
+                  <Button variant="outline" size="sm" onClick={handleMarkAsViewed}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    Marquer comme vu
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>
@@ -427,42 +532,157 @@ export default function SourcingDetailPage({ params }: PageProps) {
           </CardContent>
         </Card>
 
-        {/* Réponse et notes admin */}
-        {(request.response || request.adminNotes) && (
-          <div className="grid gap-6 md:grid-cols-2">
-            {request.response && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageCircle className="h-5 w-5" />
-                    Réponse envoyée
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="whitespace-pre-wrap bg-muted/50 p-4 rounded-lg">
-                    {request.response}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-            {request.adminNotes && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    Notes privées
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="whitespace-pre-wrap bg-muted/50 p-4 rounded-lg text-muted-foreground">
-                    {request.adminNotes}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+        {/* ✅ ACTIONS RAPIDES */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageCircle className="h-5 w-5" />
+              Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-3">
+              <Button onClick={() => setShowResponseDialog(true)}>
+                <Send className="mr-2 h-4 w-4" />
+                Répondre au client
+              </Button>
+              <Button variant="outline" onClick={() => setShowNoteDialog(true)}>
+                <FileText className="mr-2 h-4 w-4" />
+                Notes privées
+              </Button>
+              {request.status !== "CLOSED" && (
+                <Button 
+                  variant="outline" 
+                  onClick={async () => {
+                    if (confirm("Marquer cette demande comme clôturée ?")) {
+                      await handleStatusChange("CLOSED")
+                    }
+                  }}
+                  className="text-green-600 border-green-600 hover:bg-green-50"
+                >
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Clôturer
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Réponse existante */}
+        {request.response && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageCircle className="h-5 w-5" />
+                Réponse envoyée
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="whitespace-pre-wrap bg-muted/50 p-4 rounded-lg">
+                {request.response}
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">
+                Envoyée le {formatDate(request.respondedAt || request.createdAt)}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Notes privées existantes */}
+        {request.adminNotes && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Notes privées
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="whitespace-pre-wrap bg-muted/50 p-4 rounded-lg text-muted-foreground">
+                {request.adminNotes}
+              </p>
+            </CardContent>
+          </Card>
         )}
       </div>
+
+      {/* ✅ Dialogue pour envoyer une réponse */}
+      <Dialog open={showResponseDialog} onOpenChange={setShowResponseDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Répondre au client</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+              <p className="text-sm font-medium">Demande de :</p>
+              <p className="font-semibold">{request?.fullName}</p>
+              <p className="text-sm text-muted-foreground">{request?.productName}</p>
+            </div>
+            <Textarea
+              placeholder="Écrivez votre réponse ici (devis, délais, informations...) *"
+              className="min-h-[150px]"
+              value={responseText}
+              onChange={(e) => setResponseText(e.target.value)}
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowResponseDialog(false)}>
+                Annuler
+              </Button>
+              <Button 
+                onClick={handleSendResponse} 
+                disabled={isSending || !responseText.trim()}
+              >
+                {isSending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Envoi...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Envoyer la réponse
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ✅ Dialogue pour les notes privées */}
+      <Dialog open={showNoteDialog} onOpenChange={setShowNoteDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Notes privées (admin uniquement)</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Textarea
+              placeholder="Ajoutez des notes internes sur cette demande..."
+              className="min-h-[120px]"
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowNoteDialog(false)}>
+                Annuler
+              </Button>
+              <Button onClick={handleSaveNote} disabled={isSavingNote}>
+                {isSavingNote ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Sauvegarde...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="mr-2 h-4 w-4" />
+                    Sauvegarder
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
