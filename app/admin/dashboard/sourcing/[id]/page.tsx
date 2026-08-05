@@ -39,6 +39,12 @@ import { useAuth } from "@/lib/admin/auth-context"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 
+interface PageProps {
+  params: Promise<{
+    id: string
+  }>
+}
+
 function formatDate(date: string) {
   return format(new Date(date), "dd MMM yyyy HH:mm", { locale: fr })
 }
@@ -64,14 +70,34 @@ function getStatusBadge(status: string) {
   return variants[status] || "bg-gray-100 text-gray-800"
 }
 
-export default function SourcingDetailPage({ params }: { params: { id: string } }) {
+const getDocumentUrl = (url: string): string => {
+  if (url.startsWith('/uploads/')) {
+    return `/api${url}`;
+  }
+  return url;
+}
+
+export default function SourcingDetailPage({ params }: PageProps) {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
-  const { id } = params
-  
   const [request, setRequest] = useState<SourcingRequest | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [id, setId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const unwrapParams = async () => {
+      try {
+        const resolvedParams = await params
+        setId(resolvedParams.id)
+      } catch (error) {
+        console.error("Erreur résolution params:", error)
+        setError("Erreur lors du chargement de l'ID")
+        setIsLoading(false)
+      }
+    }
+    unwrapParams()
+  }, [params])
 
   useEffect(() => {
     if (!authLoading && id) {
@@ -207,6 +233,7 @@ export default function SourcingDetailPage({ params }: { params: { id: string } 
       />
 
       <div className="p-6 space-y-6">
+        {/* Status Bar */}
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
@@ -238,6 +265,7 @@ export default function SourcingDetailPage({ params }: { params: { id: string } 
           </CardContent>
         </Card>
 
+        {/* Informations Client */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -275,6 +303,7 @@ export default function SourcingDetailPage({ params }: { params: { id: string } 
           </CardContent>
         </Card>
 
+        {/* Détails du produit */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -318,6 +347,7 @@ export default function SourcingDetailPage({ params }: { params: { id: string } 
           </CardContent>
         </Card>
 
+        {/* Documents joints */}
         {request.documents && (
           <Card>
             <CardHeader>
@@ -328,31 +358,36 @@ export default function SourcingDetailPage({ params }: { params: { id: string } 
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {JSON.parse(request.documents).map((doc: any, i: number) => (
-                  <a
-                    key={i}
-                    href={doc.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">{doc.fileName}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {Math.round(doc.size / 1024)} Ko
-                        </p>
+                {JSON.parse(request.documents).map((doc: any, i: number) => {
+                  const fileUrl = getDocumentUrl(doc.url);
+                  
+                  return (
+                    <a
+                      key={i}
+                      href={fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium">{doc.fileName}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {Math.round(doc.size / 1024)} Ko
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    <Download className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </a>
-                ))}
+                      <Download className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </a>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
         )}
 
+        {/* Historique */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -392,6 +427,7 @@ export default function SourcingDetailPage({ params }: { params: { id: string } 
           </CardContent>
         </Card>
 
+        {/* Réponse et notes admin */}
         {(request.response || request.adminNotes) && (
           <div className="grid gap-6 md:grid-cols-2">
             {request.response && (
