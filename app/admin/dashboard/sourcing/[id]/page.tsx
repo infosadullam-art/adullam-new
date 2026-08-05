@@ -74,6 +74,8 @@ function getStatusBadge(status: string) {
     IN_REVIEW: "bg-blue-100 text-blue-800",
     QUOTED: "bg-purple-100 text-purple-800",
     RESPONDED: "bg-green-100 text-green-800",
+    COMMANDE: "bg-indigo-100 text-indigo-800",
+    STOCK_BAS: "bg-red-100 text-red-800",
     CLOSED: "bg-gray-100 text-gray-800",
     ARCHIVED: "bg-neutral-100 text-neutral-600"
   }
@@ -191,12 +193,12 @@ export default function SourcingDetailPage({ params }: PageProps) {
     try {
       const response = await sourcingApi.update(request.id, {
         response: responseText,
-        status: "RESPONDED",
+        status: "QUOTED",
         respondedAt: new Date().toISOString()
       })
 
       if (response.success) {
-        toast.success("Réponse envoyée au client")
+        toast.success("Devis envoyé au client")
         setShowResponseDialog(false)
         loadRequest()
       } else {
@@ -355,6 +357,8 @@ export default function SourcingDetailPage({ params }: PageProps) {
                     <SelectItem value="IN_REVIEW">En cours</SelectItem>
                     <SelectItem value="QUOTED">Devis envoyé</SelectItem>
                     <SelectItem value="RESPONDED">Répondu</SelectItem>
+                    <SelectItem value="COMMANDE">Commandé</SelectItem>
+                    <SelectItem value="STOCK_BAS">Stock bas</SelectItem>
                     <SelectItem value="CLOSED">Clôturé</SelectItem>
                     <SelectItem value="ARCHIVED">Archivé</SelectItem>
                   </SelectContent>
@@ -544,12 +548,36 @@ export default function SourcingDetailPage({ params }: PageProps) {
             <div className="flex flex-wrap gap-3">
               <Button onClick={() => setShowResponseDialog(true)}>
                 <Send className="mr-2 h-4 w-4" />
-                Répondre au client
+                Envoyer un devis
               </Button>
               <Button variant="outline" onClick={() => setShowNoteDialog(true)}>
                 <FileText className="mr-2 h-4 w-4" />
                 Notes privées
               </Button>
+              
+              {/* ✅ Boutons de changement de statut rapide */}
+              {request.status === "QUOTED" && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleStatusChange("COMMANDE")}
+                  className="bg-green-50 text-green-700 border-green-300 hover:bg-green-100"
+                >
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Client a commandé
+                </Button>
+              )}
+
+              {request.status === "COMMANDE" && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleStatusChange("STOCK_BAS")}
+                  className="bg-orange-50 text-orange-700 border-orange-300 hover:bg-orange-100"
+                >
+                  <Package className="mr-2 h-4 w-4" />
+                  Stock à réappro
+                </Button>
+              )}
+
               {request.status !== "CLOSED" && (
                 <Button 
                   variant="outline" 
@@ -558,7 +586,7 @@ export default function SourcingDetailPage({ params }: PageProps) {
                       await handleStatusChange("CLOSED")
                     }
                   }}
-                  className="text-green-600 border-green-600 hover:bg-green-50"
+                  className="text-gray-600 border-gray-400 hover:bg-gray-100"
                 >
                   <CheckCircle className="mr-2 h-4 w-4" />
                   Clôturer
@@ -574,7 +602,7 @@ export default function SourcingDetailPage({ params }: PageProps) {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5" />
-                Réponse envoyée
+                Devis envoyé
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -582,7 +610,7 @@ export default function SourcingDetailPage({ params }: PageProps) {
                 {request.response}
               </p>
               <p className="text-xs text-muted-foreground mt-2">
-                Envoyée le {formatDate(request.respondedAt || request.createdAt)}
+                Envoyé le {formatDate(request.respondedAt || request.createdAt)}
               </p>
             </CardContent>
           </Card>
@@ -606,11 +634,11 @@ export default function SourcingDetailPage({ params }: PageProps) {
         )}
       </div>
 
-      {/* ✅ Dialogue pour envoyer une réponse */}
+      {/* ✅ Dialogue pour envoyer un devis */}
       <Dialog open={showResponseDialog} onOpenChange={setShowResponseDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Répondre au client</DialogTitle>
+            <DialogTitle>Envoyer un devis au client</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="bg-muted/50 p-4 rounded-lg space-y-2">
@@ -619,7 +647,7 @@ export default function SourcingDetailPage({ params }: PageProps) {
               <p className="text-sm text-muted-foreground">{request?.productName}</p>
             </div>
             <Textarea
-              placeholder="Écrivez votre réponse ici (devis, délais, informations...) *"
+              placeholder="Écrivez votre devis (prix, délais, conditions...) *"
               className="min-h-[150px]"
               value={responseText}
               onChange={(e) => setResponseText(e.target.value)}
@@ -640,7 +668,7 @@ export default function SourcingDetailPage({ params }: PageProps) {
                 ) : (
                   <>
                     <Send className="mr-2 h-4 w-4" />
-                    Envoyer la réponse
+                    Envoyer le devis
                   </>
                 )}
               </Button>

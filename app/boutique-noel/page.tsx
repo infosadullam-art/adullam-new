@@ -51,7 +51,7 @@ import {
 } from "@/components/ui/dialog"
 
 // Types
-type SourcingStatus = "BROUILLON" | "EN_COURS" | "DEVIS_RECUS" | "COMMANDE" | "ANNULE"
+type SourcingStatus = "PENDING" | "IN_REVIEW" | "QUOTED" | "RESPONDED" | "COMMANDE" | "STOCK_BAS" | "CLOSED" | "ARCHIVED"
 type Priority = "BASSE" | "MOYENNE" | "HAUTE" | "URGENTE"
 
 interface SourcingNeed {
@@ -164,6 +164,7 @@ function SourcingContent() {
     stockAReappro: 0
   })
 
+  // ✅ Fonction de mise à jour des stats avec les nouveaux statuts
   const updateStatsFromNeeds = () => {
     if (needs.length === 0) {
       setStats({
@@ -174,12 +175,28 @@ function SourcingContent() {
       })
       return
     }
-    const total = needs.length
+
+    const enCours = needs.filter(n => 
+      n.status === "PENDING" || n.status === "IN_REVIEW"
+    ).length
+
+    const devisAEtudier = needs.filter(n => 
+      n.status === "QUOTED"
+    ).length
+
+    const commandesEnCours = needs.filter(n => 
+      n.status === "COMMANDE"
+    ).length
+
+    const stockAReappro = needs.filter(n => 
+      n.status === "STOCK_BAS"
+    ).length
+
     setStats({
-      besoinsEnCours: total,
-      devisAEtudier: 0,
-      commandesEnCours: 0,
-      stockAReappro: 0
+      besoinsEnCours: enCours,
+      devisAEtudier: devisAEtudier,
+      commandesEnCours: commandesEnCours,
+      stockAReappro: stockAReappro
     })
   }
 
@@ -449,24 +466,26 @@ function SourcingContent() {
 
   const getStatusBadge = (status: SourcingStatus) => {
     const styles: Record<string, string> = {
-      BROUILLON: "bg-[#F4F4F4] text-[#AAAAAA]",
-      EN_COURS: "bg-[#FFF0F0] text-[#D4372B]",
-      DEVIS_RECUS: "bg-[#E8F5E9] text-[#2E7D32]",
-      COMMANDE: "bg-[#F3E5F5] text-[#7B1FA2]",
-      ANNULE: "bg-[#FFEBEE] text-[#D32F2F]",
       PENDING: "bg-[#FFF8E1] text-[#F5A623]",
-      QUOTED: "bg-[#E8F5E9] text-[#2E7D32]"
+      IN_REVIEW: "bg-[#FFF0F0] text-[#D4372B]",
+      QUOTED: "bg-[#E8F5E9] text-[#2E7D32]",
+      RESPONDED: "bg-[#E3F2FD] text-[#1565C0]",
+      COMMANDE: "bg-[#F3E5F5] text-[#7B1FA2]",
+      STOCK_BAS: "bg-[#FFEBEE] text-[#D32F2F]",
+      CLOSED: "bg-[#F4F4F4] text-[#AAAAAA]",
+      ARCHIVED: "bg-[#F4F4F4] text-[#AAAAAA]",
     }
     const labels: Record<string, string> = {
-      BROUILLON: "Brouillon",
-      EN_COURS: "En cours",
-      DEVIS_RECUS: "Devis reçus",
-      COMMANDE: "Commandé",
-      ANNULE: "Annulé",
       PENDING: "En attente",
-      QUOTED: "Devis reçu"
+      IN_REVIEW: "En cours",
+      QUOTED: "Devis envoyé",
+      RESPONDED: "Répondu",
+      COMMANDE: "Commandé",
+      STOCK_BAS: "Stock bas",
+      CLOSED: "Clôturé",
+      ARCHIVED: "Archivé",
     }
-    return { style: styles[status] || styles.BROUILLON, label: labels[status] || status }
+    return { style: styles[status] || styles.PENDING, label: labels[status] || status }
   }
 
   const getPriorityBadge = (priority: Priority) => {
@@ -640,9 +659,12 @@ function SourcingContent() {
                       >
                         <option value="">Tous les statuts</option>
                         <option value="PENDING">En attente</option>
-                        <option value="EN_COURS">En cours</option>
-                        <option value="DEVIS_RECUS">Devis reçus</option>
+                        <option value="IN_REVIEW">En cours</option>
+                        <option value="QUOTED">Devis envoyé</option>
+                        <option value="RESPONDED">Répondu</option>
                         <option value="COMMANDE">Commandé</option>
+                        <option value="STOCK_BAS">Stock bas</option>
+                        <option value="CLOSED">Clôturé</option>
                       </select>
                       <select 
                         className="w-full px-3 py-2 rounded-lg text-sm"

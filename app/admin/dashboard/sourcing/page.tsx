@@ -52,6 +52,8 @@ function getStatusBadge(status: string) {
     IN_REVIEW: "En cours",
     QUOTED: "Devis envoyé",
     RESPONDED: "Répondu",
+    COMMANDE: "Commandé",
+    STOCK_BAS: "Stock bas",
     CLOSED: "Clôturé",
     ARCHIVED: "Archivé",
   }
@@ -61,6 +63,8 @@ function getStatusBadge(status: string) {
     IN_REVIEW: "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100",
     QUOTED: "bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100",
     RESPONDED: "bg-green-100 text-green-800 border-green-200 hover:bg-green-100",
+    COMMANDE: "bg-indigo-100 text-indigo-800 border-indigo-200 hover:bg-indigo-100",
+    STOCK_BAS: "bg-red-100 text-red-800 border-red-200 hover:bg-red-100",
     CLOSED: "bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-100",
     ARCHIVED: "bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-50",
   }
@@ -408,6 +412,8 @@ export default function SourcingPage() {
                 <SelectItem value="IN_REVIEW">En cours</SelectItem>
                 <SelectItem value="QUOTED">Devis envoyé</SelectItem>
                 <SelectItem value="RESPONDED">Répondu</SelectItem>
+                <SelectItem value="COMMANDE">Commandé</SelectItem>
+                <SelectItem value="STOCK_BAS">Stock bas</SelectItem>
                 <SelectItem value="CLOSED">Clôturé</SelectItem>
               </SelectContent>
             </Select>
