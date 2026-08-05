@@ -418,6 +418,9 @@ export default function SourcingPage() {
           columns={columns}
           data={requests}
           isLoading={isLoading}
+          onRowClick={(request: SourcingRequest) => {
+            window.location.href = `${adminPath}/sourcing/${request.id}`
+          }}
           pagination={
             meta
               ? {
