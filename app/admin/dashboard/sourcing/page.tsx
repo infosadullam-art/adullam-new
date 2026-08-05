@@ -31,7 +31,6 @@ import { useAuth } from "@/lib/admin/auth-context"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 
-// 🔹 Base path pour les routes admin
 const adminPath = "/admin/dashboard"
 
 function formatDate(date: string) {
@@ -92,7 +91,6 @@ export default function SourcingPage() {
 
   const limit = 20
 
-  // 🔹 Vérifie l'auth avant de charger
   useEffect(() => {
     const init = async () => {
       if (!authLoading) {
@@ -115,14 +113,12 @@ export default function SourcingPage() {
     init()
   }, [authLoading, user])
 
-  // 🔹 Recharge quand les filtres changent
   useEffect(() => {
     if (user && !authLoading) {
       loadRequests()
     }
   }, [page, statusFilter, search])
 
-  // 🔹 Charge les statistiques
   const loadStats = async () => {
     try {
       const response = await sourcingApi.getStats()
@@ -134,7 +130,6 @@ export default function SourcingPage() {
     }
   }
 
-  // 🔹 Charge les demandes
   const loadRequests = async () => {
     setIsLoading(true)
     try {
@@ -174,7 +169,6 @@ export default function SourcingPage() {
     }
   }
 
-  // 🔹 Traite une demande (ouvre le dialogue)
   const handleProcessRequest = (request: SourcingRequest) => {
     setSelectedRequest(request)
     setResponseText(request.response || "")
@@ -182,7 +176,6 @@ export default function SourcingPage() {
     setShowResponseDialog(true)
   }
 
-  // 🔹 Envoie la réponse
   const handleSubmitResponse = async () => {
     if (!selectedRequest) return
     setIsUpdating(true)
@@ -211,7 +204,6 @@ export default function SourcingPage() {
     }
   }
 
-  // 🔹 Change le statut rapidement
   const handleQuickStatusChange = async (id: string, newStatus: string) => {
     try {
       const response = await sourcingApi.update(id, { status: newStatus as any })
@@ -225,7 +217,6 @@ export default function SourcingPage() {
     }
   }
 
-  // 🔹 Supprime une demande
   const handleDelete = async (id: string) => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cette demande ?")) return
     try {
@@ -238,7 +229,6 @@ export default function SourcingPage() {
     }
   }
 
-  // Colonnes du tableau
   const columns = [
     {
       key: "product",
@@ -316,18 +306,11 @@ export default function SourcingPage() {
       header: "",
       className: "w-[50px]",
       cell: (request: SourcingRequest) => (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            console.log("🔍 Clic sur Détails:", request.id)
-            router.push(`${adminPath}/sourcing/${request.id}`)
-          }}
-          className="h-8 w-8"
-          title="Voir les détails"
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
+        <Link href={`${adminPath}/sourcing/${request.id}`}>
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Eye className="h-4 w-4" />
+          </Button>
+        </Link>
       ),
     },
   ]
@@ -346,7 +329,6 @@ export default function SourcingPage() {
       />
 
       <div className="p-6">
-        {/* Statistiques */}
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
             <Card>
@@ -398,7 +380,6 @@ export default function SourcingPage() {
           </div>
         )}
 
-        {/* Filtres */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-1 gap-4">
             <div className="relative flex-1 max-w-sm">
@@ -432,7 +413,6 @@ export default function SourcingPage() {
           </div>
         </div>
 
-        {/* Tableau */}
         <DataTable
           columns={columns}
           data={requests}
@@ -450,7 +430,6 @@ export default function SourcingPage() {
         />
       </div>
 
-      {/* Dialogue de traitement */}
       <Dialog open={showResponseDialog} onOpenChange={setShowResponseDialog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -459,7 +438,6 @@ export default function SourcingPage() {
 
           {selectedRequest && (
             <div className="space-y-6 py-4">
-              {/* Détails client */}
               <div className="bg-muted/50 p-4 rounded-lg space-y-3">
                 <h4 className="font-semibold flex items-center gap-2">
                   <User className="h-4 w-4" />
@@ -493,7 +471,6 @@ export default function SourcingPage() {
                 </div>
               </div>
 
-              {/* Détails produit */}
               <div className="bg-muted/50 p-4 rounded-lg space-y-3">
                 <h4 className="font-semibold flex items-center gap-2">
                   <Package className="h-4 w-4" />
@@ -529,7 +506,6 @@ export default function SourcingPage() {
                 </div>
               </div>
 
-              {/* Documents */}
               {selectedRequest.documents && (
                 <div className="bg-muted/50 p-4 rounded-lg">
                   <h4 className="font-semibold mb-3">Documents joints</h4>
@@ -551,7 +527,6 @@ export default function SourcingPage() {
                 </div>
               )}
 
-              {/* Réponse */}
               <div className="space-y-3">
                 <Label htmlFor="response">Votre réponse</Label>
                 <Textarea
@@ -563,7 +538,6 @@ export default function SourcingPage() {
                 />
               </div>
 
-              {/* Notes admin */}
               <div className="space-y-3">
                 <Label htmlFor="notes">Notes privées (admin uniquement)</Label>
                 <Textarea
