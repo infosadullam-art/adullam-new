@@ -118,94 +118,28 @@ export default function ForYouAnalyticsPage() {
     else setIsLoading(true)
     
     try {
-      // Simuler des données pour l'exemple
-      // À remplacer par un vrai appel API
-      const mockData: ForYouStats = {
-        overview: {
-          totalRecommendations: 15420,
-          clickThroughRate: 3.8,
-          conversionRate: 1.2,
-          avgPosition: 2.4
+      // ✅ APPELS API RÉELS - PLUS DE MOCK !
+      const [statsRes, topRes, segmentsRes, activityRes] = await Promise.all([
+        recommendationsApi.getStats(period),
+        recommendationsApi.getTopProducts(10),
+        recommendationsApi.getSegmentPerformance(),
+        recommendationsApi.getRecentActivity(20)
+      ])
+
+      setStats({
+        overview: statsRes.data?.overview || { 
+          totalRecommendations: 0, 
+          clickThroughRate: 0, 
+          conversionRate: 0, 
+          avgPosition: 0 
         },
-        topProducts: [
-          {
-            id: "prod1",
-            title: "Smartphone XYZ Pro",
-            image: "https://via.placeholder.com/40",
-            recommendationsCount: 1250,
-            clicks: 48,
-            conversions: 12,
-            ctr: 3.8
-          },
-          {
-            id: "prod2",
-            title: "Casque Audio Sans Fil",
-            image: "https://via.placeholder.com/40",
-            recommendationsCount: 980,
-            clicks: 42,
-            conversions: 8,
-            ctr: 4.3
-          },
-          {
-            id: "prod3",
-            title: "Montre Connectée Sport",
-            image: "https://via.placeholder.com/40",
-            recommendationsCount: 750,
-            clicks: 28,
-            conversions: 5,
-            ctr: 3.7
-          },
-          {
-            id: "prod4",
-            title: "Sac à Dos Urbain",
-            image: "https://via.placeholder.com/40",
-            recommendationsCount: 620,
-            clicks: 19,
-            conversions: 3,
-            ctr: 3.1
-          }
-        ],
-        performanceBySegment: [
-          { segment: "Nouveaux utilisateurs", impressions: 5200, clicks: 156, ctr: 3.0 },
-          { segment: "Utilisateurs actifs", impressions: 6800, clicks: 312, ctr: 4.6 },
-          { segment: "Acheteurs fréquents", impressions: 3420, clicks: 188, ctr: 5.5 },
-          { segment: "Inactifs (30j)", impressions: 2100, clicks: 42, ctr: 2.0 }
-        ],
-        recentActivity: [
-          {
-            id: "act1",
-            userId: "user1",
-            userName: "Jean Dupont",
-            productId: "prod1",
-            productTitle: "Smartphone XYZ Pro",
-            action: 'click',
-            timestamp: new Date(Date.now() - 5 * 60000).toISOString()
-          },
-          {
-            id: "act2",
-            userId: "user2",
-            userName: "Marie Martin",
-            productId: "prod3",
-            productTitle: "Montre Connectée Sport",
-            action: 'purchase',
-            timestamp: new Date(Date.now() - 15 * 60000).toISOString()
-          },
-          {
-            id: "act3",
-            userId: "user3",
-            userName: "Pierre Durand",
-            productId: "prod2",
-            productTitle: "Casque Audio Sans Fil",
-            action: 'view',
-            timestamp: new Date(Date.now() - 25 * 60000).toISOString()
-          }
-        ]
-      }
-      
-      setStats(mockData)
+        topProducts: topRes.data || [],
+        performanceBySegment: segmentsRes.data || [],
+        recentActivity: activityRes.data || []
+      })
     } catch (error) {
       console.error("Failed to load for you analytics:", error)
-      toast.error("Failed to load for you analytics")
+      toast.error("Failed to load analytics")
     } finally {
       setIsLoading(false)
       setIsRefreshing(false)
@@ -216,8 +150,17 @@ export default function ForYouAnalyticsPage() {
     toast.success("Export started. You'll receive an email when ready.")
   }
 
-  const handleRunScoring = () => {
-    toast.success("Scoring job triggered successfully")
+  const handleRunScoring = async () => {
+    try {
+      const res = await recommendationsApi.triggerScoring()
+      if (res.success) {
+        toast.success(res.message || "Scoring job triggered successfully")
+      } else {
+        toast.error(res.error || "Failed to trigger scoring")
+      }
+    } catch (error) {
+      toast.error("Failed to trigger scoring")
+    }
   }
 
   if (isLoading || authLoading) {
@@ -278,7 +221,6 @@ export default function ForYouAnalyticsPage() {
       />
 
       <div className="p-6 space-y-6">
-        {/* Bouton Run Scoring */}
         <div className="flex justify-end">
           <Button onClick={handleRunScoring}>
             <Sparkles className="mr-2 h-4 w-4" />
@@ -286,7 +228,6 @@ export default function ForYouAnalyticsPage() {
           </Button>
         </div>
 
-        {/* Overview Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardContent className="pt-6">
@@ -337,7 +278,6 @@ export default function ForYouAnalyticsPage() {
           </Card>
         </div>
 
-        {/* Top Products Recommandés */}
         <Card>
           <CardHeader>
             <CardTitle>Produits les plus recommandés</CardTitle>
@@ -400,7 +340,6 @@ export default function ForYouAnalyticsPage() {
           </CardContent>
         </Card>
 
-        {/* Performance par segment */}
         <Card>
           <CardHeader>
             <CardTitle>Performance par segment d'utilisateurs</CardTitle>
@@ -430,7 +369,6 @@ export default function ForYouAnalyticsPage() {
           </CardContent>
         </Card>
 
-        {/* Activité récente */}
         <Card>
           <CardHeader>
             <CardTitle>Activité récente</CardTitle>
