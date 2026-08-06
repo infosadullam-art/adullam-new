@@ -34,11 +34,23 @@ import { PaymentButton } from "@/components/PaymentButton";
 import { CouponInput } from "@/components/CouponInput";
 import { apiFetch } from "@/lib/api";
 import { useTheme } from "@/components/theme-provider";
+import { toast } from "react-hot-toast";
 
 // Couleurs dynamiques
 const brandColor = "#D4372B";
 const brandGradient = "#D4372B";
 const softBg = "#FAFAFA";
+
+// ============================================================
+// FONCTION MOQ
+// ============================================================
+function getMinQuantity(price: number): number {
+  if (price <= 3.26) return 10;
+  if (price <= 8.16) return 6;
+  if (price <= 16.32) return 4;
+  if (price <= 48.98) return 3;
+  return 2;
+}
 
 // Liste des pays d'Afrique
 const AFRICAN_COUNTRIES = [
@@ -111,6 +123,17 @@ const getShippingLabel = (mode: string): string => {
   };
   return labels[mode] || mode;
 };
+
+// ============================================================
+// VÉRIFICATION DU PANIER AVANT PAIEMENT
+// ============================================================
+function validateCartMOQ(cart: any[]): { valid: boolean; invalidItems: any[] } {
+  const invalidItems = cart.filter(item => {
+    const minQty = item.minQuantity || getMinQuantity(item.price);
+    return item.quantity < minQty;
+  });
+  return { valid: invalidItems.length === 0, invalidItems };
+}
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -383,6 +406,25 @@ export default function CheckoutPage() {
     return firstName && lastName && email && phone && address && quartier && city;
   };
 
+  // ✅ VÉRIFICATION MOQ AVANT PAIEMENT
+  const validateMOQBeforePayment = (): boolean => {
+    const { valid, invalidItems } = validateCartMOQ(cart);
+    
+    if (!valid) {
+      const productNames = invalidItems.map(item => item.name || "Produit").join(", ");
+      const errorMsg = `Quantité minimum non atteinte pour : ${productNames}`;
+      setError(errorMsg);
+      toast.error(errorMsg, {
+        duration: 5000,
+        position: "top-center",
+      });
+      return false;
+    }
+    
+    setError("");
+    return true;
+  };
+
   const handlePaymentError = (paymentError: string) => {
     console.error('❌ Erreur paiement:', paymentError);
     setError(paymentError);
@@ -408,7 +450,7 @@ export default function CheckoutPage() {
     );
   }
 
-  // ==================== CHECKOUT ====================
+  // ==================== RENDU ====================
   return (
     <div className="min-h-screen" style={{ backgroundColor: isDark ? "#0A0A0A" : "#FAFAFA" }}>
       <div className="hidden lg:block"><Header /></div>
@@ -735,11 +777,14 @@ export default function CheckoutPage() {
                     {cart.map((item) => {
                       const isUpdating = updatingId === item.variantKey;
                       const currentMode = item.shippingMode || defaultShippingMode;
+                      const minQty = item.minQuantity || getMinQuantity(item.price);
+                      const isBelowMOQ = item.quantity < minQty;
                       
                       return (
                         <div 
                           key={item.variantKey} 
                           className={`rounded-lg p-3 border-0 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'} ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}
+                          style={isBelowMOQ ? { border: '1px solid #D4372B' } : {}}
                         >
                           <div className="flex gap-3">
                             <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border ${isDark ? "bg-[#1A1A1A] border-gray-800" : "bg-white border-gray-200"}`}>
@@ -761,6 +806,9 @@ export default function CheckoutPage() {
                                 </p>
                               )}
                               <p className={`text-xs mt-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}>Quantité: {item.quantity}</p>
+                              {isBelowMOQ && (
+                                <span className="text-xs text-red-500 font-medium">⚠️ MOQ: {minQty} min</span>
+                              )}
                             </div>
                             <div className="text-right flex-shrink-0">
                               <p className="text-sm font-bold whitespace-nowrap" style={{ color: '#D4372B' }}>
@@ -902,6 +950,7 @@ export default function CheckoutPage() {
                         couponCode={appliedCoupon?.code}
                         couponDiscount={discountAmount}
                         onError={handlePaymentError}
+                        beforePayment={validateMOQBeforePayment}
                       >
                         Payer {formatPrice(finalTotal)}
                       </PaymentButton>
@@ -925,6 +974,8 @@ export default function CheckoutPage() {
                       ? item.name.substring(0, 40) + "..." 
                       : item.name || "Produit";
                     const shippingMode = item.shippingMode || defaultShippingMode;
+                    const minQty = item.minQuantity || getMinQuantity(item.price);
+                    const isBelowMOQ = item.quantity < minQty;
                     
                     return (
                       <div key={item.variantKey} className={`flex gap-2 pb-2 border-b ${isDark ? "border-gray-800" : "border-gray-100"} last:border-0`}>
@@ -938,7 +989,12 @@ export default function CheckoutPage() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={`text-xs font-medium break-words leading-tight ${isDark ? "text-white" : "text-gray-900"}`}>{truncatedTitle}</p>
+                          <p className={`text-xs font-medium break-words leading-tight ${isDark ? "text-white" : "text-gray-900"}`}>
+                            {truncatedTitle}
+                            {isBelowMOQ && (
+                              <span className="ml-1 text-xs text-red-500">⚠️ MOQ</span>
+                            )}
+                          </p>
                           {(item.color || item.eurSize) && (
                             <p className={`text-[10px] mt-0.5 break-words ${isDark ? "text-gray-500" : "text-gray-400"}`}>
                               {item.color} {item.eurSize && `• ${item.eurSize}`}
@@ -1124,9 +1180,12 @@ export default function CheckoutPage() {
                       {cart.map((item) => {
                         const isUpdating = updatingId === item.variantKey;
                         const currentMode = item.shippingMode || defaultShippingMode;
+                        const minQty = item.minQuantity || getMinQuantity(item.price);
+                        const isBelowMOQ = item.quantity < minQty;
                         
                         return (
-                          <div key={item.variantKey} className={`rounded-lg p-3 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'} ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
+                          <div key={item.variantKey} className={`rounded-lg p-3 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'} ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}
+                          style={isBelowMOQ ? { border: '1px solid #D4372B' } : {}}>
                             <div className="flex gap-3">
                               <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border ${isDark ? "bg-[#1A1A1A] border-gray-800" : "bg-white border-gray-200"}`}>
                                 <Image src={item.image || "/placeholder.svg"} alt={item.name || "Produit"} width={48} height={48} className="w-full h-full object-contain p-1" />
@@ -1141,6 +1200,9 @@ export default function CheckoutPage() {
                                   </p>
                                 )}
                                 <p className={`text-xs mt-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}>Qté: {item.quantity}</p>
+                                {isBelowMOQ && (
+                                  <span className="text-xs text-red-500 font-medium">⚠️ MOQ: {minQty} min</span>
+                                )}
                               </div>
                               <div className="text-right flex-shrink-0">
                                 <p className="text-sm font-bold whitespace-nowrap" style={{ color: '#D4372B' }}>
@@ -1197,6 +1259,8 @@ export default function CheckoutPage() {
                     <div className="space-y-2 max-h-60 overflow-y-auto">
                       {cart.map((item) => {
                         const shippingMode = item.shippingMode || defaultShippingMode;
+                        const minQty = item.minQuantity || getMinQuantity(item.price);
+                        const isBelowMOQ = item.quantity < minQty;
                         
                         return (
                           <div key={item.variantKey} className={`flex gap-2 pb-2 border-b ${isDark ? "border-gray-800" : "border-gray-100"}`}>
@@ -1206,6 +1270,9 @@ export default function CheckoutPage() {
                             <div className="flex-1 min-w-0">
                               <p className={`text-xs font-medium break-words leading-tight ${isDark ? "text-white" : "text-gray-900"}`}>
                                 {item.name || "Produit"}
+                                {isBelowMOQ && (
+                                  <span className="ml-1 text-xs text-red-500">⚠️ MOQ</span>
+                                )}
                               </p>
                               <div className="flex justify-between items-center mt-1 flex-wrap gap-1">
                                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${isDark ? "bg-[#0A0A0A] text-gray-400" : "bg-gray-100 text-gray-500"}`}>
@@ -1338,6 +1405,7 @@ export default function CheckoutPage() {
                         couponCode={appliedCoupon?.code}
                         couponDiscount={discountAmount}
                         onError={handlePaymentError}
+                        beforePayment={validateMOQBeforePayment}
                       >
                         Payer {formatPrice(finalTotal)}
                       </PaymentButton>

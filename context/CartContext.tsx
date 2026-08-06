@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode, useRef } fro
 import { useLocale } from "./LocaleProvider";
 import { apiFetch } from "@/lib/api";
 import { getAccessToken } from "@/lib/auth";
+import { toast } from "react-hot-toast";
 
 // ============================================================
 // TYPES POUR LES ARTICLES DU PANIER
@@ -26,6 +27,7 @@ export type CartItem = {
   portePorteCostUSD?: number;
   totalWeight?: number;
   productTitle?: string;
+  minQuantity?: number;
 };
 
 // ============================================================
@@ -48,13 +50,21 @@ type CartContextType = {
   setShippingMode: (mode: ShippingMode) => void;
 };
 
-// ============================================================
-// CRÉATION DU CONTEXT
-// ============================================================
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 // ============================================================
-// SYNCHRONISATION SERVEUR (utilisateurs connectés uniquement)
+// CALCUL MOQ
+// ============================================================
+function getMinQuantity(price: number): number {
+  if (price <= 3.26) return 10;
+  if (price <= 8.16) return 6;
+  if (price <= 16.32) return 4;
+  if (price <= 48.98) return 3;
+  return 2;
+}
+
+// ============================================================
+// SYNCHRONISATION SERVEUR
 // ============================================================
 function serverCartItemToCartItem(item: any): CartItem {
   const attrs = item.attributes || {};
@@ -72,6 +82,7 @@ function serverCartItemToCartItem(item: any): CartItem {
     shippingMode: item.shippingMode,
     shippingCostUSD: item.shippingCostUSD,
     portePorteCostUSD: item.portePorteCostUSD,
+    minQuantity: item.minQuantity || getMinQuantity(item.price),
   };
 }
 
@@ -95,12 +106,12 @@ async function syncCartToServer(items: CartItem[]): Promise<void> {
       body: JSON.stringify({ items }),
     });
   } catch {
-    // Non-bloquant : le localStorage reste la source de vérité en cas d'échec réseau
+    // Non-bloquant
   }
 }
 
 // ============================================================
-// PROVIDER PRINCIPAL
+// PROVIDER
 // ============================================================
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const { country } = useLocale();
@@ -138,17 +149,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
     setReady(true);
 
-    // ✅ Hydratation depuis le serveur pour les utilisateurs connectés
     const token = getAccessToken();
     if (token && !hasHydratedFromServer.current) {
       hasHydratedFromServer.current = true;
       fetchServerCart().then((serverItems) => {
-        if (serverItems === null) return; // échec réseau, on garde le local
+        if (serverItems === null) return;
         if (serverItems.length > 0) {
-          // Le serveur a des articles : il devient la source de vérité
           setCart(serverItems);
         } else if (localCart.length > 0) {
-          // Le serveur est vide mais le local a des articles : on pousse le local
           syncCartToServer(localCart);
         }
       });
@@ -165,8 +173,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("shippingMode", shippingMode);
   }, [shippingMode, ready]);
 
-  // ✅ Synchronise vers le serveur à chaque changement de panier (avec debounce
-  // pour éviter un appel réseau à chaque clic rapproché sur +/-)
   useEffect(() => {
     if (!ready) return;
     if (!getAccessToken()) return;
@@ -185,7 +191,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [cart, ready]);
 
-  // ✅ Appel à l'API logistique avec le mode sélectionné - CORRIGÉ avec apiFetch
   const fetchShippingEstimate = async (
     productId: string,
     productTitle: string,
@@ -265,13 +270,40 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     };
   };
 
+  const checkMOQ = (item: CartItem, newQuantity: number): boolean => {
+    const minQty = item.minQuantity || getMinQuantity(item.price);
+    if (newQuantity < minQty) {
+      toast.error(`Quantité minimum de ${minQty} pièces requise pour ce produit`, {
+        duration: 4000,
+        position: "top-center",
+      });
+      return false;
+    }
+    return true;
+  };
+
   const addToCart = async (item: CartItem) => {
+    const minQty = item.minQuantity || getMinQuantity(item.price);
+    
+    if (item.quantity < minQty) {
+      toast.error(`Quantité minimum de ${minQty} pièces requise pour ce produit`, {
+        duration: 4000,
+        position: "top-center",
+      });
+      return;
+    }
+
     const variantKey = item.variantKey || `${item.id}_${item.color || ''}_${item.eurSize || ''}`;
     const existingIndex = cart.findIndex((p) => p.variantKey === variantKey);
 
     if (existingIndex >= 0) {
       const existingItem = cart[existingIndex];
       const newQuantity = existingItem.quantity + item.quantity;
+      
+      if (!checkMOQ(existingItem, newQuantity)) {
+        return;
+      }
+      
       const updatedItem = await updateItemWithCosts(
         { ...existingItem, quantity: newQuantity },
         existingItem.shippingMode || shippingMode
@@ -286,6 +318,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         weight: item.weight || 0.5,
         variantKey,
         shippingMode: item.shippingMode || shippingMode,
+        minQuantity: minQty,
       };
       const itemWithCosts = await updateItemWithCosts(newItem, newItem.shippingMode!);
       setCart((prev) => [...prev, itemWithCosts]);
@@ -304,6 +337,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
     const item = cart.find(i => i.variantKey === variantKey);
     if (!item) return;
+
+    if (!checkMOQ(item, quantity)) {
+      return;
+    }
 
     const updatedItem = await updateItemWithCosts(
       { ...item, quantity },
@@ -335,7 +372,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Recalculer tous les items quand le pays change
   useEffect(() => {
     const recalcAllItems = async () => {
       if (!ready || cart.length === 0) return;
@@ -351,7 +387,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     recalcAllItems();
   }, [country, ready]);
 
-  // ✅ Tous les totaux sont en USD
   const totalUSD = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const totalShippingUSD = cart.reduce((sum, item) => sum + (item.shippingCostUSD || 0), 0);
@@ -382,9 +417,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// ============================================================
-// HOOK PERSONNALISÉ
-// ============================================================
 export const useCart = () => {
   const ctx = useContext(CartContext);
   if (!ctx) throw new Error("useCart must be used inside CartProvider");

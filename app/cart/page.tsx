@@ -12,6 +12,18 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { apiFetch } from "@/lib/api"
+import { toast } from "react-hot-toast"
+
+// ============================================================
+// FONCTION MOQ (copiée depuis CartContext)
+// ============================================================
+function getMinQuantity(price: number): number {
+  if (price <= 3.26) return 10;
+  if (price <= 8.16) return 6;
+  if (price <= 16.32) return 4;
+  if (price <= 48.98) return 3;
+  return 2;
+}
 
 export default function CartPage() {
   const {
@@ -70,6 +82,26 @@ export default function CartPage() {
   const truncateTitle = (title: string, max = 60) => {
     if (!title) return "Produit"
     return title.length <= max ? title : title.substring(0, max) + "..."
+  }
+
+  // ✅ VÉRIFICATION MOQ AVANT COMMANDE
+  const handleCheckout = () => {
+    const invalidItems = cart.filter(item => {
+      const minQty = item.minQuantity || getMinQuantity(item.price);
+      return item.quantity < minQty;
+    });
+
+    if (invalidItems.length > 0) {
+      const productNames = invalidItems.map(item => item.name || "Produit").join(", ");
+      toast.error(`Quantité minimum non atteinte pour : ${productNames}`, {
+        duration: 5000,
+        position: "top-center",
+      });
+      return;
+    }
+
+    // ✅ Tout est bon, on va au checkout
+    window.location.href = "/checkout";
   }
 
   // ── FONT STYLE ─────────────────────────────────────────────
@@ -149,6 +181,8 @@ export default function CartPage() {
                 {cart.map((item) => {
                   const isUpdating = updatingId === item.variantKey
                   const currentMode = item.shippingMode || defaultShippingMode
+                  const minQty = item.minQuantity || getMinQuantity(item.price)
+                  const isBelowMOQ = item.quantity < minQty
 
                   return (
                     <div
@@ -156,7 +190,7 @@ export default function CartPage() {
                       className="rounded-xl p-4 transition-opacity"
                       style={{
                         background: "#fff",
-                        border: "0.5px solid #ECECEC",
+                        border: isBelowMOQ ? "1px solid #D4372B" : "0.5px solid #ECECEC",
                         opacity: isUpdating ? 0.5 : 1,
                       }}
                     >
@@ -208,6 +242,15 @@ export default function CartPage() {
                             {formatPrice(item.price)}
                           </p>
 
+                          {/* ⚠️ ALERTE MOQ */}
+                          {isBelowMOQ && (
+                            <div className="mt-1.5 px-2 py-1 rounded-lg inline-flex items-center gap-1.5" style={{ background: "#FFF0F0", border: "0.5px solid #D4372B" }}>
+                              <span style={{ fontSize: "9px", fontWeight: 700, color: "#D4372B", ...poppins }}>
+                                ⚠️ MOQ: {minQty} min
+                              </span>
+                            </div>
+                          )}
+
                           {/* Modes livraison */}
                           <div className="flex items-center gap-1.5 mt-2.5">
                             <span style={{ fontSize: "10px", color: "#AAAAAA", ...poppins }}>Livraison :</span>
@@ -235,7 +278,7 @@ export default function CartPage() {
                           {/* Quantité + sous-total ligne */}
                           <div className="flex items-center justify-between mt-3">
                             {/* Stepper quantité */}
-                            <div className="flex items-center rounded-xl overflow-hidden" style={{ border: "0.5px solid #ECECEC" }}>
+                            <div className="flex items-center rounded-xl overflow-hidden" style={{ border: isBelowMOQ ? "1px solid #D4372B" : "0.5px solid #ECECEC" }}>
                               <button
                                 onClick={() => updateQuantity(item.variantKey!, item.quantity - 1)}
                                 disabled={item.quantity <= 1}
@@ -244,7 +287,7 @@ export default function CartPage() {
                               >
                                 <Minus className="w-3.5 h-3.5" style={{ color: "#0A0A0A" }} />
                               </button>
-                              <span className="w-10 text-center text-sm font-semibold" style={{ color: "#0A0A0A", ...poppins }}>
+                              <span className="w-10 text-center text-sm font-semibold" style={{ color: isBelowMOQ ? "#D4372B" : "#0A0A0A", ...poppins }}>
                                 {item.quantity}
                               </span>
                               <button
@@ -337,30 +380,37 @@ export default function CartPage() {
                     <p style={{ fontSize: "11px", fontWeight: 700, color: "#0A0A0A", marginBottom: "8px", ...poppins }}>
                       Récapitulatif
                     </p>
-                    {cart.map((item) => (
-                      <div key={item.variantKey} className="flex justify-between py-1">
-                        <span className="truncate" style={{ fontSize: "10px", color: "#AAAAAA", maxWidth: "160px", ...poppins }}>
-                          {truncateTitle(item.name || "Produit", 35)}
-                          {item.color && ` - ${item.color}`}
-                          {item.eurSize && ` (${item.eurSize})`}
-                          <span style={{ color: "#AAAAAA", marginLeft: "3px" }}>x{item.quantity}</span>
-                        </span>
-                        <span style={{ fontSize: "10px", fontWeight: 600, color: "#0A0A0A", ...poppins }}>
-                          {formatPrice(item.price * item.quantity)}
-                        </span>
-                      </div>
-                    ))}
+                    {cart.map((item) => {
+                      const minQty = item.minQuantity || getMinQuantity(item.price);
+                      const isBelowMOQ = item.quantity < minQty;
+                      return (
+                        <div key={item.variantKey} className="flex justify-between py-1">
+                          <span className="truncate" style={{ fontSize: "10px", color: isBelowMOQ ? "#D4372B" : "#AAAAAA", maxWidth: "160px", ...poppins }}>
+                            {truncateTitle(item.name || "Produit", 35)}
+                            {item.color && ` - ${item.color}`}
+                            {item.eurSize && ` (${item.eurSize})`}
+                            <span style={{ color: isBelowMOQ ? "#D4372B" : "#AAAAAA", marginLeft: "3px" }}>x{item.quantity}</span>
+                            {isBelowMOQ && (
+                              <span style={{ color: "#D4372B", fontSize: "8px", marginLeft: "4px" }}>⚠️ MOQ</span>
+                            )}
+                          </span>
+                          <span style={{ fontSize: "10px", fontWeight: 600, color: "#0A0A0A", ...poppins }}>
+                            {formatPrice(item.price * item.quantity)}
+                          </span>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
 
-                {/* CTA Commander */}
-                <Link
-                  href="/checkout"
-                  className="block mt-5 text-center py-3.5 rounded-xl font-bold text-white transition-opacity hover:opacity-90"
+                {/* CTA Commander avec vérification MOQ */}
+                <button
+                  onClick={handleCheckout}
+                  className="block w-full mt-5 text-center py-3.5 rounded-xl font-bold text-white transition-opacity hover:opacity-90"
                   style={{ background: "#D4372B", fontSize: "14px", ...poppins }}
                 >
                   Commander · {formatPrice(grandTotalUSD)}
-                </Link>
+                </button>
 
                 <p className="text-center mt-3" style={{ fontSize: "11px", color: "#AAAAAA", ...poppins }}>
                   Tous les prix en {getCurrencySymbol()}
