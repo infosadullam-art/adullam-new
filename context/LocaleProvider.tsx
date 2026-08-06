@@ -13,6 +13,8 @@ type LocaleContextType = {
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined)
 
+const isDev = process.env.NODE_ENV === "development"
+
 // Mapping pays → devise + locale (garde ton mapping existant)
 const countryConfig: Record<string, { currency: string; locale: string }> = {
   CI: { currency: "XOF", locale: "fr-CI" },
@@ -74,24 +76,24 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const detectCountry = async () => {
       try {
-        console.log("🔵 Détection du pays...")
-        
+        if (isDev) console.log("🔵 Détection du pays...")
+
         // ✅ PAS DE CACHE - Détection à chaque chargement
         const response = await fetch("https://ipapi.co/json/")
         const data = await response.json()
-        
-        console.log("🟢 Pays détecté par IP:", data.country_code)
-        
+
+        if (isDev) console.log("🟢 Pays détecté par IP:", data.country_code)
+
         // Vérifier si le pays détecté est dans notre config
         if (data.country_code && countryConfig[data.country_code]) {
           setCountry(data.country_code)
         } else {
           // Si pays non supporté, utiliser CI par défaut
-          console.log("🟡 Pays non supporté, utilisation CI par défaut")
+          if (isDev) console.log("🟡 Pays non supporté, utilisation CI par défaut")
           setCountry("CI")
         }
       } catch (error) {
-        console.warn("⚠️ Erreur détection pays, utilisation CI par défaut")
+        if (isDev) console.warn("⚠️ Erreur détection pays, utilisation CI par défaut")
         setCountry("CI")
       } finally {
         setIsLoading(false)
