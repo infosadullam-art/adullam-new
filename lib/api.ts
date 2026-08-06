@@ -3,12 +3,18 @@ import { getAccessToken, setAccessToken, clearAccessToken } from "./auth"
 // ✅ CORRIGÉ : URL forcée vers ton VPS (sans dépendre des env vars)
 const API_URL = 'https://api.adullamarket.com'
 
+// 🔧 Logger conditionnel : actif seulement en dev, silencieux en production
+const isDev = process.env.NODE_ENV !== "production"
+function devLog(...args: any[]) {
+  if (isDev) console.log(...args)
+}
+
 // Vérification
 if (!API_URL) {
   console.error("❌ API_URL n'est pas définie")
 }
 
-console.log('🔴 [lib/api.ts] API_URL configurée:', API_URL)
+devLog('🔴 [lib/api.ts] API_URL configurée:', API_URL)
 
 export async function apiFetch(
   input: RequestInfo,
@@ -17,15 +23,15 @@ export async function apiFetch(
   const token = getAccessToken()
   
   // 🔥 LOGS DÉTAILLÉS
-  console.log('🔍 [apiFetch] ====================')
-  console.log('🔍 [apiFetch] URL appelée:', typeof input === 'string' ? input : input.url)
-  console.log('🔍 [apiFetch] Token présent:', !!token)
-  console.log('🔍 [apiFetch] Méthode:', init.method || 'GET')
-  console.log('🔍 [apiFetch] API_URL:', API_URL)
+  devLog('🔍 [apiFetch] ====================')
+  devLog('🔍 [apiFetch] URL appelée:', typeof input === 'string' ? input : input.url)
+  devLog('🔍 [apiFetch] Token présent:', !!token)
+  devLog('🔍 [apiFetch] Méthode:', init.method || 'GET')
+  devLog('🔍 [apiFetch] API_URL:', API_URL)
   
   const fullUrl = `${API_URL}${input}`
-  console.log('🔍 [apiFetch] URL complète:', fullUrl)
-  console.log('🔍 [apiFetch] ====================')
+  devLog('🔍 [apiFetch] URL complète:', fullUrl)
+  devLog('🔍 [apiFetch] ====================')
 
   const res = await fetch(fullUrl, {
     ...init,
@@ -36,14 +42,14 @@ export async function apiFetch(
     credentials: "include",
   })
 
-  console.log(`🔍 [apiFetch] Statut réponse: ${res.status} pour ${fullUrl}`)
+  devLog(`🔍 [apiFetch] Statut réponse: ${res.status} pour ${fullUrl}`)
 
   // Access token expiré
   if (res.status === 401) {
-    console.log('🔄 [apiFetch] Token expiré, tentative de refresh...')
+    devLog('🔄 [apiFetch] Token expiré, tentative de refresh...')
     const refreshed = await refreshAccessToken()
     if (!refreshed) {
-      console.log('❌ [apiFetch] Refresh échoué, redirection...')
+      devLog('❌ [apiFetch] Refresh échoué, redirection...')
       clearAccessToken()
       if (typeof window !== 'undefined') {
         window.location.href = "/login"
@@ -51,7 +57,7 @@ export async function apiFetch(
       throw new Error("Session expired")
     }
 
-    console.log('✅ [apiFetch] Refresh réussi, nouvelle tentative...')
+    devLog('✅ [apiFetch] Refresh réussi, nouvelle tentative...')
     return apiFetch(input, init)
   }
 
@@ -60,24 +66,24 @@ export async function apiFetch(
 
 async function refreshAccessToken(): Promise<boolean> {
   try {
-    console.log('🔄 [refreshAccessToken] Tentative de refresh...')
+    devLog('🔄 [refreshAccessToken] Tentative de refresh...')
     const res = await fetch(`${API_URL}/api/auth/refresh`, {
       method: "POST",
       credentials: "include",
     })
 
     if (!res.ok) {
-      console.log(`❌ [refreshAccessToken] Échec: ${res.status}`)
+      devLog(`❌ [refreshAccessToken] Échec: ${res.status}`)
       return false
     }
 
     const data = await res.json()
     if (!data.accessToken) {
-      console.log('❌ [refreshAccessToken] Pas de token dans la réponse')
+      devLog('❌ [refreshAccessToken] Pas de token dans la réponse')
       return false
     }
 
-    console.log('✅ [refreshAccessToken] Nouveau token reçu')
+    devLog('✅ [refreshAccessToken] Nouveau token reçu')
     setAccessToken(data.accessToken)
     return true
   } catch (error) {
