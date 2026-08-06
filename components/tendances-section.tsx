@@ -14,6 +14,12 @@ import { ChevronRight, TrendingUp, MapPin } from "lucide-react"
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
 const REFRESH_INTERVAL = 10 * 60 * 60 * 1000 // 10 heures
 
+// 🔧 Logger conditionnel : actif seulement en dev, silencieux en production
+const isDev = process.env.NODE_ENV !== "production"
+function devLog(...args: any[]) {
+  if (isDev) console.log(...args)
+}
+
 // ════════════════════════════════════════════════════════════
 
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
@@ -97,7 +103,7 @@ export function TendanceParPays() {
     const fetchTrends = async () => {
       try {
         setIsLoading(true)
-        console.log(`📦 [TRENDS] Fetch - ${new Date().toLocaleTimeString()}`)
+        devLog(`📦 [TRENDS] Fetch - ${new Date().toLocaleTimeString()}`)
         
         const timestamp = Date.now()
         const res = await fetch(`${API_BASE}/api/graph/trending?country=${selectedCountry}&limit=20&_t=${timestamp}`)
@@ -107,7 +113,7 @@ export function TendanceParPays() {
           const shuffled = [...data.trend.products].sort(() => Math.random() - 0.5)
           const trendCopy = { ...data.trend, products: shuffled }
           setTrends(trendCopy)
-          console.log(`📦 [TRENDS] ${data.trend.products.length} produits récupérés, mélangés`)
+          devLog(`📦 [TRENDS] ${data.trend.products.length} produits récupérés, mélangés`)
         } else {
           const fallback = fallbackTrends[selectedCountry as keyof typeof fallbackTrends] || fallbackTrends.CI
           const shuffled = [...fallback.products].sort(() => Math.random() - 0.5)
@@ -125,12 +131,12 @@ export function TendanceParPays() {
     fetchTrends()
 
     const interval = setInterval(() => {
-      console.log(`🔄 [TRENDS] Nouveaux produits - ${new Date().toLocaleTimeString()}`)
+      devLog(`🔄 [TRENDS] Nouveaux produits - ${new Date().toLocaleTimeString()}`)
       fetchTrends()
     }, REFRESH_INTERVAL)
 
     return () => {
-      console.log(`🧹 [TRENDS] Nettoyage`)
+      devLog(`🧹 [TRENDS] Nettoyage`)
       clearInterval(interval)
     }
   }, [selectedCountry])
@@ -261,7 +267,7 @@ export function TendanceParPays() {
           <div className="w-1 h-1 rounded-full" style={{ background: "#D4372B" }} />
           <span style={{ fontSize: "8px", color: "#AAAAAA", fontFamily: amazonFont }}>Mise à jour en temps réel</span>
         </div>
-        <Link href={`/trending/${selectedCountry}`} className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1" style={{ color: "#D4372B", fontFamily: amazonFont }}>
+        <Link href="/meilleures-ventes" className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1" style={{ color: "#D4372B", fontFamily: amazonFont }}>
           Voir tout <ChevronRight className="w-2.5 h-2.5" />
         </Link>
       </div>
@@ -325,7 +331,7 @@ export function TendanceParPays() {
           <span>•</span>
           <span>👥 {trends.products.reduce((a, p) => a + p.views, 0).toLocaleString()} vues</span>
         </div>
-        <Link href={`/trending/${selectedCountry}`} className="flex items-center gap-1 text-xs font-semibold transition-all duration-200 hover:gap-1.5" style={{ color: "#D4372B", fontFamily: amazonFont }}>
+        <Link href="/meilleures-ventes" className="flex items-center gap-1 text-xs font-semibold transition-all duration-200 hover:gap-1.5" style={{ color: "#D4372B", fontFamily: amazonFont }}>
           Voir toutes les tendances <ChevronRight className="w-3 h-3" />
         </Link>
       </div>
