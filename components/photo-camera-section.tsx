@@ -1,10 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronRight, Camera, Aperture, Zap } from "lucide-react"
-import { motion } from "framer-motion"
+import { ChevronRight, Camera } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
@@ -23,6 +22,8 @@ export function PhotoCameraSection() {
   const { formatPrice } = useCurrencyFormatter()
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isHovered, setIsHovered] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let mounted = true
@@ -31,13 +32,13 @@ export function PhotoCameraSection() {
       try {
         const timestamp = Date.now()
         const res = await fetch(
-          `${API_BASE}/api/products?categoryId=${CATEGORY_ID}&limit=16&_t=${timestamp}`
+          `${API_BASE}/api/products?categoryId=${CATEGORY_ID}&limit=20&_t=${timestamp}`
         )
         const data = await res.json()
         const list: any[] = data.data || data.products || []
         if (mounted) {
           const shuffled = [...list].sort(() => Math.random() - 0.5)
-          setProducts(shuffled.slice(0, 12).map((p: any) => ({
+          setProducts(shuffled.slice(0, 8).map((p: any) => ({
             id: p.id,
             name: p.title || p.name || "Produit",
             priceUSD: p.price || 0,
@@ -59,114 +60,122 @@ export function PhotoCameraSection() {
     }
   }, [])
 
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const amount = direction === 'left' ? -280 : 280
+      scrollRef.current.scrollBy({ left: amount, behavior: 'smooth' })
+    }
+  }
+
   if (!isLoading && products.length === 0) return null
 
   return (
-    <section className="w-full py-12 lg:py-16 bg-surface border-t border-border">
+    <section className="w-full py-6 lg:py-8" style={{ background: "#FAFAFA" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="flex items-end justify-between mb-8"
-        >
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <span className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.15em] text-red-600 dark:text-red-400">
-              <span className="w-8 h-px bg-red-500" />
-              Équipement photo
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wide uppercase text-primary mb-0.5">
+              <Camera className="w-3.5 h-3.5" />
+              Matériel photo
             </span>
-            <h2 className="font-serif text-3xl lg:text-4xl font-light text-foreground mt-2 tracking-tight">
+            <h2 className="text-lg lg:text-xl font-semibold text-foreground">
               Photo &amp; Caméra
             </h2>
-            <p className="text-muted-foreground text-sm mt-1 font-light">
-              Appareils et accessoires pour créateurs
-            </p>
           </div>
           <Link
             href={`/categorie/${CATEGORY_SLUG}`}
-            className="group hidden sm:flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors border-b border-transparent hover:border-foreground pb-0.5"
+            className="text-xs flex items-center gap-1 transition-all duration-200 hover:gap-1.5 text-muted-foreground hover:text-foreground"
           >
-            Voir toute la collection
-            <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            Voir tout
+            <ChevronRight className="w-3 h-3" />
           </Link>
-        </motion.div>
+        </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="aspect-square rounded-lg bg-muted animate-pulse" />
+          <div className="flex gap-3 overflow-hidden">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex-1 min-w-[160px] aspect-square rounded-lg bg-muted animate-pulse" />
             ))}
           </div>
         ) : (
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-40px" }}
-            variants={{
-              hidden: {},
-              visible: { transition: { staggerChildren: 0.05 } }
-            }}
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
+          <div
+            className="relative rounded-lg p-4 lg:p-5 overflow-hidden"
+            style={{ background: "#0A0A0A" }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
           >
-            {products.slice(0, 8).map((product, index) => (
-              <motion.div
-                key={product.id}
-                variants={{
-                  hidden: { opacity: 0, y: 30 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }
-                }}
-              >
-                <Link href={`/products/${product.id}`} className="group block">
-                  <div className="relative overflow-hidden rounded-lg bg-card border border-border transition-all duration-500 group-hover:border-red-500/40 group-hover:shadow-xl group-hover:shadow-red-500/5">
-                    <div className="relative aspect-square bg-muted/20 overflow-hidden">
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        className="object-contain p-4 transition-transform duration-700 ease-out group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/0 via-black/0 to-black/0 transition-all duration-500 group-hover:from-black/10 group-hover:via-black/5 group-hover:to-black/0" />
-                      <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                        <span className="flex items-center gap-1 text-[10px] text-white/80 bg-black/40 px-2 py-0.5 rounded-full">
-                          <Aperture className="w-3 h-3" />
-                          Profondeur
-                        </span>
-                        <span className="flex items-center gap-1 text-[10px] text-white/80 bg-black/40 px-2 py-0.5 rounded-full">
-                          <Zap className="w-3 h-3" />
-                          Précision
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <p className="text-sm font-medium text-foreground/90 line-clamp-2 leading-snug">
-                        {product.name}
-                      </p>
-                      <div className="flex items-center justify-between mt-2">
-                        <span className="text-lg font-bold text-red-600 dark:text-red-400">
-                          {formatPrice(product.priceUSD)}
-                        </span>
-                        <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 group-hover:text-red-500 transition-colors">
-                          Détails →
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
+            <button
+              onClick={() => scroll('left')}
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hidden lg:block"
+              style={{
+                opacity: isHovered ? 1 : 0,
+                transform: isHovered ? 'translateY(-50%) scale(1)' : 'translateY(-50%) scale(0.8)',
+                pointerEvents: isHovered ? 'auto' : 'none',
+                border: "0.5px solid rgba(255,255,255,0.15)",
+              }}
+            >
+              <ChevronRight className="w-4 h-4 rotate-180" />
+            </button>
 
-        <div className="sm:hidden mt-6 text-center">
-          <Link
-            href={`/categorie/${CATEGORY_SLUG}`}
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Voir toute la collection
-            <ChevronRight className="w-4 h-4" />
-          </Link>
-        </div>
+            <button
+              onClick={() => scroll('right')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hidden lg:block"
+              style={{
+                opacity: isHovered ? 1 : 0,
+                transform: isHovered ? 'translateY(-50%) scale(1)' : 'translateY(-50%) scale(0.8)',
+                pointerEvents: isHovered ? 'auto' : 'none',
+                border: "0.5px solid rgba(255,255,255,0.15)",
+              }}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="p-2 rounded" style={{ background: "rgba(255,255,255,0.08)", border: "0.5px solid rgba(255,255,255,0.1)" }}>
+                  <Camera className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-sm lg:text-base font-semibold text-white">Photo &amp; vidéo</h3>
+                  <p className="text-[10px] mt-0.5 text-white/50">Direct usine</p>
+                </div>
+              </div>
+
+              <div className="flex-1 w-full lg:w-auto overflow-hidden">
+                <div
+                  ref={scrollRef}
+                  className="flex items-center gap-3 overflow-x-auto scroll-smooth pb-1"
+                  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                >
+                  {products.map((product) => (
+                    <Link
+                      key={product.id}
+                      href={`/products/${product.id}`}
+                      className="group flex-shrink-0 w-[140px] lg:w-[160px] transition-all duration-200 hover:-translate-y-0.5"
+                    >
+                      <div className="bg-white rounded-md p-2 transition-all duration-300 hover:shadow-md" style={{ border: "0.5px solid #ECECEC" }}>
+                        <div className="relative aspect-square mb-1.5 rounded overflow-hidden" style={{ background: "#FAFAFA" }}>
+                          <Image
+                            src={product.image}
+                            alt={product.name}
+                            fill
+                            className="object-contain p-1 group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <h4 className="text-[10px] font-medium line-clamp-2 min-h-[28px]" style={{ color: "#0A0A0A" }}>
+                          {product.name}
+                        </h4>
+                        <p className="text-xs font-bold mt-1" style={{ color: "#D4372B" }}>
+                          {formatPrice(product.priceUSD)}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   )
