@@ -31,7 +31,6 @@ export default function CategoryPage() {
     origin: [] as string[],
   })
 
-  // ✅ FONCTION CORRIGÉE : Un produit est en stock SAUF si stock = 0
   const isProductInStock = (product: any): boolean => {
     if (product.stock === undefined || product.stock === null) return true
     if (typeof product.stock === "number") return product.stock > 0
@@ -47,14 +46,23 @@ export default function CategoryPage() {
       try {
         setLoading(true)
         const categoriesRes = await categoriesApi.list()
-        if (!categoriesRes.success) { setLoading(false); return }
+        console.log("📦 categoriesRes:", categoriesRes)
+        
+        if (!categoriesRes.success) { 
+          console.error("❌ Erreur categoriesApi.list:", categoriesRes)
+          setLoading(false)
+          return 
+        }
 
-        const categories = categoriesRes.data as any[]
-        let foundCategory = categories.find((c) => c.slug === slug)
+        // ✅ CORRECTION : La réponse est { success: true, data: { data: [...], meta: {...} } }
+        const categories = categoriesRes.data?.data || []
+        console.log("📦 categories extraites:", categories.length)
+
+        let foundCategory = categories.find((c: any) => c.slug === slug)
 
         if (!foundCategory) {
           const decodedSlug = decodeURIComponent(slug).replace(/-/g, " ").toLowerCase()
-          foundCategory = categories.find((c) => {
+          foundCategory = categories.find((c: any) => {
             const catName = c.name.toLowerCase()
             const catSlug = titleToSlug(c.name)
             return catName === decodedSlug || catSlug === slug || catName.includes(decodedSlug) || decodedSlug.includes(catName)
@@ -63,11 +71,22 @@ export default function CategoryPage() {
 
         if (foundCategory) {
           setCategory(foundCategory)
+          console.log("✅ Catégorie trouvée:", foundCategory.name)
+          
           const productsRes = await productsApi.list({ categoryId: foundCategory.id, limit: 100 })
-          if (productsRes.success) setProducts(productsRes.data as any[])
+          console.log("📦 productsRes:", productsRes)
+          
+          if (productsRes.success) {
+            // ✅ CORRECTION : productsApi.list retourne aussi { success: true, data: { data: [...], meta: {...} } }
+            const productList = productsRes.data?.data || []
+            setProducts(productList)
+            console.log("✅ Produits chargés:", productList.length)
+          }
+        } else {
+          console.warn("⚠️ Catégorie non trouvée pour slug:", slug)
         }
       } catch (error) {
-        console.error("Erreur chargement:", error)
+        console.error("❌ Erreur chargement:", error)
       } finally {
         setLoading(false)
       }
@@ -75,7 +94,6 @@ export default function CategoryPage() {
     if (slug) loadData()
   }, [slug])
 
-  // ── LOADING ─────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen" style={{ background: "#FAFAFA" }}>
@@ -96,7 +114,6 @@ export default function CategoryPage() {
     )
   }
 
-  // ── NOT FOUND ────────────────────────────────────────────────
   if (!category) {
     return (
       <div className="min-h-screen" style={{ background: "#FAFAFA" }}>
@@ -121,10 +138,8 @@ export default function CategoryPage() {
     )
   }
 
-  // ── FILTER SIDEBAR CONTENT ────────────────────────────────────
   const FilterContent = () => (
     <div className="space-y-5">
-      {/* Prix */}
       <div>
         <h3
           className="flex items-center justify-between mb-3"
@@ -145,7 +160,6 @@ export default function CategoryPage() {
         </div>
       </div>
 
-      {/* Marques */}
       <div style={{ borderTop: "0.5px solid #F0F0F0", paddingTop: "16px" }}>
         <h3
           className="flex items-center justify-between mb-3"
@@ -163,7 +177,6 @@ export default function CategoryPage() {
         </div>
       </div>
 
-      {/* Note */}
       <div style={{ borderTop: "0.5px solid #F0F0F0", paddingTop: "16px" }}>
         <h3
           className="flex items-center justify-between mb-3"
@@ -186,7 +199,6 @@ export default function CategoryPage() {
         </div>
       </div>
 
-      {/* Origine */}
       <div style={{ borderTop: "0.5px solid #F0F0F0", paddingTop: "16px" }}>
         <h3
           className="flex items-center justify-between mb-3"
@@ -218,7 +230,6 @@ export default function CategoryPage() {
       <div className="hidden lg:block"><Header /></div>
       <div className="lg:hidden"><MobileHeader /></div>
 
-      {/* ── DRAWER FILTRES MOBILE ─────────────────────────────── */}
       {showFilters && (
         <div
           className="lg:hidden fixed inset-0 z-50"
@@ -230,7 +241,6 @@ export default function CategoryPage() {
             style={{ width: "85%", maxWidth: "360px", background: "#fff" }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header drawer */}
             <div
               className="sticky top-0 flex items-center justify-between px-5 py-4"
               style={{ background: "#fff", borderBottom: "0.5px solid #F0F0F0" }}
@@ -256,7 +266,6 @@ export default function CategoryPage() {
       <main className="pb-20 lg:pb-10">
         <div className="max-w-[1440px] mx-auto px-4 lg:px-8 py-4 lg:py-6">
 
-          {/* Breadcrumb desktop */}
           <div className="hidden lg:flex items-center gap-1.5 text-xs mb-4" style={{ color: "#AAAAAA" }}>
             <Link href="/" className="hover:text-[#D4372B] transition-colors" style={{ fontFamily: "'Poppins', sans-serif" }}>
               Accueil
@@ -265,7 +274,6 @@ export default function CategoryPage() {
             <span style={{ color: "#0A0A0A", fontWeight: 500, fontFamily: "'Poppins', sans-serif" }}>{category.name}</span>
           </div>
 
-          {/* Category header */}
           <div className="mb-4 lg:mb-5">
             <h1
               style={{
@@ -283,7 +291,6 @@ export default function CategoryPage() {
             </p>
           </div>
 
-          {/* Toolbar mobile */}
           <div className="lg:hidden flex items-center gap-2 mb-4">
             <button
               onClick={() => setShowFilters(true)}
@@ -313,7 +320,6 @@ export default function CategoryPage() {
             </select>
           </div>
 
-          {/* Toolbar desktop */}
           <div
             className="hidden lg:flex items-center justify-between p-4 rounded-xl mb-5"
             style={{ background: "#fff", border: "0.5px solid #ECECEC" }}
@@ -358,17 +364,14 @@ export default function CategoryPage() {
             </div>
           </div>
 
-          {/* Layout */}
           <div className="grid lg:grid-cols-4 gap-5">
 
-            {/* ── SIDEBAR FILTRES DESKTOP ───────────────────── */}
             <div className="hidden lg:block lg:col-span-1">
               <div className="rounded-xl p-5 sticky top-20" style={{ background: "#fff", border: "0.5px solid #ECECEC" }}>
                 <FilterContent />
               </div>
             </div>
 
-            {/* ── GRILLE PRODUITS ───────────────────────────── */}
             <div className="lg:col-span-3">
               {products.length === 0 ? (
                 <div
@@ -394,7 +397,6 @@ export default function CategoryPage() {
                           className="overflow-hidden transition-all duration-200 group-hover:shadow-md"
                           style={{ borderRadius: "12px", border: "0.5px solid #ECECEC", background: "#fff" }}
                         >
-                          {/* Image */}
                           <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
                             <Image
                               src={product.images?.[0] || "/placeholder.svg"}
@@ -423,7 +425,6 @@ export default function CategoryPage() {
                             )}
                           </div>
 
-                          {/* Infos */}
                           <div className="p-2.5">
                             <h3
                               className="line-clamp-2 mb-1"
@@ -432,7 +433,6 @@ export default function CategoryPage() {
                               {product.title}
                             </h3>
 
-                            {/* Étoiles */}
                             <div className="flex items-center gap-1 mb-1.5">
                               {Array.from({ length: 5 }).map((_, i) => (
                                 <Star
@@ -445,7 +445,6 @@ export default function CategoryPage() {
                               </span>
                             </div>
 
-                            {/* Prix */}
                             <div className="flex items-baseline gap-1 flex-wrap">
                               <span
                                 style={{ fontSize: "13px", fontWeight: 700, color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}
