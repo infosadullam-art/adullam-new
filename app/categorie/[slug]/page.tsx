@@ -54,8 +54,12 @@ export default function CategoryPage() {
           return 
         }
 
-        // ✅ CORRECTION : La réponse est { success: true, data: { data: [...], meta: {...} } }
-        const categories = categoriesRes.data?.data || []
+        // ✅ CORRECTION : la route /api/categories peut renvoyer soit
+        // { success: true, data: [...] } (liste complète, cas public)
+        // soit { success: true, data: { data: [...], meta: {...} } } (cas paginé/admin)
+        const categories = Array.isArray(categoriesRes.data)
+          ? categoriesRes.data
+          : categoriesRes.data?.data || []
         console.log("📦 categories extraites:", categories.length)
 
         let foundCategory = categories.find((c: any) => c.slug === slug)
@@ -77,7 +81,7 @@ export default function CategoryPage() {
           console.log("📦 productsRes:", productsRes)
           
           if (productsRes.success) {
-            // ✅ CORRECTION : productsApi.list retourne aussi { success: true, data: { data: [...], meta: {...} } }
+            // ✅ productsApi.list retourne { success: true, data: { data: [...], meta: {...} } }
             const productList = productsRes.data?.data || []
             setProducts(productList)
             console.log("✅ Produits chargés:", productList.length)
