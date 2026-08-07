@@ -70,10 +70,10 @@ export function PhotoCameraSection() {
               <Camera className="w-3.5 h-3.5" style={{ color: "#D4372B" }} />
             </div>
             <div>
-              <h2 className="text-sm font-bold" style={{ color: "#0A0A0A", fontFamily: "Amazon Ember, 'Inter', sans-serif" }}>
+              <h2 className="text-sm font-bold" style={{ color: "#0A0A0A" }}>
                 Photo &amp; Caméra
               </h2>
-              <p className="text-[9px]" style={{ color: "#AAAAAA", fontFamily: "Amazon Ember, 'Inter', sans-serif" }}>
+              <p className="text-[9px]" style={{ color: "#AAAAAA" }}>
                 Appareils &amp; accessoires
               </p>
             </div>
@@ -81,7 +81,7 @@ export function PhotoCameraSection() {
           <Link
             href={`/categorie/${CATEGORY_SLUG}`}
             className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1"
-            style={{ color: "#D4372B", fontFamily: "Amazon Ember, 'Inter', sans-serif" }}
+            style={{ color: "#D4372B" }}
           >
             Voir tout <ChevronRight className="w-3 h-3" />
           </Link>
@@ -123,12 +123,12 @@ export function PhotoCameraSection() {
                     <div className="px-1.5 py-1.5">
                       <p
                         className="truncate mb-0.5"
-                        style={{ fontSize: "9px", fontWeight: 500, color: "#0A0A0A", fontFamily: "Amazon Ember, 'Inter', sans-serif" }}
+                        style={{ fontSize: "9px", fontWeight: 500, color: "#0A0A0A" }}
                       >
                         {product.name}
                       </p>
                       <p
-                        style={{ fontSize: "10px", fontWeight: 700, color: "#D4372B", fontFamily: "Amazon Ember, 'Inter', sans-serif" }}
+                        style={{ fontSize: "10px", fontWeight: 700, color: "#D4372B" }}
                       >
                         {formatPrice(product.priceUSD)}
                       </p>

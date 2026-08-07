@@ -70,10 +70,10 @@ export function MachinesAgricolesSection() {
               <Tractor className="w-3.5 h-3.5" style={{ color: "#F5A623" }} />
             </div>
             <div>
-              <h2 className="text-sm font-bold" style={{ color: "#0A0A0A", fontFamily: "Amazon Ember, 'Inter', sans-serif" }}>
+              <h2 className="text-sm font-bold" style={{ color: "#0A0A0A" }}>
                 Machines Agricoles
               </h2>
-              <p className="text-[9px]" style={{ color: "#AAAAAA", fontFamily: "Amazon Ember, 'Inter', sans-serif" }}>
+              <p className="text-[9px]" style={{ color: "#AAAAAA" }}>
                 Équipement professionnel
               </p>
             </div>
@@ -81,7 +81,7 @@ export function MachinesAgricolesSection() {
           <Link
             href={`/categorie/${CATEGORY_SLUG}`}
             className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1"
-            style={{ color: "#D4372B", fontFamily: "Amazon Ember, 'Inter', sans-serif" }}
+            style={{ color: "#D4372B" }}
           >
             Voir tout <ChevronRight className="w-3 h-3" />
           </Link>
@@ -90,7 +90,7 @@ export function MachinesAgricolesSection() {
         {isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="aspect-[4/5] rounded-md bg-muted animate-pulse" />
+              <div key={i} className="aspect-square rounded-md bg-muted animate-pulse" />
             ))}
           </div>
         ) : (
@@ -112,7 +112,7 @@ export function MachinesAgricolesSection() {
                       background: "#fff",
                     }}
                   >
-                    <div className="relative aspect-[4/5]" style={{ background: "#FAFAFA" }}>
+                    <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
                       <Image
                         src={product.image}
                         alt={product.name}
@@ -123,12 +123,12 @@ export function MachinesAgricolesSection() {
                     <div className="px-1.5 py-1.5">
                       <p
                         className="truncate mb-0.5"
-                        style={{ fontSize: "9px", fontWeight: 500, color: "#0A0A0A", fontFamily: "Amazon Ember, 'Inter', sans-serif" }}
+                        style={{ fontSize: "9px", fontWeight: 500, color: "#0A0A0A" }}
                       >
                         {product.name}
                       </p>
                       <p
-                        style={{ fontSize: "10px", fontWeight: 700, color: "#D4372B", fontFamily: "Amazon Ember, 'Inter', sans-serif" }}
+                        style={{ fontSize: "10px", fontWeight: 700, color: "#D4372B" }}
                       >
                         {formatPrice(product.priceUSD)}
                       </p>
