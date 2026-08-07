@@ -1,19 +1,13 @@
 "use client"
 
-import { useRef, useEffect, useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronRight, TrendingUp } from "lucide-react"
+import { TrendingUp, ChevronRight } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
-// ════════════════════════════════════════════════════════════
-// API - Changement de produits toutes les 6h
-// ════════════════════════════════════════════════════════════
-
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
-const REFRESH_INTERVAL = 6 * 60 * 60 * 1000 // 6 heures
-
-// ════════════════════════════════════════════════════════════
+const REFRESH_INTERVAL = 6 * 60 * 60 * 1000
 
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
@@ -26,25 +20,28 @@ interface Product {
 
 export function MeilleuresVentesMobile() {
   const { formatPrice } = useCurrencyFormatter()
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const [hasAnimated, setHasAnimated] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isHovered, setIsHovered] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setIsLoading(true)
-        console.log(`📦 [BESTSELLERS] Fetch - ${new Date().toLocaleTimeString()}`)
-        
         const timestamp = Date.now()
         const res = await fetch(`${API_BASE}/api/deals/best-sellers/mobile?limit=20&_t=${timestamp}`)
         const data = await res.json()
         
         if (data.success && data.data) {
           const shuffled = [...data.data].sort(() => Math.random() - 0.5)
-          setProducts(shuffled.slice(0, 10))
-          console.log(`📦 [BESTSELLERS] ${data.data.length} récupérés, 10 affichés`)
+          const formattedProducts = shuffled.slice(0, 8).map((p: any) => ({
+            id: p.id,
+            name: p.title || p.name || "Produit",
+            priceUSD: p.price || 0,
+            image: p.images?.[0] || p.image || "/placeholder.jpg",
+          }))
+          setProducts(formattedProducts)
         }
       } catch (error) {
         console.error("Erreur chargement produits:", error)
@@ -55,26 +52,20 @@ export function MeilleuresVentesMobile() {
 
     fetchProducts()
 
-    const interval = setInterval(() => {
-      console.log(`🔄 [BESTSELLERS] Nouveaux produits - ${new Date().toLocaleTimeString()}`)
-      fetchProducts()
-    }, REFRESH_INTERVAL)
-
-    return () => {
-      console.log(`🧹 [BESTSELLERS] Nettoyage`)
-      clearInterval(interval)
-    }
+    const interval = setInterval(fetchProducts, REFRESH_INTERVAL)
+    return () => clearInterval(interval)
   }, [])
 
-  useEffect(() => {
-    if (!hasAnimated && scrollRef.current && products.length > 0) {
-      setHasAnimated(true)
-      setTimeout(() => {
-        scrollRef.current?.scrollBy({ left: 150, behavior: "smooth" })
-        setTimeout(() => { scrollRef.current?.scrollBy({ left: -150, behavior: "smooth" }) }, 800)
-      }, 500)
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const amount = 200
+      if (direction === 'left') {
+        scrollRef.current.scrollBy({ left: -amount, behavior: 'smooth' })
+      } else {
+        scrollRef.current.scrollBy({ left: amount, behavior: 'smooth' })
+      }
     }
-  }, [hasAnimated, products])
+  }
 
   if (isLoading) {
     return (
@@ -92,7 +83,7 @@ export function MeilleuresVentesMobile() {
           </div>
           <div className="flex gap-2 overflow-hidden">
             {[0,1,2,3].map(i => (
-              <div key={i} className="flex-shrink-0 w-[120px]" style={{ border: "0.5px solid #ECECEC", borderRadius: "6px", overflow: "hidden", background: "#fff" }}>
+              <div key={i} className="flex-shrink-0 w-[150px]" style={{ border: "0.5px solid #ECECEC", borderRadius: "6px", overflow: "hidden", background: "#fff" }}>
                 <div className="aspect-square animate-pulse" style={{ background: "#F4F4F4" }} />
                 <div className="p-1.5">
                   <div className="h-2 w-full rounded animate-pulse mb-1" style={{ background: "#F4F4F4" }} />
@@ -110,96 +101,134 @@ export function MeilleuresVentesMobile() {
 
   return (
     <section className="w-full lg:hidden" style={{ background: "#FAFAFA" }}>
-      <div className="px-4 py-2">
-
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <div
-              className="flex items-center justify-center w-7 h-7"
-              style={{ background: "#FFF0F0", borderRadius: "6px" }}
-            >
-              <TrendingUp className="w-3.5 h-3.5" style={{ color: "#D4372B" }} />
-            </div>
-            <div>
-              <h2 style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont, lineHeight: 1.2 }}>
-                Meilleures ventes
-              </h2>
-              <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>
-                Glissez pour voir plus
-              </p>
-            </div>
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="text-lg lg:text-xl font-semibold mb-0.5" style={{ color: "#0A0A0A", fontFamily: amazonFont, letterSpacing: "-0.02em" }}>
+              Meilleures ventes
+            </h2>
+            <p className="text-xs" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>
+              Les produits les plus populaires
+            </p>
           </div>
           <Link
             href="/meilleures-ventes"
-            className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1"
+            className="text-xs flex items-center gap-1 transition-all duration-200 hover:gap-1.5 hover:opacity-70"
             style={{ color: "#D4372B", fontFamily: amazonFont }}
           >
-            Voir tout <ChevronRight className="w-3 h-3" />
+            Voir tout
+            <ChevronRight className="w-3 h-3" />
           </Link>
         </div>
 
         <div
-          ref={scrollRef}
-          className="flex gap-2 overflow-x-auto pb-1"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          className="rounded-md p-4 lg:p-5 relative overflow-hidden"
+          style={{ 
+            background: "#0A0A0A",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+          }}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
         >
-          {products.map((product, index) => (
-            <Link
-              key={product.id}
-              href={`/products/${product.id}`}
-              className="group block flex-shrink-0 transition-all duration-200 hover:-translate-y-0.5"
-              style={{ width: "120px" }}
-            >
+          
+          <button 
+            onClick={() => scroll('left')}
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hover:scale-105 hidden lg:block"
+            style={{ 
+              border: "0.5px solid rgba(255,255,255,0.15)",
+              opacity: isHovered ? 1 : 0,
+              transform: isHovered ? 'translateY(-50%) scale(1)' : 'translateY(-50%) scale(0.8)',
+              pointerEvents: isHovered ? 'auto' : 'none',
+              transition: 'opacity 0.3s ease, transform 0.3s ease',
+            }}
+          >
+            <ChevronRight className="w-4 h-4 rotate-180" />
+          </button>
+          
+          <button 
+            onClick={() => scroll('right')}
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hover:scale-105 hidden lg:block"
+            style={{ 
+              border: "0.5px solid rgba(255,255,255,0.15)",
+              opacity: isHovered ? 1 : 0,
+              transform: isHovered ? 'translateY(-50%) scale(1)' : 'translateY(-50%) scale(0.8)',
+              pointerEvents: isHovered ? 'auto' : 'none',
+              transition: 'opacity 0.3s ease, transform 0.3s ease',
+            }}
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+
+          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
+            
+            <div className="flex items-center gap-2 flex-shrink-0">
               <div
-                className="overflow-hidden transition-all duration-200 hover:shadow-sm"
-                style={{ borderRadius: "6px", border: "0.5px solid #ECECEC", background: "#fff" }}
+                className="p-2 rounded"
+                style={{ background: "rgba(255,255,255,0.08)", border: "0.5px solid rgba(255,255,255,0.1)" }}
               >
-                <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
-                  {index < 3 && (
-                    <span
-                      className="absolute top-1.5 left-1.5 z-10 flex items-center justify-center w-4 h-4 rounded-full text-[8px] font-bold text-white"
-                      style={{ background: index === 0 ? "#F5A623" : index === 1 ? "#AAAAAA" : "#CD7F32" }}
-                    >
-                      {index + 1}
-                    </span>
-                  )}
-                  <Image
-                    src={product.image || "/placeholder.svg"}
-                    alt={product.name}
-                    width={120}
-                    height={120}
-                    className="w-full h-full object-contain p-1.5 transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-
-                <div className="px-1.5 py-1.5">
-                  <p
-                    className="truncate mb-0.5"
-                    style={{ fontSize: "10px", fontWeight: 500, color: "#0A0A0A", fontFamily: amazonFont }}
-                  >
-                    {product.name}
-                  </p>
-                  <p
-                    style={{ fontSize: "11px", fontWeight: 700, color: "#D4372B", fontFamily: amazonFont }}
-                  >
-                    {formatPrice(product.priceUSD)}
-                  </p>
-                </div>
+                <TrendingUp className="w-5 h-5" style={{ color: "#D4372B" }} />
               </div>
-            </Link>
-          ))}
-        </div>
+              <div>
+                <h3 className="text-base lg:text-lg font-semibold" style={{ color: "#fff", fontFamily: amazonFont }}>
+                  Meilleures ventes
+                </h3>
+                <p className="text-[10px] mt-0.5" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>
+                  Les plus populaires
+                </p>
+              </div>
+            </div>
 
-        <div className="flex items-center justify-center gap-1 mt-1.5">
-          {[0,1,2,3].map(i => (
-            <div key={i} className="rounded-full" style={{ width: i === 3 ? "12px" : "3px", height: "2px", background: i === 3 ? "#D4372B" : "#ECECEC", transition: "all 0.3s" }} />
-          ))}
-          <span style={{ fontSize: "8px", color: "#AAAAAA", marginLeft: "3px", fontFamily: amazonFont }}>glissez →</span>
+            <div className="flex-1 w-full lg:w-auto overflow-hidden">
+              <div 
+                ref={scrollRef}
+                className="flex items-center gap-3 overflow-x-auto scroll-smooth pb-1"
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              >
+                {products.map((product) => (
+                  <Link
+                    key={product.id}
+                    href={`/products/${product.id}`}
+                    className="group flex-shrink-0 w-[150px] transition-all duration-200 hover:-translate-y-0.5"
+                  >
+                    <div
+                      className="bg-white rounded-md p-2 transition-all duration-300 hover:shadow-md"
+                      style={{ border: "0.5px solid #ECECEC" }}
+                    >
+                      <div className="relative aspect-square mb-1.5 rounded overflow-hidden" style={{ background: "#FAFAFA" }}>
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          className="object-contain p-1 group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+
+                      <h4 className="text-[10px] font-medium line-clamp-2 min-h-[28px]" style={{ color: "#0A0A0A", fontFamily: amazonFont }}>
+                        {product.name}
+                      </h4>
+                      
+                      <div className="flex items-center justify-between mt-1.5">
+                        <p className="text-xs font-bold" style={{ color: "#D4372B", fontFamily: amazonFont }}>
+                          {formatPrice(product.priceUSD)}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <style jsx>{`
-        div::-webkit-scrollbar { display: none; }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
       `}</style>
     </section>
   )
