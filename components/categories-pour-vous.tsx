@@ -152,9 +152,6 @@ export function CategoriesPourVous() {
                 <h3 className="text-sm font-bold" style={{ color: "#fff" }}>
                   Tendances Cuisine
                 </h3>
-                <p className="text-[9px]" style={{ color: "#AAAAAA" }}>
-                  Les plus populaires
-                </p>
               </div>
             </div>
 
