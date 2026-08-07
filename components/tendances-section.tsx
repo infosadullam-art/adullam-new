@@ -7,20 +7,13 @@ import { useLocale } from "@/context/LocaleProvider"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { ChevronRight, TrendingUp, MapPin } from "lucide-react"
 
-// ════════════════════════════════════════════════════════════
-// API - Changement de produits toutes les 10h
-// ════════════════════════════════════════════════════════════
-
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
-const REFRESH_INTERVAL = 10 * 60 * 60 * 1000 // 10 heures
+const REFRESH_INTERVAL = 10 * 60 * 60 * 1000
 
-// 🔧 Logger conditionnel : actif seulement en dev, silencieux en production
 const isDev = process.env.NODE_ENV !== "production"
 function devLog(...args: any[]) {
   if (isDev) console.log(...args)
 }
-
-// ════════════════════════════════════════════════════════════
 
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
@@ -182,30 +175,10 @@ export function TendanceParPays() {
 
   if (isLoading) {
     return (
-      <section className="w-full" style={{ background: "#fff" }}>
-        <div className="px-4 py-3">
-          <div className="animate-pulse">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded" style={{ background: "#F4F4F4", borderRadius: "4px" }} />
-                <div>
-                  <div className="h-3 w-28 rounded mb-1" style={{ background: "#F4F4F4" }} />
-                  <div className="h-2 w-20 rounded" style={{ background: "#F4F4F4" }} />
-                </div>
-              </div>
-              <div className="h-6 w-20 rounded" style={{ background: "#F4F4F4", borderRadius: "20px" }} />
-            </div>
-            <div className="flex gap-2 overflow-hidden">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="flex-shrink-0 w-[110px]" style={{ border: "0.5px solid #ECECEC", borderRadius: "6px", overflow: "hidden" }}>
-                  <div className="aspect-square" style={{ background: "#F4F4F4" }} />
-                  <div className="p-1.5">
-                    <div className="h-2 w-full rounded mb-1" style={{ background: "#F4F4F4" }} />
-                    <div className="h-2.5 w-12 rounded" style={{ background: "#F4F4F4" }} />
-                  </div>
-                </div>
-              ))}
-            </div>
+      <section className="w-full py-3" style={{ background: "#FAFAFA" }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-center items-center h-32">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2" style={{ borderColor: "#D4372B" }} />
           </div>
         </div>
       </section>
@@ -214,31 +187,37 @@ export function TendanceParPays() {
 
   if (!trends) return null
 
-  const MobileTrend = () => (
-    <div className="lg:hidden px-4 py-3">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center w-7 h-7" style={{ background: "#FFF0F0", borderRadius: "4px" }}>
-            <TrendingUp className="w-3.5 h-3.5" style={{ color: "#D4372B" }} />
+  return (
+    <section className="w-full py-3" style={{ background: "#FAFAFA" }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center w-7 h-7" style={{ background: "#FFF0F0", borderRadius: "4px" }}>
+              <TrendingUp className="w-3.5 h-3.5" style={{ color: "#D4372B" }} />
+            </div>
+            <div>
+              <p style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont }}>
+                Tendances · {paysActuel.drapeau}
+              </p>
+              <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>
+                {trends.topCategory} · +{trends.trendScore}%
+              </p>
+            </div>
           </div>
-          <div>
-            <p style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont }}>
-              Tendances {paysActuel.drapeau}
-            </p>
-            <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>
-              {trends.topCategory} · +{trends.trendScore}%
-            </p>
-          </div>
+          <Link
+            href="/meilleures-ventes"
+            className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1"
+            style={{ color: "#D4372B", fontFamily: amazonFont }}
+          >
+            Voir tout <ChevronRight className="w-3 h-3" />
+          </Link>
         </div>
-        <CountrySelector />
-      </div>
 
-      <div className="overflow-x-auto -mx-4 px-4 pb-1" style={{ scrollbarWidth: "none" }}>
-        <div className="flex gap-2 min-w-max">
-          {trends.products.map((product) => (
-            <Link key={product.id} href={`/products/${product.id}`} className="group block transition-all duration-200 hover:-translate-y-0.5" style={{ width: "110px" }}>
-              <div style={{ background: "#fff", borderRadius: "6px", border: "0.5px solid #ECECEC", overflow: "hidden" }}>
-                <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+          {trends.products.slice(0, 6).map((product) => (
+            <Link key={product.id} href={`/products/${product.id}`} className="group block transition-all duration-200 hover:-translate-y-0.5">
+              <div className="rounded-md p-2 transition-all duration-300 hover:shadow-sm" style={{ background: "#fff", border: "0.5px solid #ECECEC" }}>
+                <div className="relative aspect-square mb-1.5 rounded overflow-hidden" style={{ background: "#FAFAFA" }}>
                   {product.trend > 30 && (
                     <span className="absolute top-1 left-1 z-10 text-[8px] font-bold px-1 py-0.5 text-white" style={{ background: "#D4372B", borderRadius: "3px" }}>
                       +{product.trend}%
@@ -247,106 +226,30 @@ export function TendanceParPays() {
                   {product.flag && (
                     <span className="absolute top-1 right-1 text-xs z-10">{product.flag}</span>
                   )}
-                  <Image src={product.image} alt={product.name} width={110} height={110} className="w-full h-full object-contain p-1.5 transition-transform duration-300 group-hover:scale-105" />
+                  <Image src={product.image} alt={product.name} width={100} height={100} className="w-full h-full object-contain p-1 transition-transform duration-300 group-hover:scale-105" />
                 </div>
-                <div className="px-1.5 py-1.5">
-                  <p className="truncate mb-0.5" style={{ fontSize: "9px", fontWeight: 500, color: "#0A0A0A", fontFamily: amazonFont }}>{product.name}</p>
-                  <div className="flex items-center justify-between">
-                    <p style={{ fontSize: "10px", fontWeight: 700, color: "#D4372B", fontFamily: amazonFont }}>{formatPrice(product.priceUSD)}</p>
-                    <span style={{ fontSize: "8px", color: "#AAAAAA", fontFamily: amazonFont }}>{product.views}</span>
-                  </div>
+                <h4 className="truncate text-[10px] font-medium min-h-[20px]" style={{ color: "#0A0A0A", fontFamily: amazonFont }}>
+                  {product.name}
+                </h4>
+                <div className="flex items-center justify-between mt-1">
+                  <p className="text-xs font-bold" style={{ color: "#D4372B", fontFamily: amazonFont }}>
+                    {formatPrice(product.priceUSD)}
+                  </p>
+                  <span className="text-[8px]" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>{product.views}</span>
                 </div>
               </div>
             </Link>
           ))}
         </div>
-      </div>
 
-      <div className="flex items-center justify-between pt-2">
-        <div className="flex items-center gap-1">
-          <div className="w-1 h-1 rounded-full" style={{ background: "#D4372B" }} />
-          <span style={{ fontSize: "8px", color: "#AAAAAA", fontFamily: amazonFont }}>Mise à jour en temps réel</span>
-        </div>
-        <Link href="/meilleures-ventes" className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1" style={{ color: "#D4372B", fontFamily: amazonFont }}>
-          Voir tout <ChevronRight className="w-2.5 h-2.5" />
-        </Link>
-      </div>
-    </div>
-  )
-
-  const DesktopTrend = () => (
-    <div className="hidden lg:block rounded-xl p-5" style={{ border: "0.5px solid #ECECEC", background: "#fff" }}>
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-9 h-9" style={{ background: "#FFF0F0", borderRadius: "6px" }}>
-            <TrendingUp className="w-4 h-4" style={{ color: "#D4372B" }} />
-          </div>
-          <div>
-            <h2 style={{ fontSize: "16px", fontWeight: 800, color: "#0A0A0A", fontFamily: amazonFont, letterSpacing: "-0.02em" }}>
-              Tendances · {paysActuel.nom} {paysActuel.drapeau}
-            </h2>
-            <p style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: amazonFont }}>
-              Les produits les plus populaires cette semaine
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-2 py-1" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC", borderRadius: "6px" }}>
-            <MapPin className="w-3 h-3" style={{ color: "#AAAAAA" }} />
-            <span style={{ fontSize: "12px", color: "#555", fontFamily: amazonFont }}>{trends.topCategory} en tête</span>
-            <span style={{ fontSize: "12px", fontWeight: 700, color: "#D4372B", fontFamily: amazonFont }}>+{trends.trendScore}%</span>
+        <div className="flex items-center justify-between mt-3 pt-2" style={{ borderTop: "0.5px solid #F0F0F0" }}>
+          <div className="flex items-center gap-1">
+            <div className="w-1 h-1 rounded-full" style={{ background: "#D4372B" }} />
+            <span style={{ fontSize: "8px", color: "#AAAAAA", fontFamily: amazonFont }}>Mise à jour en temps réel</span>
           </div>
           <CountrySelector />
         </div>
       </div>
-
-      <div className="grid grid-cols-6 gap-2">
-        {trends.products.slice(0, 6).map((product) => (
-          <Link key={product.id} href={`/products/${product.id}`} className="group block">
-            <div style={{ background: "#fff", borderRadius: "6px", border: "0.5px solid #ECECEC", padding: "8px" }} className="transition-all duration-200 hover:shadow-sm">
-              <div className="relative aspect-square mb-2" style={{ background: "#FAFAFA", borderRadius: "4px" }}>
-                <span className="absolute top-1 left-1 z-10 text-[8px] font-bold px-1 py-0.5 text-white" style={{ background: "#D4372B", borderRadius: "3px" }}>
-                  +{product.trend}%
-                </span>
-                {product.flag && (
-                  <span className="absolute top-1 right-1 text-xs z-10 px-0.5 rounded" style={{ background: "rgba(255,255,255,0.8)" }}>
-                    {product.flag}
-                  </span>
-                )}
-                <Image src={product.image} alt={product.name} width={100} height={100} className="w-full h-full object-contain p-1 transition-transform duration-300 group-hover:scale-105" />
-              </div>
-              <p className="truncate mb-1" style={{ fontSize: "11px", fontWeight: 600, color: "#0A0A0A", fontFamily: amazonFont }}>{product.name}</p>
-              <div className="flex items-center justify-between">
-                <p style={{ fontSize: "12px", fontWeight: 700, color: "#D4372B", fontFamily: amazonFont }}>{formatPrice(product.priceUSD)}</p>
-                <span style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>{product.orders} cmd</span>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      <div className="flex items-center justify-between mt-4 pt-3" style={{ borderTop: "0.5px solid #F0F0F0" }}>
-        <div className="flex items-center gap-3" style={{ fontSize: "11px", color: "#AAAAAA", fontFamily: amazonFont }}>
-          <span>📊 Basé sur les 7 derniers jours</span>
-          <span>•</span>
-          <span>👥 {trends.products.reduce((a, p) => a + p.views, 0).toLocaleString()} vues</span>
-        </div>
-        <Link href="/meilleures-ventes" className="flex items-center gap-1 text-xs font-semibold transition-all duration-200 hover:gap-1.5" style={{ color: "#D4372B", fontFamily: amazonFont }}>
-          Voir toutes les tendances <ChevronRight className="w-3 h-3" />
-        </Link>
-      </div>
-    </div>
-  )
-
-  return (
-    <section className="w-full" style={{ background: "#fff" }}>
-      <div className="max-w-7xl mx-auto">
-        <MobileTrend />
-        <div className="hidden lg:block px-4 sm:px-6 lg:px-8 py-4">
-          <DesktopTrend />
-        </div>
-      </div>
-      <style jsx>{`div::-webkit-scrollbar { display: none; }`}</style>
     </section>
   )
 }
