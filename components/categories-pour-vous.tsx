@@ -88,7 +88,7 @@ export function CategoriesPourVous() {
         <div className="flex items-center justify-between mb-3">
           <div>
             <h2 className="text-sm font-bold" style={{ color: "#0A0A0A" }}>
-              Tendances Cuisine 🔥
+              Tendances Cuisine
             </h2>
             <p className="text-[9px]" style={{ color: "#AAAAAA" }}>
               Les produits les plus populaires
@@ -146,11 +146,11 @@ export function CategoriesPourVous() {
                 className="p-2 rounded"
                 style={{ background: "rgba(255,255,255,0.08)", border: "0.5px solid rgba(255,255,255,0.1)" }}
               >
-                <span style={{ fontSize: "20px" }}>🔥</span>
+                <span style={{ fontSize: "20px" }}>🍳</span>
               </div>
               <div>
                 <h3 className="text-sm font-bold" style={{ color: "#fff" }}>
-                  Tendances Cuisine
+                  Cuisine
                 </h3>
               </div>
             </div>
