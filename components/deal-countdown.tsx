@@ -7,8 +7,16 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
+// ════════════════════════════════════════════════════════════
+// API - Changement de produits toutes les 6h
+// ════════════════════════════════════════════════════════════
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
-const REFRESH_INTERVAL = 6 * 60 * 60 * 1000
+const REFRESH_INTERVAL = 6 * 60 * 60 * 1000 // 6 heures
+
+// ════════════════════════════════════════════════════════════
+// TYPES
+// ════════════════════════════════════════════════════════════
 
 interface Product {
   id: string
@@ -35,6 +43,10 @@ interface FlashSaleData {
     discountedPrice: number
   }
 }
+
+// ════════════════════════════════════════════════════════════
+// COMPOSANT
+// ════════════════════════════════════════════════════════════
 
 export function DealCountdown() {
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 })
@@ -112,6 +124,7 @@ export function DealCountdown() {
 
     fetchAllData()
 
+    // ✅ Changement de produits toutes les 6h
     const interval = setInterval(() => {
       console.log(`🔄 [DEALS] Nouveaux produits - ${new Date().toLocaleTimeString()}`)
       fetchAllData()
@@ -230,7 +243,7 @@ export function DealCountdown() {
   }
 
   return (
-    <div className="w-full" style={{ background: "#FAFAFA" }}>
+    <div className="w-full lg:-mx-0 -mx-4" style={{ background: "#FAFAFA", width: "calc(100% + 32px)" }}>
       <div className="relative overflow-hidden" style={{ background: "#fff" }}>
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.04] animate-pulse-slow"
