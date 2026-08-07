@@ -70,7 +70,6 @@ function Skeleton({ height }: { height: number }) {
   )
 }
 
-// ── Section animée avec fade-in ──
 function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const [isVisible, setIsVisible] = useState(false)
 
@@ -112,9 +111,121 @@ export default function Home() {
         transition: 'opacity 0.4s ease-in',
       }}
     >
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-surface/50 to-background" />
+        
+        <div 
+          className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full blur-[150px] opacity-[0.12]"
+          style={{
+            background: "radial-gradient(circle, #D4372B 0%, transparent 70%)",
+            animation: "floatPremium 20s ease-in-out infinite",
+          }}
+        />
+        
+        <div 
+          className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[130px] opacity-[0.10]"
+          style={{
+            background: "radial-gradient(circle, #F5A623 0%, transparent 70%)",
+            animation: "floatPremium 22s ease-in-out infinite reverse",
+            animationDelay: "-5s",
+          }}
+        />
+        
+        <div 
+          className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[400px] h-[400px] rounded-full blur-[120px] opacity-[0.06]"
+          style={{
+            background: "radial-gradient(circle, #D4372B 0%, transparent 70%)",
+            animation: "floatPremium 18s ease-in-out infinite",
+            animationDelay: "-10s",
+          }}
+        />
+
+        <div 
+          className="absolute top-[10%] right-[20%] w-[300px] h-[300px] rounded-full blur-[100px] opacity-[0.08]"
+          style={{
+            background: "radial-gradient(circle, #FF6B5A 0%, transparent 70%)",
+            animation: "floatPremium 25s ease-in-out infinite",
+            animationDelay: "-15s",
+          }}
+        />
+
+        <style jsx>{`
+          @keyframes floatPremium {
+            0%, 100% {
+              transform: translate(0, 0) scale(1);
+            }
+            25% {
+              transform: translate(60px, -40px) scale(1.1);
+            }
+            50% {
+              transform: translate(-30px, 60px) scale(0.9);
+            }
+            75% {
+              transform: translate(40px, 30px) scale(1.05);
+            }
+          }
+        `}</style>
+      </div>
+
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-surface/50 to-background" />
+        
+        <div 
+          className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full blur-[150px] opacity-[0.12]"
+          style={{
+            background: "radial-gradient(circle, #D4372B 0%, transparent 70%)",
+            animation: "floatPremium 20s ease-in-out infinite",
+          }}
+        />
+        
+        <div 
+          className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[130px] opacity-[0.10]"
+          style={{
+            background: "radial-gradient(circle, #F5A623 0%, transparent 70%)",
+            animation: "floatPremium 22s ease-in-out infinite reverse",
+            animationDelay: "-5s",
+          }}
+        />
+        
+        <div 
+          className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[400px] h-[400px] rounded-full blur-[120px] opacity-[0.06]"
+          style={{
+            background: "radial-gradient(circle, #D4372B 0%, transparent 70%)",
+            animation: "floatPremium 18s ease-in-out infinite",
+            animationDelay: "-10s",
+          }}
+        />
+
+        <div 
+          className="absolute top-[10%] right-[20%] w-[300px] h-[300px] rounded-full blur-[100px] opacity-[0.08]"
+          style={{
+            background: "radial-gradient(circle, #FF6B5A 0%, transparent 70%)",
+            animation: "floatPremium 25s ease-in-out infinite",
+            animationDelay: "-15s",
+          }}
+        />
+
+        <style jsx>{`
+          @keyframes floatPremium {
+            0%, 100% {
+              transform: translate(0, 0) scale(1);
+            }
+            25% {
+              transform: translate(60px, -40px) scale(1.1);
+            }
+            50% {
+              transform: translate(-30px, 60px) scale(0.9);
+            }
+            75% {
+              transform: translate(40px, 30px) scale(1.05);
+            }
+          }
+        `}</style>
+      </div>
+
       {/* VERSION MOBILE */}
-      <div className="lg:hidden min-h-screen bg-background">
-        <div className="sticky top-0 z-50 bg-background border-b border-border">
+      <div className="lg:hidden min-h-screen bg-transparent">
+        <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
           <MobileHeader />
         </div>
 
@@ -164,14 +275,14 @@ export default function Home() {
         </main>
 
         <Footer />
-        <div className="sticky bottom-0 z-50 bg-background border-t border-border">
+        <div className="sticky bottom-0 z-50 bg-background/80 backdrop-blur-md border-t border-border">
           <MobileNav />
         </div>
       </div>
 
       {/* VERSION DESKTOP */}
-      <div className="hidden lg:block min-h-screen bg-background">
-        <div className="sticky top-0 z-50">
+      <div className="hidden lg:block min-h-screen bg-transparent">
+        <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
           <Header />
         </div>
 
