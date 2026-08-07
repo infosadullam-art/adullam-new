@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronRight, Flame } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
@@ -87,20 +87,19 @@ export function CategoriesPourVous() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-lg lg:text-xl font-semibold mb-0.5" style={{ color: "#0A0A0A", fontFamily: amazonFont, letterSpacing: "-0.02em" }}>
+            <h2 className="text-sm font-bold" style={{ color: "#0A0A0A" }}>
               Tendances Cuisine 🔥
             </h2>
-            <p className="text-xs" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>
+            <p className="text-[9px]" style={{ color: "#AAAAAA" }}>
               Les produits les plus populaires
             </p>
           </div>
           <Link
             href="/categorie/cuisine"
-            className="text-xs flex items-center gap-1 transition-all duration-200 hover:gap-1.5 hover:opacity-70"
-            style={{ color: "#D4372B", fontFamily: amazonFont }}
+            className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1"
+            style={{ color: "#D4372B" }}
           >
-            Voir tout
-            <ChevronRight className="w-3 h-3" />
+            Voir tout <ChevronRight className="w-3 h-3" />
           </Link>
         </div>
 
@@ -147,13 +146,13 @@ export function CategoriesPourVous() {
                 className="p-2 rounded"
                 style={{ background: "rgba(255,255,255,0.08)", border: "0.5px solid rgba(255,255,255,0.1)" }}
               >
-                <Flame className="w-5 h-5" style={{ color: "#D4372B" }} />
+                <span style={{ fontSize: "20px" }}>🔥</span>
               </div>
               <div>
-                <h3 className="text-base lg:text-lg font-semibold" style={{ color: "#fff", fontFamily: amazonFont }}>
+                <h3 className="text-sm font-bold" style={{ color: "#fff" }}>
                   Tendances Cuisine
                 </h3>
-                <p className="text-[10px] mt-0.5" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>
+                <p className="text-[9px]" style={{ color: "#AAAAAA" }}>
                   Les plus populaires
                 </p>
               </div>
