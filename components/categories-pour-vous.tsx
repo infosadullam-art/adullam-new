@@ -140,54 +140,43 @@ export function CategoriesPourVous() {
             <ChevronRight className="w-4 h-4" />
           </button>
 
-          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
-            <div className="flex-shrink-0">
-              <h3 className="text-sm font-bold" style={{ color: "#fff" }}>
-                Tendances Cuisine
-              </h3>
-              <p className="text-[9px]" style={{ color: "#AAAAAA" }}>
-                Les plus populaires
-              </p>
-            </div>
-
-            <div className="flex-1 w-full lg:w-auto overflow-hidden">
-              <div 
-                ref={scrollRef}
-                className="flex items-center gap-3 overflow-x-auto scroll-smooth pb-1"
-                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-              >
-                {products.map((product) => (
-                  <Link
-                    key={product.id}
-                    href={`/products/${product.id}`}
-                    className="group flex-shrink-0 w-[150px] transition-all duration-200 hover:-translate-y-0.5"
+          <div className="flex-1 w-full overflow-hidden">
+            <div 
+              ref={scrollRef}
+              className="flex items-center gap-3 overflow-x-auto scroll-smooth pb-1"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
+              {products.map((product) => (
+                <Link
+                  key={product.id}
+                  href={`/products/${product.id}`}
+                  className="group flex-shrink-0 w-[150px] transition-all duration-200 hover:-translate-y-0.5"
+                >
+                  <div
+                    className="bg-white rounded-md p-2 transition-all duration-300 hover:shadow-md"
+                    style={{ border: "0.5px solid #ECECEC" }}
                   >
-                    <div
-                      className="bg-white rounded-md p-2 transition-all duration-300 hover:shadow-md"
-                      style={{ border: "0.5px solid #ECECEC" }}
-                    >
-                      <div className="relative aspect-square mb-1.5 rounded overflow-hidden" style={{ background: "#FAFAFA" }}>
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className="object-contain p-1 group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-
-                      <h4 className="text-[10px] font-medium line-clamp-2 min-h-[28px]" style={{ color: "#0A0A0A", fontFamily: amazonFont }}>
-                        {product.name}
-                      </h4>
-                      
-                      <div className="flex items-center justify-between mt-1.5">
-                        <p className="text-xs font-bold" style={{ color: "#D4372B", fontFamily: amazonFont }}>
-                          {formatPrice(product.price)}
-                        </p>
-                      </div>
+                    <div className="relative aspect-square mb-1.5 rounded overflow-hidden" style={{ background: "#FAFAFA" }}>
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        className="object-contain p-1 group-hover:scale-105 transition-transform duration-300"
+                      />
                     </div>
-                  </Link>
-                ))}
-              </div>
+
+                    <h4 className="text-[10px] font-medium line-clamp-2 min-h-[28px]" style={{ color: "#0A0A0A", fontFamily: amazonFont }}>
+                      {product.name}
+                    </h4>
+                    
+                    <div className="flex items-center justify-between mt-1.5">
+                      <p className="text-xs font-bold" style={{ color: "#D4372B", fontFamily: amazonFont }}>
+                        {formatPrice(product.price)}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
         </div>
