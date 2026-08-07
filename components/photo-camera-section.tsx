@@ -62,15 +62,15 @@ export function PhotoCameraSection() {
   if (!isLoading && products.length === 0) return null
 
   return (
-    <section className="w-full py-4 lg:py-6" style={{ background: "#FAFAFA" }}>
+    <section className="w-full py-4 lg:py-6" style={{ background: "#0A0A0A" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-7 h-7 rounded-md" style={{ background: "#FFF0F0" }}>
+            <div className="flex items-center justify-center w-7 h-7 rounded-md" style={{ background: "rgba(255,255,255,0.08)" }}>
               <Camera className="w-3.5 h-3.5" style={{ color: "#D4372B" }} />
             </div>
             <div>
-              <h2 className="text-sm font-bold" style={{ color: "#0A0A0A" }}>
+              <h2 className="text-sm font-bold" style={{ color: "#fff" }}>
                 Photo &amp; Caméra
               </h2>
               <p className="text-[9px]" style={{ color: "#AAAAAA" }}>
