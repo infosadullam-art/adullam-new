@@ -12,6 +12,8 @@ const CATEGORY_ID = "dfae7859-f3dd-4c74-8457-d1fee7d4c3fb"
 const CATEGORY_SLUG = "photo-et-camera"
 const REFRESH_INTERVAL = 6 * 60 * 60 * 1000
 
+const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+
 interface Product {
   id: string
   name: string
@@ -62,21 +64,16 @@ export function PhotoCameraSection() {
   if (!isLoading && products.length === 0) return null
 
   return (
-    <section className="w-full py-4 lg:py-6" style={{ background: "#0A0A0A" }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-7 h-7 rounded-md" style={{ background: "rgba(255,255,255,0.08)" }}>
-              <Camera className="w-3.5 h-3.5" style={{ color: "#D4372B" }} />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold" style={{ color: "#fff" }}>
-                Photo &amp; Caméra
-              </h2>
-              <p className="text-[9px]" style={{ color: "#AAAAAA" }}>
-                Appareils &amp; accessoires
-              </p>
-            </div>
+    <section className="w-full" style={{ background: "#FAFAFA" }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="text-sm font-bold" style={{ color: "#0A0A0A" }}>
+              Photo &amp; Caméra
+            </h2>
+            <p className="text-[9px]" style={{ color: "#AAAAAA" }}>
+              Appareils &amp; accessoires
+            </p>
           </div>
           <Link
             href={`/categorie/${CATEGORY_SLUG}`}
@@ -87,58 +84,55 @@ export function PhotoCameraSection() {
           </Link>
         </div>
 
-        {isLoading ? (
+        <div
+          className="rounded-md p-4 lg:p-5 relative overflow-hidden"
+          style={{ 
+            background: "#0A0A0A",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+          }}
+        >
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="aspect-square rounded-md bg-muted animate-pulse" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-            {products.map((product, index) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.05 }}
-              >
-                <Link href={`/products/${product.id}`} className="group block transition-all duration-200 hover:-translate-y-0.5">
-                  <div
-                    className="overflow-hidden transition-all duration-200 hover:shadow-sm"
-                    style={{
-                      borderRadius: "6px",
-                      border: "0.5px solid #ECECEC",
-                      background: "#fff",
-                    }}
-                  >
-                    <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        className="object-contain p-1.5 transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="px-1.5 py-1.5">
-                      <p
-                        className="truncate mb-0.5"
-                        style={{ fontSize: "9px", fontWeight: 500, color: "#0A0A0A" }}
-                      >
+            {isLoading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="aspect-square rounded-md bg-muted animate-pulse" />
+              ))
+            ) : (
+              products.map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                >
+                  <Link href={`/products/${product.id}`} className="group block transition-all duration-200 hover:-translate-y-0.5">
+                    <div
+                      className="bg-white rounded-md p-2 transition-all duration-300 hover:shadow-md"
+                      style={{ border: "0.5px solid #ECECEC" }}
+                    >
+                      <div className="relative aspect-square mb-1.5 rounded overflow-hidden" style={{ background: "#FAFAFA" }}>
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          className="object-contain p-1 group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                      <h4 className="text-[10px] font-medium line-clamp-2 min-h-[28px]" style={{ color: "#0A0A0A", fontFamily: amazonFont }}>
                         {product.name}
-                      </p>
-                      <p
-                        style={{ fontSize: "10px", fontWeight: 700, color: "#D4372B" }}
-                      >
-                        {formatPrice(product.priceUSD)}
-                      </p>
+                      </h4>
+                      <div className="flex items-center justify-between mt-1.5">
+                        <p className="text-xs font-bold" style={{ color: "#D4372B", fontFamily: amazonFont }}>
+                          {formatPrice(product.priceUSD)}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+                  </Link>
+                </motion.div>
+              ))
+            )}
           </div>
-        )}
+        </div>
       </div>
     </section>
   )
