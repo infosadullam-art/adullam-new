@@ -51,6 +51,16 @@ const RecommandeEntreprise = dynamic(
   { loading: () => <Skeleton height={200} /> }
 )
 
+const MachinesAgricolesSection = dynamic(
+  () => import("@/components/machines-agricoles-section").then(m => ({ default: m.MachinesAgricolesSection })),
+  { loading: () => <Skeleton height={280} /> }
+)
+
+const PhotoCameraSection = dynamic(
+  () => import("@/components/photo-camera-section").then(m => ({ default: m.PhotoCameraSection })),
+  { loading: () => <Skeleton height={280} /> }
+)
+
 function Skeleton({ height }: { height: number }) {
   return (
     <div
@@ -87,6 +97,7 @@ export default function Home() {
   const [showPriority3, setShowPriority3] = useState(false)
   const [showPriority4, setShowPriority4] = useState(false)
   const [showPriority5, setShowPriority5] = useState(false)
+  const [showPriority6, setShowPriority6] = useState(false)
   const [pageReady, setPageReady] = useState(false)
 
   useEffect(() => {
@@ -121,6 +132,15 @@ export default function Home() {
           <AnimatedSection delay={200}>
             {showPriority2 && (
               <MeilleuresVentesMobile />
+            )}
+          </AnimatedSection>
+
+          <AnimatedSection delay={250}>
+            {showPriority6 && (
+              <>
+                <MachinesAgricolesSection />
+                <PhotoCameraSection />
+              </>
             )}
           </AnimatedSection>
 
@@ -180,6 +200,17 @@ export default function Home() {
             )}
           </AnimatedSection>
 
+          <AnimatedSection delay={250}>
+            {showPriority6 && (
+              <div className="w-full px-4 sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto">
+                  <MachinesAgricolesSection />
+                  <PhotoCameraSection />
+                </div>
+              </div>
+            )}
+          </AnimatedSection>
+
           <AnimatedSection delay={300}>
             {showPriority3 && (
               <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -217,6 +248,7 @@ export default function Home() {
       {/* Timeline pour déclencher le chargement des sections */}
       <div style={{ display: 'none' }}>
         <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority2(true), 100)} />
+        <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority6(true), 150)} />
         <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority3(true), 200)} />
         <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority4(true), 300)} />
         <ProgressiveLoadOrder onReady={() => setTimeout(() => setShowPriority5(true), 400)} />
