@@ -66,7 +66,7 @@ export function PhotoCameraSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-7 h-7 rounded-full" style={{ background: "rgba(255,255,255,0.08)" }}>
+            <div className="flex items-center justify-center w-7 h-7 rounded-md" style={{ background: "rgba(255,255,255,0.08)" }}>
               <Camera className="w-3.5 h-3.5" style={{ color: "#D4372B" }} />
             </div>
             <div>
@@ -90,7 +90,7 @@ export function PhotoCameraSection() {
         {isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="aspect-square rounded-lg bg-muted animate-pulse" />
+              <div key={i} className="aspect-square rounded-md bg-muted animate-pulse" />
             ))}
           </div>
         ) : (
@@ -107,7 +107,7 @@ export function PhotoCameraSection() {
                   <div
                     className="overflow-hidden transition-all duration-200 hover:shadow-sm"
                     style={{
-                      borderRadius: "8px",
+                      borderRadius: "6px",
                       border: "0.5px solid #ECECEC",
                       background: "#fff",
                     }}
