@@ -1,9 +1,10 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronRight, Tractor } from "lucide-react"
+import { ChevronRight, Tractor, Gauge, Cog } from "lucide-react"
+import { motion } from "framer-motion"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
@@ -22,8 +23,6 @@ export function MachinesAgricolesSection() {
   const { formatPrice } = useCurrencyFormatter()
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [isHovered, setIsHovered] = useState(false)
-  const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let mounted = true
@@ -32,13 +31,13 @@ export function MachinesAgricolesSection() {
       try {
         const timestamp = Date.now()
         const res = await fetch(
-          `${API_BASE}/api/products?categoryId=${CATEGORY_ID}&limit=20&_t=${timestamp}`
+          `${API_BASE}/api/products?categoryId=${CATEGORY_ID}&limit=16&_t=${timestamp}`
         )
         const data = await res.json()
         const list: any[] = data.data || data.products || []
         if (mounted) {
           const shuffled = [...list].sort(() => Math.random() - 0.5)
-          setProducts(shuffled.slice(0, 8).map((p: any) => ({
+          setProducts(shuffled.slice(0, 12).map((p: any) => ({
             id: p.id,
             name: p.title || p.name || "Produit",
             priceUSD: p.price || 0,
@@ -60,122 +59,115 @@ export function MachinesAgricolesSection() {
     }
   }, [])
 
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const amount = direction === 'left' ? -280 : 280
-      scrollRef.current.scrollBy({ left: amount, behavior: 'smooth' })
-    }
-  }
-
   if (!isLoading && products.length === 0) return null
 
   return (
-    <section className="w-full py-6 lg:py-8" style={{ background: "#FAFAFA" }}>
+    <section className="w-full py-12 lg:py-16 bg-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="flex items-end justify-between mb-8"
+        >
           <div>
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wide uppercase text-amber-600 mb-0.5">
-              <Tractor className="w-3.5 h-3.5" />
-              Équipement pro
+            <span className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.15em] text-amber-600 dark:text-amber-400">
+              <span className="w-8 h-px bg-amber-500" />
+              Équipement agricole
             </span>
-            <h2 className="text-lg lg:text-xl font-semibold text-foreground">
+            <h2 className="font-serif text-3xl lg:text-4xl font-light text-foreground mt-2 tracking-tight">
               Machines Agricoles
             </h2>
+            <p className="text-muted-foreground text-sm mt-1 font-light">
+              Matériel professionnel pour l'agriculture moderne
+            </p>
           </div>
           <Link
             href={`/categorie/${CATEGORY_SLUG}`}
-            className="text-xs flex items-center gap-1 transition-all duration-200 hover:gap-1.5 text-muted-foreground hover:text-foreground"
+            className="group hidden sm:flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors border-b border-transparent hover:border-foreground pb-0.5"
           >
-            Voir tout
-            <ChevronRight className="w-3 h-3" />
+            Voir toute la collection
+            <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
-        </div>
+        </motion.div>
 
         {isLoading ? (
-          <div className="flex gap-3 overflow-hidden">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex-1 min-w-[160px] aspect-[4/5] rounded-lg bg-muted animate-pulse" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="aspect-[4/5] rounded-lg bg-muted animate-pulse" />
             ))}
           </div>
         ) : (
-          <div
-            className="relative rounded-lg p-4 lg:p-5 overflow-hidden"
-            style={{ background: "#0A0A0A" }}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-40px" }}
+            variants={{
+              hidden: {},
+              visible: { transition: { staggerChildren: 0.05 } }
+            }}
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
           >
-            <button
-              onClick={() => scroll('left')}
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hidden lg:block"
-              style={{
-                opacity: isHovered ? 1 : 0,
-                transform: isHovered ? 'translateY(-50%) scale(1)' : 'translateY(-50%) scale(0.8)',
-                pointerEvents: isHovered ? 'auto' : 'none',
-                border: "0.5px solid rgba(255,255,255,0.15)",
-              }}
-            >
-              <ChevronRight className="w-4 h-4 rotate-180" />
-            </button>
-
-            <button
-              onClick={() => scroll('right')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hidden lg:block"
-              style={{
-                opacity: isHovered ? 1 : 0,
-                transform: isHovered ? 'translateY(-50%) scale(1)' : 'translateY(-50%) scale(0.8)',
-                pointerEvents: isHovered ? 'auto' : 'none',
-                border: "0.5px solid rgba(255,255,255,0.15)",
-              }}
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-
-            <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <div className="p-2 rounded" style={{ background: "rgba(255,255,255,0.08)", border: "0.5px solid rgba(255,255,255,0.1)" }}>
-                  <Tractor className="w-5 h-5 text-amber-500" />
-                </div>
-                <div>
-                  <h3 className="text-sm lg:text-base font-semibold text-white">Matériel agricole</h3>
-                  <p className="text-[10px] mt-0.5 text-white/50">Direct usine</p>
-                </div>
-              </div>
-
-              <div className="flex-1 w-full lg:w-auto overflow-hidden">
-                <div
-                  ref={scrollRef}
-                  className="flex items-center gap-3 overflow-x-auto scroll-smooth pb-1"
-                  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-                >
-                  {products.map((product) => (
-                    <Link
-                      key={product.id}
-                      href={`/products/${product.id}`}
-                      className="group flex-shrink-0 w-[140px] lg:w-[160px] transition-all duration-200 hover:-translate-y-0.5"
-                    >
-                      <div className="bg-white rounded-md p-2 transition-all duration-300 hover:shadow-md" style={{ border: "0.5px solid #ECECEC" }}>
-                        <div className="relative aspect-[4/5] mb-1.5 rounded overflow-hidden" style={{ background: "#FAFAFA" }}>
-                          <Image
-                            src={product.image}
-                            alt={product.name}
-                            fill
-                            className="object-contain p-1 group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-                        <h4 className="text-[10px] font-medium line-clamp-2 min-h-[28px]" style={{ color: "#0A0A0A" }}>
-                          {product.name}
-                        </h4>
-                        <p className="text-xs font-bold mt-1" style={{ color: "#D4372B" }}>
-                          {formatPrice(product.priceUSD)}
-                        </p>
+            {products.slice(0, 8).map((product, index) => (
+              <motion.div
+                key={product.id}
+                variants={{
+                  hidden: { opacity: 0, y: 30 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }
+                }}
+              >
+                <Link href={`/products/${product.id}`} className="group block">
+                  <div className="relative overflow-hidden rounded-lg bg-card border border-border transition-all duration-500 group-hover:border-amber-500/40 group-hover:shadow-xl group-hover:shadow-amber-500/5">
+                    <div className="relative aspect-[4/5] bg-muted/20 overflow-hidden">
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        className="object-cover p-4 transition-transform duration-700 ease-out group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/0 via-black/0 to-black/0 transition-all duration-500 group-hover:from-black/10 group-hover:via-black/5 group-hover:to-black/0" />
+                      <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        <span className="flex items-center gap-1 text-[10px] text-white/80">
+                          <Gauge className="w-3 h-3" />
+                          Puissance
+                        </span>
+                        <span className="flex items-center gap-1 text-[10px] text-white/80">
+                          <Cog className="w-3 h-3" />
+                          Robustesse
+                        </span>
                       </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+                    </div>
+                    <div className="p-4">
+                      <p className="text-sm font-medium text-foreground/90 line-clamp-2 leading-snug">
+                        {product.name}
+                      </p>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-lg font-bold text-amber-600 dark:text-amber-400">
+                          {formatPrice(product.priceUSD)}
+                        </span>
+                        <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 group-hover:text-amber-500 transition-colors">
+                          Détails →
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
         )}
+
+        <div className="sm:hidden mt-6 text-center">
+          <Link
+            href={`/categorie/${CATEGORY_SLUG}`}
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Voir toute la collection
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
       </div>
     </section>
   )
