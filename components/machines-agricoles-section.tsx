@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronRight, Tractor, ArrowUpRight } from "lucide-react"
+import { ChevronRight, Tractor } from "lucide-react"
 import { motion } from "framer-motion"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
@@ -62,71 +62,76 @@ export function MachinesAgricolesSection() {
   if (!isLoading && products.length === 0) return null
 
   return (
-    <section className="w-full py-4 lg:py-6 bg-background">
+    <section className="w-full py-4 lg:py-6" style={{ background: "#FAFAFA" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/20">
-              <Tractor className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+          <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center w-7 h-7 rounded-md" style={{ background: "#FFF8F0" }}>
+              <Tractor className="w-3.5 h-3.5" style={{ color: "#F5A623" }} />
             </div>
             <div>
-              <h2 className="text-base font-bold text-foreground tracking-tight">Machines Agricoles</h2>
-              <p className="text-[10px] text-muted-foreground font-medium tracking-wide uppercase">Équipement professionnel</p>
+              <h2 className="text-sm font-bold" style={{ color: "#0A0A0A", fontFamily: "Amazon Ember, 'Inter', sans-serif" }}>
+                Machines Agricoles
+              </h2>
+              <p className="text-[9px]" style={{ color: "#AAAAAA", fontFamily: "Amazon Ember, 'Inter', sans-serif" }}>
+                Équipement professionnel
+              </p>
             </div>
           </div>
           <Link
             href={`/categorie/${CATEGORY_SLUG}`}
-            className="group flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all duration-200"
+            className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1"
+            style={{ color: "#D4372B", fontFamily: "Amazon Ember, 'Inter', sans-serif" }}
           >
-            Voir tout
-            <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+            Voir tout <ChevronRight className="w-3 h-3" />
           </Link>
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="aspect-[3/4] rounded-lg bg-muted animate-pulse" />
+              <div key={i} className="aspect-[4/5] rounded-md bg-muted animate-pulse" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
             {products.map((product, index) => (
               <motion.div
                 key={product.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.05 }}
               >
-                <Link href={`/products/${product.id}`} className="group block">
-                  <div className="relative rounded-lg overflow-hidden bg-card border border-border transition-all duration-300 hover:border-amber-500/30 hover:shadow-md">
-                    <div className="relative aspect-[3/4] bg-muted/20 overflow-hidden">
+                <Link href={`/products/${product.id}`} className="group block transition-all duration-200 hover:-translate-y-0.5">
+                  <div
+                    className="overflow-hidden transition-all duration-200 hover:shadow-sm"
+                    style={{
+                      borderRadius: "6px",
+                      border: "0.5px solid #ECECEC",
+                      background: "#fff",
+                    }}
+                  >
+                    <div className="relative aspect-[4/5]" style={{ background: "#FAFAFA" }}>
                       <Image
                         src={product.image}
                         alt={product.name}
                         fill
-                        className="object-cover p-3 transition-transform duration-500 group-hover:scale-105"
+                        className="object-contain p-1.5 transition-transform duration-300 group-hover:scale-105"
                       />
-                      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
-                      <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-400 transform translate-y-2 group-hover:translate-y-0">
-                        <span className="flex items-center gap-1 text-[10px] font-medium text-white bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full">
-                          <ArrowUpRight className="w-3 h-3" />
-                        </span>
-                      </div>
                     </div>
-                    <div className="p-2.5">
-                      <p className="text-[10px] font-medium text-foreground/90 line-clamp-2 leading-tight min-h-[28px]">
+                    <div className="px-1.5 py-1.5">
+                      <p
+                        className="truncate mb-0.5"
+                        style={{ fontSize: "9px", fontWeight: 500, color: "#0A0A0A", fontFamily: "Amazon Ember, 'Inter', sans-serif" }}
+                      >
                         {product.name}
                       </p>
-                      <div className="flex items-center justify-between mt-1.5">
-                        <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
-                          {formatPrice(product.priceUSD)}
-                        </span>
-                        <span className="text-[8px] uppercase tracking-widest text-muted-foreground/50 group-hover:text-amber-500 transition-colors">
-                          Voir
-                        </span>
-                      </div>
+                      <p
+                        style={{ fontSize: "10px", fontWeight: 700, color: "#D4372B", fontFamily: "Amazon Ember, 'Inter', sans-serif" }}
+                      >
+                        {formatPrice(product.priceUSD)}
+                      </p>
                     </div>
                   </div>
                 </Link>
