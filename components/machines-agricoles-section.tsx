@@ -91,7 +91,7 @@ export function MachinesAgricolesSection() {
         </div>
 
         <div className="grid grid-cols-6 gap-2">
-          {products.slice(0, 6).map((product, index) => (
+          {products.slice(0, 6).map((product) => (
             <Link key={product.id} href={`/products/${product.id}`} className="group block transition-all duration-200 hover:-translate-y-0.5">
               <div
                 className="overflow-hidden transition-all duration-200 hover:shadow-sm"
@@ -130,33 +130,31 @@ export function MachinesAgricolesSection() {
     )
   }
 
-  // Version mobile - carrousel avec fond noir (identique à TendanceParPays)
+  // Version mobile - carrousel fond noir full width
   const MobileCarousel = () => {
     if (isLoading) {
       return (
-        <div className="lg:hidden">
-          <div className="px-4 py-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 animate-pulse" style={{ background: "#F4F4F4", borderRadius: "6px" }} />
-                <div>
-                  <div className="h-2.5 w-28 rounded animate-pulse mb-0.5" style={{ background: "#F4F4F4" }} />
-                  <div className="h-1.5 w-20 rounded animate-pulse" style={{ background: "#F4F4F4" }} />
+        <div className="lg:hidden px-4 py-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 animate-pulse" style={{ background: "#F4F4F4", borderRadius: "6px" }} />
+              <div>
+                <div className="h-2.5 w-28 rounded animate-pulse mb-0.5" style={{ background: "#F4F4F4" }} />
+                <div className="h-1.5 w-20 rounded animate-pulse" style={{ background: "#F4F4F4" }} />
+              </div>
+            </div>
+            <div className="h-2.5 w-14 rounded animate-pulse" style={{ background: "#F4F4F4" }} />
+          </div>
+          <div className="flex gap-2 overflow-hidden">
+            {[0,1,2,3].map(i => (
+              <div key={i} className="flex-shrink-0 w-[110px]" style={{ border: "0.5px solid #ECECEC", borderRadius: "6px", overflow: "hidden", background: "#fff" }}>
+                <div className="aspect-square animate-pulse" style={{ background: "#F4F4F4" }} />
+                <div className="p-1.5">
+                  <div className="h-2 w-full rounded animate-pulse mb-1" style={{ background: "#F4F4F4" }} />
+                  <div className="h-2.5 w-12 rounded animate-pulse" style={{ background: "#F4F4F4" }} />
                 </div>
               </div>
-              <div className="h-2.5 w-14 rounded animate-pulse" style={{ background: "#F4F4F4" }} />
-            </div>
-            <div className="flex gap-2 overflow-hidden">
-              {[0,1,2,3].map(i => (
-                <div key={i} className="flex-shrink-0 w-[110px]" style={{ border: "0.5px solid #ECECEC", borderRadius: "6px", overflow: "hidden", background: "#fff" }}>
-                  <div className="aspect-square animate-pulse" style={{ background: "#F4F4F4" }} />
-                  <div className="p-1.5">
-                    <div className="h-2 w-full rounded animate-pulse mb-1" style={{ background: "#F4F4F4" }} />
-                    <div className="h-2.5 w-12 rounded animate-pulse" style={{ background: "#F4F4F4" }} />
-                  </div>
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
         </div>
       )
@@ -165,14 +163,14 @@ export function MachinesAgricolesSection() {
     if (products.length === 0) return null
 
     return (
-      <div className="lg:hidden px-4 py-3">
+      <div className="lg:hidden -mx-4 px-4 py-3" style={{ background: "#0A0A0A" }}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-7 h-7" style={{ background: "#FFF8F0", borderRadius: "4px" }}>
+            <div className="flex items-center justify-center w-7 h-7" style={{ background: "rgba(255,255,255,0.08)", borderRadius: "4px" }}>
               <Tractor className="w-3.5 h-3.5" style={{ color: "#F5A623" }} />
             </div>
             <div>
-              <p style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont }}>
+              <p style={{ fontSize: "12px", fontWeight: 700, color: "#fff", fontFamily: amazonFont }}>
                 Machines Agricoles
               </p>
               <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>
@@ -205,16 +203,6 @@ export function MachinesAgricolesSection() {
               </Link>
             ))}
           </div>
-        </div>
-
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-1">
-            <div className="w-1 h-1 rounded-full" style={{ background: "#F5A623" }} />
-            <span style={{ fontSize: "8px", color: "#AAAAAA", fontFamily: amazonFont }}>Mise à jour en temps réel</span>
-          </div>
-          <Link href={`/categorie/${CATEGORY_SLUG}`} className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1" style={{ color: "#D4372B", fontFamily: amazonFont }}>
-            Voir tout <ChevronRight className="w-2.5 h-2.5" />
-          </Link>
         </div>
       </div>
     )
