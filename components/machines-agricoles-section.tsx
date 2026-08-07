@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronRight, Tractor, ArrowRight } from "lucide-react"
+import { ChevronRight, Tractor } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
@@ -18,20 +18,12 @@ interface Product {
   image: string
 }
 
-function normalize(p: any): Product {
-  return {
-    id: p.id,
-    name: p.title || p.name || "Produit",
-    priceUSD: p.salePrice || p.price || 0,
-    image: p.images?.[0] || p.image || "/placeholder.jpg",
-  }
-}
-
 export function MachinesAgricolesSection() {
   const { formatPrice } = useCurrencyFormatter()
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const sectionRef = useRef<HTMLElement>(null)
+  const [isHovered, setIsHovered] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let mounted = true
@@ -40,11 +32,19 @@ export function MachinesAgricolesSection() {
       try {
         const timestamp = Date.now()
         const res = await fetch(
-          `${API_BASE}/api/products?categoryId=${CATEGORY_ID}&limit=12&_t=${timestamp}`
+          `${API_BASE}/api/products?categoryId=${CATEGORY_ID}&limit=20&_t=${timestamp}`
         )
         const data = await res.json()
         const list: any[] = data.data || data.products || []
-        if (mounted) setProducts(list.map(normalize))
+        if (mounted) {
+          const shuffled = [...list].sort(() => Math.random() - 0.5)
+          setProducts(shuffled.slice(0, 8).map((p: any) => ({
+            id: p.id,
+            name: p.title || p.name || "Produit",
+            priceUSD: p.price || 0,
+            image: p.images?.[0] || p.image || "/placeholder.jpg",
+          })))
+        }
       } catch {
         // silencieux
       } finally {
@@ -60,97 +60,123 @@ export function MachinesAgricolesSection() {
     }
   }, [])
 
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const amount = direction === 'left' ? -280 : 280
+      scrollRef.current.scrollBy({ left: amount, behavior: 'smooth' })
+    }
+  }
+
   if (!isLoading && products.length === 0) return null
 
   return (
-    <section ref={sectionRef} className="w-full bg-background py-8 lg:py-12">
+    <section className="w-full py-6 lg:py-8" style={{ background: "#FAFAFA" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* En-tête */}
-        <div className="flex items-end justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <span className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400">
-              <span className="w-6 h-px bg-amber-500" />
-              Équipement agricole
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wide uppercase text-amber-600 mb-0.5">
+              <Tractor className="w-3.5 h-3.5" />
+              Équipement pro
             </span>
-            <h2 className="font-serif text-2xl lg:text-3xl font-light text-foreground mt-1.5 tracking-tight">
+            <h2 className="text-lg lg:text-xl font-semibold text-foreground">
               Machines Agricoles
             </h2>
           </div>
           <Link
             href={`/categorie/${CATEGORY_SLUG}`}
-            className="group hidden sm:flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-xs flex items-center gap-1 transition-all duration-200 hover:gap-1.5 text-muted-foreground hover:text-foreground"
           >
             Voir tout
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            <ChevronRight className="w-3 h-3" />
           </Link>
         </div>
 
-        {/* Grille */}
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="aspect-[3/4] rounded-lg bg-muted animate-pulse" />
+          <div className="flex gap-3 overflow-hidden">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex-1 min-w-[160px] aspect-[4/5] rounded-lg bg-muted animate-pulse" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
-            {products.slice(0, 12).map((product, i) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                index={i}
-                formatPrice={formatPrice}
-              />
-            ))}
+          <div
+            className="relative rounded-lg p-4 lg:p-5 overflow-hidden"
+            style={{ background: "#0A0A0A" }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            <button
+              onClick={() => scroll('left')}
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hidden lg:block"
+              style={{
+                opacity: isHovered ? 1 : 0,
+                transform: isHovered ? 'translateY(-50%) scale(1)' : 'translateY(-50%) scale(0.8)',
+                pointerEvents: isHovered ? 'auto' : 'none',
+                border: "0.5px solid rgba(255,255,255,0.15)",
+              }}
+            >
+              <ChevronRight className="w-4 h-4 rotate-180" />
+            </button>
+
+            <button
+              onClick={() => scroll('right')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hidden lg:block"
+              style={{
+                opacity: isHovered ? 1 : 0,
+                transform: isHovered ? 'translateY(-50%) scale(1)' : 'translateY(-50%) scale(0.8)',
+                pointerEvents: isHovered ? 'auto' : 'none',
+                border: "0.5px solid rgba(255,255,255,0.15)",
+              }}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="p-2 rounded" style={{ background: "rgba(255,255,255,0.08)", border: "0.5px solid rgba(255,255,255,0.1)" }}>
+                  <Tractor className="w-5 h-5 text-amber-500" />
+                </div>
+                <div>
+                  <h3 className="text-sm lg:text-base font-semibold text-white">Matériel agricole</h3>
+                  <p className="text-[10px] mt-0.5 text-white/50">Direct usine</p>
+                </div>
+              </div>
+
+              <div className="flex-1 w-full lg:w-auto overflow-hidden">
+                <div
+                  ref={scrollRef}
+                  className="flex items-center gap-3 overflow-x-auto scroll-smooth pb-1"
+                  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                >
+                  {products.map((product) => (
+                    <Link
+                      key={product.id}
+                      href={`/products/${product.id}`}
+                      className="group flex-shrink-0 w-[140px] lg:w-[160px] transition-all duration-200 hover:-translate-y-0.5"
+                    >
+                      <div className="bg-white rounded-md p-2 transition-all duration-300 hover:shadow-md" style={{ border: "0.5px solid #ECECEC" }}>
+                        <div className="relative aspect-[4/5] mb-1.5 rounded overflow-hidden" style={{ background: "#FAFAFA" }}>
+                          <Image
+                            src={product.image}
+                            alt={product.name}
+                            fill
+                            className="object-contain p-1 group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <h4 className="text-[10px] font-medium line-clamp-2 min-h-[28px]" style={{ color: "#0A0A0A" }}>
+                          {product.name}
+                        </h4>
+                        <p className="text-xs font-bold mt-1" style={{ color: "#D4372B" }}>
+                          {formatPrice(product.priceUSD)}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         )}
-
-        {/* Lien mobile */}
-        <div className="sm:hidden mt-4 text-center">
-          <Link
-            href={`/categorie/${CATEGORY_SLUG}`}
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Voir tout
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
       </div>
     </section>
-  )
-}
-
-function ProductCard({
-  product,
-  index,
-  formatPrice,
-}: {
-  product: Product
-  index: number
-  formatPrice: (n: number) => string
-}) {
-  return (
-    <Link href={`/products/${product.id}`} className="group">
-      <div className="relative overflow-hidden rounded-lg bg-surface border border-border transition-all duration-500 group-hover:border-amber-500/30 group-hover:shadow-lg group-hover:shadow-amber-500/5">
-        <div className="relative aspect-[3/4] bg-muted/30 overflow-hidden">
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            className="object-cover p-4 transition-transform duration-700 ease-out group-hover:scale-105"
-          />
-          {/* Overlay gradient subtil au survol */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/0 via-black/0 to-black/0 transition-colors duration-500 group-hover:from-black/5 group-hover:via-black/0 group-hover:to-black/0" />
-        </div>
-        <div className="p-3">
-          <p className="text-xs text-foreground/80 line-clamp-2 leading-snug font-light">
-            {product.name}
-          </p>
-          <p className="text-sm font-medium text-foreground mt-1.5 tracking-tight">
-            {formatPrice(product.priceUSD)}
-          </p>
-        </div>
-      </div>
-    </Link>
   )
 }
