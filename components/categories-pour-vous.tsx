@@ -141,18 +141,13 @@ export function CategoriesPourVous() {
           </button>
 
           <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <div
-                className="p-2 rounded"
-                style={{ background: "rgba(255,255,255,0.08)", border: "0.5px solid rgba(255,255,255,0.1)" }}
-              >
-                <span style={{ fontSize: "20px" }}>🍳</span>
-              </div>
-              <div>
-                <h3 className="text-sm font-bold" style={{ color: "#fff" }}>
-                  Cuisine
-                </h3>
-              </div>
+            <div className="flex-shrink-0">
+              <h3 className="text-sm font-bold" style={{ color: "#fff" }}>
+                Tendances Cuisine
+              </h3>
+              <p className="text-[9px]" style={{ color: "#AAAAAA" }}>
+                Les plus populaires
+              </p>
             </div>
 
             <div className="flex-1 w-full lg:w-auto overflow-hidden">
