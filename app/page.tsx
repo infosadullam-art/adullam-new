@@ -112,37 +112,9 @@ export default function Home() {
         transition: 'opacity 0.4s ease-in',
       }}
     >
-      {/* Fond animé */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-surface/50 to-background" />
-        <div className="absolute top-[-30%] left-[-10%] w-[800px] h-[800px] rounded-full blur-[150px] opacity-[0.08] animate-float-1" style={{ background: "#D4372B" }} />
-        <div className="absolute bottom-[-30%] right-[-10%] w-[700px] h-[700px] rounded-full blur-[150px] opacity-[0.07] animate-float-2" style={{ background: "#F5A623" }} />
-        <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[130px] opacity-[0.05] animate-float-3" style={{ background: "#D4372B" }} />
-      </div>
-
-      <style jsx>{`
-        @keyframes float-1 {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(80px, -60px) scale(1.1); }
-          66% { transform: translate(-40px, 70px) scale(0.9); }
-        }
-        @keyframes float-2 {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(-70px, 50px) scale(0.9); }
-          66% { transform: translate(60px, -80px) scale(1.1); }
-        }
-        @keyframes float-3 {
-          0%, 100% { transform: translate(-50%, -50%) scale(1); }
-          50% { transform: translate(-50%, -50%) scale(1.3); }
-        }
-        .animate-float-1 { animation: float-1 22s ease-in-out infinite; }
-        .animate-float-2 { animation: float-2 26s ease-in-out infinite; }
-        .animate-float-3 { animation: float-3 18s ease-in-out infinite; }
-      `}</style>
-
       {/* VERSION MOBILE */}
-      <div className="lg:hidden min-h-screen bg-transparent">
-        <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+      <div className="lg:hidden min-h-screen bg-background">
+        <div className="sticky top-0 z-50 bg-background border-b border-border">
           <MobileHeader />
         </div>
 
@@ -192,14 +164,14 @@ export default function Home() {
         </main>
 
         <Footer />
-        <div className="sticky bottom-0 z-50 bg-background/80 backdrop-blur-md border-t border-border">
+        <div className="sticky bottom-0 z-50 bg-background border-t border-border">
           <MobileNav />
         </div>
       </div>
 
       {/* VERSION DESKTOP */}
-      <div className="hidden lg:block min-h-screen bg-transparent">
-        <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+      <div className="hidden lg:block min-h-screen bg-background">
+        <div className="sticky top-0 z-50">
           <Header />
         </div>
 
