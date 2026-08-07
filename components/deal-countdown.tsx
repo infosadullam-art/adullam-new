@@ -230,7 +230,7 @@ export function DealCountdown() {
   }
 
   return (
-    <div className="w-full" style={{ background: "#FAFAFA" }}>
+    <div className="w-full -mx-4 lg:mx-0" style={{ background: "#FAFAFA", width: "calc(100% + 32px)" }}>
       <div className="relative overflow-hidden" style={{ background: "#fff" }}>
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.04] animate-pulse-slow"
