@@ -4,7 +4,6 @@ import { useRef, useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight, Tractor } from "lucide-react"
-import { motion } from "framer-motion"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
@@ -93,53 +92,45 @@ export function MachinesAgricolesSection() {
 
         <div className="grid grid-cols-6 gap-2">
           {products.slice(0, 6).map((product, index) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: index * 0.05 }}
-            >
-              <Link href={`/products/${product.id}`} className="group block transition-all duration-200 hover:-translate-y-0.5">
-                <div
-                  className="overflow-hidden transition-all duration-200 hover:shadow-sm"
-                  style={{
-                    borderRadius: "6px",
-                    border: "0.5px solid #ECECEC",
-                    background: "#fff",
-                  }}
-                >
-                  <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      fill
-                      className="object-contain p-1.5 transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="px-1.5 py-1.5">
-                    <p
-                      className="truncate mb-0.5"
-                      style={{ fontSize: "9px", fontWeight: 500, color: "#0A0A0A" }}
-                    >
-                      {product.name}
-                    </p>
-                    <p
-                      style={{ fontSize: "10px", fontWeight: 700, color: "#D4372B" }}
-                    >
-                      {formatPrice(product.priceUSD)}
-                    </p>
-                  </div>
+            <Link key={product.id} href={`/products/${product.id}`} className="group block transition-all duration-200 hover:-translate-y-0.5">
+              <div
+                className="overflow-hidden transition-all duration-200 hover:shadow-sm"
+                style={{
+                  borderRadius: "6px",
+                  border: "0.5px solid #ECECEC",
+                  background: "#fff",
+                }}
+              >
+                <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
+                  <Image
+                    src={product.image}
+                    alt={product.name}
+                    fill
+                    className="object-contain p-1.5 transition-transform duration-300 group-hover:scale-105"
+                  />
                 </div>
-              </Link>
-            </motion.div>
+                <div className="px-1.5 py-1.5">
+                  <p
+                    className="truncate mb-0.5"
+                    style={{ fontSize: "9px", fontWeight: 500, color: "#0A0A0A" }}
+                  >
+                    {product.name}
+                  </p>
+                  <p
+                    style={{ fontSize: "10px", fontWeight: 700, color: "#D4372B" }}
+                  >
+                    {formatPrice(product.priceUSD)}
+                  </p>
+                </div>
+              </div>
+            </Link>
           ))}
         </div>
       </div>
     )
   }
 
-  // Version mobile - carrousel
+  // Version mobile - carrousel avec fond noir
   const MobileCarousel = () => {
     if (isLoading) {
       return (
@@ -172,18 +163,18 @@ export function MachinesAgricolesSection() {
     if (products.length === 0) return null
 
     return (
-      <div className="lg:hidden px-4 py-2">
+      <div className="lg:hidden px-4 py-3">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <div className="flex items-center justify-center w-7 h-7" style={{ background: "#FFF8F0", borderRadius: "6px" }}>
               <Tractor className="w-3.5 h-3.5" style={{ color: "#F5A623" }} />
             </div>
             <div>
-              <h2 style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont, lineHeight: 1.2 }}>
+              <p style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont }}>
                 Machines Agricoles
-              </h2>
+              </p>
               <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>
-                Glissez pour voir plus
+                Équipement professionnel
               </p>
             </div>
           </div>
@@ -197,53 +188,56 @@ export function MachinesAgricolesSection() {
         </div>
 
         <div
-          ref={scrollRef}
-          className="flex gap-2 overflow-x-auto pb-1"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          className="rounded-md p-4 relative overflow-hidden"
+          style={{ background: "#0A0A0A" }}
         >
-          {products.map((product) => (
-            <Link
-              key={product.id}
-              href={`/products/${product.id}`}
-              className="group block flex-shrink-0 transition-all duration-200 hover:-translate-y-0.5"
-              style={{ width: "120px" }}
-            >
-              <div
-                className="overflow-hidden transition-all duration-200 hover:shadow-sm"
-                style={{ borderRadius: "6px", border: "0.5px solid #ECECEC", background: "#fff" }}
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-2 rounded" style={{ background: "rgba(255,255,255,0.08)", border: "0.5px solid rgba(255,255,255,0.1)" }}>
+              <Tractor className="w-5 h-5" style={{ color: "#F5A623" }} />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold" style={{ color: "#fff", fontFamily: amazonFont }}>
+                Machines Agricoles
+              </h3>
+              <p className="text-[10px] mt-0.5" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>
+                Équipement professionnel
+              </p>
+            </div>
+          </div>
+
+          <div
+            ref={scrollRef}
+            className="flex items-center gap-3 overflow-x-auto scroll-smooth pb-1"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {products.map((product) => (
+              <Link
+                key={product.id}
+                href={`/products/${product.id}`}
+                className="group flex-shrink-0 w-[150px] transition-all duration-200 hover:-translate-y-0.5"
               >
-                <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
-                  <Image
-                    src={product.image || "/placeholder.svg"}
-                    alt={product.name}
-                    width={120}
-                    height={120}
-                    className="w-full h-full object-contain p-1.5 transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-                <div className="px-1.5 py-1.5">
-                  <p
-                    className="truncate mb-0.5"
-                    style={{ fontSize: "10px", fontWeight: 500, color: "#0A0A0A", fontFamily: amazonFont }}
-                  >
+                <div
+                  className="bg-white rounded-md p-2 transition-all duration-300 hover:shadow-md"
+                  style={{ border: "0.5px solid #ECECEC" }}
+                >
+                  <div className="relative aspect-square mb-1.5 rounded overflow-hidden" style={{ background: "#FAFAFA" }}>
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      fill
+                      className="object-contain p-1 group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <h4 className="text-[10px] font-medium line-clamp-2 min-h-[28px]" style={{ color: "#0A0A0A", fontFamily: amazonFont }}>
                     {product.name}
-                  </p>
-                  <p
-                    style={{ fontSize: "11px", fontWeight: 700, color: "#D4372B", fontFamily: amazonFont }}
-                  >
+                  </h4>
+                  <p className="text-xs font-bold mt-1" style={{ color: "#D4372B", fontFamily: amazonFont }}>
                     {formatPrice(product.priceUSD)}
                   </p>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        <div className="flex items-center justify-center gap-1 mt-1.5">
-          {[0,1,2,3].map(i => (
-            <div key={i} className="rounded-full" style={{ width: i === 3 ? "12px" : "3px", height: "2px", background: i === 3 ? "#F5A623" : "#ECECEC", transition: "all 0.3s" }} />
-          ))}
-          <span style={{ fontSize: "8px", color: "#AAAAAA", marginLeft: "3px", fontFamily: amazonFont }}>glissez →</span>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     )
