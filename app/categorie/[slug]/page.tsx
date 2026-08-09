@@ -81,8 +81,12 @@ export default function CategoryPage() {
           console.log("📦 productsRes:", productsRes)
           
           if (productsRes.success) {
-            // ✅ productsApi.list retourne { success: true, data: { data: [...], meta: {...} } }
-            const productList = productsRes.data?.data || []
+            // ✅ CORRECTION : /api/products (paginatedResponse) renvoie
+            // { success: true, data: [...produits...], meta: {...} }
+            // data est DIRECTEMENT le tableau, pas un objet imbriqué
+            const productList = Array.isArray(productsRes.data)
+              ? productsRes.data
+              : productsRes.data?.data || []
             setProducts(productList)
             console.log("✅ Produits chargés:", productList.length)
           }
