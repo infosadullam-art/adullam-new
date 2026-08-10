@@ -541,6 +541,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     try {
       await fetch(`${API_BASE_URL}/api/track`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           productId: null,
@@ -589,7 +590,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     const loadHistory = async () => {
       try {
         const url = `${API_BASE_URL}/api/chat?sessionId=${sessionId}${userId ? `&userId=${userId}` : ''}`
-        const res = await fetch(url)
+        const res = await fetch(url, { credentials: 'include' })
         const data = await res.json()
 
         let loaded: Message[] = []
@@ -693,6 +694,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
         try {
           const res = await fetch(`${API_BASE_URL}/api/chat/trigger`, {
             method: 'POST',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               session_id: sessionId,
@@ -898,6 +900,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     try {
       await fetch(`${API_BASE_URL}/api/track`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           productId: product.id,
@@ -918,6 +921,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     try {
       const response = await fetch(`${API_BASE_URL}/api/chat/recommend`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           session_id: sessionId,
@@ -967,6 +971,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     try {
       const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: text,
@@ -999,6 +1004,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
         try {
           await fetch(`${API_BASE_URL}/api/track`, {
             method: 'POST',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               productId: null,
@@ -1062,6 +1068,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
 
       const res = await fetch(`${API_BASE_URL}/api/chat/more`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           session_id: sessionId,
