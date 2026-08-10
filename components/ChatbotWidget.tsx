@@ -713,19 +713,21 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           if (data.should_trigger && data.message) {
             setProactiveMessage(data.message)
             setHasUnread(true)
+            // ✅ Ouvre le chat automatiquement pour que le message proactif
+            // (et le coupon éventuel) soit visible immédiatement, plutôt
+            // qu'un simple badge que le client pourrait ne jamais remarquer.
+            setIsOpen(true)
+            addAssistantMessage(data.message)
 
-            if (data.trigger_type === 'hesitation_strong' || data.trigger_type === 'abandoned_cart') {
-              const offer: Offer = {
-                type: 'risky',
-                discount_1: 5,
-                discount_2: 10,
-                time_limit: 20,
-                urgency_message: data.message,
-                taunt_message: data.message,
-              }
-              setActiveOffer(offer)
-              setOfferTimer(20 * 60)
-              setShowOfferBanner(true)
+            // ✅ Coupon RÉEL généré en base (chatbot_service.py -> Prisma),
+            // relayé par /api/chat/trigger. Avant ce fix, ce champ était
+            // ignoré et aucune bulle countdown ne s'affichait jamais suite
+            // à une relance proactive, même quand un vrai coupon existait.
+            if (data.coupon) {
+              setActiveCoupon(data.coupon)
+              setShowCouponBanner(true)
+              setRemainingTime((data.coupon.time_limit || 20) * 60)
+              setTimeout(() => setCouponExpanded(true), 500)
             }
           }
         } catch (error) {
