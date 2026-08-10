@@ -229,8 +229,7 @@ export default function ProductPage() {
   }, [id])
 
   // ============================================================
-  // TRACKING VIEW SUR LA PAGE PRODUIT (alimente le cycle vertueux :
-  // ALS, session graph, et le compteur de déclenchement proactif du chat)
+  // TRACKING VIEW SUR LA PAGE PRODUIT
   // ============================================================
   const hasTrackedViewRef = useRef(false)
 
@@ -254,12 +253,8 @@ export default function ProductPage() {
         context: "PRODUCT_PAGE",
         sessionId,
       }),
-    }).catch(() => {
-      // Silencieux
-    })
+    }).catch(() => {})
 
-    // ✅ Informe le chatbot qu'une vue produit réelle vient d'avoir lieu,
-    // pour alimenter son compteur de déclenchement proactif.
     window.dispatchEvent(new CustomEvent("adullam:product-viewed", { detail: { productId: product.id } }))
   }, [product?.id])
 
@@ -909,11 +904,12 @@ export default function ProductPage() {
   }, [simpleVariantQuantities, complexSelections, simpleQuantity, product, minQuantity])
 
   // ============================================================
-  // FONCTIONS D'ACHAT
+  // FONCTIONS D'ACHAT - CORRIGÉES
   // ============================================================
   const handleAddToCart = () => {
     const grandTotal = getGrandTotal()
-    if (!isMOQMet || !product || grandTotal === 0) {
+    // ✅ On ne vérifie plus le MOQ ici (c'est fait dans CartContext)
+    if (!product || grandTotal === 0) {
       toast.error("Veuillez sélectionner des articles")
       return
     }
@@ -930,6 +926,7 @@ export default function ProductPage() {
         weight: product.weight,
         image: images[selectedImage] || "/placeholder.svg",
         variantKey: `${product.id}`,
+        minQuantity: minQuantity,
       })
       itemsAdded = simpleQuantity
     } else if (Object.keys(simpleVariantQuantities).length > 0) {
@@ -945,6 +942,7 @@ export default function ProductPage() {
             image: attributeImages[`${simpleVariantType}:${value}`] || images[selectedImage] || "/placeholder.svg",
             variantKey: `${product.id}_${value}`,
             color: value,
+            minQuantity: minQuantity,
           })
           itemsAdded += qty
         }
@@ -967,6 +965,7 @@ export default function ProductPage() {
               variantKey: `${product.id}_${primaryValue}_${secondaryValue}`,
               color: primaryValue,
               eurSize: secondaryValue,
+              minQuantity: minQuantity,
             })
             itemsAdded += qty
           }
@@ -994,7 +993,6 @@ export default function ProductPage() {
     }, 500)
   }
 
-  // ✅ NOUVELLE FONCTION : Envoyer au chatbot au lieu de WhatsApp
   const handleContactChatbot = () => {
     if (!product) return
 
@@ -1002,10 +1000,8 @@ export default function ProductPage() {
     const productName = product.title || product.name || "Produit"
     const priceFormatted = formatPrice(product.price)
     
-    // ✅ Construire le message pour le chatbot
     const message = `Bonjour Adu, je souhaite commander le produit : ${productName}\nQuantité : ${grandTotal} pièces\nPrix unitaire : ${priceFormatted}\nPays : ${country}\n\nJe n'atteins pas la quantité minimum (${minQuantity} pièces). Peux-tu m'aider ?`
     
-    // ✅ Déclencher un événement personnalisé pour ouvrir le chatbot avec le message
     const event = new CustomEvent('openChatbotWithMessage', { 
       detail: { 
         message: message,
