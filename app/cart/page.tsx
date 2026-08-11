@@ -84,16 +84,25 @@ export default function CartPage() {
     return title.length <= max ? title : title.substring(0, max) + "..."
   }
 
-  // ✅ VÉRIFICATION MOQ AVANT COMMANDE
+  // ✅ VÉRIFICATION MOQ GLOBALE (par produit, toutes variantes confondues)
   const handleCheckout = () => {
-    const invalidItems = cart.filter(item => {
+    // ✅ Vérifier MOQ global par produit (toutes variantes confondues)
+    const productTotals = new Map<string, { total: number; name: string; minQty: number }>();
+    
+    cart.forEach(item => {
       const minQty = item.minQuantity || getMinQuantity(item.price);
-      return item.quantity < minQty;
+      if (!productTotals.has(item.id)) {
+        productTotals.set(item.id, { total: 0, name: item.name || "Produit", minQty });
+      }
+      productTotals.get(item.id)!.total += item.quantity;
     });
 
-    if (invalidItems.length > 0) {
-      const productNames = invalidItems.map(item => item.name || "Produit").join(", ");
-      toast.error(`Quantité minimum non atteinte pour : ${productNames}`, {
+    const invalidProducts = Array.from(productTotals.entries())
+      .filter(([_, data]) => data.total < data.minQty)
+      .map(([id, data]) => data.name);
+
+    if (invalidProducts.length > 0) {
+      toast.error(`Quantité minimum non atteinte pour : ${invalidProducts.join(", ")}`, {
         duration: 5000,
         position: "top-center",
       });
@@ -403,7 +412,7 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                {/* CTA Commander avec vérification MOQ */}
+                {/* CTA Commander avec vérification MOQ globale */}
                 <button
                   onClick={handleCheckout}
                   className="block w-full mt-5 text-center py-3.5 rounded-xl font-bold text-white transition-opacity hover:opacity-90"
