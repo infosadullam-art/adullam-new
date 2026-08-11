@@ -5,6 +5,7 @@ import { MobileHeader } from "@/components/mobile-header"
 import { Footer } from "@/components/footer"
 import {
   ChevronRight,
+  ChevronDown,
   Heart,
   Star,
   Minus,
@@ -116,6 +117,7 @@ export default function ProductPage() {
   const { user } = useAuth()
   const [selectedImage, setSelectedImage] = useState(0)
   const [activeTab, setActiveTab] = useState("description")
+  const [showAllSpecs, setShowAllSpecs] = useState(false)
   const [minQuantity, setMinQuantity] = useState(1)
   const [isMOQMet, setIsMOQMet] = useState(false)
   const { addToCart, addItemsToCart } = useCart()
@@ -1741,16 +1743,20 @@ export default function ProductPage() {
                         {product.description || product.cleanedDesc || "Description non disponible"}
                       </p>
                       {product.features && product.features.length > 0 && (
-                        <div className="mt-4">
+                        <div className="mt-4 overflow-x-auto">
                           <h4 className="text-sm font-semibold text-foreground mb-2">Points forts :</h4>
-                          <ul className="space-y-2">
-                            {product.features.map((feature: string, i: number) => (
-                              <li key={i} className="flex items-start gap-2 text-sm">
-                                <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: brandColor }} />
-                                <span className="text-muted-foreground break-words">{feature}</span>
-                              </li>
-                            ))}
-                          </ul>
+                          <table className="w-full text-xs border-collapse">
+                            <tbody>
+                              {product.features.map((feature: string, i: number) => (
+                                <tr key={i} className="border-b border-border">
+                                  <td className="py-1.5 pr-2 w-6">
+                                    <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: brandColor }} />
+                                  </td>
+                                  <td className="py-1.5 text-muted-foreground break-words">{feature}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
                       )}
                     </div>
@@ -1758,37 +1764,49 @@ export default function ProductPage() {
 
                   {activeTab === "specifications" && (
                     <div className="overflow-x-auto">
-                      <table className="w-full text-xs border-collapse">
-                        <tbody>
-                          {product.specifications ? (
-                            product.specifications.map((spec: any, i: number) => (
-                              <tr key={i} className="border-b border-border">
-                                <td className="py-1.5 pr-3 text-muted-foreground w-1/3">{spec.label}</td>
-                                <td className="py-1.5 text-foreground">{spec.value}</td>
-                              </tr>
-                            ))
-                          ) : (
-                            <>
-                              <tr className="border-b border-border">
-                                <td className="py-1.5 pr-3 text-muted-foreground w-1/3">Marque</td>
-                                <td className="py-1.5 text-foreground">{product.brand || "TechPro"}</td>
-                              </tr>
-                              <tr className="border-b border-border">
-                                <td className="py-1.5 pr-3 text-muted-foreground">Modèle</td>
-                                <td className="py-1.5 text-foreground">{product.model || "Standard"}</td>
-                              </tr>
-                              <tr className="border-b border-border">
-                                <td className="py-1.5 pr-3 text-muted-foreground">Poids</td>
-                                <td className="py-1.5 text-foreground">{product.weight ? `${product.weight} kg` : "N/A"}</td>
-                              </tr>
-                              <tr className="border-b border-border">
-                                <td className="py-1.5 pr-3 text-muted-foreground">Garantie</td>
-                                <td className="py-1.5 text-foreground">12 mois</td>
-                              </tr>
-                            </>
-                          )}
-                        </tbody>
-                      </table>
+                      {(() => {
+                        const specs =
+                          product.specifications && product.specifications.length > 0
+                            ? product.specifications
+                            : [
+                                { label: "Marque", value: product.brand || "TechPro" },
+                                { label: "Modèle", value: product.model || "Standard" },
+                                { label: "Poids", value: product.weight ? `${product.weight} kg` : "N/A" },
+                                { label: "Garantie", value: "12 mois" },
+                              ]
+                        const visibleLimit = 6
+                        const hasMore = specs.length > visibleLimit
+                        const visibleSpecs = showAllSpecs ? specs : specs.slice(0, visibleLimit)
+
+                        return (
+                          <>
+                            <table className="w-full text-xs border border-border rounded-lg overflow-hidden border-collapse">
+                              <tbody>
+                                {visibleSpecs.map((spec: any, i: number) => (
+                                  <tr key={i} className="border-b border-border last:border-b-0">
+                                    <td className="py-2.5 px-3 bg-muted/40 text-muted-foreground font-medium w-[38%] align-top border-r border-border">
+                                      {spec.label}
+                                    </td>
+                                    <td className="py-2.5 px-3 text-foreground break-words align-top">{spec.value}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                            {hasMore && (
+                              <button
+                                onClick={() => setShowAllSpecs((prev) => !prev)}
+                                className="w-full mt-2 py-2 text-xs font-medium flex items-center justify-center gap-1"
+                                style={{ color: brandColor }}
+                              >
+                                {showAllSpecs ? "Voir moins" : "Voir plus"}
+                                <ChevronDown
+                                  className={`w-3.5 h-3.5 transition-transform ${showAllSpecs ? "rotate-180" : ""}`}
+                                />
+                              </button>
+                            )}
+                          </>
+                        )
+                      })()}
                     </div>
                   )}
 
@@ -2525,16 +2543,20 @@ export default function ProductPage() {
                       {product.description || product.cleanedDesc || "Description non disponible"}
                     </p>
                     {product.features && product.features.length > 0 && (
-                      <div className="mt-6">
+                      <div className="mt-6 overflow-x-auto">
                         <h3 className="font-semibold mb-3 text-foreground">Caractéristiques principales</h3>
-                        <ul className="space-y-2 text-muted-foreground">
-                          {product.features.map((feature: string, i: number) => (
-                            <li key={i} className="flex items-start gap-2">
-                              <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: brandColor }} />
-                              <span>{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
+                        <table className="w-full text-sm border-collapse">
+                          <tbody>
+                            {product.features.map((feature: string, i: number) => (
+                              <tr key={i} className="border-b border-border">
+                                <td className="py-2 pr-3 w-8">
+                                  <Check className="w-4 h-4 flex-shrink-0" style={{ color: brandColor }} />
+                                </td>
+                                <td className="py-2 text-muted-foreground">{feature}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     )}
                   </div>
@@ -2542,37 +2564,49 @@ export default function ProductPage() {
 
                 {activeTab === "specifications" && (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm border-collapse">
-                      <tbody>
-                        {product.specifications ? (
-                          product.specifications.map((spec: any, i: number) => (
-                            <tr key={i} className="border-b border-border">
-                              <td className="py-2 pr-4 text-muted-foreground font-medium w-1/3">{spec.label}</td>
-                              <td className="py-2 text-foreground">{spec.value}</td>
-                            </tr>
-                          ))
-                        ) : (
-                          <>
-                            <tr className="border-b border-border">
-                              <td className="py-2 pr-4 text-muted-foreground font-medium w-1/3">Marque</td>
-                              <td className="py-2 text-foreground">{product.brand || "TechPro"}</td>
-                            </tr>
-                            <tr className="border-b border-border">
-                              <td className="py-2 pr-4 text-muted-foreground font-medium">Modèle</td>
-                              <td className="py-2 text-foreground">{product.model || "Standard"}</td>
-                            </tr>
-                            <tr className="border-b border-border">
-                              <td className="py-2 pr-4 text-muted-foreground font-medium">Poids</td>
-                              <td className="py-2 text-foreground">{product.weight ? `${product.weight} kg` : "N/A"}</td>
-                            </tr>
-                            <tr className="border-b border-border">
-                              <td className="py-2 pr-4 text-muted-foreground font-medium">Garantie</td>
-                              <td className="py-2 text-foreground">12 mois</td>
-                            </tr>
-                          </>
-                        )}
-                      </tbody>
-                    </table>
+                    {(() => {
+                      const specs =
+                        product.specifications && product.specifications.length > 0
+                          ? product.specifications
+                          : [
+                              { label: "Marque", value: product.brand || "TechPro" },
+                              { label: "Modèle", value: product.model || "Standard" },
+                              { label: "Poids", value: product.weight ? `${product.weight} kg` : "N/A" },
+                              { label: "Garantie", value: "12 mois" },
+                            ]
+                      const visibleLimit = 6
+                      const hasMore = specs.length > visibleLimit
+                      const visibleSpecs = showAllSpecs ? specs : specs.slice(0, visibleLimit)
+
+                      return (
+                        <>
+                          <table className="w-full text-sm border border-border rounded-lg overflow-hidden border-collapse">
+                            <tbody>
+                              {visibleSpecs.map((spec: any, i: number) => (
+                                <tr key={i} className="border-b border-border last:border-b-0">
+                                  <td className="py-2.5 px-4 bg-muted/40 text-muted-foreground font-medium w-1/3 align-top border-r border-border">
+                                    {spec.label}
+                                  </td>
+                                  <td className="py-2.5 px-4 text-foreground break-words align-top">{spec.value}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                          {hasMore && (
+                            <button
+                              onClick={() => setShowAllSpecs((prev) => !prev)}
+                              className="w-full mt-3 py-2.5 text-sm font-medium flex items-center justify-center gap-1.5 hover:opacity-80 transition-opacity"
+                              style={{ color: brandColor }}
+                            >
+                              {showAllSpecs ? "Voir moins" : "Voir plus"}
+                              <ChevronDown
+                                className={`w-4 h-4 transition-transform ${showAllSpecs ? "rotate-180" : ""}`}
+                              />
+                            </button>
+                          )}
+                        </>
+                      )
+                    })()}
                   </div>
                 )}
 
