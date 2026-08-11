@@ -118,7 +118,7 @@ export default function ProductPage() {
   const [activeTab, setActiveTab] = useState("description")
   const [minQuantity, setMinQuantity] = useState(1)
   const [isMOQMet, setIsMOQMet] = useState(false)
-  const { addToCart } = useCart()
+  const { addToCart, addItemsToCart } = useCart()
   const { country, currency, locale } = useLocale()
   const thumbnailRef = useRef<HTMLDivElement>(null)
   const relatedCarouselRef = useRef<HTMLDivElement>(null)
@@ -924,10 +924,17 @@ export default function ProductPage() {
       return
     }
 
-    let itemsAdded = 0
+    // ✅ On construit le LOT complet d'abord, puis on l'envoie en une seule
+    // fois à addItemsToCart. Important : si on appelait addToCart séparément
+    // pour chaque variante, chaque appel vérifierait le MOQ isolément AVANT
+    // que les autres variantes du lot ne soient dans le panier, ce qui
+    // rejette à tort un lot pourtant valide dans son ensemble (ex: 3+4+5=12
+    // pièces pour un MOQ de 10, alors que 3, 4 et 5 pris séparément sont
+    // chacun < 10).
+    const itemsToAdd: CartItem[] = []
 
     if (!product.variants || product.variants.length === 0) {
-      addToCart({
+      itemsToAdd.push({
         id: product.id,
         name: product.title,
         price: product.price,
@@ -938,11 +945,10 @@ export default function ProductPage() {
         variantKey: `${product.id}`,
         minQuantity: minQuantity,
       })
-      itemsAdded = simpleQuantity
     } else if (Object.keys(simpleVariantQuantities).length > 0) {
       Object.entries(simpleVariantQuantities).forEach(([value, qty]) => {
         if (qty > 0) {
-          addToCart({
+          itemsToAdd.push({
             id: product.id,
             name: `${product.title} - ${primaryAttrName} ${value}`,
             price: product.price,
@@ -954,14 +960,13 @@ export default function ProductPage() {
             color: value,
             minQuantity: minQuantity,
           })
-          itemsAdded += qty
         }
       })
     } else if (Object.keys(complexSelections).length > 0) {
       Object.entries(complexSelections).forEach(([primaryValue, secondarySelections]) => {
         Object.entries(secondarySelections).forEach(([secondaryValue, qty]) => {
           if (qty > 0) {
-            addToCart({
+            itemsToAdd.push({
               id: product.id,
               name: `${product.title} - ${primaryAttrName} ${primaryValue}, ${secondaryAttrName} ${secondaryValue}`,
               price: product.price,
@@ -977,17 +982,28 @@ export default function ProductPage() {
               eurSize: secondaryValue,
               minQuantity: minQuantity,
             })
-            itemsAdded += qty
           }
         })
       })
     }
 
-    toast.success(`${itemsAdded} article(s) ajouté(s) au panier`, {
-      duration: 3000,
-      position: "top-center",
-      icon: "🛒",
-    })
+    if (itemsToAdd.length === 0) {
+      toast.error("Veuillez sélectionner des articles")
+      return
+    }
+
+    // ✅ Un seul appel atomique : le MOQ est vérifié sur la somme du lot
+    const result = addItemsToCart(itemsToAdd)
+
+    if (result.success) {
+      toast.success(`${result.addedCount} article(s) ajouté(s) au panier`, {
+        duration: 3000,
+        position: "top-center",
+        icon: "🛒",
+      })
+    }
+    // En cas d'échec, addItemsToCart affiche déjà le toast d'erreur MOQ —
+    // on ne montre donc pas de faux succès en parallèle.
   }
 
   const handleBuyNow = () => {

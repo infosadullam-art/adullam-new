@@ -36,6 +36,7 @@ export type CartItem = {
 type CartContextType = {
   cart: CartItem[];
   addToCart: (item: CartItem) => void;
+  addItemsToCart: (items: CartItem[]) => { success: boolean; addedCount: number };
   removeFromCart: (variantKey: string) => void;
   updateQuantity: (variantKey: string, quantity: number) => void;
   updateShippingMode: (variantKey: string, mode: ShippingMode) => void;
@@ -123,6 +124,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const hasHydratedFromServer = useRef(false);
   const syncDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // ✅ Miroir synchrone du panier : évite les lectures obsolètes (stale closure)
+  // quand plusieurs ajouts/modifs sont déclenchés rapidement à la suite
+  // (ex: ajout de plusieurs variantes d'un coup). Toujours lire/écrire via
+  // cartRef.current dans la logique métier, jamais via la variable `cart`.
+  const cartRef = useRef<CartItem[]>([]);
+
+  const commitCart = (next: CartItem[]) => {
+    cartRef.current = next;
+    setCart(next);
+  };
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -133,9 +145,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (storedCart) {
       try {
         localCart = JSON.parse(storedCart);
-        setCart(localCart);
+        commitCart(localCart);
       } catch {
-        setCart([]);
+        commitCart([]);
       }
     }
 
@@ -155,7 +167,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       fetchServerCart().then((serverItems) => {
         if (serverItems === null) return;
         if (serverItems.length > 0) {
-          setCart(serverItems);
+          commitCart(serverItems);
         } else if (localCart.length > 0) {
           syncCartToServer(localCart);
         }
@@ -271,30 +283,62 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // ============================================================
-  // ✅ ADD TO CART - MOQ GLOBAL (toutes variantes confondues)
+  // ✅ ADD ITEMS TO CART (LOT) - MOQ GLOBAL ATOMIQUE
+  // Utilisé quand plusieurs variantes du MÊME produit sont ajoutées en une
+  // seule action (ex: sélection de plusieurs couleurs/tailles). Le MOQ est
+  // vérifié sur la somme du lot + ce qui est déjà dans le panier pour ce
+  // produit, PAS variante par variante — sinon un lot valide dans son
+  // ensemble (ex: 3+4+5=12 ≥ MOQ 10) serait rejeté à tort si chaque
+  // variante est vérifiée isolément avant que les autres ne soient commitées.
   // ============================================================
-  const addToCart = async (item: CartItem) => {
-    const variantKey = item.variantKey || `${item.id}_${item.color || ''}_${item.eurSize || ''}`;
-    const existingIndex = cart.findIndex((p) => p.variantKey === variantKey);
-    const minQty = item.minQuantity || getMinQuantity(item.price);
+  const addItemsToCart = (items: CartItem[]): { success: boolean; addedCount: number } => {
+    if (items.length === 0) return { success: false, addedCount: 0 };
 
-    // Quantité déjà présente dans le panier pour ce PRODUIT (id),
-    // toutes variantes confondues, hors la variante en cours de modification
-    const otherVariantsTotal = cart.reduce((sum, p) => {
-      if (p.id === item.id && p.variantKey !== variantKey) {
-        return sum + p.quantity;
-      }
-      return sum;
-    }, 0);
+    const currentCart = cartRef.current;
 
-    if (existingIndex >= 0) {
-      // La variante existe déjà : on ajoute la quantité demandée
-      const existingItem = cart[existingIndex];
-      const newQuantity = existingItem.quantity + item.quantity;
-      const projectedTotal = otherVariantsTotal + newQuantity;
+    // Regrouper les nouveaux items par produit (id)
+    const byProduct = new Map<string, CartItem[]>();
+    items.forEach((item) => {
+      const list = byProduct.get(item.id) || [];
+      list.push(item);
+      byProduct.set(item.id, list);
+    });
 
-      // ✅ MOQ global : le total du produit (toutes variantes) ne doit jamais descendre sous le MOQ
+    let nextCart = [...currentCart];
+    const reservations: { variantKey: string; reservedItem: CartItem }[] = [];
+    let anyRejected = false;
+    let addedCount = 0;
+
+    byProduct.forEach((productItems, productId) => {
+      const minQty = productItems[0].minQuantity || getMinQuantity(productItems[0].price);
+
+      const batchVariantKeys = new Set(
+        productItems.map((it) => it.variantKey || `${it.id}_${it.color || ''}_${it.eurSize || ''}`)
+      );
+
+      // Quantité déjà présente sur d'AUTRES variantes de ce produit (hors lot en cours)
+      const existingOtherTotal = currentCart.reduce((sum, p) => {
+        if (p.id === productId && !batchVariantKeys.has(p.variantKey!)) {
+          return sum + p.quantity;
+        }
+        return sum;
+      }, 0);
+
+      // Quantité déjà présente sur les variantes DU LOT qui existent déjà dans le panier
+      // (cas où on ré-ajoute à une variante déjà présente)
+      const existingBatchVariantsTotal = currentCart.reduce((sum, p) => {
+        if (p.id === productId && batchVariantKeys.has(p.variantKey!)) {
+          return sum + p.quantity;
+        }
+        return sum;
+      }, 0);
+
+      const batchQuantity = productItems.reduce((sum, it) => sum + it.quantity, 0);
+      const projectedTotal = existingOtherTotal + existingBatchVariantsTotal + batchQuantity;
+
+      // ✅ MOQ global vérifié sur le LOT COMPLET, pas variante par variante
       if (projectedTotal < minQty) {
+        anyRejected = true;
         toast.error(`Quantité minimum de ${minQty} pièces requise pour ce produit (toutes variantes confondues)`, {
           duration: 4000,
           position: "top-center",
@@ -302,21 +346,93 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      const updatedItem = await updateItemWithCosts(
-        { ...existingItem, quantity: newQuantity },
-        existingItem.shippingMode || shippingMode
-      );
+      productItems.forEach((item) => {
+        const variantKey = item.variantKey || `${item.id}_${item.color || ''}_${item.eurSize || ''}`;
+        const existingIndex = nextCart.findIndex((p) => p.variantKey === variantKey);
 
-      const newCart = [...cart];
-      newCart[existingIndex] = updatedItem;
-      setCart(newCart);
-      return;
+        if (existingIndex >= 0) {
+          const existingItem = nextCart[existingIndex];
+          const reservedItem = { ...existingItem, quantity: existingItem.quantity + item.quantity };
+          nextCart[existingIndex] = reservedItem;
+          reservations.push({ variantKey, reservedItem });
+        } else {
+          const reservedItem: CartItem = {
+            ...item,
+            weight: item.weight || 0.5,
+            variantKey,
+            shippingMode: item.shippingMode || shippingMode,
+            minQuantity: minQty,
+          };
+          nextCart.push(reservedItem);
+          reservations.push({ variantKey, reservedItem });
+        }
+        addedCount += item.quantity;
+      });
+    });
+
+    if (reservations.length === 0) {
+      return { success: false, addedCount: 0 };
     }
 
-    // Nouvelle variante pour ce produit : vérifier le MOQ global
-    // (quantité déjà présente sur les autres variantes + nouvelle quantité)
-    const projectedTotal = otherVariantsTotal + item.quantity;
+    // ✅ Commit synchrone unique de tout le lot accepté
+    commitCart(nextCart);
 
+    // Calcul des frais de livraison en arrière-plan pour chaque item du lot
+    reservations.forEach(({ variantKey, reservedItem }) => {
+      updateItemWithCosts(reservedItem, reservedItem.shippingMode || shippingMode).then((itemWithCosts) => {
+        const latest = cartRef.current;
+        const idx = latest.findIndex((p) => p.variantKey === variantKey);
+        if (idx === -1) return;
+        const updated = [...latest];
+        updated[idx] = itemWithCosts;
+        commitCart(updated);
+      });
+    });
+
+    return { success: !anyRejected, addedCount };
+  };
+
+  // ============================================================
+  // ✅ ADD TO CART - MOQ GLOBAL + réservation synchrone (anti race-condition)
+  // ============================================================
+  const addToCart = (item: CartItem) => {
+    const variantKey = item.variantKey || `${item.id}_${item.color || ''}_${item.eurSize || ''}`;
+    const minQty = item.minQuantity || getMinQuantity(item.price);
+
+    // ⚠️ Toujours lire depuis cartRef.current (jamais `cart`) : synchrone et
+    // toujours à jour, même si addToCart est appelé plusieurs fois de suite
+    // avant que React n'ait eu le temps de re-render (ex: ajout multi-variantes).
+    const currentCart = cartRef.current;
+    const existingIndex = currentCart.findIndex((p) => p.variantKey === variantKey);
+
+    const otherVariantsTotal = currentCart.reduce((sum, p) => {
+      if (p.id === item.id && p.variantKey !== variantKey) {
+        return sum + p.quantity;
+      }
+      return sum;
+    }, 0);
+
+    let baseItem: CartItem;
+    let newQuantity: number;
+
+    if (existingIndex >= 0) {
+      const existingItem = currentCart[existingIndex];
+      baseItem = existingItem;
+      newQuantity = existingItem.quantity + item.quantity;
+    } else {
+      baseItem = {
+        ...item,
+        weight: item.weight || 0.5,
+        variantKey,
+        shippingMode: item.shippingMode || shippingMode,
+        minQuantity: minQty,
+      };
+      newQuantity = item.quantity;
+    }
+
+    const projectedTotal = otherVariantsTotal + newQuantity;
+
+    // ✅ MOQ global : le total du produit (toutes variantes) ne doit jamais descendre sous le MOQ
     if (projectedTotal < minQty) {
       toast.error(`Quantité minimum de ${minQty} pièces requise pour ce produit (toutes variantes confondues)`, {
         duration: 4000,
@@ -325,33 +441,45 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    const newItem = {
-      ...item,
-      weight: item.weight || 0.5,
-      variantKey,
-      shippingMode: item.shippingMode || shippingMode,
-      minQuantity: minQty,
-    };
-    const itemWithCosts = await updateItemWithCosts(newItem, newItem.shippingMode!);
-    setCart((prev) => [...prev, itemWithCosts]);
+    // ✅ Réservation SYNCHRONE de la quantité (aucun await avant ce point) :
+    // les appels suivants dans la même rafale voient immédiatement ce nouvel état.
+    const reservedItem: CartItem = { ...baseItem, quantity: newQuantity };
+    const nextCart = [...currentCart];
+    if (existingIndex >= 0) {
+      nextCart[existingIndex] = reservedItem;
+    } else {
+      nextCart.push(reservedItem);
+    }
+    commitCart(nextCart);
+
+    // Le calcul des frais de livraison (appel réseau) se fait ensuite,
+    // sans bloquer ni fausser les vérifications MOQ des appels suivants.
+    updateItemWithCosts(reservedItem, reservedItem.shippingMode || shippingMode).then((itemWithCosts) => {
+      const latest = cartRef.current;
+      const idx = latest.findIndex((p) => p.variantKey === variantKey);
+      if (idx === -1) return; // supprimé entre-temps
+      const updated = [...latest];
+      updated[idx] = itemWithCosts;
+      commitCart(updated);
+    });
   };
 
   // ============================================================
-  // ✅ UPDATE QUANTITY - MOQ GLOBAL (toutes variantes confondues)
+  // ✅ UPDATE QUANTITY - MOQ GLOBAL + réservation synchrone
   // ============================================================
-  const updateQuantity = async (variantKey: string, quantity: number) => {
+  const updateQuantity = (variantKey: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(variantKey);
       return;
     }
 
-    const item = cart.find(i => i.variantKey === variantKey);
+    const currentCart = cartRef.current;
+    const item = currentCart.find(i => i.variantKey === variantKey);
     if (!item) return;
 
     const minQty = item.minQuantity || getMinQuantity(item.price);
 
-    // Quantité présente sur les AUTRES variantes du même produit
-    const otherVariantsTotal = cart.reduce((sum, p) => {
+    const otherVariantsTotal = currentCart.reduce((sum, p) => {
       if (p.id === item.id && p.variantKey !== variantKey) {
         return sum + p.quantity;
       }
@@ -370,33 +498,43 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    const updatedItem = await updateItemWithCosts(
-      { ...item, quantity },
-      item.shippingMode!
-    );
+    // Réservation synchrone de la nouvelle quantité
+    const reservedItem: CartItem = { ...item, quantity };
+    const nextCart = currentCart.map((i) => (i.variantKey === variantKey ? reservedItem : i));
+    commitCart(nextCart);
 
-    setCart((prev) =>
-      prev.map((i) => (i.variantKey === variantKey ? updatedItem : i))
-    );
+    updateItemWithCosts(reservedItem, reservedItem.shippingMode || shippingMode).then((itemWithCosts) => {
+      const latest = cartRef.current;
+      const idx = latest.findIndex((p) => p.variantKey === variantKey);
+      if (idx === -1) return;
+      const updated = [...latest];
+      updated[idx] = itemWithCosts;
+      commitCart(updated);
+    });
   };
 
   const removeFromCart = (variantKey: string) => {
-    setCart((prev) => prev.filter((item) => item.variantKey !== variantKey));
+    const nextCart = cartRef.current.filter((item) => item.variantKey !== variantKey);
+    commitCart(nextCart);
   };
 
-  const updateShippingMode = async (variantKey: string, mode: ShippingMode) => {
-    const item = cart.find(i => i.variantKey === variantKey);
+  const updateShippingMode = (variantKey: string, mode: ShippingMode) => {
+    const currentCart = cartRef.current;
+    const item = currentCart.find(i => i.variantKey === variantKey);
     if (!item) return;
 
-    const updatedItem = await updateItemWithCosts(item, mode);
-
-    setCart((prev) =>
-      prev.map((i) => (i.variantKey === variantKey ? { ...updatedItem, shippingMode: mode } : i))
-    );
+    updateItemWithCosts(item, mode).then((updatedItem) => {
+      const latest = cartRef.current;
+      const idx = latest.findIndex((p) => p.variantKey === variantKey);
+      if (idx === -1) return;
+      const nextCart = [...latest];
+      nextCart[idx] = { ...updatedItem, shippingMode: mode };
+      commitCart(nextCart);
+    });
   };
 
   const clearCart = () => {
-    setCart([]);
+    commitCart([]);
     localStorage.removeItem("cart");
     setCache(new Map());
     if (getAccessToken()) {
@@ -406,14 +544,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const recalcAllItems = async () => {
-      if (!ready || cart.length === 0) return;
+      if (!ready || cartRef.current.length === 0) return;
 
+      const snapshot = cartRef.current;
       const updatedCart = await Promise.all(
-        cart.map(async (item) => {
+        snapshot.map(async (item) => {
           return await updateItemWithCosts(item, item.shippingMode || shippingMode);
         })
       );
-      setCart(updatedCart);
+      commitCart(updatedCart);
     };
 
     recalcAllItems();
@@ -430,6 +569,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       value={{
         cart,
         addToCart,
+        addItemsToCart,
         removeFromCart,
         updateQuantity,
         updateShippingMode,
