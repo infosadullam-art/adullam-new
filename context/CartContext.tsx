@@ -270,36 +270,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     };
   };
 
-  // ✅ VÉRIFICATION MOQ GLOBAL (par produit, toutes variantes confondues) - SANS TOAST
-  const checkGlobalMOQ = (productId: string, totalQuantity: number): boolean => {
-    const items = cart.filter(i => i.id === productId);
-    if (items.length === 0) return true;
-    
-    const minQty = items[0].minQuantity || getMinQuantity(items[0].price);
-    if (totalQuantity < minQty) {
-      // ❌ PAS DE TOAST ici - la page produit gère l'affichage
-      return false;
-    }
-    return true;
-  };
-
+  // ============================================================
+  // ✅ ADD TO CART - CORRIGÉ
+  // ============================================================
   const addToCart = async (item: CartItem) => {
     const variantKey = item.variantKey || `${item.id}_${item.color || ''}_${item.eurSize || ''}`;
     const existingIndex = cart.findIndex((p) => p.variantKey === variantKey);
 
-    // Calculer la nouvelle quantité totale pour ce produit (toutes variantes)
-    let newTotalQuantity = item.quantity;
-    cart.forEach(i => {
-      if (i.id === item.id) {
-        newTotalQuantity += i.quantity;
-      }
-    });
-
-    // ✅ Vérifier MOQ global (sans toast)
-    if (!checkGlobalMOQ(item.id, newTotalQuantity)) {
-      return;
-    }
-
+    // 🔥 Si le produit existe déjà, on ajoute sans vérifier le MOQ
     if (existingIndex >= 0) {
       const existingItem = cart[existingIndex];
       const updatedItem = await updateItemWithCosts(
@@ -310,23 +288,34 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       const newCart = [...cart];
       newCart[existingIndex] = updatedItem;
       setCart(newCart);
-    } else {
-      const newItem = {
-        ...item,
-        weight: item.weight || 0.5,
-        variantKey,
-        shippingMode: item.shippingMode || shippingMode,
-        minQuantity: item.minQuantity || getMinQuantity(item.price),
-      };
-      const itemWithCosts = await updateItemWithCosts(newItem, newItem.shippingMode!);
-      setCart((prev) => [...prev, itemWithCosts]);
+      return;
     }
+
+    // ✅ Si c'est un nouveau produit, vérifier que la quantité >= MOQ
+    const minQty = item.minQuantity || getMinQuantity(item.price);
+    
+    if (item.quantity < minQty) {
+      toast.error(`Quantité minimum de ${minQty} pièces requise pour ce produit`, {
+        duration: 4000,
+        position: "top-center",
+      });
+      return;
+    }
+
+    const newItem = {
+      ...item,
+      weight: item.weight || 0.5,
+      variantKey,
+      shippingMode: item.shippingMode || shippingMode,
+      minQuantity: minQty,
+    };
+    const itemWithCosts = await updateItemWithCosts(newItem, newItem.shippingMode!);
+    setCart((prev) => [...prev, itemWithCosts]);
   };
 
-  const removeFromCart = (variantKey: string) => {
-    setCart((prev) => prev.filter((item) => item.variantKey !== variantKey));
-  };
-
+  // ============================================================
+  // ✅ UPDATE QUANTITY - CORRIGÉ
+  // ============================================================
   const updateQuantity = async (variantKey: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(variantKey);
@@ -336,8 +325,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const item = cart.find(i => i.variantKey === variantKey);
     if (!item) return;
 
-    // ✅ Vérifier MOQ global pour la nouvelle quantité (sans toast)
-    if (!checkGlobalMOQ(item.id, quantity)) {
+    // ✅ Vérifier que la nouvelle quantité ne descend pas en dessous du MOQ
+    const minQty = item.minQuantity || getMinQuantity(item.price);
+    if (quantity < minQty) {
+      toast.error(`Quantité minimum de ${minQty} pièces requise pour ce produit`, {
+        duration: 4000,
+        position: "top-center",
+      });
       return;
     }
 
@@ -349,6 +343,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setCart((prev) =>
       prev.map((i) => (i.variantKey === variantKey ? updatedItem : i))
     );
+  };
+
+  const removeFromCart = (variantKey: string) => {
+    setCart((prev) => prev.filter((item) => item.variantKey !== variantKey));
   };
 
   const updateShippingMode = async (variantKey: string, mode: ShippingMode) => {
