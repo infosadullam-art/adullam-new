@@ -271,17 +271,39 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // ============================================================
-  // ✅ ADD TO CART - CORRIGÉ
+  // ✅ ADD TO CART - MOQ GLOBAL (toutes variantes confondues)
   // ============================================================
   const addToCart = async (item: CartItem) => {
     const variantKey = item.variantKey || `${item.id}_${item.color || ''}_${item.eurSize || ''}`;
     const existingIndex = cart.findIndex((p) => p.variantKey === variantKey);
+    const minQty = item.minQuantity || getMinQuantity(item.price);
 
-    // 🔥 Si le produit existe déjà, on ajoute sans vérifier le MOQ
+    // Quantité déjà présente dans le panier pour ce PRODUIT (id),
+    // toutes variantes confondues, hors la variante en cours de modification
+    const otherVariantsTotal = cart.reduce((sum, p) => {
+      if (p.id === item.id && p.variantKey !== variantKey) {
+        return sum + p.quantity;
+      }
+      return sum;
+    }, 0);
+
     if (existingIndex >= 0) {
+      // La variante existe déjà : on ajoute la quantité demandée
       const existingItem = cart[existingIndex];
+      const newQuantity = existingItem.quantity + item.quantity;
+      const projectedTotal = otherVariantsTotal + newQuantity;
+
+      // ✅ MOQ global : le total du produit (toutes variantes) ne doit jamais descendre sous le MOQ
+      if (projectedTotal < minQty) {
+        toast.error(`Quantité minimum de ${minQty} pièces requise pour ce produit (toutes variantes confondues)`, {
+          duration: 4000,
+          position: "top-center",
+        });
+        return;
+      }
+
       const updatedItem = await updateItemWithCosts(
-        { ...existingItem, quantity: existingItem.quantity + item.quantity },
+        { ...existingItem, quantity: newQuantity },
         existingItem.shippingMode || shippingMode
       );
 
@@ -291,11 +313,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    // ✅ Si c'est un nouveau produit, vérifier que la quantité >= MOQ
-    const minQty = item.minQuantity || getMinQuantity(item.price);
-    
-    if (item.quantity < minQty) {
-      toast.error(`Quantité minimum de ${minQty} pièces requise pour ce produit`, {
+    // Nouvelle variante pour ce produit : vérifier le MOQ global
+    // (quantité déjà présente sur les autres variantes + nouvelle quantité)
+    const projectedTotal = otherVariantsTotal + item.quantity;
+
+    if (projectedTotal < minQty) {
+      toast.error(`Quantité minimum de ${minQty} pièces requise pour ce produit (toutes variantes confondues)`, {
         duration: 4000,
         position: "top-center",
       });
@@ -314,7 +337,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // ============================================================
-  // ✅ UPDATE QUANTITY - CORRIGÉ
+  // ✅ UPDATE QUANTITY - MOQ GLOBAL (toutes variantes confondues)
   // ============================================================
   const updateQuantity = async (variantKey: string, quantity: number) => {
     if (quantity <= 0) {
@@ -325,10 +348,22 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const item = cart.find(i => i.variantKey === variantKey);
     if (!item) return;
 
-    // ✅ Vérifier que la nouvelle quantité ne descend pas en dessous du MOQ
     const minQty = item.minQuantity || getMinQuantity(item.price);
-    if (quantity < minQty) {
-      toast.error(`Quantité minimum de ${minQty} pièces requise pour ce produit`, {
+
+    // Quantité présente sur les AUTRES variantes du même produit
+    const otherVariantsTotal = cart.reduce((sum, p) => {
+      if (p.id === item.id && p.variantKey !== variantKey) {
+        return sum + p.quantity;
+      }
+      return sum;
+    }, 0);
+
+    const projectedTotal = otherVariantsTotal + quantity;
+
+    // ✅ Le total du produit (toutes variantes) ne doit jamais descendre sous le MOQ.
+    // L'utilisateur peut monter au-dessus du MOQ librement, mais pas descendre en dessous.
+    if (projectedTotal < minQty) {
+      toast.error(`Quantité minimum de ${minQty} pièces requise pour ce produit (toutes variantes confondues)`, {
         duration: 4000,
         position: "top-center",
       });
