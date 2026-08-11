@@ -270,9 +270,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     };
   };
 
-  const checkMOQ = (item: CartItem, newQuantity: number): boolean => {
-    const minQty = item.minQuantity || getMinQuantity(item.price);
-    if (newQuantity < minQty) {
+  // ✅ VÉRIFICATION MOQ GLOBAL (par produit, toutes variantes confondues)
+  const checkGlobalMOQ = (productId: string, totalQuantity: number): boolean => {
+    const items = cart.filter(i => i.id === productId);
+    if (items.length === 0) return true;
+    
+    const minQty = items[0].minQuantity || getMinQuantity(items[0].price);
+    if (totalQuantity < minQty) {
       toast.error(`Quantité minimum de ${minQty} pièces requise pour ce produit`, {
         duration: 4000,
         position: "top-center",
@@ -285,6 +289,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const addToCart = async (item: CartItem) => {
     const minQty = item.minQuantity || getMinQuantity(item.price);
     
+    // ✅ MOQ individuel à l'ajout
     if (item.quantity < minQty) {
       toast.error(`Quantité minimum de ${minQty} pièces requise pour ce produit`, {
         duration: 4000,
@@ -296,16 +301,23 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const variantKey = item.variantKey || `${item.id}_${item.color || ''}_${item.eurSize || ''}`;
     const existingIndex = cart.findIndex((p) => p.variantKey === variantKey);
 
+    // Calculer la nouvelle quantité totale pour ce produit (toutes variantes)
+    let newTotalQuantity = item.quantity;
+    cart.forEach(i => {
+      if (i.id === item.id) {
+        newTotalQuantity += i.quantity;
+      }
+    });
+
+    // ✅ Vérifier MOQ global
+    if (!checkGlobalMOQ(item.id, newTotalQuantity)) {
+      return;
+    }
+
     if (existingIndex >= 0) {
       const existingItem = cart[existingIndex];
-      const newQuantity = existingItem.quantity + item.quantity;
-      
-      if (!checkMOQ(existingItem, newQuantity)) {
-        return;
-      }
-      
       const updatedItem = await updateItemWithCosts(
-        { ...existingItem, quantity: newQuantity },
+        { ...existingItem, quantity: existingItem.quantity + item.quantity },
         existingItem.shippingMode || shippingMode
       );
 
@@ -338,7 +350,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const item = cart.find(i => i.variantKey === variantKey);
     if (!item) return;
 
-    if (!checkMOQ(item, quantity)) {
+    // ✅ Vérifier MOQ global pour la nouvelle quantité
+    if (!checkGlobalMOQ(item.id, quantity)) {
       return;
     }
 
