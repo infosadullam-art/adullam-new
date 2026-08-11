@@ -904,13 +904,23 @@ export default function ProductPage() {
   }, [simpleVariantQuantities, complexSelections, simpleQuantity, product, minQuantity])
 
   // ============================================================
-  // FONCTIONS D'ACHAT - CORRIGÉES
+  // FONCTIONS D'ACHAT - CORRIGÉES (MOQ GLOBAL)
   // ============================================================
   const handleAddToCart = () => {
     const grandTotal = getGrandTotal()
-    // ✅ On ne vérifie plus le MOQ ici (c'est fait dans CartContext)
+    
+    // ✅ Vérification MOQ globale (toutes variantes confondues)
     if (!product || grandTotal === 0) {
       toast.error("Veuillez sélectionner des articles")
+      return
+    }
+
+    // ✅ Si grandTotal < minQuantity, bloquer l'ajout
+    if (grandTotal < minQuantity) {
+      toast.error(`Quantité minimum de ${minQuantity} pièces requise pour ce produit`, {
+        duration: 4000,
+        position: "top-center",
+      })
       return
     }
 
@@ -982,8 +992,18 @@ export default function ProductPage() {
 
   const handleBuyNow = () => {
     const grandTotal = getGrandTotal()
-    if (!isMOQMet || !product || grandTotal === 0) {
+    
+    // ✅ Vérification MOQ globale
+    if (!product || grandTotal === 0) {
       toast.error("Veuillez sélectionner des articles")
+      return
+    }
+
+    if (grandTotal < minQuantity) {
+      toast.error(`Quantité minimum de ${minQuantity} pièces requise pour ce produit`, {
+        duration: 4000,
+        position: "top-center",
+      })
       return
     }
 
