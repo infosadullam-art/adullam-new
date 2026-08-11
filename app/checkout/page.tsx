@@ -125,14 +125,25 @@ const getShippingLabel = (mode: string): string => {
 };
 
 // ============================================================
-// VÉRIFICATION DU PANIER AVANT PAIEMENT
+// VÉRIFICATION DU PANIER AVANT PAIEMENT (MOQ GLOBAL)
 // ============================================================
-function validateCartMOQ(cart: any[]): { valid: boolean; invalidItems: any[] } {
-  const invalidItems = cart.filter(item => {
+function validateCartMOQ(cart: any[]): { valid: boolean; invalidProducts: string[] } {
+  // ✅ Vérifier MOQ global par produit (toutes variantes confondues)
+  const productTotals = new Map<string, { total: number; name: string; minQty: number }>();
+  
+  cart.forEach(item => {
     const minQty = item.minQuantity || getMinQuantity(item.price);
-    return item.quantity < minQty;
+    if (!productTotals.has(item.id)) {
+      productTotals.set(item.id, { total: 0, name: item.name || "Produit", minQty });
+    }
+    productTotals.get(item.id)!.total += item.quantity;
   });
-  return { valid: invalidItems.length === 0, invalidItems };
+
+  const invalidProducts = Array.from(productTotals.entries())
+    .filter(([_, data]) => data.total < data.minQty)
+    .map(([id, data]) => data.name);
+
+  return { valid: invalidProducts.length === 0, invalidProducts };
 }
 
 export default function CheckoutPage() {
@@ -406,13 +417,12 @@ export default function CheckoutPage() {
     return firstName && lastName && email && phone && address && quartier && city;
   };
 
-  // ✅ VÉRIFICATION MOQ AVANT PAIEMENT
+  // ✅ VÉRIFICATION MOQ GLOBALE AVANT PAIEMENT
   const validateMOQBeforePayment = (): boolean => {
-    const { valid, invalidItems } = validateCartMOQ(cart);
+    const { valid, invalidProducts } = validateCartMOQ(cart);
     
     if (!valid) {
-      const productNames = invalidItems.map(item => item.name || "Produit").join(", ");
-      const errorMsg = `Quantité minimum non atteinte pour : ${productNames}`;
+      const errorMsg = `Quantité minimum non atteinte pour : ${invalidProducts.join(", ")}`;
       setError(errorMsg);
       toast.error(errorMsg, {
         duration: 5000,
