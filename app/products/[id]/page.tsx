@@ -118,6 +118,7 @@ export default function ProductPage() {
   const [selectedImage, setSelectedImage] = useState(0)
   const [activeTab, setActiveTab] = useState("description")
   const [showAllSpecs, setShowAllSpecs] = useState(false)
+  const [showFullDescription, setShowFullDescription] = useState(false)
   const [minQuantity, setMinQuantity] = useState(1)
   const [isMOQMet, setIsMOQMet] = useState(false)
   const { addToCart, addItemsToCart } = useCart()
@@ -1739,9 +1740,33 @@ export default function ProductPage() {
                 <div className="py-4">
                   {activeTab === "description" && (
                     <div className="space-y-3">
-                      <p className="text-sm text-muted-foreground leading-relaxed break-words">
-                        {product.description || product.cleanedDesc || "Description non disponible"}
-                      </p>
+                      {(() => {
+                        const fullText = product.description || product.cleanedDesc || "Description non disponible"
+                        const charLimit = 280
+                        const isLong = fullText.length > charLimit
+                        const displayText =
+                          isLong && !showFullDescription ? `${fullText.slice(0, charLimit).trim()}…` : fullText
+
+                        return (
+                          <>
+                            <p className="text-sm text-muted-foreground leading-relaxed break-words whitespace-pre-line">
+                              {displayText}
+                            </p>
+                            {isLong && (
+                              <button
+                                onClick={() => setShowFullDescription((prev) => !prev)}
+                                className="text-xs font-medium flex items-center gap-1"
+                                style={{ color: brandColor }}
+                              >
+                                {showFullDescription ? "Voir moins" : "Voir plus"}
+                                <ChevronDown
+                                  className={`w-3.5 h-3.5 transition-transform ${showFullDescription ? "rotate-180" : ""}`}
+                                />
+                              </button>
+                            )}
+                          </>
+                        )
+                      })()}
                       {product.features && product.features.length > 0 && (
                         <div className="mt-4 overflow-x-auto">
                           <h4 className="text-sm font-semibold text-foreground mb-2">Points forts :</h4>
@@ -2539,9 +2564,31 @@ export default function ProductPage() {
                 {activeTab === "description" && (
                   <div>
                     <h3 className="font-semibold mb-3 text-foreground">Description</h3>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {product.description || product.cleanedDesc || "Description non disponible"}
-                    </p>
+                    {(() => {
+                      const fullText = product.description || product.cleanedDesc || "Description non disponible"
+                      const charLimit = 500
+                      const isLong = fullText.length > charLimit
+                      const displayText =
+                        isLong && !showFullDescription ? `${fullText.slice(0, charLimit).trim()}…` : fullText
+
+                      return (
+                        <>
+                          <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{displayText}</p>
+                          {isLong && (
+                            <button
+                              onClick={() => setShowFullDescription((prev) => !prev)}
+                              className="mt-2 text-sm font-medium flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                              style={{ color: brandColor }}
+                            >
+                              {showFullDescription ? "Voir moins" : "Voir plus"}
+                              <ChevronDown
+                                className={`w-4 h-4 transition-transform ${showFullDescription ? "rotate-180" : ""}`}
+                              />
+                            </button>
+                          )}
+                        </>
+                      )
+                    })()}
                     {product.features && product.features.length > 0 && (
                       <div className="mt-6 overflow-x-auto">
                         <h3 className="font-semibold mb-3 text-foreground">Caractéristiques principales</h3>
