@@ -474,7 +474,7 @@ export default function ProductPage() {
       try {
         const params = new URLSearchParams({
           productId: product.id,
-          productTitle: product.title || product.name || "Produit",
+          productTitle: product.originalTitle || product.title || product.name || "Produit",
           productWeight: product.weight?.toString() || "",
           quantity: totalQuantity.toString(),
           country: country,
