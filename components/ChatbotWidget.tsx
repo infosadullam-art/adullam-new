@@ -1,6 +1,6 @@
 // components/ChatbotWidget.tsx
 // Bulle flottante du chatbot Adu
-// VENDEUR ULTIME - Version 6.4
+// VENDEUR ULTIME - Version 6.5
 // ✅ Support des tableaux Markdown (remark-gfm)
 // ✅ Détection automatique du pays et de la devise
 // Mode vocal, cartes produits, offres, compte à rebours, scroll infini, COUPONS 🎫
@@ -12,6 +12,9 @@
 // ✅ FIX : Compteur de vues produit réellement alimenté (déclenchement proactif)
 // ✅ FIX : Suppression de la détection d'offre dupliquée côté client — le
 //    serveur est l'unique source de vérité pour hésitation/offre/coupon.
+// ✅ FIX v6.5 : Restauration du coupon actif après refresh — le serveur
+//    (Redis, TTL calé sur expires_at) est l'unique source de vérité, plus
+//    besoin de localStorage. Le coupon survit désormais à un F5.
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import ReactMarkdown from 'react-markdown'
@@ -620,6 +623,21 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
             }
           })
           setMessages(loaded)
+        }
+
+        // ✅ Restauration du coupon actif après refresh — le serveur
+        // (Redis, TTL calé sur expires_at) est l'unique source de vérité.
+        // On ne recrée rien côté client, on affiche juste ce que le
+        // serveur nous dit être encore valide à cet instant.
+        if (data.active_coupon) {
+          const expiresAt = new Date(data.active_coupon.expires_at).getTime()
+          const remaining = Math.floor((expiresAt - Date.now()) / 1000)
+          if (remaining > 0) {
+            setActiveCoupon(data.active_coupon)
+            setShowCouponBanner(true)
+            setRemainingTime(remaining)
+            setTimeout(() => setCouponExpanded(true), 500)
+          }
         }
 
         const justClickedProduct = sessionStorage.getItem('just_clicked_product') === 'true'
