@@ -169,6 +169,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   const [showOfferBanner, setShowOfferBanner] = useState(false)
 
   const [activeCoupon, setActiveCoupon] = useState<any>(null)
+  // ✅ Choix à deux options (urgente/patiente) reçu du serveur — rien n'est
+  // créé en base tant que le client n'a pas cliqué un des deux boutons.
+  const [offerChoice, setOfferChoice] = useState<any>(null)
   const [showCouponBanner, setShowCouponBanner] = useState(false)
   const [couponExpanded, setCouponExpanded] = useState(false)
   const [couponPos, setCouponPos] = useState<{ x: number; y: number } | null>(null)
@@ -746,6 +749,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
               setShowCouponBanner(true)
               setRemainingTime((data.coupon.time_limit || 20) * 60)
               setTimeout(() => setCouponExpanded(true), 500)
+            }
+
+            // ✅ Choix à deux options — rien n'est créé en base tant que le
+            // client n'a pas cliqué. On affiche deux boutons plutôt que
+            // d'obliger à taper du texte.
+            if (data.offer_choice) {
+              setOfferChoice(data.offer_choice)
             }
           }
         } catch (error) {
@@ -1973,6 +1983,67 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                     </div>
                   </div>
                 ))}
+
+                {offerChoice && (
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    padding: '10px',
+                    borderRadius: '12px',
+                    background: 'var(--accent-light)',
+                    animation: 'fadeIn 0.3s ease-out',
+                  }}>
+                    <button
+                      onClick={() => {
+                        sendMessage(language === 'en' ? "I'll take the urgent offer, right now" : "Je prends l'offre rapide, maintenant")
+                        setOfferChoice(null)
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        border: '1px solid var(--accent)',
+                        background: 'var(--accent)',
+                        color: 'var(--accent-foreground)',
+                        fontSize: isMobile ? '11px' : '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <span>⚡ -{offerChoice.urgent?.discount}%</span>
+                      <span style={{ opacity: 0.85, fontWeight: 400 }}>
+                        {offerChoice.urgent?.time_limit_minutes} min
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        sendMessage(language === 'en' ? "I'd rather take my time" : "Je préfère prendre mon temps")
+                        setOfferChoice(null)
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        border: '1px solid var(--border)',
+                        background: 'var(--surface)',
+                        color: 'var(--foreground)',
+                        fontSize: isMobile ? '11px' : '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <span>🕐 -{offerChoice.patient?.discount}%</span>
+                      <span style={{ opacity: 0.7, fontWeight: 400 }}>
+                        {offerChoice.patient?.time_limit_minutes} min
+                      </span>
+                    </button>
+                  </div>
+                )}
 
                 {isTyping && (
                   <div style={{
