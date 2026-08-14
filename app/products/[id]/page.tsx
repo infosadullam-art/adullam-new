@@ -43,9 +43,6 @@ import { useAuth } from "@/lib/admin/auth-context"
 import { Loader } from "@/components/Loader"
 import { apiFetch } from "@/lib/api"
 
-// ============================================================
-// INTERFACE POUR LES AVIS CLIENTS
-// ============================================================
 interface CustomerReview {
   id: string
   authorName: string
@@ -56,9 +53,6 @@ interface CustomerReview {
   helpfulCount: number
 }
 
-// ============================================================
-// INTERFACE POUR LES DONNÉES DE L'API LOGISTIQUE
-// ============================================================
 interface ShippingOption {
   cost: number
   portePorteCost?: number
@@ -130,9 +124,6 @@ export default function ProductPage() {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false)
   const [isProtectionModalOpen, setIsProtectionModalOpen] = useState(false)
 
-  // ============================================================
-  // ÉTATS POUR LES AVIS CLIENTS
-  // ============================================================
   const [reviews, setReviews] = useState<CustomerReview[]>([])
   const [isLoadingReviews, setIsLoadingReviews] = useState(true)
   const [reviewsStats, setReviewsStats] = useState({
@@ -141,9 +132,6 @@ export default function ProductPage() {
     ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
   })
 
-  // ============================================================
-  // ÉTATS POUR LE FORMULAIRE D'AJOUT D'AVIS
-  // ============================================================
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [newReview, setNewReview] = useState({
     rating: 5,
@@ -152,16 +140,10 @@ export default function ProductPage() {
   })
   const [isSubmittingReview, setIsSubmittingReview] = useState(false)
 
-  // ============================================================
-  // ÉTATS POUR LES DONNÉES LOGISTIQUES
-  // ============================================================
   const [logisticsData, setLogisticsData] = useState<LogisticsData | null>(null)
   const [isLoadingLogistics, setIsLoadingLogistics] = useState(false)
   const [logisticsError, setLogisticsError] = useState<string | null>(null)
 
-  // ============================================================
-  // ÉTATS POUR LES VARIANTES
-  // ============================================================
   const [attributeGroups, setAttributeGroups] = useState<
     Record<
       string,
@@ -176,24 +158,19 @@ export default function ProductPage() {
 
   const [attributeImages, setAttributeImages] = useState<Record<string, string>>({})
 
-  // Pour les variantes simples (ex: seulement couleur)
   const [simpleVariantQuantities, setSimpleVariantQuantities] = useState<Record<string, number>>({})
   const [simpleVariantType, setSimpleVariantType] = useState<string>("")
 
-  // Pour les variantes multiples (ex: couleur + taille)
   const [complexSelections, setComplexSelections] = useState<Record<string, Record<string, number>>>({})
   const [primaryAttrName, setPrimaryAttrName] = useState<string>("")
   const [secondaryAttrName, setSecondaryAttrName] = useState<string>("")
 
-  // Pour les produits sans variantes
   const [simpleQuantity, setSimpleQuantity] = useState(1)
 
-  // Popup de sélection pour variantes simples
   const [isSimpleVariantModalOpen, setIsSimpleVariantModalOpen] = useState(false)
   const [selectedSimpleValue, setSelectedSimpleValue] = useState<string>("")
   const [simpleModalQuantity, setSimpleModalQuantity] = useState<number>(0)
 
-  // Popup de sélection pour variantes multiples
   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState<"primary" | "secondary">("primary")
   const [modalPrimaryValue, setModalPrimaryValue] = useState<string | null>(null)
@@ -201,26 +178,18 @@ export default function ProductPage() {
   const [modalQuantities, setModalQuantities] = useState<Record<string, number>>({})
   const [modalAttrName, setModalAttrName] = useState<string>("")
 
-  // ✅ AJOUT : État pour la quantité totale à envoyer à l'API
   const [totalQuantity, setTotalQuantity] = useState(1)
 
   const { formatPrice, getCurrencySymbol } = useCurrencyFormatter()
   const [product, setProduct] = useState<any>(null)
 
-  // Couleurs dynamiques
   const brandColor = "#D4372B"
   const brandGradient = "#D4372B"
   const accentColor = "#F5A623"
   const softBg = "#F4F4F4"
 
-  // ============================================================
-  // GESTION DES IMAGES
-  // ============================================================
   const [images, setImages] = useState<string[]>([])
 
-  // ============================================================
-  // CHARGEMENT DU PRODUIT
-  // ============================================================
   useEffect(() => {
     if (!id) return
     apiFetch(`/api/products/${id}`)
@@ -231,9 +200,6 @@ export default function ProductPage() {
       .catch((err) => console.error("Erreur produit", err))
   }, [id])
 
-  // ============================================================
-  // TRACKING VIEW SUR LA PAGE PRODUIT
-  // ============================================================
   const hasTrackedViewRef = useRef(false)
 
   useEffect(() => {
@@ -261,9 +227,6 @@ export default function ProductPage() {
     window.dispatchEvent(new CustomEvent("adullam:product-viewed", { detail: { productId: product.id } }))
   }, [product?.id])
 
-  // ============================================================
-  // CHARGEMENT DES AVIS CLIENTS
-  // ============================================================
   useEffect(() => {
     if (!product?.id) return
 
@@ -310,9 +273,6 @@ export default function ProductPage() {
     fetchReviews()
   }, [product?.id])
 
-  // ============================================================
-  // FONCTION POUR FORMATER LA DATE
-  // ============================================================
   const formatReviewDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString("fr-FR", {
@@ -322,9 +282,6 @@ export default function ProductPage() {
     })
   }
 
-  // ============================================================
-  // FONCTION POUR AJOUTER UN AVIS
-  // ============================================================
   const handleSubmitReview = async () => {
     if (!newReview.comment.trim()) {
       toast.error("Veuillez écrire un commentaire")
@@ -394,9 +351,6 @@ export default function ProductPage() {
     }
   }
 
-  // ============================================================
-  // VÉRIFICATION SI LE PRODUIT EST DANS LA WISHLIST
-  // ============================================================
   useEffect(() => {
     const checkWishlist = async () => {
       if (!user || !product) return
@@ -418,9 +372,6 @@ export default function ProductPage() {
     checkWishlist()
   }, [user, product])
 
-  // ============================================================
-  // FONCTION POUR AJOUTER/RETIRER DES FAVORIS
-  // ============================================================
   const handleToggleWishlist = async () => {
     if (!user) {
       router.push("/account?mode=login")
@@ -453,16 +404,13 @@ export default function ProductPage() {
     }
   }
 
-  // ============================================================
-  // MISE À JOUR DE LA QUANTITÉ TOTALE
-  // ============================================================
   useEffect(() => {
     const newTotal = getGrandTotal()
     setTotalQuantity(newTotal > 0 ? newTotal : 1)
   }, [simpleQuantity, simpleVariantQuantities, complexSelections])
 
   // ============================================================
-  // APPEL À L'API LOGISTIQUE
+  // APPEL À L'API LOGISTIQUE - ✅ CORRIGÉ : AJOUT productCategory
   // ============================================================
   useEffect(() => {
     if (!product || !country) return
@@ -476,6 +424,7 @@ export default function ProductPage() {
           productId: product.id,
           productTitle: product.title || product.name || "Produit",
           productWeight: product.weight?.toString() || "",
+          productCategory: product.category?.name || "",   // ✅ AJOUT
           quantity: totalQuantity.toString(),
           country: country,
         })
@@ -912,13 +861,11 @@ export default function ProductPage() {
   const handleAddToCart = () => {
     const grandTotal = getGrandTotal()
     
-    // ✅ Vérification MOQ globale (toutes variantes confondues)
     if (!product || grandTotal === 0) {
       toast.error("Veuillez sélectionner des articles")
       return
     }
 
-    // ✅ Si grandTotal < minQuantity, bloquer l'ajout
     if (grandTotal < minQuantity) {
       toast.error(`Quantité minimum de ${minQuantity} pièces requise pour ce produit`, {
         duration: 4000,
@@ -927,13 +874,6 @@ export default function ProductPage() {
       return
     }
 
-    // ✅ On construit le LOT complet d'abord, puis on l'envoie en une seule
-    // fois à addItemsToCart. Important : si on appelait addToCart séparément
-    // pour chaque variante, chaque appel vérifierait le MOQ isolément AVANT
-    // que les autres variantes du lot ne soient dans le panier, ce qui
-    // rejette à tort un lot pourtant valide dans son ensemble (ex: 3+4+5=12
-    // pièces pour un MOQ de 10, alors que 3, 4 et 5 pris séparément sont
-    // chacun < 10).
     const itemsToAdd: CartItem[] = []
 
     if (!product.variants || product.variants.length === 0) {
@@ -995,7 +935,6 @@ export default function ProductPage() {
       return
     }
 
-    // ✅ Un seul appel atomique : le MOQ est vérifié sur la somme du lot
     const result = addItemsToCart(itemsToAdd)
 
     if (result.success) {
@@ -1005,14 +944,11 @@ export default function ProductPage() {
         icon: "🛒",
       })
     }
-    // En cas d'échec, addItemsToCart affiche déjà le toast d'erreur MOQ —
-    // on ne montre donc pas de faux succès en parallèle.
   }
 
   const handleBuyNow = () => {
     const grandTotal = getGrandTotal()
     
-    // ✅ Vérification MOQ globale
     if (!product || grandTotal === 0) {
       toast.error("Veuillez sélectionner des articles")
       return
