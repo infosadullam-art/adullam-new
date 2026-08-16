@@ -847,6 +847,55 @@ export const reviewsApi = {
   },
 }
 
+// ------------------- Chat Feedback -------------------
+export interface ChatFeedbackItem {
+  id: string
+  identifier: string
+  sessionId: string
+  userId: string | null
+  feedbackType: string
+  sentiment: "positive" | "neutral" | "negative"
+  wouldRecommend: boolean | null
+  rating: number | null
+  rawMessage: string
+  createdAt: string
+  user: { name: string; email: string } | null
+}
+
+export interface ChatFeedbackStats {
+  total: number
+  positive: number
+  negative: number
+  neutral: number
+  satisfactionRate: number | null
+  recommendYes: number
+  recommendNo: number
+  recommendRate: number | null
+  avgRating: number | null
+  ratingCount: number
+}
+
+export interface ChatFeedbackFilters {
+  page?: number
+  limit?: number
+  sentiment?: string
+  type?: string
+}
+
+export const chatFeedbackApi = {
+  list: (
+    params?: ChatFeedbackFilters
+  ): Promise<{
+    success: boolean
+    items: ChatFeedbackItem[]
+    pagination: { page: number; limit: number; total: number; totalPages: number }
+    stats: ChatFeedbackStats
+  }> => {
+    devLog("🟡 [chatFeedbackApi] list", params)
+    return apiClient("/api/admin/chat-feedback", { params })
+  },
+}
+
 // ============================================================
 // ✅ EXPORT DES FONCTIONS DE TOKEN
 // ============================================================

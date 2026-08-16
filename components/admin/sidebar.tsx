@@ -32,7 +32,8 @@ import {
   // ✅ AJOUT : Icône pour Sourcing
   FileSearch,
   MessageCircle,
-  Clock
+  Clock,
+  Star
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/admin/auth-context"
@@ -74,6 +75,7 @@ const contentNavigation = [
   { name: "Videos", href: "/admin/dashboard/videos", icon: Video },
   { name: "Feed", href: "/admin/dashboard/feed", icon: Sparkles },
   { name: "Notifications", href: "/admin/dashboard/notifications", icon: Bell },
+  { name: "Chat Feedback", href: "/admin/dashboard/chat-feedback", icon: Star, badge: "New" },
 ]
 
 const iaNavigation = [
