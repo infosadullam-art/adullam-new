@@ -2,18 +2,15 @@
 
 /*
   ════════════════════════════════════════════════════════════════
-  AJOUT REFONTE — Provider de thème (clair / sombre / système).
+  AJOUT REFONTE — Provider de thème (clair / sombre).
   ----------------------------------------------------------------
-  Ceci est un AJOUT non-fonctionnel pour piloter la classe `.dark`
-  déjà présente dans globals.css. Il ne touche à aucune logique
-  métier existante (panier, locale, auth, API…). Sans dépendance
-  externe (pas de next-themes) pour rester autonome.
+  Suppression du mode "system" (Auto). Dark par défaut.
   ════════════════════════════════════════════════════════════════
 */
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react"
 
-type Theme = "light" | "dark" | "system"
+type Theme = "light" | "dark"
 type ResolvedTheme = "light" | "dark"
 
 const STORAGE_KEY = "adullam-theme"
@@ -27,11 +24,6 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined)
 
-function getSystemTheme(): ResolvedTheme {
-  if (typeof window === "undefined") return "light"
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-}
-
 function applyTheme(resolved: ResolvedTheme) {
   const root = document.documentElement
   root.classList.toggle("dark", resolved === "dark")
@@ -39,37 +31,25 @@ function applyTheme(resolved: ResolvedTheme) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system")
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light")
+  // 🔥 Dark par défaut
+  const [theme, setThemeState] = useState<Theme>("dark")
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("dark")
 
-  // Initialisation depuis localStorage / système au montage
+  // Initialisation depuis localStorage au montage
   useEffect(() => {
-    const stored = (localStorage.getItem(STORAGE_KEY) as Theme | null) ?? "system"
-    setThemeState(stored)
-    const resolved = stored === "system" ? getSystemTheme() : stored
-    setResolvedTheme(resolved)
-    applyTheme(resolved)
+    const stored = localStorage.getItem(STORAGE_KEY) as Theme | null
+    // Si stored est null ou invalide, on garde "dark"
+    const initialTheme = stored === "light" || stored === "dark" ? stored : "dark"
+    setThemeState(initialTheme)
+    setResolvedTheme(initialTheme)
+    applyTheme(initialTheme)
   }, [])
-
-  // Suivre les changements système quand on est en mode "system"
-  useEffect(() => {
-    if (theme !== "system") return
-    const mq = window.matchMedia("(prefers-color-scheme: dark)")
-    const onChange = () => {
-      const resolved = getSystemTheme()
-      setResolvedTheme(resolved)
-      applyTheme(resolved)
-    }
-    mq.addEventListener("change", onChange)
-    return () => mq.removeEventListener("change", onChange)
-  }, [theme])
 
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next)
     localStorage.setItem(STORAGE_KEY, next)
-    const resolved = next === "system" ? getSystemTheme() : next
-    setResolvedTheme(resolved)
-    applyTheme(resolved)
+    setResolvedTheme(next)
+    applyTheme(next)
   }, [])
 
   const toggleTheme = useCallback(() => {
@@ -86,10 +66,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 export function useTheme() {
   const ctx = useContext(ThemeContext)
   if (!ctx) {
-    // Repli sûr si le hook est utilisé hors provider (ne casse pas le rendu)
+    // Repli sûr si le hook est utilisé hors provider
     return {
-      theme: "system" as Theme,
-      resolvedTheme: "light" as ResolvedTheme,
+      theme: "dark" as Theme,
+      resolvedTheme: "dark" as ResolvedTheme,
       setTheme: () => {},
       toggleTheme: () => {},
     }
@@ -104,8 +84,8 @@ export function useTheme() {
 export const themeNoFlashScript = `
 (function(){
   try {
-    var t = localStorage.getItem('${STORAGE_KEY}') || 'system';
-    var d = t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    var t = localStorage.getItem('${STORAGE_KEY}') || 'dark';
+    var d = t === 'dark';
     var r = document.documentElement;
     if (d) { r.classList.add('dark'); r.style.colorScheme = 'dark'; }
     else { r.classList.remove('dark'); r.style.colorScheme = 'light'; }

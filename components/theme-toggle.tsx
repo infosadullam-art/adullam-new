@@ -4,11 +4,11 @@
   ════════════════════════════════════════════════════════════════
   AJOUT REFONTE — Bouton de bascule de thème.
   Variante "icon" (compact, pour les barres) et "switch" (segmenté,
-  clair / auto / sombre). Purement présentationnel.
+  clair / sombre). Purement présentationnel.
   ════════════════════════════════════════════════════════════════
 */
 
-import { Moon, Sun, Monitor } from "lucide-react"
+import { Moon, Sun } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
 
 export function ThemeToggle({
@@ -21,9 +21,8 @@ export function ThemeToggle({
   const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme()
 
   if (variant === "switch") {
-    const options: { value: "light" | "system" | "dark"; icon: typeof Sun; label: string }[] = [
+    const options: { value: "light" | "dark"; icon: typeof Sun; label: string }[] = [
       { value: "light", icon: Sun, label: "Clair" },
-      { value: "system", icon: Monitor, label: "Auto" },
       { value: "dark", icon: Moon, label: "Sombre" },
     ]
     return (
