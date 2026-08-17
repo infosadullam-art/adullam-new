@@ -182,7 +182,7 @@ export default function CheckoutPage() {
   // États pour les coupons
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
-  const finalTotal = Math.max(0, grandTotalUSD - (discountAmount || 0));
+  const finalTotal = Math.max(0, grandTotalUSD - discountAmount);
 
   // Adresses
   const [addresses, setAddresses] = useState<any[]>([]);
@@ -443,16 +443,13 @@ export default function CheckoutPage() {
 
   const handleApplyCoupon = (coupon: any) => {
     setAppliedCoupon(coupon);
-    const discount = Number(coupon.discountAmount) || 0;
-    setDiscountAmount(discount);
+    setDiscountAmount(coupon.discountAmount);
     setError("");
-    toast.success(`Code promo "${coupon.code}" appliqué !`);
   };
 
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
     setDiscountAmount(0);
-    toast.success("Code promo retiré");
   };
 
   // ==================== LOADING ====================
@@ -534,6 +531,7 @@ export default function CheckoutPage() {
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                   className="lg:col-span-2 space-y-4"
                 >
+                  {/* ÉTAPE 1 - LIVRAISON Desktop */}
                   <div className={`rounded-xl border-0 p-4 lg:p-6 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
                     <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
                       <MapPin className="w-4 h-4" style={{ color: '#D4372B' }} />
@@ -792,6 +790,7 @@ export default function CheckoutPage() {
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                   className="lg:col-span-2 space-y-4"
                 >
+                  {/* ÉTAPE 2 - EXPÉDITION Desktop */}
                   <div className={`rounded-xl border-0 p-4 lg:p-6 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
                     <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
                       <Truck className="w-4 h-4" style={{ color: '#D4372B' }} />
@@ -913,6 +912,7 @@ export default function CheckoutPage() {
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                   className="lg:col-span-2 space-y-4"
                 >
+                  {/* ÉTAPE 3 - CONFIRMATION Desktop */}
                   <div className={`rounded-xl border-0 p-4 lg:p-6 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
                     <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>Confirmation</h2>
 
@@ -1101,6 +1101,7 @@ export default function CheckoutPage() {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
+                  {/* ÉTAPE 1 - LIVRAISON Mobile */}
                   <div className={`rounded-xl border-0 p-4 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
                     <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
                       <MapPin className="w-4 h-4" style={{ color: '#D4372B' }} />
@@ -1215,6 +1216,7 @@ export default function CheckoutPage() {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
+                  {/* ÉTAPE 2 - EXPÉDITION Mobile */}
                   <div className={`rounded-xl border-0 p-4 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
                     <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
                       <Truck className="w-4 h-4" style={{ color: '#D4372B' }} />
@@ -1325,6 +1327,7 @@ export default function CheckoutPage() {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
+                  {/* ÉTAPE 3 - CONFIRMATION Mobile */}
                   <div className={`rounded-xl border-0 p-4 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
                     <h2 className={`text-sm font-medium mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Confirmation</h2>
                     
