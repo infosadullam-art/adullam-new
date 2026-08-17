@@ -35,6 +35,7 @@ import { CouponInput } from "@/components/CouponInput";
 import { apiFetch } from "@/lib/api";
 import { useTheme } from "@/components/theme-provider";
 import { toast } from "react-hot-toast";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Couleurs dynamiques
 const brandColor = "#D4372B";
@@ -181,7 +182,7 @@ export default function CheckoutPage() {
   // États pour les coupons
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
-  const finalTotal = Math.max(0, grandTotalUSD - discountAmount);
+  const finalTotal = Math.max(0, grandTotalUSD - (discountAmount || 0));
 
   // Adresses
   const [addresses, setAddresses] = useState<any[]>([]);
@@ -442,13 +443,16 @@ export default function CheckoutPage() {
 
   const handleApplyCoupon = (coupon: any) => {
     setAppliedCoupon(coupon);
-    setDiscountAmount(coupon.discountAmount);
+    const discount = Number(coupon.discountAmount) || 0;
+    setDiscountAmount(discount);
     setError("");
+    toast.success(`Code promo "${coupon.code}" appliqué !`);
   };
 
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
     setDiscountAmount(0);
+    toast.success("Code promo retiré");
   };
 
   // ==================== LOADING ====================
@@ -519,456 +523,480 @@ export default function CheckoutPage() {
           {/* Layout Desktop: 2 colonnes */}
           <div className="hidden lg:flex flex-col lg:grid lg:grid-cols-3 gap-4 lg:gap-6">
             
-            <div className="lg:col-span-2 space-y-4">
-              
-              {/* ÉTAPE 1 - LIVRAISON Desktop */}
+            {/* Contenu avec animation - Desktop */}
+            <AnimatePresence mode="wait">
               {step === 1 && (
-                <div className={`rounded-xl border-0 p-4 lg:p-6 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
-                  <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
-                    <MapPin className="w-4 h-4" style={{ color: '#D4372B' }} />
-                    Adresse de livraison
-                  </h2>
+                <motion.div
+                  key="desktop-step1"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="lg:col-span-2 space-y-4"
+                >
+                  <div className={`rounded-xl border-0 p-4 lg:p-6 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
+                    <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
+                      <MapPin className="w-4 h-4" style={{ color: '#D4372B' }} />
+                      Adresse de livraison
+                    </h2>
 
-                  <div className="mb-3 lg:mb-4">
-                    <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Pays</label>
-                    <div className="relative" ref={countryDropdownRef}>
-                      <button
-                        type="button"
-                        onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                        className={`w-full px-3 py-2.5 flex items-center justify-between text-sm transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white" : "bg-[#F4F4F4] text-gray-900"}`}
-                      >
-                        <div className="flex items-center gap-2 truncate">
-                          <span>{selectedCountry.flag}</span>
-                          <span className="truncate">{selectedCountry.name}</span>
-                          <span className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"} hidden sm:inline`}>{selectedCountry.prefix}</span>
-                        </div>
-                        <ChevronRight className={`w-4 h-4 ${isDark ? "text-gray-500" : "text-gray-400"} transition-transform flex-shrink-0 ${isCountryDropdownOpen ? 'rotate-90' : ''}`} />
-                      </button>
+                    <div className="mb-3 lg:mb-4">
+                      <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Pays</label>
+                      <div className="relative" ref={countryDropdownRef}>
+                        <button
+                          type="button"
+                          onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
+                          className={`w-full px-3 py-2.5 flex items-center justify-between text-sm transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white" : "bg-[#F4F4F4] text-gray-900"}`}
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <span>{selectedCountry.flag}</span>
+                            <span className="truncate">{selectedCountry.name}</span>
+                            <span className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"} hidden sm:inline`}>{selectedCountry.prefix}</span>
+                          </div>
+                          <ChevronRight className={`w-4 h-4 ${isDark ? "text-gray-500" : "text-gray-400"} transition-transform flex-shrink-0 ${isCountryDropdownOpen ? 'rotate-90' : ''}`} />
+                        </button>
 
-                      {isCountryDropdownOpen && (
-                        <div className="absolute z-50 w-full mt-1 overflow-y-auto rounded-lg border-0" style={{ background: isDark ? '#1A1A1A' : '#fff', boxShadow: isDark ? '0 8px 30px rgba(0,0,0,0.5)' : '0 8px 30px rgba(0,0,0,0.08)', maxHeight: '240px' }}>
-                          {AFRICAN_COUNTRIES.map((country) => (
+                        {isCountryDropdownOpen && (
+                          <div className="absolute z-50 w-full mt-1 overflow-y-auto rounded-lg border-0" style={{ background: isDark ? '#1A1A1A' : '#fff', boxShadow: isDark ? '0 8px 30px rgba(0,0,0,0.5)' : '0 8px 30px rgba(0,0,0,0.08)', maxHeight: '240px' }}>
+                            {AFRICAN_COUNTRIES.map((country) => (
+                              <button
+                                key={country.code}
+                                onClick={() => handleCountryChange(country)}
+                                className={`w-full px-3 py-2 text-left flex items-center gap-2 text-sm border-b last:border-0 ${isDark ? "hover:bg-white/5 text-gray-300 border-gray-800" : "hover:bg-gray-50 text-gray-900 border-gray-100"}`}
+                              >
+                                <span>{country.flag}</span>
+                                <span className="flex-1 truncate">{country.name}</span>
+                                <span className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>{country.prefix}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {addresses.length > 0 && !showNewAddressForm && (
+                      <div className="mb-3 lg:mb-4">
+                        <label className={`block text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Adresse existante</label>
+                        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                          {addresses
+                            .filter(a => a.country === selectedCountry.code)
+                            .map((addr) => (
                             <button
-                              key={country.code}
-                              onClick={() => handleCountryChange(country)}
-                              className={`w-full px-3 py-2 text-left flex items-center gap-2 text-sm border-b last:border-0 ${isDark ? "hover:bg-white/5 text-gray-300 border-gray-800" : "hover:bg-gray-50 text-gray-900 border-gray-100"}`}
+                              key={addr.id}
+                              onClick={() => selectAddress(addr)}
+                              className={`w-full p-3 border rounded-lg text-left transition-all ${
+                                selectedAddressId === addr.id
+                                  ? 'border-[#D4372B] bg-[#D4372B]/5'
+                                  : isDark ? 'border-gray-800 hover:border-gray-700' : 'border-gray-100 hover:border-gray-200'
+                              }`}
                             >
-                              <span>{country.flag}</span>
-                              <span className="flex-1 truncate">{country.name}</span>
-                              <span className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>{country.prefix}</span>
+                              <div className="flex items-start gap-2">
+                                <div className={`mt-1 w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                                  selectedAddressId === addr.id
+                                    ? 'border-[#D4372B]'
+                                    : isDark ? 'border-gray-600' : 'border-gray-300'
+                                }`}>
+                                  {selectedAddressId === addr.id && (
+                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: brandColor }} />
+                                  )}
+                                </div>
+                                <div className="text-xs min-w-0 flex-1">
+                                  <p className={`font-medium truncate ${isDark ? "text-white" : "text-gray-900"}`}>{addr.firstName} {addr.lastName}</p>
+                                  <p className={`mt-0.5 truncate ${isDark ? "text-gray-400" : "text-gray-500"}`}>{addr.address}</p>
+                                  {addr.quartier && <p className={`truncate ${isDark ? "text-gray-400" : "text-gray-500"}`}>{addr.quartier}</p>}
+                                  <p className={`truncate ${isDark ? "text-gray-400" : "text-gray-500"}`}>{addr.city}</p>
+                                </div>
+                              </div>
                             </button>
                           ))}
                         </div>
-                      )}
-                    </div>
-                  </div>
+                        
+                        <div className="relative my-3 lg:my-4">
+                          <div className="absolute inset-0 flex items-center">
+                            <div className={`w-full border-t ${isDark ? "border-gray-800" : "border-gray-100"}`}></div>
+                          </div>
+                          <div className="relative flex justify-center text-xs">
+                            <span className={`px-2 ${isDark ? "bg-[#1A1A1A] text-gray-500" : "bg-white text-gray-400"}`}>ou</span>
+                          </div>
+                        </div>
 
-                  {addresses.length > 0 && !showNewAddressForm && (
-                    <div className="mb-3 lg:mb-4">
-                      <label className={`block text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Adresse existante</label>
-                      <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                        {addresses
-                          .filter(a => a.country === selectedCountry.code)
-                          .map((addr) => (
-                          <button
-                            key={addr.id}
-                            onClick={() => selectAddress(addr)}
-                            className={`w-full p-3 border rounded-lg text-left transition-all ${
-                              selectedAddressId === addr.id
-                                ? 'border-[#D4372B] bg-[#D4372B]/5'
-                                : isDark ? 'border-gray-800 hover:border-gray-700' : 'border-gray-100 hover:border-gray-200'
-                            }`}
+                        <button
+                          onClick={() => setShowNewAddressForm(true)}
+                          className={`w-full py-2 border border-dashed rounded-lg text-xs transition flex items-center justify-center gap-1 ${isDark ? "border-gray-700 text-gray-400 hover:border-gray-600 hover:text-gray-300" : "border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700"}`}
+                        >
+                          <Plus className="w-3 h-3" />
+                          Nouvelle adresse
+                        </button>
+                      </div>
+                    )}
+
+                    {(showNewAddressForm || addresses.length === 0) && (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-2 lg:gap-3">
+                          <div>
+                            <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Prénom</label>
+                            <input
+                              type="text"
+                              name="firstName"
+                              value={showNewAddressForm ? newAddress.firstName : shippingInfo.firstName}
+                              onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
+                              className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
+                              placeholder="Jean"
+                            />
+                          </div>
+                          <div>
+                            <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Nom</label>
+                            <input
+                              type="text"
+                              name="lastName"
+                              value={showNewAddressForm ? newAddress.lastName : shippingInfo.lastName}
+                              onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
+                              className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
+                              placeholder="Dupont"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Email</label>
+                          <input
+                            type="email"
+                            name="email"
+                            value={shippingInfo.email}
+                            onChange={handleInputChange}
+                            disabled={!showNewAddressForm}
+                            className={`w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4372B]/20 ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-gray-50 text-gray-900 border-0"}`}
+                            placeholder="jean@exemple.com"
+                          />
+                        </div>
+
+                        <div>
+                          <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Téléphone</label>
+                          <div className="flex">
+                            <span className={`inline-flex items-center px-3 rounded-l-lg text-xs ${isDark ? "bg-[#0A0A0A] text-gray-400" : "bg-gray-50 text-gray-600"}`}>
+                              {selectedCountry.prefix}
+                            </span>
+                            <input
+                              type="tel"
+                              name="phone"
+                              value={showNewAddressForm ? newAddress.phone : shippingInfo.phone}
+                              onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
+                              className={`flex-1 px-3 py-2.5 text-sm focus:outline-none rounded-r-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
+                              placeholder="01 23 45 67"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Adresse</label>
+                          <input
+                            type="text"
+                            name="address"
+                            value={showNewAddressForm ? newAddress.address : shippingInfo.address}
+                            onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
+                            className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
+                            placeholder="Rue, numéro"
+                          />
+                        </div>
+
+                        <div>
+                          <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Quartier</label>
+                          <input
+                            type="text"
+                            name="quartier"
+                            value={showNewAddressForm ? newAddress.quartier : shippingInfo.quartier}
+                            onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
+                            className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
+                            placeholder="Quartier / Zone"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 lg:gap-3">
+                          <div>
+                            <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Ville</label>
+                            <input
+                              type="text"
+                              name="city"
+                              value={showNewAddressForm ? newAddress.city : shippingInfo.city}
+                              onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
+                              className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
+                              placeholder="Ville"
+                            />
+                          </div>
+                          <div>
+                            <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Code postal</label>
+                            <input
+                              type="text"
+                              name="postalCode"
+                              value={showNewAddressForm ? newAddress.postalCode : shippingInfo.postalCode}
+                              onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
+                              className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
+                              placeholder="BP"
+                            />
+                          </div>
+                        </div>
+
+                        {showNewAddressForm && (
+                          <>
+                            <label className={`flex items-center gap-2 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+                              <input
+                                type="checkbox"
+                                name="isDefault"
+                                checked={newAddress.isDefault}
+                                onChange={handleNewAddressChange}
+                                className="w-3 h-3 rounded border-gray-300"
+                              />
+                              <span className="text-xs">Par défaut</span>
+                            </label>
+
+                            <div className="flex gap-2 pt-2">
+                              <button
+                                onClick={handleAddAddress}
+                                className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-lg transition-colors"
+                                style={{ background: '#D4372B' }}
+                              >
+                                Enregistrer
+                              </button>
+                              <button
+                                onClick={() => setShowNewAddressForm(false)}
+                                className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${isDark ? "border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
+                              >
+                                Annuler
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
+
+                    {!showNewAddressForm && (
+                      <button
+                        onClick={() => validateStep1() && setStep(2)}
+                        disabled={!validateStep1()}
+                        className="w-full mt-4 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-all disabled:opacity-50"
+                        style={{ background: '#D4372B' }}
+                      >
+                        Continuer
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+              
+              {step === 2 && (
+                <motion.div
+                  key="desktop-step2"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="lg:col-span-2 space-y-4"
+                >
+                  <div className={`rounded-xl border-0 p-4 lg:p-6 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
+                    <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
+                      <Truck className="w-4 h-4" style={{ color: '#D4372B' }} />
+                      Mode d'expédition par produit
+                    </h2>
+                    
+                    <p className={`text-xs mb-4 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                      Choisissez le mode d'expédition pour chaque article.
+                    </p>
+
+                    <div className="space-y-4">
+                      {cart.map((item) => {
+                        const isUpdating = updatingId === item.variantKey;
+                        const currentMode = item.shippingMode || defaultShippingMode;
+                        const minQty = item.minQuantity || getMinQuantity(item.price);
+                        const isBelowMOQ = item.quantity < minQty;
+                        
+                        return (
+                          <div 
+                            key={item.variantKey} 
+                            className={`rounded-lg p-3 border-0 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'} ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}
+                            style={isBelowMOQ ? { border: '1px solid #D4372B' } : {}}
                           >
-                            <div className="flex items-start gap-2">
-                              <div className={`mt-1 w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 ${
-                                selectedAddressId === addr.id
-                                  ? 'border-[#D4372B]'
-                                  : isDark ? 'border-gray-600' : 'border-gray-300'
-                              }`}>
-                                {selectedAddressId === addr.id && (
-                                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: brandColor }} />
+                            <div className="flex gap-3">
+                              <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border ${isDark ? "bg-[#1A1A1A] border-gray-800" : "bg-white border-gray-200"}`}>
+                                <Image
+                                  src={item.image || "/placeholder.svg"}
+                                  alt={item.name || "Produit"}
+                                  width={48}
+                                  height={48}
+                                  className="w-full h-full object-contain p-1"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-sm font-medium break-words leading-tight ${isDark ? "text-white" : "text-gray-900"}`}>
+                                  {item.name || "Produit"}
+                                </p>
+                                {(item.color || item.eurSize) && (
+                                  <p className={`text-xs mt-0.5 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                                    {item.color} {item.eurSize && `• Pointure ${item.eurSize}`}
+                                  </p>
+                                )}
+                                <p className={`text-xs mt-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}>Quantité: {item.quantity}</p>
+                                {isBelowMOQ && (
+                                  <span className="text-xs text-red-500 font-medium">⚠️ MOQ: {minQty} min</span>
                                 )}
                               </div>
-                              <div className="text-xs min-w-0 flex-1">
-                                <p className={`font-medium truncate ${isDark ? "text-white" : "text-gray-900"}`}>{addr.firstName} {addr.lastName}</p>
-                                <p className={`mt-0.5 truncate ${isDark ? "text-gray-400" : "text-gray-500"}`}>{addr.address}</p>
-                                {addr.quartier && <p className={`truncate ${isDark ? "text-gray-400" : "text-gray-500"}`}>{addr.quartier}</p>}
-                                <p className={`truncate ${isDark ? "text-gray-400" : "text-gray-500"}`}>{addr.city}</p>
+                              <div className="text-right flex-shrink-0">
+                                <p className="text-sm font-bold whitespace-nowrap" style={{ color: '#D4372B' }}>
+                                  {formatPrice(item.price * item.quantity)}
+                                </p>
                               </div>
                             </div>
+
+                            <div className="mt-3 pt-2 border-t" style={{ borderColor: isDark ? '#2A2A2A' : '#E5E5E5' }}>
+                              <span className={`text-xs mr-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Expédition:</span>
+                              <div className="flex gap-2 mt-1 flex-wrap">
+                                {SHIPPING_METHODS.map((method) => (
+                                  <button
+                                    key={method.id}
+                                    onClick={() => handleIndividualShippingChange(item.variantKey!, method.id as any)}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                                      currentMode === method.id
+                                        ? 'text-white'
+                                        : isDark ? 'bg-[#0A0A0A] border border-gray-700 text-gray-400 hover:border-gray-600' : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
+                                    }`}
+                                    style={currentMode === method.id ? { background: '#D4372B' } : {}}
+                                  >
+                                    {method.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t" style={{ borderColor: isDark ? '#2A2A2A' : '#E5E5E5' }}>
+                      <p className={`text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Appliquer le même mode à tous les articles:</p>
+                      <div className="flex gap-2 flex-wrap">
+                        {SHIPPING_METHODS.map((method) => (
+                          <button
+                            key={method.id}
+                            onClick={() => handleGlobalShippingChange(method.id as any)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${isDark ? "bg-[#0A0A0A] text-gray-300 hover:bg-white/5" : "bg-[#F4F4F4] text-gray-700 hover:bg-gray-200"}`}
+                          >
+                            {method.label}
                           </button>
                         ))}
                       </div>
-                      
-                      <div className="relative my-3 lg:my-4">
-                        <div className="absolute inset-0 flex items-center">
-                          <div className={`w-full border-t ${isDark ? "border-gray-800" : "border-gray-100"}`}></div>
-                        </div>
-                        <div className="relative flex justify-center text-xs">
-                          <span className={`px-2 ${isDark ? "bg-[#1A1A1A] text-gray-500" : "bg-white text-gray-400"}`}>ou</span>
-                        </div>
-                      </div>
+                    </div>
 
+                    <div className="flex gap-2 mt-4">
                       <button
-                        onClick={() => setShowNewAddressForm(true)}
-                        className={`w-full py-2 border border-dashed rounded-lg text-xs transition flex items-center justify-center gap-1 ${isDark ? "border-gray-700 text-gray-400 hover:border-gray-600 hover:text-gray-300" : "border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700"}`}
-                      >
-                        <Plus className="w-3 h-3" />
-                        Nouvelle adresse
-                      </button>
-                    </div>
-                  )}
-
-                  {(showNewAddressForm || addresses.length === 0) && (
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-2 lg:gap-3">
-                        <div>
-                          <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Prénom</label>
-                          <input
-                            type="text"
-                            name="firstName"
-                            value={showNewAddressForm ? newAddress.firstName : shippingInfo.firstName}
-                            onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                            className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
-                            placeholder="Jean"
-                          />
-                        </div>
-                        <div>
-                          <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Nom</label>
-                          <input
-                            type="text"
-                            name="lastName"
-                            value={showNewAddressForm ? newAddress.lastName : shippingInfo.lastName}
-                            onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                            className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
-                            placeholder="Dupont"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Email</label>
-                        <input
-                          type="email"
-                          name="email"
-                          value={shippingInfo.email}
-                          onChange={handleInputChange}
-                          disabled={!showNewAddressForm}
-                          className={`w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4372B]/20 ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-gray-50 text-gray-900 border-0"}`}
-                          placeholder="jean@exemple.com"
-                        />
-                      </div>
-
-                      <div>
-                        <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Téléphone</label>
-                        <div className="flex">
-                          <span className={`inline-flex items-center px-3 rounded-l-lg text-xs ${isDark ? "bg-[#0A0A0A] text-gray-400" : "bg-gray-50 text-gray-600"}`}>
-                            {selectedCountry.prefix}
-                          </span>
-                          <input
-                            type="tel"
-                            name="phone"
-                            value={showNewAddressForm ? newAddress.phone : shippingInfo.phone}
-                            onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                            className={`flex-1 px-3 py-2.5 text-sm focus:outline-none rounded-r-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
-                            placeholder="01 23 45 67"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Adresse</label>
-                        <input
-                          type="text"
-                          name="address"
-                          value={showNewAddressForm ? newAddress.address : shippingInfo.address}
-                          onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                          className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
-                          placeholder="Rue, numéro"
-                        />
-                      </div>
-
-                      <div>
-                        <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Quartier</label>
-                        <input
-                          type="text"
-                          name="quartier"
-                          value={showNewAddressForm ? newAddress.quartier : shippingInfo.quartier}
-                          onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                          className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
-                          placeholder="Quartier / Zone"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 lg:gap-3">
-                        <div>
-                          <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Ville</label>
-                          <input
-                            type="text"
-                            name="city"
-                            value={showNewAddressForm ? newAddress.city : shippingInfo.city}
-                            onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                            className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
-                            placeholder="Ville"
-                          />
-                        </div>
-                        <div>
-                          <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Code postal</label>
-                          <input
-                            type="text"
-                            name="postalCode"
-                            value={showNewAddressForm ? newAddress.postalCode : shippingInfo.postalCode}
-                            onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                            className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
-                            placeholder="BP"
-                          />
-                        </div>
-                      </div>
-
-                      {showNewAddressForm && (
-                        <>
-                          <label className={`flex items-center gap-2 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-                            <input
-                              type="checkbox"
-                              name="isDefault"
-                              checked={newAddress.isDefault}
-                              onChange={handleNewAddressChange}
-                              className="w-3 h-3 rounded border-gray-300"
-                            />
-                            <span className="text-xs">Par défaut</span>
-                          </label>
-
-                          <div className="flex gap-2 pt-2">
-                            <button
-                              onClick={handleAddAddress}
-                              className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-lg transition-colors"
-                              style={{ background: '#D4372B' }}
-                            >
-                              Enregistrer
-                            </button>
-                            <button
-                              onClick={() => setShowNewAddressForm(false)}
-                              className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${isDark ? "border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
-                            >
-                              Annuler
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )}
-
-                  {!showNewAddressForm && (
-                    <button
-                      onClick={() => validateStep1() && setStep(2)}
-                      disabled={!validateStep1()}
-                      className="w-full mt-4 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-all disabled:opacity-50"
-                      style={{ background: '#D4372B' }}
-                    >
-                      Continuer
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {/* ÉTAPE 2 - EXPÉDITION Desktop */}
-              {step === 2 && (
-                <div className={`rounded-xl border-0 p-4 lg:p-6 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
-                  <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
-                    <Truck className="w-4 h-4" style={{ color: '#D4372B' }} />
-                    Mode d'expédition par produit
-                  </h2>
-                  
-                  <p className={`text-xs mb-4 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                    Choisissez le mode d'expédition pour chaque article.
-                  </p>
-
-                  <div className="space-y-4">
-                    {cart.map((item) => {
-                      const isUpdating = updatingId === item.variantKey;
-                      const currentMode = item.shippingMode || defaultShippingMode;
-                      const minQty = item.minQuantity || getMinQuantity(item.price);
-                      const isBelowMOQ = item.quantity < minQty;
-                      
-                      return (
-                        <div 
-                          key={item.variantKey} 
-                          className={`rounded-lg p-3 border-0 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'} ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}
-                          style={isBelowMOQ ? { border: '1px solid #D4372B' } : {}}
-                        >
-                          <div className="flex gap-3">
-                            <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border ${isDark ? "bg-[#1A1A1A] border-gray-800" : "bg-white border-gray-200"}`}>
-                              <Image
-                                src={item.image || "/placeholder.svg"}
-                                alt={item.name || "Produit"}
-                                width={48}
-                                height={48}
-                                className="w-full h-full object-contain p-1"
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className={`text-sm font-medium break-words leading-tight ${isDark ? "text-white" : "text-gray-900"}`}>
-                                {item.name || "Produit"}
-                              </p>
-                              {(item.color || item.eurSize) && (
-                                <p className={`text-xs mt-0.5 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                                  {item.color} {item.eurSize && `• Pointure ${item.eurSize}`}
-                                </p>
-                              )}
-                              <p className={`text-xs mt-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}>Quantité: {item.quantity}</p>
-                              {isBelowMOQ && (
-                                <span className="text-xs text-red-500 font-medium">⚠️ MOQ: {minQty} min</span>
-                              )}
-                            </div>
-                            <div className="text-right flex-shrink-0">
-                              <p className="text-sm font-bold whitespace-nowrap" style={{ color: '#D4372B' }}>
-                                {formatPrice(item.price * item.quantity)}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="mt-3 pt-2 border-t" style={{ borderColor: isDark ? '#2A2A2A' : '#E5E5E5' }}>
-                            <span className={`text-xs mr-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Expédition:</span>
-                            <div className="flex gap-2 mt-1 flex-wrap">
-                              {SHIPPING_METHODS.map((method) => (
-                                <button
-                                  key={method.id}
-                                  onClick={() => handleIndividualShippingChange(item.variantKey!, method.id as any)}
-                                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                                    currentMode === method.id
-                                      ? 'text-white'
-                                      : isDark ? 'bg-[#0A0A0A] border border-gray-700 text-gray-400 hover:border-gray-600' : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
-                                  }`}
-                                  style={currentMode === method.id ? { background: '#D4372B' } : {}}
-                                >
-                                  {method.label}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t" style={{ borderColor: isDark ? '#2A2A2A' : '#E5E5E5' }}>
-                    <p className={`text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Appliquer le même mode à tous les articles:</p>
-                    <div className="flex gap-2 flex-wrap">
-                      {SHIPPING_METHODS.map((method) => (
-                        <button
-                          key={method.id}
-                          onClick={() => handleGlobalShippingChange(method.id as any)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${isDark ? "bg-[#0A0A0A] text-gray-300 hover:bg-white/5" : "bg-[#F4F4F4] text-gray-700 hover:bg-gray-200"}`}
-                        >
-                          {method.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 mt-4">
-                    <button
-                      onClick={() => setStep(1)}
-                      className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors ${isDark ? "border border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
-                    >
-                      Retour
-                    </button>
-                    <button
-                      onClick={() => setStep(3)}
-                      className="flex-1 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
-                      style={{ background: '#D4372B' }}
-                    >
-                      Continuer
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* ÉTAPE 3 - CONFIRMATION Desktop */}
-              {step === 3 && (
-                <div className={`rounded-xl border-0 p-4 lg:p-6 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
-                  <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>Confirmation</h2>
-
-                  {error && (
-                    <div className="mb-4 p-3 rounded-xl flex items-center gap-2 text-xs" style={{ background: isDark ? '#3A0A0A' : '#FFF0F0', border: isDark ? '0.5px solid #5A1A1A' : '0.5px solid #FECACA', color: '#D4372B' }}>
-                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                      <span>{error}</span>
-                    </div>
-                  )}
-
-                  <div className="space-y-3">
-                    <div className={`p-3 rounded-lg ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
-                      <div className="flex items-center gap-1 mb-2">
-                        <Home className="w-3 h-3" style={{ color: '#D4372B' }} />
-                        <span className={`text-xs font-medium ${isDark ? "text-white" : "text-gray-900"}`}>Livraison</span>
-                      </div>
-                      <p className={`text-xs leading-relaxed break-words ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-                        {shippingInfo.firstName} {shippingInfo.lastName}<br />
-                        {shippingInfo.address}<br />
-                        {shippingInfo.quartier && <>{shippingInfo.quartier}<br /></>}
-                        {shippingInfo.city}<br />
-                        {shippingInfo.phone}
-                      </p>
-                    </div>
-
-                    <div className={`p-3 rounded-lg ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
-                      <div className="space-y-1.5 text-xs">
-                        <div className="flex justify-between">
-                          <span className={isDark ? "text-gray-400" : "text-gray-500"}>Sous-total</span>
-                          <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalUSD)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className={isDark ? "text-gray-400" : "text-gray-500"}>Expédition</span>
-                          <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalShippingUSD)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className={isDark ? "text-gray-400" : "text-gray-500"}>Porte-à-porte</span>
-                          <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalPortePorteUSD)}</span>
-                        </div>
-                        {discountAmount > 0 && (
-                          <div className="flex justify-between text-green-600">
-                            <span>Réduction ({appliedCoupon?.code})</span>
-                            <span>- {formatPrice(discountAmount)}</span>
-                          </div>
-                        )}
-                        <div className={`border-t pt-1.5 mt-1.5 flex justify-between font-medium ${isDark ? "border-gray-800" : "border-gray-200"}`}>
-                          <span className={isDark ? "text-white" : "text-gray-900"}>Total</span>
-                          <span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <CouponInput
-                      onApply={handleApplyCoupon}
-                      onRemove={handleRemoveCoupon}
-                      appliedCoupon={appliedCoupon}
-                      cartTotal={grandTotalUSD}
-                      userId={user?.id}
-                    />
-
-                    <div className="flex gap-2 pt-2">
-                      <button
-                        onClick={() => setStep(2)}
+                        onClick={() => setStep(1)}
                         className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors ${isDark ? "border border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
                       >
                         Retour
                       </button>
-                      <PaymentButton
-                        email={shippingInfo.email || user?.email || ""}
-                        amount={finalTotal}
-                        orderId={lastOrderRef}
-                        couponCode={appliedCoupon?.code}
-                        couponDiscount={discountAmount}
-                        onError={handlePaymentError}
-                        beforePayment={validateMOQBeforePayment}
+                      <button
+                        onClick={() => setStep(3)}
+                        className="flex-1 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
+                        style={{ background: '#D4372B' }}
                       >
-                        Payer {formatPrice(finalTotal)}
-                      </PaymentButton>
+                        Continuer
+                      </button>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               )}
-            </div>
+              
+              {step === 3 && (
+                <motion.div
+                  key="desktop-step3"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="lg:col-span-2 space-y-4"
+                >
+                  <div className={`rounded-xl border-0 p-4 lg:p-6 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
+                    <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>Confirmation</h2>
+
+                    {error && (
+                      <div className="mb-4 p-3 rounded-xl flex items-center gap-2 text-xs" style={{ background: isDark ? '#3A0A0A' : '#FFF0F0', border: isDark ? '0.5px solid #5A1A1A' : '0.5px solid #FECACA', color: '#D4372B' }}>
+                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                        <span>{error}</span>
+                      </div>
+                    )}
+
+                    <div className="space-y-3">
+                      <div className={`p-3 rounded-lg ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
+                        <div className="flex items-center gap-1 mb-2">
+                          <Home className="w-3 h-3" style={{ color: '#D4372B' }} />
+                          <span className={`text-xs font-medium ${isDark ? "text-white" : "text-gray-900"}`}>Livraison</span>
+                        </div>
+                        <p className={`text-xs leading-relaxed break-words ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                          {shippingInfo.firstName} {shippingInfo.lastName}<br />
+                          {shippingInfo.address}<br />
+                          {shippingInfo.quartier && <>{shippingInfo.quartier}<br /></>}
+                          {shippingInfo.city}<br />
+                          {shippingInfo.phone}
+                        </p>
+                      </div>
+
+                      <div className={`p-3 rounded-lg ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
+                        <div className="space-y-1.5 text-xs">
+                          <div className="flex justify-between">
+                            <span className={isDark ? "text-gray-400" : "text-gray-500"}>Sous-total</span>
+                            <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalUSD)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className={isDark ? "text-gray-400" : "text-gray-500"}>Expédition</span>
+                            <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalShippingUSD)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className={isDark ? "text-gray-400" : "text-gray-500"}>Porte-à-porte</span>
+                            <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalPortePorteUSD)}</span>
+                          </div>
+                          {discountAmount > 0 && (
+                            <div className="flex justify-between text-green-600">
+                              <span>Réduction ({appliedCoupon?.code})</span>
+                              <span>- {formatPrice(discountAmount)}</span>
+                            </div>
+                          )}
+                          <div className={`border-t pt-1.5 mt-1.5 flex justify-between font-medium ${isDark ? "border-gray-800" : "border-gray-200"}`}>
+                            <span className={isDark ? "text-white" : "text-gray-900"}>Total</span>
+                            <span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <CouponInput
+                        onApply={handleApplyCoupon}
+                        onRemove={handleRemoveCoupon}
+                        appliedCoupon={appliedCoupon}
+                        cartTotal={grandTotalUSD}
+                        userId={user?.id}
+                      />
+
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          onClick={() => setStep(2)}
+                          className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors ${isDark ? "border border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
+                        >
+                          Retour
+                        </button>
+                        <PaymentButton
+                          email={shippingInfo.email || user?.email || ""}
+                          amount={finalTotal}
+                          orderId={lastOrderRef}
+                          couponCode={appliedCoupon?.code}
+                          couponDiscount={discountAmount}
+                          onError={handlePaymentError}
+                          beforePayment={validateMOQBeforePayment}
+                        >
+                          Payer {formatPrice(finalTotal)}
+                        </PaymentButton>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Desktop: Résumé à droite */}
             <div className="lg:col-span-1">
@@ -1062,120 +1090,131 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Layout Mobile */}
+          {/* Layout Mobile avec animation */}
           <div className="lg:hidden">
-            <div className="space-y-4">
-              
-              {/* ÉTAPE 1 - LIVRAISON Mobile */}
+            <AnimatePresence mode="wait">
               {step === 1 && (
-                <div className={`rounded-xl border-0 p-4 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
-                  <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
-                    <MapPin className="w-4 h-4" style={{ color: '#D4372B' }} />
-                    Adresse de livraison
-                  </h2>
+                <motion.div
+                  key="mobile-step1"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                >
+                  <div className={`rounded-xl border-0 p-4 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
+                    <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
+                      <MapPin className="w-4 h-4" style={{ color: '#D4372B' }} />
+                      Adresse de livraison
+                    </h2>
 
-                  <div className="mb-3">
-                    <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Pays</label>
-                    <div className="relative" ref={countryDropdownRef}>
-                      <button
-                        type="button"
-                        onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                        className={`w-full px-3 py-2 border rounded-lg flex items-center justify-between text-sm ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span>{selectedCountry.flag}</span>
-                          <span>{selectedCountry.name}</span>
-                        </div>
-                        <ChevronRight className={`w-4 h-4 ${isDark ? "text-gray-500" : "text-gray-400"} transition-transform ${isCountryDropdownOpen ? 'rotate-90' : ''}`} />
-                      </button>
-                      {isCountryDropdownOpen && (
-                        <div className={`absolute z-50 w-full mt-1 border rounded-lg shadow-lg max-h-60 overflow-y-auto ${isDark ? "bg-[#1A1A1A] border-gray-700" : "bg-white border-gray-200"}`}>
-                          {AFRICAN_COUNTRIES.map((country) => (
-                            <button
-                              key={country.code}
-                              onClick={() => handleCountryChange(country)}
-                              className={`w-full px-3 py-2 text-left flex items-center gap-2 text-sm border-b ${isDark ? "hover:bg-white/5 text-gray-300 border-gray-800" : "hover:bg-gray-50 text-gray-900 border-gray-100"}`}
-                            >
-                              <span>{country.flag}</span>
-                              <span>{country.name}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                    <div className="mb-3">
+                      <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Pays</label>
+                      <div className="relative" ref={countryDropdownRef}>
+                        <button
+                          type="button"
+                          onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
+                          className={`w-full px-3 py-2 border rounded-lg flex items-center justify-between text-sm ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span>{selectedCountry.flag}</span>
+                            <span>{selectedCountry.name}</span>
+                          </div>
+                          <ChevronRight className={`w-4 h-4 ${isDark ? "text-gray-500" : "text-gray-400"} transition-transform ${isCountryDropdownOpen ? 'rotate-90' : ''}`} />
+                        </button>
+                        {isCountryDropdownOpen && (
+                          <div className={`absolute z-50 w-full mt-1 border rounded-lg shadow-lg max-h-60 overflow-y-auto ${isDark ? "bg-[#1A1A1A] border-gray-700" : "bg-white border-gray-200"}`}>
+                            {AFRICAN_COUNTRIES.map((country) => (
+                              <button
+                                key={country.code}
+                                onClick={() => handleCountryChange(country)}
+                                className={`w-full px-3 py-2 text-left flex items-center gap-2 text-sm border-b ${isDark ? "hover:bg-white/5 text-gray-300 border-gray-800" : "hover:bg-gray-50 text-gray-900 border-gray-100"}`}
+                              >
+                                <span>{country.flag}</span>
+                                <span>{country.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
+
+                    {addresses.length > 0 && !showNewAddressForm ? (
+                      <div>
+                        <label className={`block text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Adresse existante</label>
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                          {addresses
+                            .filter(a => a.country === selectedCountry.code)
+                            .map((addr) => (
+                              <button
+                                key={addr.id}
+                                onClick={() => selectAddress(addr)}
+                                className={`w-full p-3 border rounded-lg text-left transition-all ${
+                                  selectedAddressId === addr.id
+                                    ? 'border-[#D4372B] bg-[#D4372B]/5'
+                                    : isDark ? 'border-gray-800' : 'border-gray-100'
+                                }`}
+                              >
+                                <div className="flex items-start gap-2">
+                                  <div className={`mt-1 w-4 h-4 rounded-full border flex items-center justify-center ${
+                                    selectedAddressId === addr.id ? 'border-[#D4372B]' : isDark ? 'border-gray-600' : 'border-gray-300'
+                                  }`}>
+                                    {selectedAddressId === addr.id && (
+                                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: brandColor }} />
+                                    )}
+                                  </div>
+                                  <div className={`text-xs flex-1 ${isDark ? "text-gray-300" : "text-gray-900"}`}>
+                                    <p className="font-medium">{addr.firstName} {addr.lastName}</p>
+                                    <p className={isDark ? "text-gray-400" : "text-gray-500"}>{addr.address}</p>
+                                    <p className={isDark ? "text-gray-400" : "text-gray-500"}>{addr.city}</p>
+                                  </div>
+                                </div>
+                              </button>
+                            ))}
+                        </div>
+                        <button
+                          onClick={() => setShowNewAddressForm(true)}
+                          className={`w-full mt-3 py-2 border border-dashed rounded-lg text-xs flex items-center justify-center gap-1 ${isDark ? "border-gray-700 text-gray-400 hover:border-gray-600" : "border-gray-200 text-gray-500 hover:border-gray-300"}`}
+                        >
+                          <Plus className="w-3 h-3" /> Nouvelle adresse
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-2">
+                          <input type="text" name="firstName" value={shippingInfo.firstName} onChange={handleInputChange} placeholder="Prénom" className={`px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
+                          <input type="text" name="lastName" value={shippingInfo.lastName} onChange={handleInputChange} placeholder="Nom" className={`px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
+                        </div>
+                        <input type="email" name="email" value={shippingInfo.email} onChange={handleInputChange} placeholder="Email" className={`w-full px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
+                        <input type="tel" name="phone" value={shippingInfo.phone} onChange={handleInputChange} placeholder="Téléphone" className={`w-full px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
+                        <input type="text" name="address" value={shippingInfo.address} onChange={handleInputChange} placeholder="Adresse" className={`w-full px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
+                        <input type="text" name="quartier" value={shippingInfo.quartier} onChange={handleInputChange} placeholder="Quartier" className={`w-full px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
+                        <div className="grid grid-cols-2 gap-2">
+                          <input type="text" name="city" value={shippingInfo.city} onChange={handleInputChange} placeholder="Ville" className={`px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
+                          <input type="text" name="postalCode" value={shippingInfo.postalCode} onChange={handleInputChange} placeholder="Code postal" className={`px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
+                        </div>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => validateStep1() && setStep(2)}
+                      disabled={!validateStep1()}
+                      className="w-full mt-4 py-2.5 text-sm font-medium text-white rounded-lg disabled:opacity-50"
+                      style={{ background: '#D4372B' }}
+                    >
+                      Continuer
+                    </button>
                   </div>
-
-                  {addresses.length > 0 && !showNewAddressForm ? (
-                    <div>
-                      <label className={`block text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Adresse existante</label>
-                      <div className="space-y-2 max-h-48 overflow-y-auto">
-                        {addresses
-                          .filter(a => a.country === selectedCountry.code)
-                          .map((addr) => (
-                            <button
-                              key={addr.id}
-                              onClick={() => selectAddress(addr)}
-                              className={`w-full p-3 border rounded-lg text-left transition-all ${
-                                selectedAddressId === addr.id
-                                  ? 'border-[#D4372B] bg-[#D4372B]/5'
-                                  : isDark ? 'border-gray-800' : 'border-gray-100'
-                              }`}
-                            >
-                              <div className="flex items-start gap-2">
-                                <div className={`mt-1 w-4 h-4 rounded-full border flex items-center justify-center ${
-                                  selectedAddressId === addr.id ? 'border-[#D4372B]' : isDark ? 'border-gray-600' : 'border-gray-300'
-                                }`}>
-                                  {selectedAddressId === addr.id && (
-                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: brandColor }} />
-                                  )}
-                                </div>
-                                <div className={`text-xs flex-1 ${isDark ? "text-gray-300" : "text-gray-900"}`}>
-                                  <p className="font-medium">{addr.firstName} {addr.lastName}</p>
-                                  <p className={isDark ? "text-gray-400" : "text-gray-500"}>{addr.address}</p>
-                                  <p className={isDark ? "text-gray-400" : "text-gray-500"}>{addr.city}</p>
-                                </div>
-                              </div>
-                            </button>
-                          ))}
-                      </div>
-                      <button
-                        onClick={() => setShowNewAddressForm(true)}
-                        className={`w-full mt-3 py-2 border border-dashed rounded-lg text-xs flex items-center justify-center gap-1 ${isDark ? "border-gray-700 text-gray-400 hover:border-gray-600" : "border-gray-200 text-gray-500 hover:border-gray-300"}`}
-                      >
-                        <Plus className="w-3 h-3" /> Nouvelle adresse
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-2">
-                        <input type="text" name="firstName" value={shippingInfo.firstName} onChange={handleInputChange} placeholder="Prénom" className={`px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
-                        <input type="text" name="lastName" value={shippingInfo.lastName} onChange={handleInputChange} placeholder="Nom" className={`px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
-                      </div>
-                      <input type="email" name="email" value={shippingInfo.email} onChange={handleInputChange} placeholder="Email" className={`w-full px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
-                      <input type="tel" name="phone" value={shippingInfo.phone} onChange={handleInputChange} placeholder="Téléphone" className={`w-full px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
-                      <input type="text" name="address" value={shippingInfo.address} onChange={handleInputChange} placeholder="Adresse" className={`w-full px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
-                      <input type="text" name="quartier" value={shippingInfo.quartier} onChange={handleInputChange} placeholder="Quartier" className={`w-full px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
-                      <div className="grid grid-cols-2 gap-2">
-                        <input type="text" name="city" value={shippingInfo.city} onChange={handleInputChange} placeholder="Ville" className={`px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
-                        <input type="text" name="postalCode" value={shippingInfo.postalCode} onChange={handleInputChange} placeholder="Code postal" className={`px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
-                      </div>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={() => validateStep1() && setStep(2)}
-                    disabled={!validateStep1()}
-                    className="w-full mt-4 py-2.5 text-sm font-medium text-white rounded-lg disabled:opacity-50"
-                    style={{ background: '#D4372B' }}
-                  >
-                    Continuer
-                  </button>
-                </div>
+                </motion.div>
               )}
-
-              {/* ÉTAPE 2 - EXPÉDITION Mobile */}
+              
               {step === 2 && (
-                <>
+                <motion.div
+                  key="mobile-step2"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                >
                   <div className={`rounded-xl border-0 p-4 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
                     <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
                       <Truck className="w-4 h-4" style={{ color: '#D4372B' }} />
@@ -1258,73 +1297,77 @@ export default function CheckoutPage() {
                         ))}
                       </div>
                     </div>
+
+                    <div className="flex gap-2 mt-4">
+                      <button
+                        onClick={() => setStep(1)}
+                        className={`flex-1 py-2.5 text-sm rounded-lg transition-colors ${isDark ? "border border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
+                      >
+                        Retour
+                      </button>
+                      <button
+                        onClick={() => setStep(3)}
+                        className="flex-1 py-2.5 text-sm font-medium text-white rounded-lg transition-colors"
+                        style={{ background: '#D4372B' }}
+                      >
+                        Continuer
+                      </button>
+                    </div>
                   </div>
-
+                </motion.div>
+              )}
+              
+              {step === 3 && (
+                <motion.div
+                  key="mobile-step3"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                >
                   <div className={`rounded-xl border-0 p-4 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
-                    <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
-                      <Truck className="w-4 h-4" style={{ color: '#D4372B' }} />
-                      Récapitulatif ({totalItems})
-                    </h2>
+                    <h2 className={`text-sm font-medium mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Confirmation</h2>
+                    
+                    {error && <div className={`mb-3 p-2 rounded-lg text-xs ${isDark ? "bg-[#3A0A0A] text-[#D4372B]" : "bg-red-50 text-red-600"}`}>{error}</div>}
+                    
+                    <div className="space-y-3">
+                      <div className={`p-3 rounded-lg ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
+                        <p className={`text-xs break-words ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                          {shippingInfo.firstName} {shippingInfo.lastName}<br />
+                          {shippingInfo.address}<br />
+                          {shippingInfo.quartier && <>{shippingInfo.quartier}<br /></>}
+                          {shippingInfo.city}<br />
+                          {shippingInfo.phone}
+                        </p>
+                      </div>
 
-                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                      {cart.map((item) => {
-                        const shippingMode = item.shippingMode || defaultShippingMode;
-                        const minQty = item.minQuantity || getMinQuantity(item.price);
-                        const isBelowMOQ = item.quantity < minQty;
-                        
-                        return (
-                          <div key={item.variantKey} className={`flex gap-2 pb-2 border-b ${isDark ? "border-gray-800" : "border-gray-100"}`}>
-                            <div className={`w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border ${isDark ? "bg-[#0A0A0A] border-gray-800" : "bg-gray-50 border-gray-200"}`}>
-                              <Image src={item.image || "/placeholder.svg"} alt="" width={40} height={40} className="w-full h-full object-contain p-1" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className={`text-xs font-medium break-words leading-tight ${isDark ? "text-white" : "text-gray-900"}`}>
-                                {item.name || "Produit"}
-                                {isBelowMOQ && (
-                                  <span className="ml-1 text-xs text-red-500">⚠️ MOQ</span>
-                                )}
-                              </p>
-                              <div className="flex justify-between items-center mt-1 flex-wrap gap-1">
-                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${isDark ? "bg-[#0A0A0A] text-gray-400" : "bg-gray-100 text-gray-500"}`}>
-                                  {getShippingLabel(shippingMode)}
-                                </span>
-                                <span className="text-xs font-medium whitespace-nowrap" style={{ color: '#D4372B' }}>
-                                  {formatPrice(item.price * item.quantity)}
-                                </span>
-                              </div>
-                              <p className={`text-[10px] ${isDark ? "text-gray-500" : "text-gray-400"}`}>x{item.quantity}</p>
-                            </div>
+                      <div className={`p-3 rounded-lg ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
+                        <div className="space-y-1.5 text-xs">
+                          <div className="flex justify-between">
+                            <span className={isDark ? "text-gray-400" : "text-gray-500"}>Sous-total</span>
+                            <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalUSD)}</span>
                           </div>
-                        );
-                      })}
-                    </div>
-
-                    <div className={`border-t mt-3 pt-3 space-y-1.5 ${isDark ? "border-gray-800" : "border-gray-100"}`}>
-                      <div className="flex justify-between text-xs">
-                        <span className={isDark ? "text-gray-400" : "text-gray-500"}>Sous-total</span>
-                        <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalUSD)}</span>
-                      </div>
-                      <div className="flex justify-between text-xs">
-                        <span className={isDark ? "text-gray-400" : "text-gray-500"}>Expédition</span>
-                        <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalShippingUSD)}</span>
-                      </div>
-                      <div className="flex justify-between text-xs">
-                        <span className={isDark ? "text-gray-400" : "text-gray-500"}>Porte-à-porte</span>
-                        <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalPortePorteUSD)}</span>
-                      </div>
-                      {discountAmount > 0 && (
-                        <div className="flex justify-between text-xs text-green-600">
-                          <span>Réduction ({appliedCoupon?.code})</span>
-                          <span>- {formatPrice(discountAmount)}</span>
+                          <div className="flex justify-between">
+                            <span className={isDark ? "text-gray-400" : "text-gray-500"}>Expédition</span>
+                            <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalShippingUSD)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className={isDark ? "text-gray-400" : "text-gray-500"}>Porte-à-porte</span>
+                            <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalPortePorteUSD)}</span>
+                          </div>
+                          {discountAmount > 0 && (
+                            <div className="flex justify-between text-xs text-green-600">
+                              <span>Réduction ({appliedCoupon?.code})</span>
+                              <span>- {formatPrice(discountAmount)}</span>
+                            </div>
+                          )}
+                          <div className={`flex justify-between font-bold pt-1 border-t ${isDark ? "border-gray-800" : "border-gray-200"}`}>
+                            <span className={isDark ? "text-white" : "text-gray-900"}>Total</span>
+                            <span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span>
+                          </div>
                         </div>
-                      )}
-                      <div className={`flex justify-between text-sm font-bold pt-1.5 border-t ${isDark ? "border-gray-800" : "border-gray-100"}`}>
-                        <span className={isDark ? "text-white" : "text-gray-900"}>Total</span>
-                        <span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span>
                       </div>
-                    </div>
 
-                    <div className="mt-3">
                       <CouponInput
                         onApply={handleApplyCoupon}
                         onRemove={handleRemoveCoupon}
@@ -1332,98 +1375,26 @@ export default function CheckoutPage() {
                         cartTotal={grandTotalUSD}
                         userId={user?.id}
                       />
-                    </div>
-                  </div>
 
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setStep(1)}
-                      className={`flex-1 py-2.5 text-sm rounded-lg transition-colors ${isDark ? "border border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
-                    >
-                      Retour
-                    </button>
-                    <button
-                      onClick={() => setStep(3)}
-                      className="flex-1 py-2.5 text-sm font-medium text-white rounded-lg transition-colors"
-                      style={{ background: '#D4372B' }}
-                    >
-                      Continuer
-                    </button>
-                  </div>
-                </>
-              )}
-
-              {/* ÉTAPE 3 - CONFIRMATION Mobile */}
-              {step === 3 && (
-                <div className={`rounded-xl border-0 p-4 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
-                  <h2 className={`text-sm font-medium mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Confirmation</h2>
-                  
-                  {error && <div className={`mb-3 p-2 rounded-lg text-xs ${isDark ? "bg-[#3A0A0A] text-[#D4372B]" : "bg-red-50 text-red-600"}`}>{error}</div>}
-                  
-                  <div className="space-y-3">
-                    <div className={`p-3 rounded-lg ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
-                      <p className={`text-xs break-words ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-                        {shippingInfo.firstName} {shippingInfo.lastName}<br />
-                        {shippingInfo.address}<br />
-                        {shippingInfo.quartier && <>{shippingInfo.quartier}<br /></>}
-                        {shippingInfo.city}<br />
-                        {shippingInfo.phone}
-                      </p>
-                    </div>
-
-                    <div className={`p-3 rounded-lg ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
-                      <div className="space-y-1.5 text-xs">
-                        <div className="flex justify-between">
-                          <span className={isDark ? "text-gray-400" : "text-gray-500"}>Sous-total</span>
-                          <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalUSD)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className={isDark ? "text-gray-400" : "text-gray-500"}>Expédition</span>
-                          <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalShippingUSD)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className={isDark ? "text-gray-400" : "text-gray-500"}>Porte-à-porte</span>
-                          <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalPortePorteUSD)}</span>
-                        </div>
-                        {discountAmount > 0 && (
-                          <div className="flex justify-between text-xs text-green-600">
-                            <span>Réduction ({appliedCoupon?.code})</span>
-                            <span>- {formatPrice(discountAmount)}</span>
-                          </div>
-                        )}
-                        <div className={`flex justify-between font-bold pt-1 border-t ${isDark ? "border-gray-800" : "border-gray-200"}`}>
-                          <span className={isDark ? "text-white" : "text-gray-900"}>Total</span>
-                          <span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span>
-                        </div>
+                      <div className="flex gap-2 pt-2">
+                        <button onClick={() => setStep(2)} className={`flex-1 py-2 text-sm rounded-lg ${isDark ? "border border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}>Retour</button>
+                        <PaymentButton
+                          email={shippingInfo.email || user?.email || ""}
+                          amount={finalTotal}
+                          orderId={lastOrderRef}
+                          couponCode={appliedCoupon?.code}
+                          couponDiscount={discountAmount}
+                          onError={handlePaymentError}
+                          beforePayment={validateMOQBeforePayment}
+                        >
+                          Payer {formatPrice(finalTotal)}
+                        </PaymentButton>
                       </div>
                     </div>
-
-                    <CouponInput
-                      onApply={handleApplyCoupon}
-                      onRemove={handleRemoveCoupon}
-                      appliedCoupon={appliedCoupon}
-                      cartTotal={grandTotalUSD}
-                      userId={user?.id}
-                    />
-
-                    <div className="flex gap-2 pt-2">
-                      <button onClick={() => setStep(2)} className={`flex-1 py-2 text-sm rounded-lg ${isDark ? "border border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}>Retour</button>
-                      <PaymentButton
-                        email={shippingInfo.email || user?.email || ""}
-                        amount={finalTotal}
-                        orderId={lastOrderRef}
-                        couponCode={appliedCoupon?.code}
-                        couponDiscount={discountAmount}
-                        onError={handlePaymentError}
-                        beforePayment={validateMOQBeforePayment}
-                      >
-                        Payer {formatPrice(finalTotal)}
-                      </PaymentButton>
-                    </div>
                   </div>
-                </div>
+                </motion.div>
               )}
-            </div>
+            </AnimatePresence>
           </div>
         </div>
       </main>
