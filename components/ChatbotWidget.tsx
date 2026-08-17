@@ -802,12 +802,15 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
 
     // ✅ Seule source de vérité pour l'affichage offre/coupon : ce que le
     // serveur a décidé et renvoyé dans `offer`. Aucune détection côté client.
+    // ✅ FIX : 'choice' n'a pas les champs discount_2/time_limit qu'attend
+    // l'ancien OfferBanner — ce type est géré séparément via offerChoice
+    // (deux boutons), jamais par cette branche.
     if (offer && offer.type === 'coupon' && offer.coupon) {
       setActiveCoupon(offer.coupon)
       setShowCouponBanner(true)
       setRemainingTime(offer.coupon.time_limit * 60)
       setTimeout(() => setCouponExpanded(true), 500)
-    } else if (offer && offer.type !== 'none') {
+    } else if (offer && offer.type !== 'none' && offer.type !== 'choice') {
       setActiveOffer(offer)
       setOfferTimer(offer.time_limit * 60)
       setShowOfferBanner(true)
@@ -1030,6 +1033,15 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
         // l'afficher correctement selon offer.type.
         const offer = data.offer || null
         addAssistantMessage(data.response, formattedProducts, offer)
+
+        // ✅ Choix à deux options — peut désormais arriver aussi via un
+        // message conversationnel normal (pas seulement le trigger
+        // proactif), depuis l'unification du système de coupon côté
+        // backend. Même mécanisme que dans le trigger : rien n'est créé
+        // en base tant que le client n'a pas cliqué un des deux boutons.
+        if (data.offer_choice) {
+          setOfferChoice(data.offer_choice)
+        }
 
         try {
           await fetch(`${API_BASE_URL}/api/track`, {
