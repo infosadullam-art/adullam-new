@@ -4,7 +4,7 @@
   ════════════════════════════════════════════════════════════════
   AJOUT REFONTE — Provider de thème (clair / sombre).
   ----------------------------------------------------------------
-  Suppression du mode "system" (Auto). Dark par défaut.
+  Dark par défaut sur desktop, Light par défaut sur mobile.
   ════════════════════════════════════════════════════════════════
 */
 
@@ -30,20 +30,49 @@ function applyTheme(resolved: ResolvedTheme) {
   root.style.colorScheme = resolved
 }
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // 🔥 Dark par défaut
-  const [theme, setThemeState] = useState<Theme>("dark")
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("dark")
+function getDefaultTheme(): Theme {
+  if (typeof window === "undefined") return "dark" // SSR fallback
+  const isMobile = window.innerWidth < 1024 // lg breakpoint
+  return isMobile ? "light" : "dark"
+}
 
-  // Initialisation depuis localStorage au montage
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setThemeState] = useState<Theme>(() => getDefaultTheme())
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => getDefaultTheme())
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Initialisation après montage (pour éviter les problèmes d'hydratation)
   useEffect(() => {
+    setIsMounted(true)
     const stored = localStorage.getItem(STORAGE_KEY) as Theme | null
-    // Si stored est null ou invalide, on garde "dark"
-    const initialTheme = stored === "light" || stored === "dark" ? stored : "dark"
+    const defaultTheme = getDefaultTheme()
+    const initialTheme = stored === "light" || stored === "dark" ? stored : defaultTheme
+    
     setThemeState(initialTheme)
     setResolvedTheme(initialTheme)
     applyTheme(initialTheme)
   }, [])
+
+  // Écouter le redimensionnement pour changer le thème par défaut
+  useEffect(() => {
+    if (!isMounted) return
+    
+    const handleResize = () => {
+      // Ne change le thème que si l'utilisateur n'a pas fait de choix explicite
+      const hasUserPreference = localStorage.getItem(STORAGE_KEY) !== null
+      if (hasUserPreference) return
+      
+      const defaultTheme = getDefaultTheme()
+      if (theme !== defaultTheme) {
+        setThemeState(defaultTheme)
+        setResolvedTheme(defaultTheme)
+        applyTheme(defaultTheme)
+      }
+    }
+    
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [isMounted, theme])
 
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next)
@@ -66,7 +95,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 export function useTheme() {
   const ctx = useContext(ThemeContext)
   if (!ctx) {
-    // Repli sûr si le hook est utilisé hors provider
     return {
       theme: "dark" as Theme,
       resolvedTheme: "dark" as ResolvedTheme,
@@ -84,8 +112,15 @@ export function useTheme() {
 export const themeNoFlashScript = `
 (function(){
   try {
-    var t = localStorage.getItem('${STORAGE_KEY}') || 'dark';
-    var d = t === 'dark';
+    var t = localStorage.getItem('${STORAGE_KEY}');
+    var isMobile = window.innerWidth < 1024;
+    var defaultTheme = isMobile ? 'light' : 'dark';
+    var d;
+    if (t === 'dark' || t === 'light') {
+      d = t === 'dark';
+    } else {
+      d = defaultTheme === 'dark';
+    }
     var r = document.documentElement;
     if (d) { r.classList.add('dark'); r.style.colorScheme = 'dark'; }
     else { r.classList.remove('dark'); r.style.colorScheme = 'light'; }
