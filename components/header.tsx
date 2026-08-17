@@ -25,6 +25,7 @@ export function Header() {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [headerHeight, setHeaderHeight] = useState(130)
 
   const [suggestionIndex, setSuggestionIndex] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
@@ -43,6 +44,16 @@ export function Header() {
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Mesurer la hauteur réelle du header
+  useEffect(() => {
+    if (mounted) {
+      const header = document.querySelector('header')
+      if (header) {
+        setHeaderHeight(header.offsetHeight)
+      }
+    }
+  }, [mounted])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -526,8 +537,13 @@ export function Header() {
         </div>
       </header>
 
-      {/* Espace compensatoire */}
-      <div className={`hidden lg:block transition-all duration-300 ${isHeaderCompact ? 'h-[56px]' : 'h-[130px]'}`} />
+      {/* Espace compensatoire - ajusté dynamiquement à la hauteur réelle du header */}
+      <div 
+        className={`hidden lg:block transition-all duration-300`}
+        style={{ 
+          height: isHeaderCompact ? '56px' : `${headerHeight}px`
+        }} 
+      />
       <div className="block lg:hidden h-[56px]" />
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
