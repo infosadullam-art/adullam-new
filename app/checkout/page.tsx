@@ -954,7 +954,7 @@ export default function CheckoutPage() {
                           </div>
                           {discountAmount > 0 && (
                             <div className="flex justify-between text-green-600">
-                              <span>Réduction ({appliedCoupon?.code})</span>
+                              <span>Réduction</span>
                               <span>- {formatPrice(discountAmount)}</span>
                             </div>
                           )}
@@ -1070,7 +1070,7 @@ export default function CheckoutPage() {
                   </div>
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-xs text-green-600">
-                      <span>Réduction ({appliedCoupon?.code})</span>
+                      <span>Réduction</span>
                       <span>- {formatPrice(discountAmount)}</span>
                     </div>
                   )}
@@ -1360,7 +1360,7 @@ export default function CheckoutPage() {
                           </div>
                           {discountAmount > 0 && (
                             <div className="flex justify-between text-xs text-green-600">
-                              <span>Réduction ({appliedCoupon?.code})</span>
+                              <span>Réduction</span>
                               <span>- {formatPrice(discountAmount)}</span>
                             </div>
                           )}
