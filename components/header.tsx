@@ -440,7 +440,21 @@ export function Header() {
                   </button>
                 )}
 
-                {/* 🔔 NOTIFICATIONS */}
+                {/* Panier */}
+                <button
+                  onClick={openCart}
+                  className="relative flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-white transition-colors hover:bg-accent-hover focus:outline-none"
+                >
+                  <ShoppingCart className="w-[18px] h-[18px]" />
+                  <span className="hidden text-sm font-semibold lg:inline">Panier</span>
+                  {cart.length > 0 && (
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-white tabular-nums">
+                      {cart.length}
+                    </span>
+                  )}
+                </button>
+
+                {/* 🔔 NOTIFICATIONS - Placé après le panier */}
                 <button
                   onClick={() => router.push("/notifications")}
                   className="relative flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-foreground transition-colors hover:border-border-strong focus:outline-none"
@@ -464,20 +478,6 @@ export function Header() {
                       }}
                     >
                       {unreadCount > 99 ? "99+" : unreadCount}
-                    </span>
-                  )}
-                </button>
-
-                {/* Panier */}
-                <button
-                  onClick={openCart}
-                  className="relative flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-white transition-colors hover:bg-accent-hover focus:outline-none"
-                >
-                  <ShoppingCart className="w-[18px] h-[18px]" />
-                  <span className="hidden text-sm font-semibold lg:inline">Panier</span>
-                  {cart.length > 0 && (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-white tabular-nums">
-                      {cart.length}
                     </span>
                   )}
                 </button>
@@ -526,8 +526,8 @@ export function Header() {
         </div>
       </header>
 
-      {/* Espace compensatoire - ajusté pour ne pas couper le contenu */}
-      <div className={`hidden lg:block transition-all duration-300 ${isHeaderCompact ? 'h-[56px]' : 'h-[160px]'}`} />
+      {/* Espace compensatoire - ajusté à 148px pour ne pas couper le contenu */}
+      <div className={`hidden lg:block transition-all duration-300 ${isHeaderCompact ? 'h-[56px]' : 'h-[148px]'}`} />
       <div className="block lg:hidden h-[56px]" />
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
