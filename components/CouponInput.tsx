@@ -48,7 +48,10 @@ export function CouponInput({
     setSuccess("");
 
     try {
-      const res = await fetch("/api/coupons/verify", {
+      // ✅ Utiliser l'URL absolue du serveur
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://www.adullamarket.com";
+      
+      const res = await fetch(`${API_URL}/api/coupons/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
@@ -70,7 +73,13 @@ export function CouponInput({
           computedDiscount = coupon.value
         }
         const finalCoupon = { ...coupon, discountAmount: computedDiscount }
-        setSuccess(`✅ -${coupon.value}% appliqué sur votre commande !`);
+        
+        // Afficher le bon message
+        if (coupon.type === 'PERCENTAGE') {
+          setSuccess(`✅ -${coupon.value}% appliqué sur votre commande !`);
+        } else {
+          setSuccess(`✅ -${formatPrice(coupon.value)} appliqué sur votre commande !`);
+        }
         onApply(finalCoupon);
         setCode("");
         setTimeout(() => setSuccess(""), 3000);
@@ -79,11 +88,22 @@ export function CouponInput({
         setTimeout(() => setError(""), 3000);
       }
     } catch (err) {
+      console.error("Erreur coupon:", err);
       setError("Erreur lors de la vérification");
       setTimeout(() => setError(""), 3000);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Fonction de formatage simple pour l'affichage
+  const formatPrice = (value: number) => {
+    return new Intl.NumberFormat('fr-FR', { 
+      style: 'currency', 
+      currency: 'XOF',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
   };
 
   if (appliedCoupon) {
@@ -98,7 +118,9 @@ export function CouponInput({
               {appliedCoupon.code}
             </span>
             <p className="text-xs text-green-600">
-              {appliedCoupon.discountDescription}
+              {appliedCoupon.discountDescription || (appliedCoupon.type === 'PERCENTAGE' 
+                ? `${appliedCoupon.value}% de réduction` 
+                : `${formatPrice(appliedCoupon.value)} de réduction`)}
             </p>
           </div>
         </div>
@@ -125,15 +147,14 @@ export function CouponInput({
             type="text"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
-            placeholder="EX: BIENVENUE10"
-            className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2B4F3C]/20 focus:border-[#2B4F3C] transition-all"
-            onKeyDown={(e) => e.key === "Enter" && handleApply()}
+            placeholder="EX: PROMO50"
+            className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4372B]/20 focus:border-[#D4372B] transition-all"
           />
         </div>
         <button
           onClick={handleApply}
           disabled={isLoading || !code.trim()}
-          className="px-4 py-2.5 text-sm font-medium text-white bg-[#2B4F3C] rounded-lg hover:bg-[#234232] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+          className="px-4 py-2.5 text-sm font-medium text-white bg-[#D4372B] rounded-lg hover:bg-[#B82E22] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
         >
           {isLoading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
