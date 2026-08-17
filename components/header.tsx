@@ -1,14 +1,14 @@
 "use client"
 
-import { ShoppingCart, ChevronDown, Search, User, Menu, X, LogOut, LogIn, UserPlus, ChevronRight } from "lucide-react"
+import { ShoppingCart, ChevronDown, Search, User, Menu, X, LogOut, LogIn, UserPlus, ChevronRight, Bell } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { useCart } from "@/context/CartContext"
 import { CartDrawer } from "@/components/cart/CartDrawer"
 import { useAuth } from "@/lib/admin/auth-context"
 import Link from "next/link"
-// AJOUT REFONTE — bascule de thème (présentation uniquement)
 import { ThemeToggle } from "@/components/theme-toggle"
+import { apiFetch } from "@/lib/api"
 
 const searchSuggestions = [
   "chaussure", "robe de soirée", "écouteur", "sac à main",
@@ -24,6 +24,7 @@ export function Header() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
 
   const [suggestionIndex, setSuggestionIndex] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
@@ -53,6 +54,35 @@ export function Header() {
     }, 2500)
     return () => clearInterval(interval)
   }, [])
+
+  // Notifications non lues
+  useEffect(() => {
+    if (!user) return
+
+    const fetchUnreadCount = async () => {
+      try {
+        const token = localStorage.getItem("adullam_token")
+        const res = await apiFetch("/api/notifications?unread=true&limit=1", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const data = await res.json()
+
+        if (data.success && data.data?.stats) {
+          setUnreadCount(data.data.stats.unread || 0)
+        } else if (data.data?.stats) {
+          setUnreadCount(data.data.stats.unread || 0)
+        } else if (data.stats) {
+          setUnreadCount(data.stats.unread || 0)
+        }
+      } catch (error) {
+        console.error("Erreur chargement notifs:", error)
+      }
+    }
+
+    fetchUnreadCount()
+    const interval = setInterval(fetchUnreadCount, 30000)
+    return () => clearInterval(interval)
+  }, [user])
 
   // Scroll avec hysteresis
   useEffect(() => {
@@ -208,7 +238,6 @@ export function Header() {
             <span className="overline text-white/55">
               Direct usine · Livraison Afrique · Mobile Money
             </span>
-            {/* AJOUT REFONTE — bascule de thème segmentée */}
             <ThemeToggle variant="switch" />
           </div>
         </div>
@@ -411,6 +440,35 @@ export function Header() {
                   </button>
                 )}
 
+                {/* 🔔 NOTIFICATIONS */}
+                <button
+                  onClick={() => router.push("/notifications")}
+                  className="relative flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-foreground transition-colors hover:border-border-strong focus:outline-none"
+                  aria-label="Notifications"
+                >
+                  <Bell className="w-[18px] h-[18px]" />
+                  {unreadCount > 0 && (
+                    <span
+                      className="absolute -top-1 -right-1 flex items-center justify-center tabular-nums"
+                      style={{
+                        minWidth: "18px",
+                        height: "18px",
+                        background: "var(--accent)",
+                        color: "#fff",
+                        fontSize: "9px",
+                        fontWeight: 700,
+                        borderRadius: "100px",
+                        padding: "0 5px",
+                        border: "2px solid var(--background)",
+                        lineHeight: 1,
+                      }}
+                    >
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Panier */}
                 <button
                   onClick={openCart}
                   className="relative flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-white transition-colors hover:bg-accent-hover focus:outline-none"
@@ -483,7 +541,6 @@ export function Header() {
                 adul<span className="text-accent">.</span>lam
               </span>
               <div className="flex items-center gap-2">
-                {/* AJOUT REFONTE — bascule de thème (mobile) */}
                 <ThemeToggle variant="icon" />
                 <button onClick={() => setMobileMenuOpen(false)} aria-label="Fermer" className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-foreground focus:outline-none">
                   <X className="w-5 h-5" />
