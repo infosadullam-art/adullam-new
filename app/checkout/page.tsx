@@ -147,6 +147,22 @@ function validateCartMOQ(cart: any[]): { valid: boolean; invalidProducts: string
   return { valid: invalidProducts.length === 0, invalidProducts };
 }
 
+// ✅ Totaux MOQ agrégés par produit (id), toutes variantes confondues.
+// Utilisé pour le badge visuel "⚠️ MOQ" : une ligne ne doit être signalée en
+// dessous du MOQ que si le TOTAL du produit (toutes couleurs/tailles
+// cumulées) est insuffisant, jamais sa propre quantité isolée.
+function getProductMOQTotals(cart: any[]): Map<string, { total: number; minQty: number }> {
+  const productTotals = new Map<string, { total: number; minQty: number }>();
+  cart.forEach((item) => {
+    const minQty = item.minQuantity || getMinQuantity(item.price);
+    if (!productTotals.has(item.id)) {
+      productTotals.set(item.id, { total: 0, minQty });
+    }
+    productTotals.get(item.id)!.total += item.quantity;
+  });
+  return productTotals;
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
@@ -168,6 +184,16 @@ export default function CheckoutPage() {
   
   const { country: userCountry, currency } = useLocale();
   const { formatPrice, getCurrencySymbol } = useCurrencyFormatter();
+
+  // ✅ Map des totaux MOQ agrégés par produit, recalculée à chaque rendu du
+  // panier — utilisée par le badge visuel aux trois endroits de la page
+  // (au lieu d'un calcul par ligne qui ignorait les autres variantes).
+  const productMOQTotals = getProductMOQTotals(cart);
+  const isProductBelowMOQ = (item: { id: string; price: number; minQuantity?: number }) => {
+    const data = productMOQTotals.get(item.id);
+    if (!data) return false;
+    return data.total < data.minQty;
+  };
 
   // États
   const [step, setStep] = useState(1);
@@ -806,7 +832,7 @@ export default function CheckoutPage() {
                         const isUpdating = updatingId === item.variantKey;
                         const currentMode = item.shippingMode || defaultShippingMode;
                         const minQty = item.minQuantity || getMinQuantity(item.price);
-                        const isBelowMOQ = item.quantity < minQty;
+                        const isBelowMOQ = isProductBelowMOQ(item);
                         
                         return (
                           <div 
@@ -1013,7 +1039,7 @@ export default function CheckoutPage() {
                       : item.name || "Produit";
                     const shippingMode = item.shippingMode || defaultShippingMode;
                     const minQty = item.minQuantity || getMinQuantity(item.price);
-                    const isBelowMOQ = item.quantity < minQty;
+                    const isBelowMOQ = isProductBelowMOQ(item);
                     
                     return (
                       <div key={item.variantKey} className={`flex gap-2 pb-2 border-b ${isDark ? "border-gray-800" : "border-gray-100"} last:border-0`}>
@@ -1232,7 +1258,7 @@ export default function CheckoutPage() {
                         const isUpdating = updatingId === item.variantKey;
                         const currentMode = item.shippingMode || defaultShippingMode;
                         const minQty = item.minQuantity || getMinQuantity(item.price);
-                        const isBelowMOQ = item.quantity < minQty;
+                        const isBelowMOQ = isProductBelowMOQ(item);
                         
                         return (
                           <div key={item.variantKey} className={`rounded-lg p-3 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'} ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}
