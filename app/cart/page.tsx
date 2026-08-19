@@ -79,6 +79,24 @@ export default function CartPage() {
 
   const totalWeight = cart.reduce((sum, item) => sum + (item.totalWeight || 0), 0)
 
+  // ✅ Totaux MOQ agrégés par produit (id), toutes variantes confondues.
+  // Utilisé pour le badge "⚠️ MOQ" à l'affichage : une ligne ne doit être
+  // signalée en dessous du MOQ que si le TOTAL du produit (toutes couleurs/
+  // tailles cumulées) est insuffisant, pas sa propre quantité isolée.
+  const productMOQTotals = new Map<string, { total: number; minQty: number }>()
+  cart.forEach((item) => {
+    const minQty = item.minQuantity || getMinQuantity(item.price)
+    if (!productMOQTotals.has(item.id)) {
+      productMOQTotals.set(item.id, { total: 0, minQty })
+    }
+    productMOQTotals.get(item.id)!.total += item.quantity
+  })
+  const isProductBelowMOQ = (item: { id: string; price: number; minQuantity?: number }) => {
+    const data = productMOQTotals.get(item.id)
+    if (!data) return false
+    return data.total < data.minQty
+  }
+
   const truncateTitle = (title: string, max = 60) => {
     if (!title) return "Produit"
     return title.length <= max ? title : title.substring(0, max) + "..."
@@ -191,7 +209,7 @@ export default function CartPage() {
                   const isUpdating = updatingId === item.variantKey
                   const currentMode = item.shippingMode || defaultShippingMode
                   const minQty = item.minQuantity || getMinQuantity(item.price)
-                  const isBelowMOQ = item.quantity < minQty
+                  const isBelowMOQ = isProductBelowMOQ(item)
 
                   return (
                     <div
@@ -251,11 +269,11 @@ export default function CartPage() {
                             {formatPrice(item.price)}
                           </p>
 
-                          {/* ⚠️ ALERTE MOQ */}
+                          {/* ⚠️ ALERTE MOQ (total produit, toutes variantes confondues) */}
                           {isBelowMOQ && (
                             <div className="mt-1.5 px-2 py-1 rounded-lg inline-flex items-center gap-1.5" style={{ background: "#FFF0F0", border: "0.5px solid #D4372B" }}>
                               <span style={{ fontSize: "9px", fontWeight: 700, color: "#D4372B", ...poppins }}>
-                                ⚠️ MOQ: {minQty} min
+                                ⚠️ MOQ: {minQty} min (total produit)
                               </span>
                             </div>
                           )}
@@ -391,7 +409,7 @@ export default function CartPage() {
                     </p>
                     {cart.map((item) => {
                       const minQty = item.minQuantity || getMinQuantity(item.price);
-                      const isBelowMOQ = item.quantity < minQty;
+                      const isBelowMOQ = isProductBelowMOQ(item);
                       return (
                         <div key={item.variantKey} className="flex justify-between py-1">
                           <span className="truncate" style={{ fontSize: "10px", color: isBelowMOQ ? "#D4372B" : "#AAAAAA", maxWidth: "160px", ...poppins }}>
