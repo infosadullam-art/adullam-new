@@ -65,6 +65,59 @@ function getMinQuantity(price: number): number {
 }
 
 // ============================================================
+// 📊 META TRACKING - AddToCart (Pixel + Conversions API)
+// Fonction hors composant : pas de dépendance à l'état React,
+// appelable depuis addToCart et addItemsToCart sans rien casser.
+// ============================================================
+function trackAddToCart(item: CartItem, quantity: number) {
+  if (typeof window === "undefined") return;
+
+  try {
+    const eventId =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `evt_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+    const value = item.price * quantity;
+
+    // 1️⃣ Pixel (navigateur) — même eventID que la CAPI pour dédup côté Meta
+    if ((window as any).fbq) {
+      (window as any).fbq(
+        "track",
+        "AddToCart",
+        {
+          content_ids: [item.id],
+          content_type: "product",
+          currency: "USD",
+          value,
+        },
+        { eventID: eventId }
+      );
+    }
+
+    // 2️⃣ Conversions API (serveur) — via le backend existant
+    apiFetch("/api/meta/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        eventName: "AddToCart",
+        eventId,
+        sourceUrl: window.location.href,
+        value,
+        currency: "USD",
+        contentIds: [item.id],
+        // TODO: brancher userEmail / userPhone / userId une fois la
+        // source de l'utilisateur connecté confirmée (ex: useAuth()).
+      }),
+    }).catch(() => {
+      // Non-bloquant : le tracking ne doit jamais casser l'UX panier
+    });
+  } catch {
+    // Non-bloquant
+  }
+}
+
+// ============================================================
 // SYNCHRONISATION SERVEUR
 // ============================================================
 function serverCartItemToCartItem(item: any): CartItem {
@@ -377,6 +430,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     // ✅ Commit synchrone unique de tout le lot accepté
     commitCart(nextCart);
 
+    // 📊 Meta tracking — un événement AddToCart par item du lot accepté
+    reservations.forEach(({ reservedItem }) => trackAddToCart(reservedItem, reservedItem.quantity));
+
     // Calcul des frais de livraison en arrière-plan pour chaque item du lot
     reservations.forEach(({ variantKey, reservedItem }) => {
       updateItemWithCosts(reservedItem, reservedItem.shippingMode || shippingMode).then((itemWithCosts) => {
@@ -451,6 +507,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       nextCart.push(reservedItem);
     }
     commitCart(nextCart);
+
+    // 📊 Meta tracking — Pixel + Conversions API (déduplication par eventId)
+    trackAddToCart(reservedItem, item.quantity);
 
     // Le calcul des frais de livraison (appel réseau) se fait ensuite,
     // sans bloquer ni fausser les vérifications MOQ des appels suivants.
