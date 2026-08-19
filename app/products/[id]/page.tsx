@@ -43,6 +43,9 @@ import { useAuth } from "@/lib/admin/auth-context"
 import { Loader } from "@/components/Loader"
 import { apiFetch } from "@/lib/api"
 
+// ============================================================
+// INTERFACE POUR LES AVIS CLIENTS
+// ============================================================
 interface CustomerReview {
   id: string
   authorName: string
@@ -53,6 +56,9 @@ interface CustomerReview {
   helpfulCount: number
 }
 
+// ============================================================
+// INTERFACE POUR LES DONNÉES DE L'API LOGISTIQUE
+// ============================================================
 interface ShippingOption {
   cost: number
   portePorteCost?: number
@@ -105,6 +111,161 @@ interface LogisticsData {
   }
 }
 
+// ============================================================
+// Parseur de description brute (souvent scrapée type "Label: valeur Label:
+// valeur ..." collés sans retour à la ligne). Extrait les paires clé/valeur
+// pour un rendu en tableau façon Alibaba, en isolant l'intro (avant la
+// première clé) et le reste (Contact Us / Company Profile / FAQ / etc.) qui
+// n'a pas de structure clé/valeur exploitable.
+// ============================================================
+const DESCRIPTION_SECTION_MARKERS = [
+  "Contact Us",
+  "Company Profile",
+  "Our Factory",
+  "Test Report",
+  "Product Shipping",
+  "Packaging",
+  "Package Details",
+  "After-sale",
+  "After Sale",
+  "About Us",
+  "Certifications",
+  "Warranty",
+  "FAQ",
+]
+
+// Libellés courants dans les fiches produits (Alibaba et similaires). Utiliser
+// une liste connue plutôt qu'une détection générique évite de fusionner par
+// erreur la fin d'une valeur avec le début du label suivant (ex: "China
+// Season:" au lieu de "Season:" seul) quand le texte brut n'a pas de
+// séparateur (retour à la ligne, point-virgule...) entre les champs.
+const KNOWN_DESCRIPTION_LABELS = [
+  "Place of Origin",
+  "Brand Name",
+  "Model Number",
+  "Output Product Name",
+  "Product Name",
+  "Application Fields",
+  "Applicable Industries",
+  "Domain of Application",
+  "Application",
+  "Midsole Material",
+  "Upper Material",
+  "Outsole Material",
+  "Lining Material",
+  "Sole Material",
+  "Outer Material",
+  "Inner Material",
+  "Raw Material",
+  "Fabric Type",
+  "Material",
+  "Item Weight",
+  "Package Weight",
+  "Net Weight",
+  "Gross Weight",
+  "Weight",
+  "Pattern Type",
+  "Closure Type",
+  "Item Type",
+  "Product Type",
+  "Age Group",
+  "Department Name",
+  "Style",
+  "Season",
+  "Gender",
+  "Feature",
+  "Function",
+  "Color",
+  "Colour",
+  "Size",
+  "Type",
+  "Rated Voltage",
+  "Voltage",
+  "Power",
+  "Capacity",
+  "Usage",
+  "Occasion",
+  "Warranty",
+  "Certification",
+  "Certificate",
+  "Supply Ability",
+  "Port",
+  "Payment Terms",
+  "Minimum Order Quantity",
+  "Packaging Details",
+  "Delivery Time",
+  "Origin",
+  "Heel Height",
+  "Keyword",
+  "Condition",
+  "Key Selling Points",
+  "After-sales Service",
+  "After Sale Service",
+  "Name",
+  "Brand",
+]
+
+const DESCRIPTION_LABEL_PATTERN = new RegExp(
+  "(?:^|\\s)(" +
+    KNOWN_DESCRIPTION_LABELS.slice()
+      .sort((a, b) => b.length - a.length)
+      .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+      .join("|") +
+    ")\\s*:\\s",
+  "gi"
+)
+
+function parseDescriptionSpecs(rawText: string): {
+  intro: string
+  specs: { label: string; value: string }[]
+  extra: string
+} {
+  if (!rawText) return { intro: "", specs: [], extra: "" }
+
+  DESCRIPTION_LABEL_PATTERN.lastIndex = 0
+  const matches: { label: string; start: number; end: number }[] = []
+  let m: RegExpExecArray | null
+  while ((m = DESCRIPTION_LABEL_PATTERN.exec(rawText)) !== null) {
+    const label = m[1]
+    const labelStart = m.index + m[0].indexOf(label)
+    const matchEnd = m.index + m[0].length
+    matches.push({ label: label.trim(), start: labelStart, end: matchEnd })
+  }
+
+  if (matches.length === 0) {
+    return { intro: rawText, specs: [], extra: "" }
+  }
+
+  const intro = rawText.slice(0, matches[0].start).trim()
+
+  // Coupure : premier marqueur de section connu (Contact Us, FAQ, ...) trouvé
+  // après le début du premier label, pour éviter qu'une valeur n'avale tout
+  // le reste du texte quand il n'y a plus de label reconnu après elle.
+  let cutoffIndex = rawText.length
+  const lowerText = rawText.toLowerCase()
+  DESCRIPTION_SECTION_MARKERS.forEach((marker) => {
+    const idx = lowerText.indexOf(marker.toLowerCase(), matches[0].start)
+    if (idx !== -1 && idx < cutoffIndex) {
+      cutoffIndex = idx
+    }
+  })
+
+  const specs: { label: string; value: string }[] = []
+  matches.forEach((match, i) => {
+    if (match.end >= cutoffIndex) return // label situé après la coupure : ignoré
+    const nextStart = i + 1 < matches.length ? matches[i + 1].start : cutoffIndex
+    const valueEnd = Math.min(nextStart, cutoffIndex)
+    const value = rawText.slice(match.end, valueEnd).trim()
+    if (value) {
+      specs.push({ label: match.label, value })
+    }
+  })
+
+  const extra = cutoffIndex < rawText.length ? rawText.slice(cutoffIndex).trim() : ""
+
+  return { intro, specs, extra }
+}
+
 export default function ProductPage() {
   const { id } = useParams()
   const router = useRouter()
@@ -124,6 +285,9 @@ export default function ProductPage() {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false)
   const [isProtectionModalOpen, setIsProtectionModalOpen] = useState(false)
 
+  // ============================================================
+  // ÉTATS POUR LES AVIS CLIENTS
+  // ============================================================
   const [reviews, setReviews] = useState<CustomerReview[]>([])
   const [isLoadingReviews, setIsLoadingReviews] = useState(true)
   const [reviewsStats, setReviewsStats] = useState({
@@ -132,6 +296,9 @@ export default function ProductPage() {
     ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
   })
 
+  // ============================================================
+  // ÉTATS POUR LE FORMULAIRE D'AJOUT D'AVIS
+  // ============================================================
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [newReview, setNewReview] = useState({
     rating: 5,
@@ -140,10 +307,16 @@ export default function ProductPage() {
   })
   const [isSubmittingReview, setIsSubmittingReview] = useState(false)
 
+  // ============================================================
+  // ÉTATS POUR LES DONNÉES LOGISTIQUES
+  // ============================================================
   const [logisticsData, setLogisticsData] = useState<LogisticsData | null>(null)
   const [isLoadingLogistics, setIsLoadingLogistics] = useState(false)
   const [logisticsError, setLogisticsError] = useState<string | null>(null)
 
+  // ============================================================
+  // ÉTATS POUR LES VARIANTES
+  // ============================================================
   const [attributeGroups, setAttributeGroups] = useState<
     Record<
       string,
@@ -158,19 +331,24 @@ export default function ProductPage() {
 
   const [attributeImages, setAttributeImages] = useState<Record<string, string>>({})
 
+  // Pour les variantes simples (ex: seulement couleur)
   const [simpleVariantQuantities, setSimpleVariantQuantities] = useState<Record<string, number>>({})
   const [simpleVariantType, setSimpleVariantType] = useState<string>("")
 
+  // Pour les variantes multiples (ex: couleur + taille)
   const [complexSelections, setComplexSelections] = useState<Record<string, Record<string, number>>>({})
   const [primaryAttrName, setPrimaryAttrName] = useState<string>("")
   const [secondaryAttrName, setSecondaryAttrName] = useState<string>("")
 
+  // Pour les produits sans variantes
   const [simpleQuantity, setSimpleQuantity] = useState(1)
 
+  // Popup de sélection pour variantes simples
   const [isSimpleVariantModalOpen, setIsSimpleVariantModalOpen] = useState(false)
   const [selectedSimpleValue, setSelectedSimpleValue] = useState<string>("")
   const [simpleModalQuantity, setSimpleModalQuantity] = useState<number>(0)
 
+  // Popup de sélection pour variantes multiples
   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState<"primary" | "secondary">("primary")
   const [modalPrimaryValue, setModalPrimaryValue] = useState<string | null>(null)
@@ -178,18 +356,26 @@ export default function ProductPage() {
   const [modalQuantities, setModalQuantities] = useState<Record<string, number>>({})
   const [modalAttrName, setModalAttrName] = useState<string>("")
 
+  // ✅ AJOUT : État pour la quantité totale à envoyer à l'API
   const [totalQuantity, setTotalQuantity] = useState(1)
 
   const { formatPrice, getCurrencySymbol } = useCurrencyFormatter()
   const [product, setProduct] = useState<any>(null)
 
+  // Couleurs dynamiques
   const brandColor = "#D4372B"
   const brandGradient = "#D4372B"
   const accentColor = "#F5A623"
   const softBg = "#F4F4F4"
 
+  // ============================================================
+  // GESTION DES IMAGES
+  // ============================================================
   const [images, setImages] = useState<string[]>([])
 
+  // ============================================================
+  // CHARGEMENT DU PRODUIT
+  // ============================================================
   useEffect(() => {
     if (!id) return
     apiFetch(`/api/products/${id}`)
@@ -200,6 +386,9 @@ export default function ProductPage() {
       .catch((err) => console.error("Erreur produit", err))
   }, [id])
 
+  // ============================================================
+  // TRACKING VIEW SUR LA PAGE PRODUIT
+  // ============================================================
   const hasTrackedViewRef = useRef(false)
 
   useEffect(() => {
@@ -227,6 +416,9 @@ export default function ProductPage() {
     window.dispatchEvent(new CustomEvent("adullam:product-viewed", { detail: { productId: product.id } }))
   }, [product?.id])
 
+  // ============================================================
+  // CHARGEMENT DES AVIS CLIENTS
+  // ============================================================
   useEffect(() => {
     if (!product?.id) return
 
@@ -273,6 +465,9 @@ export default function ProductPage() {
     fetchReviews()
   }, [product?.id])
 
+  // ============================================================
+  // FONCTION POUR FORMATER LA DATE
+  // ============================================================
   const formatReviewDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString("fr-FR", {
@@ -282,6 +477,9 @@ export default function ProductPage() {
     })
   }
 
+  // ============================================================
+  // FONCTION POUR AJOUTER UN AVIS
+  // ============================================================
   const handleSubmitReview = async () => {
     if (!newReview.comment.trim()) {
       toast.error("Veuillez écrire un commentaire")
@@ -351,6 +549,9 @@ export default function ProductPage() {
     }
   }
 
+  // ============================================================
+  // VÉRIFICATION SI LE PRODUIT EST DANS LA WISHLIST
+  // ============================================================
   useEffect(() => {
     const checkWishlist = async () => {
       if (!user || !product) return
@@ -372,6 +573,9 @@ export default function ProductPage() {
     checkWishlist()
   }, [user, product])
 
+  // ============================================================
+  // FONCTION POUR AJOUTER/RETIRER DES FAVORIS
+  // ============================================================
   const handleToggleWishlist = async () => {
     if (!user) {
       router.push("/account?mode=login")
@@ -404,13 +608,16 @@ export default function ProductPage() {
     }
   }
 
+  // ============================================================
+  // MISE À JOUR DE LA QUANTITÉ TOTALE
+  // ============================================================
   useEffect(() => {
     const newTotal = getGrandTotal()
     setTotalQuantity(newTotal > 0 ? newTotal : 1)
   }, [simpleQuantity, simpleVariantQuantities, complexSelections])
 
   // ============================================================
-  // APPEL À L'API LOGISTIQUE - ✅ CORRIGÉ : AJOUT productCategory
+  // APPEL À L'API LOGISTIQUE
   // ============================================================
   useEffect(() => {
     if (!product || !country) return
@@ -424,7 +631,6 @@ export default function ProductPage() {
           productId: product.id,
           productTitle: product.title || product.name || "Produit",
           productWeight: product.weight?.toString() || "",
-          productCategory: product.category?.name || "",   // ✅ AJOUT
           quantity: totalQuantity.toString(),
           country: country,
         })
@@ -861,11 +1067,13 @@ export default function ProductPage() {
   const handleAddToCart = () => {
     const grandTotal = getGrandTotal()
     
+    // ✅ Vérification MOQ globale (toutes variantes confondues)
     if (!product || grandTotal === 0) {
       toast.error("Veuillez sélectionner des articles")
       return
     }
 
+    // ✅ Si grandTotal < minQuantity, bloquer l'ajout
     if (grandTotal < minQuantity) {
       toast.error(`Quantité minimum de ${minQuantity} pièces requise pour ce produit`, {
         duration: 4000,
@@ -874,6 +1082,13 @@ export default function ProductPage() {
       return
     }
 
+    // ✅ On construit le LOT complet d'abord, puis on l'envoie en une seule
+    // fois à addItemsToCart. Important : si on appelait addToCart séparément
+    // pour chaque variante, chaque appel vérifierait le MOQ isolément AVANT
+    // que les autres variantes du lot ne soient dans le panier, ce qui
+    // rejette à tort un lot pourtant valide dans son ensemble (ex: 3+4+5=12
+    // pièces pour un MOQ de 10, alors que 3, 4 et 5 pris séparément sont
+    // chacun < 10).
     const itemsToAdd: CartItem[] = []
 
     if (!product.variants || product.variants.length === 0) {
@@ -935,6 +1150,7 @@ export default function ProductPage() {
       return
     }
 
+    // ✅ Un seul appel atomique : le MOQ est vérifié sur la somme du lot
     const result = addItemsToCart(itemsToAdd)
 
     if (result.success) {
@@ -944,11 +1160,14 @@ export default function ProductPage() {
         icon: "🛒",
       })
     }
+    // En cas d'échec, addItemsToCart affiche déjà le toast d'erreur MOQ —
+    // on ne montre donc pas de faux succès en parallèle.
   }
 
   const handleBuyNow = () => {
     const grandTotal = getGrandTotal()
     
+    // ✅ Vérification MOQ globale
     if (!product || grandTotal === 0) {
       toast.error("Veuillez sélectionner des articles")
       return
@@ -1678,27 +1897,76 @@ export default function ProductPage() {
                     <div className="space-y-3">
                       {(() => {
                         const fullText = product.description || product.cleanedDesc || "Description non disponible"
-                        const charLimit = 280
-                        const isLong = fullText.length > charLimit
-                        const displayText =
-                          isLong && !showFullDescription ? `${fullText.slice(0, charLimit).trim()}…` : fullText
+                        const { intro, specs, extra } = parseDescriptionSpecs(fullText)
+
+                        // Fallback : aucune paire clé/valeur détectée -> texte simple tronqué
+                        if (specs.length === 0) {
+                          const charLimit = 280
+                          const isLong = fullText.length > charLimit
+                          const displayText =
+                            isLong && !showFullDescription ? `${fullText.slice(0, charLimit).trim()}…` : fullText
+                          return (
+                            <>
+                              <p className="text-sm text-muted-foreground leading-relaxed break-words whitespace-pre-line">
+                                {displayText}
+                              </p>
+                              {isLong && (
+                                <button
+                                  onClick={() => setShowFullDescription((prev) => !prev)}
+                                  className="text-xs font-medium flex items-center gap-1"
+                                  style={{ color: brandColor }}
+                                >
+                                  {showFullDescription ? "Voir moins" : "Voir plus"}
+                                  <ChevronDown
+                                    className={`w-3.5 h-3.5 transition-transform ${showFullDescription ? "rotate-180" : ""}`}
+                                  />
+                                </button>
+                              )}
+                            </>
+                          )
+                        }
 
                         return (
                           <>
-                            <p className="text-sm text-muted-foreground leading-relaxed break-words whitespace-pre-line">
-                              {displayText}
-                            </p>
-                            {isLong && (
-                              <button
-                                onClick={() => setShowFullDescription((prev) => !prev)}
-                                className="text-xs font-medium flex items-center gap-1"
-                                style={{ color: brandColor }}
-                              >
-                                {showFullDescription ? "Voir moins" : "Voir plus"}
-                                <ChevronDown
-                                  className={`w-3.5 h-3.5 transition-transform ${showFullDescription ? "rotate-180" : ""}`}
-                                />
-                              </button>
+                            {intro && (
+                              <p className="text-sm text-muted-foreground leading-relaxed break-words whitespace-pre-line">
+                                {intro}
+                              </p>
+                            )}
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-xs border border-border rounded-lg overflow-hidden border-collapse">
+                                <tbody>
+                                  {specs.map((spec, i) => (
+                                    <tr key={i} className="border-b border-border last:border-b-0">
+                                      <td className="py-2.5 px-3 bg-muted/40 text-muted-foreground font-medium w-[38%] align-top border-r border-border">
+                                        {spec.label}
+                                      </td>
+                                      <td className="py-2.5 px-3 text-foreground break-words align-top">
+                                        {spec.value}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                            {extra && (
+                              <>
+                                {showFullDescription && (
+                                  <p className="text-sm text-muted-foreground leading-relaxed break-words whitespace-pre-line">
+                                    {extra}
+                                  </p>
+                                )}
+                                <button
+                                  onClick={() => setShowFullDescription((prev) => !prev)}
+                                  className="text-xs font-medium flex items-center gap-1"
+                                  style={{ color: brandColor }}
+                                >
+                                  {showFullDescription ? "Voir moins" : "Voir plus"}
+                                  <ChevronDown
+                                    className={`w-3.5 h-3.5 transition-transform ${showFullDescription ? "rotate-180" : ""}`}
+                                  />
+                                </button>
+                              </>
                             )}
                           </>
                         )
@@ -2502,25 +2770,70 @@ export default function ProductPage() {
                     <h3 className="font-semibold mb-3 text-foreground">Description</h3>
                     {(() => {
                       const fullText = product.description || product.cleanedDesc || "Description non disponible"
-                      const charLimit = 500
-                      const isLong = fullText.length > charLimit
-                      const displayText =
-                        isLong && !showFullDescription ? `${fullText.slice(0, charLimit).trim()}…` : fullText
+                      const { intro, specs, extra } = parseDescriptionSpecs(fullText)
+
+                      // Fallback : aucune paire clé/valeur détectée -> texte simple tronqué
+                      if (specs.length === 0) {
+                        const charLimit = 500
+                        const isLong = fullText.length > charLimit
+                        const displayText =
+                          isLong && !showFullDescription ? `${fullText.slice(0, charLimit).trim()}…` : fullText
+                        return (
+                          <>
+                            <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{displayText}</p>
+                            {isLong && (
+                              <button
+                                onClick={() => setShowFullDescription((prev) => !prev)}
+                                className="mt-2 text-sm font-medium flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                                style={{ color: brandColor }}
+                              >
+                                {showFullDescription ? "Voir moins" : "Voir plus"}
+                                <ChevronDown
+                                  className={`w-4 h-4 transition-transform ${showFullDescription ? "rotate-180" : ""}`}
+                                />
+                              </button>
+                            )}
+                          </>
+                        )
+                      }
 
                       return (
                         <>
-                          <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{displayText}</p>
-                          {isLong && (
-                            <button
-                              onClick={() => setShowFullDescription((prev) => !prev)}
-                              className="mt-2 text-sm font-medium flex items-center gap-1.5 hover:opacity-80 transition-opacity"
-                              style={{ color: brandColor }}
-                            >
-                              {showFullDescription ? "Voir moins" : "Voir plus"}
-                              <ChevronDown
-                                className={`w-4 h-4 transition-transform ${showFullDescription ? "rotate-180" : ""}`}
-                              />
-                            </button>
+                          {intro && <p className="text-muted-foreground leading-relaxed whitespace-pre-line mb-3">{intro}</p>}
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm border border-border rounded-lg overflow-hidden border-collapse">
+                              <tbody>
+                                {specs.map((spec, i) => (
+                                  <tr key={i} className="border-b border-border last:border-b-0">
+                                    <td className="py-2.5 px-4 bg-muted/40 text-muted-foreground font-medium w-1/3 align-top border-r border-border">
+                                      {spec.label}
+                                    </td>
+                                    <td className="py-2.5 px-4 text-foreground break-words align-top">
+                                      {spec.value}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          {extra && (
+                            <>
+                              {showFullDescription && (
+                                <p className="text-muted-foreground leading-relaxed whitespace-pre-line mt-3">
+                                  {extra}
+                                </p>
+                              )}
+                              <button
+                                onClick={() => setShowFullDescription((prev) => !prev)}
+                                className="mt-2 text-sm font-medium flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                                style={{ color: brandColor }}
+                              >
+                                {showFullDescription ? "Voir moins" : "Voir plus"}
+                                <ChevronDown
+                                  className={`w-4 h-4 transition-transform ${showFullDescription ? "rotate-180" : ""}`}
+                                />
+                              </button>
+                            </>
                           )}
                         </>
                       )
