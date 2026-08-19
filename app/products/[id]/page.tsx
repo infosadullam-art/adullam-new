@@ -215,6 +215,33 @@ const DESCRIPTION_LABEL_PATTERN = new RegExp(
   "gi"
 )
 
+// Détecte un contenu qui n'est en fait pas une vraie description, mais du
+// CSS/HTML brut mal nettoyé (résidu de scraping, ex: bloc "detail_decorate_root"
+// / classes ".magic-N{...}" utilisées par Alibaba pour la mise en page de la
+// fiche produit). Ce genre de contenu ne doit jamais être affiché tel quel.
+function isLikelyMarkupJunk(text: string): boolean {
+  if (!text) return false
+  if (/detail_decorate_root/i.test(text)) return true
+  // Plusieurs règles CSS type ".magic-12{...}" ou "#id{...}"
+  const cssRuleMatches = text.match(/[.#][\w-]+\s*\{[^}]*\}/g)
+  if (cssRuleMatches && cssRuleMatches.length >= 3) return true
+  // Forte densité de déclarations "propriete:valeur;" typiques du CSS inline
+  const cssPropMatches = text.match(/[a-z-]+:\s*[^;{}]+;/gi)
+  if (cssPropMatches && cssPropMatches.length >= 5) return true
+  return false
+}
+
+// Choisit la première source de description qui n'est pas du CSS/HTML brut
+// (product.description en priorité, sinon product.cleanedDesc), et retombe
+// sur un message par défaut si aucune des deux n'est exploitable.
+function getCleanDescriptionText(product: any): string {
+  const candidates = [product?.description, product?.cleanedDesc].filter(
+    (t: string | undefined) => typeof t === "string" && t.trim().length > 0
+  ) as string[]
+  const clean = candidates.find((t) => !isLikelyMarkupJunk(t))
+  return clean || "Description non disponible"
+}
+
 function parseDescriptionSpecs(rawText: string): {
   intro: string
   specs: { label: string; value: string }[]
@@ -1896,7 +1923,7 @@ export default function ProductPage() {
                   {activeTab === "description" && (
                     <div className="space-y-3">
                       {(() => {
-                        const fullText = product.description || product.cleanedDesc || "Description non disponible"
+                        const fullText = getCleanDescriptionText(product)
                         const { intro, specs, extra } = parseDescriptionSpecs(fullText)
 
                         // Fallback : aucune paire clé/valeur détectée -> texte simple tronqué
@@ -2769,7 +2796,7 @@ export default function ProductPage() {
                   <div>
                     <h3 className="font-semibold mb-3 text-foreground">Description</h3>
                     {(() => {
-                      const fullText = product.description || product.cleanedDesc || "Description non disponible"
+                      const fullText = getCleanDescriptionText(product)
                       const { intro, specs, extra } = parseDescriptionSpecs(fullText)
 
                       // Fallback : aucune paire clé/valeur détectée -> texte simple tronqué
