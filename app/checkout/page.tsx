@@ -299,6 +299,83 @@ export default function CheckoutPage() {
     }
   };
 
+  // ============================================================
+  // 🧾 CRÉATION DE LA COMMANDE (avant paiement)
+  // Une seule fois par session checkout — évite les doublons si
+  // l'utilisateur navigue entre les étapes plusieurs fois.
+  // ============================================================
+  const hasCreatedOrderRef = useRef(false);
+
+  const createOrderIfNeeded = async (): Promise<string | null> => {
+    if (hasCreatedOrderRef.current && lastOrderRef) return lastOrderRef;
+
+    try {
+      const token = localStorage.getItem('adullam_token');
+      const response = await apiFetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          items: cart.map((item) => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            color: item.color,
+            eurSize: item.eurSize,
+            variantKey: item.variantKey,
+            image: item.image,
+            weight: item.weight,
+            shippingMode: item.shippingMode || defaultShippingMode,
+            shippingCost: item.shippingCostUSD,
+            portePorteCost: item.portePorteCostUSD,
+          })),
+          shippingInfo: {
+            firstName: shippingInfo.firstName,
+            lastName: shippingInfo.lastName,
+            email: shippingInfo.email,
+            phone: shippingInfo.phone,
+            address: shippingInfo.address,
+            city: shippingInfo.city,
+            postalCode: shippingInfo.postalCode,
+            notes: shippingInfo.notes,
+          },
+          country: selectedCountry.code,
+          paymentMethod: 'MOBILE_MONEY',
+          totals: {
+            totalShipping: totalShippingUSD,
+            totalPortePorte: totalPortePorteUSD,
+            grandTotal: finalTotal,
+          },
+          defaultShippingMode,
+          deviceType: 'web',
+          locale: 'fr',
+          currency,
+        }),
+      });
+
+      const data = await response.json();
+
+      // ✅ successResponse() place les champs dans data.data — l'ID de la
+      // commande est data.data.orderId (pas data.data.id).
+      if (data.success && data.data?.orderId) {
+        setLastOrderRef(data.data.orderId);
+        hasCreatedOrderRef.current = true;
+        return data.data.orderId;
+      } else {
+        console.error('❌ Échec création commande:', data.error);
+        setError(data.error || 'Erreur lors de la création de la commande');
+        return null;
+      }
+    } catch (err) {
+      console.error('❌ Erreur création commande:', err);
+      setError('Erreur de connexion au serveur');
+      return null;
+    }
+  };
+
   // ==================== HOOKS ====================
 
   // Redirection si non connecté
@@ -967,7 +1044,11 @@ export default function CheckoutPage() {
                         Retour
                       </button>
                       <button
-                        onClick={() => { setStep(3); trackInitiateCheckout(); }}
+                        onClick={async () => {
+                          setStep(3);
+                          trackInitiateCheckout();
+                          await createOrderIfNeeded();
+                        }}
                         className="flex-1 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
                         style={{ background: '#D4372B' }}
                       >
@@ -1383,7 +1464,11 @@ export default function CheckoutPage() {
                         Retour
                       </button>
                       <button
-                        onClick={() => { setStep(3); trackInitiateCheckout(); }}
+                        onClick={async () => {
+                          setStep(3);
+                          trackInitiateCheckout();
+                          await createOrderIfNeeded();
+                        }}
                         className="flex-1 py-2.5 text-sm font-medium text-white rounded-lg transition-colors"
                         style={{ background: '#D4372B' }}
                       >

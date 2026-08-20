@@ -68,14 +68,38 @@ function PaymentCallbackContent() {
               ? 'Votre paiement par carte a été confirmé avec succès !'
               : 'Votre paiement Mobile Money a été confirmé avec succès !'
           );
-          
-          if (data.orderId || data.data?.metadata?.order_id) {
-            setOrderId(data.orderId || data.data?.metadata?.order_id);
+
+          // ✅ Récupérer l'orderId depuis la réponse (format successResponse)
+          const confirmedOrderId = data.orderId || data.data?.metadata?.order_id;
+          if (confirmedOrderId) {
+            setOrderId(confirmedOrderId);
           }
-          
+
+          // 📊 META TRACKING - Purchase (Pixel navigateur)
+          // Même eventId que côté serveur (confirm-order.ts) pour déduplication.
+          if (confirmedOrderId && typeof window !== "undefined" && (window as any).fbq) {
+            try {
+              (window as any).fbq(
+                "track",
+                "Purchase",
+                {
+                  currency: data.currency || data.data?.currency || "XOF",
+                  value: data.amount || data.data?.amount || 0,
+                },
+                { eventID: `purchase_${confirmedOrderId}` }
+              );
+              console.log(`📊 Purchase event envoyé pour la commande ${confirmedOrderId}`);
+            } catch (error) {
+              console.error('❌ Erreur tracking Purchase:', error);
+            }
+          }
+
+          // ✅ Redirection vers la page de succès avec l'orderId
+          // Utilisation de confirmedOrderId (variable locale) au lieu de orderId (state)
+          // pour éviter le bug de fermeture (closure) avec le state React.
           setTimeout(() => {
-            if (orderId) {
-              router.push(`/checkout/success?orderId=${orderId}`);
+            if (confirmedOrderId) {
+              router.push(`/checkout/success?orderId=${confirmedOrderId}`);
             } else {
               router.push('/account/orders');
             }
@@ -92,7 +116,9 @@ function PaymentCallbackContent() {
     };
 
     verifyPayment();
-  }, [searchParams, router, orderId]);
+    // ✅ Suppression de orderId des dépendances pour éviter les re-exécutions
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -118,6 +144,9 @@ function PaymentCallbackContent() {
             </div>
             <h2 className="text-xl font-semibold text-gray-800 mb-2">✅ Paiement confirmé !</h2>
             <p className="text-gray-500 mb-6">{message}</p>
+            {orderId && (
+              <p className="text-xs text-gray-400 mb-4">Commande #{orderId}</p>
+            )}
             <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span>Redirection en cours...</span>
