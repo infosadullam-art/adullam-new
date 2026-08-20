@@ -250,6 +250,55 @@ export default function CheckoutPage() {
     isDefault: false
   });
 
+  // ============================================================
+  // 📊 META TRACKING - InitiateCheckout (Pixel + Conversions API)
+  // ============================================================
+  const hasTrackedInitiateCheckoutRef = useRef(false);
+
+  const trackInitiateCheckout = () => {
+    if (typeof window === "undefined" || hasTrackedInitiateCheckoutRef.current) return;
+    hasTrackedInitiateCheckoutRef.current = true;
+
+    try {
+      const eventId =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `evt_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+      const contentIds = cart.map((item) => item.id);
+
+      if ((window as any).fbq) {
+        (window as any).fbq(
+          "track",
+          "InitiateCheckout",
+          {
+            content_ids: contentIds,
+            content_type: "product",
+            currency: "USD",
+            value: grandTotalUSD,
+            num_items: totalItems,
+          },
+          { eventID: eventId }
+        );
+      }
+
+      apiFetch("/api/meta/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventName: "InitiateCheckout",
+          eventId,
+          sourceUrl: window.location.href,
+          value: grandTotalUSD,
+          currency: "USD",
+          contentIds,
+        }),
+      }).catch(() => {});
+    } catch {
+      // Non-bloquant
+    }
+  };
+
   // ==================== HOOKS ====================
 
   // Redirection si non connecté
@@ -918,7 +967,7 @@ export default function CheckoutPage() {
                         Retour
                       </button>
                       <button
-                        onClick={() => setStep(3)}
+                        onClick={() => { setStep(3); trackInitiateCheckout(); }}
                         className="flex-1 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
                         style={{ background: '#D4372B' }}
                       >
@@ -1334,7 +1383,7 @@ export default function CheckoutPage() {
                         Retour
                       </button>
                       <button
-                        onClick={() => setStep(3)}
+                        onClick={() => { setStep(3); trackInitiateCheckout(); }}
                         className="flex-1 py-2.5 text-sm font-medium text-white rounded-lg transition-colors"
                         style={{ background: '#D4372B' }}
                       >
