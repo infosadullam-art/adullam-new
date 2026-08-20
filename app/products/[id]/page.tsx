@@ -441,6 +441,45 @@ export default function ProductPage() {
     }).catch(() => {})
 
     window.dispatchEvent(new CustomEvent("adullam:product-viewed", { detail: { productId: product.id } }))
+
+    // 📊 META TRACKING - ViewContent (Pixel + Conversions API)
+    if (typeof window !== "undefined") {
+      try {
+        const eventId =
+          typeof crypto !== "undefined" && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `evt_${Date.now()}_${Math.random().toString(36).slice(2)}`
+
+        if ((window as any).fbq) {
+          ;(window as any).fbq(
+            "track",
+            "ViewContent",
+            {
+              content_ids: [product.id],
+              content_type: "product",
+              currency: "USD",
+              value: product.price,
+            },
+            { eventID: eventId }
+          )
+        }
+
+        apiFetch("/api/meta/track", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            eventName: "ViewContent",
+            eventId,
+            sourceUrl: window.location.href,
+            value: product.price,
+            currency: "USD",
+            contentIds: [product.id],
+          }),
+        }).catch(() => {})
+      } catch {
+        // Non-bloquant
+      }
+    }
   }, [product?.id])
 
   // ============================================================
