@@ -185,7 +185,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   const dragYRef = useRef<{ startY: number; startOffset: number } | null>(null)
 
   // ✅ État pour recevoir les messages de la page produit
-  const [pendingProductFromPage, setPendingProductFromPage] = useState<any>(null)
+  // ✅ FIX : ref plutôt que state — un state lu dans sendMessage() (fonction
+  // non mémoïsée) capture une closure périmée quand sendMessage() est appelé
+  // via setTimeout juste après un setPendingProductFromPage() synchrone (cas
+  // du bouton "Nous contacter" sur MOQ non atteint). Une ref lit toujours la
+  // valeur à jour, peu importe quelle version de sendMessage l'appelle.
+  const pendingProductFromPageRef = useRef<any>(null)
 
   const messagesEndRef  = useRef<HTMLDivElement>(null)
   const inputRef        = useRef<HTMLInputElement>(null)
@@ -1013,7 +1018,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           language: language,
           token: token || null,
           country: country,
-          product_from_page: pendingProductFromPage || null,
+          product_from_page: pendingProductFromPageRef.current || null,
         }),
       })
 
@@ -1077,7 +1082,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       addAssistantMessage("Oups, un souci de connexion. Réessaie dans un instant 😅")
     } finally {
       setIsTyping(false)
-      setPendingProductFromPage(null)
+      pendingProductFromPageRef.current = null
     }
   }
 
@@ -1157,7 +1162,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       setInput(message)
 
       if (product) {
-        setPendingProductFromPage(product)
+        pendingProductFromPageRef.current = product
       }
 
       setTimeout(() => {
