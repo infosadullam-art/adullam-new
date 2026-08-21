@@ -1,7 +1,7 @@
 "use client"
 
 import { ShoppingCart, ChevronDown, Search, User, Menu, X, LogOut, LogIn, UserPlus, ChevronRight, Bell } from "lucide-react"
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { useCart } from "@/context/CartContext"
 import { CartDrawer } from "@/components/cart/CartDrawer"
@@ -40,10 +40,16 @@ export function Header() {
   const { cart } = useCart()
   const { user, logout, isLoading } = useAuth()
 
+  // ============================================================
+  // MOUNT
+  // ============================================================
   useEffect(() => {
     setMounted(true)
   }, [])
 
+  // ============================================================
+  // CARROUSEL RECHERCHE
+  // ============================================================
   useEffect(() => {
     const interval = setInterval(() => {
       setIsAnimating(true)
@@ -55,36 +61,65 @@ export function Header() {
     return () => clearInterval(interval)
   }, [])
 
-  // Notifications non lues
+  // ============================================================
+  // NOTIFICATIONS - SYSTÈME AMÉLIORÉ
+  // ============================================================
+  const fetchUnreadCount = useCallback(async () => {
+    if (!user) return
+
+    try {
+      const token = localStorage.getItem("adullam_token")
+      const res = await apiFetch("/api/notifications?unread=true&limit=1", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+
+      if (data.success && data.data?.stats) {
+        setUnreadCount(data.data.stats.unread || 0)
+      } else if (data.data?.stats) {
+        setUnreadCount(data.data.stats.unread || 0)
+      } else if (data.stats) {
+        setUnreadCount(data.stats.unread || 0)
+      }
+    } catch (error) {
+      console.error("Erreur chargement notifs:", error)
+    }
+  }, [user])
+
   useEffect(() => {
     if (!user) return
 
-    const fetchUnreadCount = async () => {
-      try {
-        const token = localStorage.getItem("adullam_token")
-        const res = await apiFetch("/api/notifications?unread=true&limit=1", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        const data = await res.json()
+    // Chargement initial
+    fetchUnreadCount()
 
-        if (data.success && data.data?.stats) {
-          setUnreadCount(data.data.stats.unread || 0)
-        } else if (data.data?.stats) {
-          setUnreadCount(data.data.stats.unread || 0)
-        } else if (data.stats) {
-          setUnreadCount(data.stats.unread || 0)
-        }
-      } catch (error) {
-        console.error("Erreur chargement notifs:", error)
+    // Intervalle toutes les 15 secondes
+    const interval = setInterval(fetchUnreadCount, 15000)
+
+    // Écouter l'événement de rafraîchissement
+    const handleNotificationUpdate = () => {
+      fetchUnreadCount()
+    }
+
+    // Rafraîchir quand l'onglet devient visible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchUnreadCount()
       }
     }
 
-    fetchUnreadCount()
-    const interval = setInterval(fetchUnreadCount, 30000)
-    return () => clearInterval(interval)
-  }, [user])
+    window.addEventListener('notifications-updated', handleNotificationUpdate)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 
-  // Scroll avec hysteresis
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('notifications-updated', handleNotificationUpdate)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [user, fetchUnreadCount])
+
+  // ============================================================
+  // SCROLL
+  // ============================================================
   useEffect(() => {
     let ticking = false
 
@@ -109,7 +144,7 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [isHeaderCompact])
 
-  // Souris survole le header → barre noire réapparaît
+  // Hover header → barre noire réapparaît
   useEffect(() => {
     const handleMouseEnter = () => {
       if (isHeaderCompact) {
@@ -129,20 +164,70 @@ export function Header() {
     }
   }, [isHeaderCompact])
 
+  // ============================================================
+  // MEGA MENU
+  // ============================================================
+  useEffect(() => {
+    return () => {
+      if (menuTimerRef.current) clearTimeout(menuTimerRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(e.target as Node)
+      ) {
+        setShowMegaMenu(false)
+        setActiveCategory(null)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  // ============================================================
+  // MOBILE MENU - LOCK SCROLL
+  // ============================================================
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = ""
+    }
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [mobileMenuOpen])
+
+  // ============================================================
+  // HANDLERS
+  // ============================================================
   const openCart = () => setIsCartOpen(true)
   const goToAccount = () => router.push("/account")
   const goToLogin = () => router.push("/account?mode=login")
   const goToRegister = () => router.push("/account?mode=register")
 
   const generateSlug = (name: string): string =>
-    name.toLowerCase().replace(/&/g, "et").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+    name
+      .toLowerCase()
+      .replace(/&/g, "et")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
 
   const goToCategory = (category: string) => {
     router.push(`/categorie/${generateSlug(category)}`)
   }
 
   const handleSearch = () => {
-    if (searchQuery.trim()) router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
+    }
   }
 
   const handleLogout = async () => {
@@ -153,32 +238,23 @@ export function Header() {
   }
 
   const handleMouseEnterMega = () => {
-    if (menuTimerRef.current) { clearTimeout(menuTimerRef.current); menuTimerRef.current = null }
+    if (menuTimerRef.current) {
+      clearTimeout(menuTimerRef.current)
+      menuTimerRef.current = null
+    }
     setShowMegaMenu(true)
   }
+
   const handleMouseLeaveMega = () => {
-    menuTimerRef.current = setTimeout(() => { setShowMegaMenu(false); setActiveCategory(null) }, 300)
+    menuTimerRef.current = setTimeout(() => {
+      setShowMegaMenu(false)
+      setActiveCategory(null)
+    }, 300)
   }
 
-  useEffect(() => () => { if (menuTimerRef.current) clearTimeout(menuTimerRef.current) }, [])
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node) &&
-          buttonRef.current && !buttonRef.current.contains(e.target as Node)) {
-        setShowMegaMenu(false); setActiveCategory(null)
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
-
-  useEffect(() => {
-    if (mobileMenuOpen) document.body.style.overflow = "hidden"
-    else document.body.style.overflow = ""
-    return () => { document.body.style.overflow = "" }
-  }, [mobileMenuOpen])
-
+  // ============================================================
+  // RENDER
+  // ============================================================
   if (!mounted) {
     return <div style={{ height: "130px" }} className="hidden lg:block" />
   }
@@ -210,8 +286,7 @@ export function Header() {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50">
-
-        {/* TOPBAR — bandeau éditorial sombre (brand constant) */}
+        {/* TOPBAR */}
         <div className="hidden lg:flex items-center justify-between gap-6 bg-brand px-6 py-2">
           <div className="flex items-center gap-6">
             {isLoading ? (
@@ -244,8 +319,6 @@ export function Header() {
 
         {/* BARRE PRINCIPALE */}
         <div className="border-b border-border bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
-
-          {/* LIGNE LOGO / RECHERCHE / ACTIONS */}
           <div
             className="transition-all duration-300 ease-out"
             style={{
@@ -254,7 +327,7 @@ export function Header() {
             }}
           >
             <div className="max-w-7xl mx-auto px-6 flex items-center gap-4">
-              {/* Logo - garde Poppins (.font-logo) */}
+              {/* Logo */}
               <button onClick={() => router.push("/")} className="flex-shrink-0 focus:outline-none">
                 <span
                   className="font-logo text-foreground transition-all duration-300"
@@ -264,7 +337,7 @@ export function Header() {
                 </span>
               </button>
 
-              {/* Catégories dropdown */}
+              {/* Catégories */}
               <div className="hidden lg:block relative flex-shrink-0">
                 <button
                   ref={buttonRef}
@@ -288,7 +361,13 @@ export function Header() {
                       {categories.slice(0, 6).map((cat) => (
                         <button
                           key={cat.title}
-                          onClick={() => { setActiveCategory(cat.items.length === 0 ? null : cat.title); if (!cat.items.length) { goToCategory(cat.title); setShowMegaMenu(false) } }}
+                          onClick={() => {
+                            setActiveCategory(cat.items.length === 0 ? null : cat.title)
+                            if (!cat.items.length) {
+                              goToCategory(cat.title)
+                              setShowMegaMenu(false)
+                            }
+                          }}
                           className={`rounded-md px-2 py-2 text-xs font-medium text-center transition-colors ${
                             activeCategory === cat.title
                               ? "bg-foreground text-background"
@@ -303,7 +382,13 @@ export function Header() {
                       {categories.slice(6, 12).map((cat) => (
                         <button
                           key={cat.title}
-                          onClick={() => { setActiveCategory(cat.items.length === 0 ? null : cat.title); if (!cat.items.length) { goToCategory(cat.title); setShowMegaMenu(false) } }}
+                          onClick={() => {
+                            setActiveCategory(cat.items.length === 0 ? null : cat.title)
+                            if (!cat.items.length) {
+                              goToCategory(cat.title)
+                              setShowMegaMenu(false)
+                            }
+                          }}
                           className={`rounded-md px-2 py-2 text-xs font-medium text-center transition-colors ${
                             activeCategory === cat.title
                               ? "bg-foreground text-background"
@@ -317,23 +402,30 @@ export function Header() {
 
                     {activeCategory && (
                       <div className="border-t border-border pt-4">
-                        <p className="overline mb-3 text-accent">
-                          {activeCategory}
-                        </p>
+                        <p className="overline mb-3 text-accent">{activeCategory}</p>
                         <div className="grid grid-cols-4 gap-1.5">
-                          {categories.find(c => c.title === activeCategory)?.items.slice(0, 8).map((item, i) => (
-                            <button
-                              key={i}
-                              onClick={() => { goToCategory(item); setShowMegaMenu(false) }}
-                              className="link-underline rounded-md px-2 py-1.5 text-left text-xs text-ink-2 transition-colors hover:text-accent"
-                            >
-                              {item}
-                            </button>
-                          ))}
+                          {categories
+                            .find((c) => c.title === activeCategory)
+                            ?.items.slice(0, 8)
+                            .map((item, i) => (
+                              <button
+                                key={i}
+                                onClick={() => {
+                                  goToCategory(item)
+                                  setShowMegaMenu(false)
+                                }}
+                                className="link-underline rounded-md px-2 py-1.5 text-left text-xs text-ink-2 transition-colors hover:text-accent"
+                              >
+                                {item}
+                              </button>
+                            ))}
                         </div>
-                        {(categories.find(c => c.title === activeCategory)?.items.length ?? 0) > 8 && (
+                        {(categories.find((c) => c.title === activeCategory)?.items.length ?? 0) > 8 && (
                           <button
-                            onClick={() => { goToCategory(activeCategory); setShowMegaMenu(false) }}
+                            onClick={() => {
+                              goToCategory(activeCategory)
+                              setShowMegaMenu(false)
+                            }}
                             className="mt-3 flex items-center gap-1 text-xs font-semibold text-accent"
                           >
                             Voir tout <ChevronRight className="w-3.5 h-3.5" />
@@ -343,7 +435,13 @@ export function Header() {
                     )}
 
                     <div className="mt-3 border-t border-border pt-3 text-center">
-                      <button onClick={() => { router.push("/categories"); setShowMegaMenu(false) }} className="text-xs font-semibold text-accent link-underline">
+                      <button
+                        onClick={() => {
+                          router.push("/categories")
+                          setShowMegaMenu(false)
+                        }}
+                        className="text-xs font-semibold text-accent link-underline"
+                      >
                         Voir toutes les catégories →
                       </button>
                     </div>
@@ -364,7 +462,7 @@ export function Header() {
                     <div
                       className="transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
                       style={{
-                        transform: isAnimating ? 'translateY(-100%)' : 'translateY(0)',
+                        transform: isAnimating ? "translateY(-100%)" : "translateY(0)",
                         opacity: isAnimating ? 0 : 1,
                       }}
                     >
@@ -379,10 +477,10 @@ export function Header() {
                   type="text"
                   placeholder=""
                   value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setSearchFocused(true)}
                   onBlur={() => setSearchFocused(false)}
-                  onKeyDown={e => e.key === "Enter" && handleSearch()}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   className={`w-full rounded-md bg-surface py-2.5 pl-10 pr-14 text-sm text-foreground transition-all focus:outline-none border ${
                     searchFocused ? "border-accent ring-2 ring-accent/15" : "border-border"
                   }`}
@@ -423,19 +521,30 @@ export function Header() {
                           { label: "Mes commandes", href: "/orders" },
                           { label: "Favoris", href: "/favorites" },
                         ].map(({ label, href }) => (
-                          <Link key={href} href={href} className="block rounded-md px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-surface">
+                          <Link
+                            key={href}
+                            href={href}
+                            className="block rounded-md px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-surface"
+                          >
                             {label}
                           </Link>
                         ))}
                         <div className="my-1 h-px bg-border" />
-                        <button onClick={handleLogout} className="flex w-full items-center gap-2 rounded-md px-3 py-2.5 text-sm text-accent transition-colors hover:bg-accent-light">
+                        <button
+                          onClick={handleLogout}
+                          className="flex w-full items-center gap-2 rounded-md px-3 py-2.5 text-sm text-accent transition-colors hover:bg-accent-light"
+                        >
                           <LogOut className="w-4 h-4" /> Déconnexion
                         </button>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <button onClick={goToLogin} aria-label="Mon compte" className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-foreground transition-colors hover:border-border-strong focus:outline-none">
+                  <button
+                    onClick={goToLogin}
+                    aria-label="Mon compte"
+                    className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-foreground transition-colors hover:border-border-strong focus:outline-none"
+                  >
                     <User className="w-[18px] h-[18px]" />
                   </button>
                 )}
@@ -454,7 +563,7 @@ export function Header() {
                   )}
                 </button>
 
-                {/* 🔔 NOTIFICATIONS - Placé après le panier */}
+                {/* 🔔 NOTIFICATIONS */}
                 <button
                   onClick={() => router.push("/notifications")}
                   className="relative flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-foreground transition-colors hover:border-border-strong focus:outline-none"
@@ -483,6 +592,7 @@ export function Header() {
                 </button>
               </div>
 
+              {/* Mobile menu toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label="Menu"
@@ -493,7 +603,7 @@ export function Header() {
             </div>
           </div>
 
-          {/* BARRE NOIRE — navigation éditoriale */}
+          {/* BARRE NOIRE */}
           <div
             className="hidden lg:block overflow-hidden bg-brand transition-all duration-300 ease-out"
             style={{
@@ -526,8 +636,8 @@ export function Header() {
         </div>
       </header>
 
-      {/* Espace compensatoire - ajusté à 148px pour ne pas couper le contenu */}
-      <div className={`hidden lg:block transition-all duration-300 ${isHeaderCompact ? 'h-[56px]' : 'h-[148px]'}`} />
+      {/* Espace compensatoire */}
+      <div className={`hidden lg:block transition-all duration-300 ${isHeaderCompact ? "h-[56px]" : "h-[148px]"}`} />
       <div className="block lg:hidden h-[56px]" />
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
@@ -542,7 +652,11 @@ export function Header() {
               </span>
               <div className="flex items-center gap-2">
                 <ThemeToggle variant="icon" />
-                <button onClick={() => setMobileMenuOpen(false)} aria-label="Fermer" className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-foreground focus:outline-none">
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  aria-label="Fermer"
+                  className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-foreground focus:outline-none"
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -557,10 +671,22 @@ export function Header() {
               </div>
             ) : (
               <div className="mb-6 flex gap-2">
-                <button onClick={() => { goToLogin(); setMobileMenuOpen(false) }} className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-brand py-2.5 text-sm font-semibold text-white">
+                <button
+                  onClick={() => {
+                    goToLogin()
+                    setMobileMenuOpen(false)
+                  }}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-brand py-2.5 text-sm font-semibold text-white"
+                >
                   <LogIn className="w-4 h-4" /> Connexion
                 </button>
-                <button onClick={() => { goToRegister(); setMobileMenuOpen(false) }} className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-background py-2.5 text-sm font-semibold text-foreground">
+                <button
+                  onClick={() => {
+                    goToRegister()
+                    setMobileMenuOpen(false)
+                  }}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-background py-2.5 text-sm font-semibold text-foreground"
+                >
                   <UserPlus className="w-4 h-4" /> S&apos;inscrire
                 </button>
               </div>
@@ -570,7 +696,10 @@ export function Header() {
               {navItems.map((item) => (
                 <button
                   key={item.path}
-                  onClick={() => { router.push(item.path); setMobileMenuOpen(false) }}
+                  onClick={() => {
+                    router.push(item.path)
+                    setMobileMenuOpen(false)
+                  }}
                   className="flex items-center justify-between border-b border-border py-3.5 text-left text-sm font-medium text-foreground"
                 >
                   {item.label}
@@ -584,14 +713,22 @@ export function Header() {
               <div key={cat.title}>
                 <button
                   onClick={() => {
-                    if (!cat.items.length) { goToCategory(cat.title); setMobileMenuOpen(false) }
-                    else setActiveCategory(activeCategory === cat.title ? null : cat.title)
+                    if (!cat.items.length) {
+                      goToCategory(cat.title)
+                      setMobileMenuOpen(false)
+                    } else {
+                      setActiveCategory(activeCategory === cat.title ? null : cat.title)
+                    }
                   }}
                   className="flex w-full items-center justify-between border-b border-border py-3 text-sm font-medium text-foreground"
                 >
                   {cat.title}
                   {cat.items.length > 0 && (
-                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${activeCategory === cat.title ? "rotate-180" : ""}`} />
+                    <ChevronDown
+                      className={`w-4 h-4 text-muted-foreground transition-transform ${
+                        activeCategory === cat.title ? "rotate-180" : ""
+                      }`}
+                    />
                   )}
                 </button>
                 {activeCategory === cat.title && cat.items.length > 0 && (
@@ -599,7 +736,10 @@ export function Header() {
                     {cat.items.map((item, i) => (
                       <button
                         key={i}
-                        onClick={() => { goToCategory(item); setMobileMenuOpen(false) }}
+                        onClick={() => {
+                          goToCategory(item)
+                          setMobileMenuOpen(false)
+                        }}
                         className="py-1.5 text-left text-sm text-ink-3 hover:text-accent"
                       >
                         {item}

@@ -34,7 +34,11 @@ export default function NotificationsPage() {
   const [page, setPage] = useState(1)
   const [unreadCount, setUnreadCount] = useState(0)
   const observerRef = useRef<IntersectionObserver | null>(null)
+  const isInitialMount = useRef(true)
 
+  // ============================================================
+  // CHARGEMENT DES NOTIFICATIONS
+  // ============================================================
   const loadNotifications = useCallback(async (pageToLoad: number, reset = false) => {
     if (!user) return
     
@@ -94,6 +98,20 @@ export default function NotificationsPage() {
     }
   }, [user, fetchWithAuth, filter])
 
+  // ============================================================
+  // RAFRAÎCHIR LES NOTIFICATIONS
+  // ============================================================
+  const refreshNotifications = useCallback(() => {
+    setPage(1)
+    setHasMore(true)
+    loadNotifications(1, true)
+    // 🔔 Émettre l'événement pour mettre à jour le header
+    window.dispatchEvent(new Event('notifications-updated'))
+  }, [loadNotifications])
+
+  // ============================================================
+  // MARQUER COMME LU
+  // ============================================================
   const markAsRead = useCallback(async (id: string) => {
     try {
       const response = await fetchWithAuth(`/api/notifications/${id}/read`, {
@@ -106,18 +124,17 @@ export default function NotificationsPage() {
           prev.map(n => n.id === id ? { ...n, read: true } : n)
         )
         setUnreadCount(prev => Math.max(0, prev - 1))
+        // 🔔 Émettre l'événement pour mettre à jour le header
+        window.dispatchEvent(new Event('notifications-updated'))
       }
     } catch (error) {
       console.error("❌ Erreur marquage lu:", error)
     }
   }, [fetchWithAuth])
 
-  const refreshNotifications = useCallback(() => {
-    setPage(1)
-    setHasMore(true)
-    loadNotifications(1, true)
-  }, []) // ← Dépendances vides pour éviter boucle infinie
-
+  // ============================================================
+  // MARQUER TOUT COMME LU
+  // ============================================================
   const markAllAsRead = useCallback(async () => {
     try {
       const response = await fetchWithAuth('/api/notifications', {
@@ -127,6 +144,8 @@ export default function NotificationsPage() {
       if (response.ok) {
         refreshNotifications()
         toast.success("Toutes les notifications marquées comme lues")
+        // 🔔 Émettre l'événement pour mettre à jour le header
+        window.dispatchEvent(new Event('notifications-updated'))
       } else {
         toast.error("Erreur lors du marquage")
       }
@@ -136,6 +155,9 @@ export default function NotificationsPage() {
     }
   }, [fetchWithAuth, refreshNotifications])
 
+  // ============================================================
+  // SUPPRIMER UNE NOTIFICATION
+  // ============================================================
   const deleteNotification = useCallback(async (id: string) => {
     try {
       const response = await fetchWithAuth(`/api/notifications/${id}`, {
@@ -149,6 +171,8 @@ export default function NotificationsPage() {
           setUnreadCount(prev => Math.max(0, prev - 1))
         }
         toast.success("Notification supprimée")
+        // 🔔 Émettre l'événement pour mettre à jour le header
+        window.dispatchEvent(new Event('notifications-updated'))
       }
     } catch (error) {
       console.error("❌ Erreur suppression:", error)
@@ -156,62 +180,84 @@ export default function NotificationsPage() {
     }
   }, [fetchWithAuth, notifications])
 
-  // 🔥 MARQUAGE AUTO DES NOTIFICATIONS VISIBLES (SCROLL)
+  // ============================================================
+  // MARQUAGE AUTO DES NOTIFICATIONS VISIBLES (SCROLL)
+  // ============================================================
   useEffect(() => {
-    if (!notifications.length) return;
+    if (!notifications.length) return
     
     if (observerRef.current) {
-      observerRef.current.disconnect();
+      observerRef.current.disconnect()
     }
     
     observerRef.current = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            const id = entry.target.getAttribute('data-notif-id');
-            const notification = notifications.find(n => n.id === id);
+            const id = entry.target.getAttribute('data-notif-id')
+            const notification = notifications.find(n => n.id === id)
             if (notification && !notification.read) {
-              markAsRead(id!);
+              markAsRead(id!)
             }
-            observerRef.current?.unobserve(entry.target);
+            observerRef.current?.unobserve(entry.target)
           }
-        });
+        })
       },
       { threshold: 0.1 }
-    );
+    )
     
-    const elements = document.querySelectorAll('[data-notif-id]');
-    elements.forEach(el => observerRef.current?.observe(el));
+    const elements = document.querySelectorAll('[data-notif-id]')
+    elements.forEach(el => observerRef.current?.observe(el))
     
     return () => {
       if (observerRef.current) {
-        observerRef.current.disconnect();
+        observerRef.current.disconnect()
       }
-    };
-  }, [notifications, markAsRead]);
+    }
+  }, [notifications, markAsRead])
 
-  // 🔥 RECHARGEMENT QUAND L'UTILISATEUR REVIENT SUR L'ONGLET
+  // ============================================================
+  // RECHARGEMENT QUAND L'UTILISATEUR REVIENT SUR L'ONGLET
+  // ============================================================
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
     
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        refreshNotifications();
+        refreshNotifications()
       }
-    };
+    }
     
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [user, refreshNotifications]);
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [user, refreshNotifications])
 
-  // Chargement initial
+  // ============================================================
+  // RECHARGEMENT QUAND L'UTILISATEUR REVIENT SUR LA PAGE (focus)
+  // ============================================================
+  useEffect(() => {
+    if (!user) return
+    
+    const handleFocus = () => {
+      refreshNotifications()
+    }
+    
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [user, refreshNotifications])
+
+  // ============================================================
+  // CHARGEMENT INITIAL
+  // ============================================================
   useEffect(() => {
     if (user) {
       refreshNotifications()
     }
   }, [user, filter]) // Seulement quand user ou filter change
 
-  // Scroll infini
+  // ============================================================
+  // SCROLL INFINI
+  // ============================================================
   useEffect(() => {
     if (!hasMore || isLoading || !user) return
     
@@ -225,10 +271,13 @@ export default function NotificationsPage() {
       }
     }
     
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [hasMore, isLoading, page, loadNotifications, user])
 
+  // ============================================================
+  // RENDU - CHARGEMENT
+  // ============================================================
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -237,6 +286,9 @@ export default function NotificationsPage() {
     )
   }
 
+  // ============================================================
+  // RENDU - NON CONNECTÉ
+  // ============================================================
   if (!user) {
     return (
       <div className="min-h-screen bg-neutral-light">
@@ -260,12 +312,16 @@ export default function NotificationsPage() {
 
   const filteredNotifications = notifications.filter(n => filter === 'all' || !n.read)
 
+  // ============================================================
+  // RENDU - PRINCIPAL
+  // ============================================================
   return (
     <div className="min-h-screen bg-neutral-light">
       <div className="hidden lg:block"><Header /></div>
       <div className="lg:hidden"><MobileHeader /></div>
 
       <main className="max-w-[1440px] mx-auto px-4 lg:px-6 py-6 pb-20 lg:pb-8">
+        {/* En-tête */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <h1 className="text-2xl lg:text-3xl font-bold flex items-center gap-2">
             <Bell className="w-6 h-6 text-brand" />
@@ -295,18 +351,26 @@ export default function NotificationsPage() {
               </button>
             </div>
             
-            <button onClick={refreshNotifications} className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg">
+            <button 
+              onClick={refreshNotifications} 
+              className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Rafraîchir"
+            >
               <RefreshCw className="w-5 h-5" />
             </button>
             
             {unreadCount > 0 && (
-              <button onClick={markAllAsRead} className="px-3 py-1.5 text-sm text-brand hover:bg-brand/10 rounded-lg flex items-center gap-1">
+              <button 
+                onClick={markAllAsRead} 
+                className="px-3 py-1.5 text-sm text-brand hover:bg-brand/10 rounded-lg flex items-center gap-1 transition-colors"
+              >
                 <Check className="w-4 h-4" /> Tout lire
               </button>
             )}
           </div>
         </div>
 
+        {/* Liste des notifications */}
         {isLoading && notifications.length === 0 ? (
           <div className="flex justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
@@ -352,7 +416,8 @@ export default function NotificationsPage() {
                           e.stopPropagation()
                           markAsRead(notification.id)
                         }}
-                        className="p-1 text-gray-400 hover:text-green-600 rounded"
+                        className="p-1 text-gray-400 hover:text-green-600 rounded transition-colors"
+                        aria-label="Marquer comme lu"
                       >
                         <Check className="w-4 h-4" />
                       </button>
@@ -362,7 +427,8 @@ export default function NotificationsPage() {
                         e.stopPropagation()
                         deleteNotification(notification.id)
                       }}
-                      className="p-1 text-gray-400 hover:text-red-600 rounded"
+                      className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors"
+                      aria-label="Supprimer"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -373,6 +439,7 @@ export default function NotificationsPage() {
           </div>
         )}
 
+        {/* Loader de fin de liste */}
         {isLoading && notifications.length > 0 && (
           <div className="flex justify-center py-4">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brand"></div>
