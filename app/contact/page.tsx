@@ -9,7 +9,7 @@ import { MobileHeader } from "@/components/mobile-header"
 import { Footer } from "@/components/footer"
 import MobileNav from "@/components/mobile-nav"
 import { toast } from "sonner"
-import { Loader2, Send, Mail, Phone, MapPin, Clock, CheckCircle } from "lucide-react"
+import { Loader2, Send, Mail, Clock, CheckCircle } from "lucide-react"
 
 export default function ContactPage() {
   const router = useRouter()
@@ -237,23 +237,6 @@ export default function ContactPage() {
                   <div>
                     <p className="text-sm font-medium">Email</p>
                     <p className="text-sm text-muted-foreground">contact@adullamarket.com</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Phone className="w-5 h-5 mt-0.5" style={{ color: "#D4372B" }} />
-                  <div>
-                    <p className="text-sm font-medium">Téléphone</p>
-                    <p className="text-sm text-muted-foreground">+225 01 23 45 67 89</p>
-                    <p className="text-xs text-muted-foreground">Lun-Ven, 9h-18h</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 mt-0.5" style={{ color: "#D4372B" }} />
-                  <div>
-                    <p className="text-sm font-medium">Adresse</p>
-                    <p className="text-sm text-muted-foreground">Abidjan, Côte d'Ivoire</p>
                   </div>
                 </div>
 
