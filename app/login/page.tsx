@@ -121,10 +121,9 @@ function UserLoginContent() {
         identifier = identifier.replace(/\s/g, '')
       }
 
-      const res = await fetch("https://api.adullamarket.com/api/auth/send-code", {
+      const res = await fetch("/api/auth/send-code", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
-        credentials: "include",
         body: JSON.stringify({ identifier, method: loginMethod })
       })
 
@@ -229,10 +228,9 @@ function UserLoginContent() {
           identifier = identifier.replace(/\s/g, '')
         }
 
-        const res = await fetch("https://api.adullamarket.com/api/auth/verify-code", {
+        const res = await fetch("/api/auth/verify-code", {
           method: "POST",
           headers: { 'Content-Type': 'application/json' },
-          credentials: "include",
           body: JSON.stringify({ identifier, code: formData.verificationCode })
         })
 
@@ -260,6 +258,7 @@ function UserLoginContent() {
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: isDark ? "#0A0A0A" : "#F4F4F4" }}>
       <Card className="w-full max-w-md" style={{ background: isDark ? "#1A1A1A" : "#fff", borderColor: isDark ? "#2A2A2A" : "#ECECEC" }}>
         <CardHeader className="text-center">
+          {/* Logo cliquable qui ramène à l'accueil */}
           <Link 
             href="/" 
             className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full transition-transform hover:scale-105"
@@ -311,13 +310,9 @@ function UserLoginContent() {
 
           {step !== "verify" && (
             <div className="flex gap-2 mb-6">
-              {/* Bouton Email - Actif */}
               <button
                 type="button"
-                onClick={() => {
-                  setLoginMethod("email")
-                  setError("")
-                }}
+                onClick={() => setLoginMethod("email")}
                 className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
                   loginMethod === "email"
                     ? "text-white shadow-sm"
@@ -328,44 +323,18 @@ function UserLoginContent() {
                 <Mail className="w-4 h-4 inline mr-2" />
                 Email
               </button>
-
-              {/* Bouton Téléphone - DÉSACTIVÉ */}
               <button
                 type="button"
-                onClick={() => {
-                  setError("❌ La connexion par téléphone n'est pas disponible. Veuillez utiliser votre email.")
-                  setTimeout(() => setError(""), 4000)
-                }}
-                disabled={true}
-                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all cursor-not-allowed relative overflow-hidden ${
+                onClick={() => setLoginMethod("phone")}
+                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
                   loginMethod === "phone"
-                    ? "text-white"
-                    : isDark ? "text-gray-500" : "text-gray-400"
+                    ? "text-white shadow-sm"
+                    : isDark ? "text-gray-300 hover:bg-white/5" : "text-gray-700 hover:bg-gray-100"
                 }`}
-                style={{
-                  background: isDark ? "#1A1A1A" : "#E8E8E8",
-                  border: isDark ? "1px solid #2A2A2A" : "1px solid #D0D0D0",
-                  opacity: 0.6,
-                  transform: "scale(0.97)",
-                  boxShadow: "inset 0 2px 4px rgba(0,0,0,0.1)"
-                }}
-                title="La connexion par téléphone n'est pas disponible"
+                style={loginMethod === "phone" ? { background: "#D4372B" } : { background: isDark ? "#0A0A0A" : "#F4F4F4" }}
               >
-                {/* Overlay de blocage */}
-                <div 
-                  className="absolute inset-0 flex items-center justify-center"
-                  style={{
-                    background: isDark ? "rgba(0,0,0,0.3)" : "rgba(200,200,200,0.2)",
-                    backdropFilter: "blur(1px)"
-                  }}
-                >
-                  <span className="text-[8px] uppercase font-bold tracking-wider" style={{ color: isDark ? "#666" : "#999" }}>
-                    🔒 Bloqué
-                  </span>
-                </div>
-                <Phone className="w-4 h-4 inline mr-2 opacity-50" />
+                <Phone className="w-4 h-4 inline mr-2" />
                 Téléphone
-                <span className="ml-1 text-[8px] uppercase opacity-50">(indisponible)</span>
               </button>
             </div>
           )}
@@ -408,11 +377,8 @@ function UserLoginContent() {
                     />
                   </div>
                 ) : (
-                  <div className="space-y-2 opacity-50 pointer-events-none">
-                    <Label htmlFor="phone" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>
-                      Numéro de téléphone
-                      <span className="ml-1 text-xs" style={{ color: isDark ? "#666" : "#999" }}>(indisponible)</span>
-                    </Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>Numéro de téléphone</Label>
                     <div className="flex">
                       <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 text-sm" style={{ background: isDark ? "#0A0A0A" : "#F4F4F4", color: isDark ? "#AAAAAA" : "#666666", borderColor: isDark ? "#2A2A2A" : "#ECECEC" }}>
                         +225
@@ -424,8 +390,9 @@ function UserLoginContent() {
                         placeholder="01 23 45 67 89"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className={`rounded-l-none ${isDark ? "bg-[#0A0A0A] border-gray-700 text-gray-500" : "bg-gray-100 text-gray-400"}`}
-                        disabled={true}
+                        className={`rounded-l-none ${isDark ? "bg-[#0A0A0A] border-gray-700 text-white" : ""}`}
+                        disabled={isSubmitting}
+                        required
                       />
                     </div>
                   </div>
@@ -441,7 +408,7 @@ function UserLoginContent() {
                       placeholder="••••••••"
                       value={formData.password}
                       onChange={handleInputChange}
-                      disabled={isSubmitting || loginMethod === "phone"}
+                      disabled={isSubmitting}
                       required
                       className={isDark ? "bg-[#0A0A0A] border-gray-700 text-white" : ""}
                     />
@@ -467,7 +434,7 @@ function UserLoginContent() {
                         placeholder="••••••••"
                         value={formData.confirmPassword}
                         onChange={handleInputChange}
-                        disabled={isSubmitting || loginMethod === "phone"}
+                        disabled={isSubmitting}
                         required
                         className={isDark ? "bg-[#0A0A0A] border-gray-700 text-white" : ""}
                       />
@@ -486,8 +453,8 @@ function UserLoginContent() {
                 <Button 
                   type="submit" 
                   className="w-full text-white"
-                  style={{ background: loginMethod === "phone" ? "#888" : "#D4372B" }}
-                  disabled={isSubmitting || loginMethod === "phone"}
+                  style={{ background: "#D4372B" }}
+                  disabled={isSubmitting}
                 >
                   {isSubmitting ? (
                     <>
@@ -495,7 +462,7 @@ function UserLoginContent() {
                       Chargement...
                     </>
                   ) : (
-                    loginMethod === "phone" ? "⛔ Indisponible" : (step === "login" ? "Se connecter" : "Créer mon compte")
+                    step === "login" ? "Se connecter" : "Créer mon compte"
                   )}
                 </Button>
               </>
@@ -579,10 +546,6 @@ function UserLoginContent() {
                   setStep(step === "login" ? "register" : "login")
                   setError("")
                   setSuccess("")
-                  // Si on était en mode téléphone, revenir à email
-                  if (loginMethod === "phone") {
-                    setLoginMethod("email")
-                  }
                   setFormData(prev => ({ ...prev, verificationCode: "", password: "", confirmPassword: "" }))
                 }}
                 className="hover:underline"
