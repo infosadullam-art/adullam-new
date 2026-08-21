@@ -407,7 +407,7 @@ function SourcingContent() {
         setShowForm(false)
         resetForm()
         loadNeeds()
-        router.push('/sourcing')
+        router.push('/boutique-noel')
       } else {
         setSubmitError(response.error || "Erreur lors de la création")
         toast.error(response.error || "Erreur création")
@@ -586,13 +586,13 @@ function SourcingContent() {
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button asChild size="lg" className="gap-2" style={{ background: brandColor, color: "#fff" }}>
-                  <Link href={`/account?mode=login&redirect=${encodeURIComponent('/sourcing')}`}>
+                  <Link href={`/account?mode=login&redirect=${encodeURIComponent('/boutique-noel')}`}>
                     <LogIn className="w-4 h-4" />
                     Se connecter
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="gap-2">
-                  <Link href={`/account?mode=register&redirect=${encodeURIComponent('/sourcing')}`}>
+                  <Link href={`/account?mode=register&redirect=${encodeURIComponent('/boutique-noel')}`}>
                     <UserPlus className="w-4 h-4" />
                     Créer un compte
                   </Link>
@@ -1198,13 +1198,13 @@ function SourcingContent() {
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button asChild className="gap-2" style={{ background: brandColor, color: "#fff" }}>
-                  <Link href={`/account?mode=login&redirect=${encodeURIComponent('/sourcing')}`}>
+                  <Link href={`/account?mode=login&redirect=${encodeURIComponent('/boutique-noel')}`}>
                     <LogIn className="w-4 h-4" />
                     Se connecter
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="gap-2">
-                  <Link href={`/account?mode=register&redirect=${encodeURIComponent('/sourcing')}`}>
+                  <Link href={`/account?mode=register&redirect=${encodeURIComponent('/boutique-noel')}`}>
                     <UserPlus className="w-4 h-4" />
                     Créer un compte
                   </Link>
