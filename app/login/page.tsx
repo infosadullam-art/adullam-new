@@ -121,7 +121,7 @@ function UserLoginContent() {
         identifier = identifier.replace(/\s/g, '')
       }
 
-      const res = await fetch("/api/auth/send-code", {
+      const res = await fetch("https://api.adullamarket.com/api/auth/send-code", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier, method: loginMethod })
@@ -228,7 +228,7 @@ function UserLoginContent() {
           identifier = identifier.replace(/\s/g, '')
         }
 
-        const res = await fetch("/api/auth/verify-code", {
+        const res = await fetch("https://api.adullamarket.com/api/auth/verify-code", {
           method: "POST",
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ identifier, code: formData.verificationCode })
