@@ -9,7 +9,7 @@ import { MobileHeader } from "@/components/mobile-header"
 import { Footer } from "@/components/footer"
 import MobileNav from "@/components/mobile-nav"
 import { toast } from "sonner"
-import { Loader2, Send, Mail, Clock, CheckCircle } from "lucide-react"
+import { Loader2, Send, Mail, Clock, CheckCircle, Phone } from "lucide-react"
 
 export default function ContactPage() {
   const router = useRouter()
@@ -22,6 +22,7 @@ export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     subject: "",
     message: "",
     orderNumber: "",
@@ -34,6 +35,7 @@ export default function ContactPage() {
         ...prev,
         name: user.name || "",
         email: user.email || "",
+        phone: user.phone || "",
       }))
     }
   }, [user])
@@ -72,6 +74,7 @@ export default function ContactPage() {
         setFormData({
           name: user?.name || "",
           email: user?.email || "",
+          phone: user?.phone || "",
           subject: "",
           message: "",
           orderNumber: "",
@@ -145,6 +148,26 @@ export default function ContactPage() {
                         className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-[#D4372B]/20 transition-all"
                         placeholder="vous@exemple.com"
                         required
+                        disabled={isSubmitting}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>
+                      Téléphone (optionnel)
+                    </label>
+                    <div className="flex">
+                      <span className="inline-flex items-center px-4 rounded-l-xl border border-r-0 text-sm" style={{ background: isDark ? "#0A0A0A" : "#F4F4F4", color: isDark ? "#AAAAAA" : "#666666", borderColor: isDark ? "#2A2A2A" : "#ECECEC" }}>
+                        +225
+                      </span>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        className="flex-1 px-4 py-2.5 rounded-r-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-[#D4372B]/20 transition-all"
+                        placeholder="01 23 45 67 89"
                         disabled={isSubmitting}
                       />
                     </div>
