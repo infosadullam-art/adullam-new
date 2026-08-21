@@ -8,10 +8,6 @@ export default function ContactPage() {
           <h2 className="text-xl font-semibold">Par email</h2>
           <p>contact@adullamarket.com</p>
           
-          <h2 className="text-xl font-semibold mt-4">Par téléphone / WhatsApp</h2>
-          <p>+225 05 64 74 91 51</p>
-          <p className="text-sm text-gray-500">Lun - Ven, 9h - 18h (GMT)</p>
-          
           <h2 className="text-xl font-semibold mt-4">Formulaire</h2>
           <form className="space-y-3">
             <input type="text" placeholder="Votre nom" className="w-full p-2 border rounded" />
