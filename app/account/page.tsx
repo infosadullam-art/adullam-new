@@ -487,16 +487,24 @@ export default function AccountPage() {
                     Email
                   </button>
                   <button
-                    onClick={() => setLoginMethod("phone")}
-                    className={`flex-1 py-2 px-3 rounded-md text-xs font-medium transition-all ${
+                    onClick={() => {
+                      // Bloquer la sélection du téléphone
+                      setError("La connexion par téléphone n'est pas disponible pour le moment. Veuillez utiliser votre email.")
+                      // Réinitialiser l'erreur après 3 secondes
+                      setTimeout(() => setError(""), 3000)
+                    }}
+                    disabled={true}
+                    className={`flex-1 py-2 px-3 rounded-md text-xs font-medium transition-all cursor-not-allowed opacity-50 ${
                       loginMethod === "phone"
                         ? "text-white"
-                        : isDark ? "text-gray-400 hover:bg-white/5" : "text-gray-600 hover:bg-gray-100"
+                        : isDark ? "text-gray-500" : "text-gray-400"
                     }`}
                     style={loginMethod === "phone" ? { background: "#D4372B", fontFamily: amazonFont } : { background: isDark ? "#0A0A0A" : "#F4F4F4", fontFamily: amazonFont }}
+                    title="La connexion par téléphone n'est pas disponible"
                   >
                     <Phone className="w-3 h-3 inline mr-1.5" />
                     Téléphone
+                    <span className="ml-1 text-[8px] uppercase" style={{ color: isDark ? "#666" : "#999" }}>(indisponible)</span>
                   </button>
                 </div>
               )}
@@ -556,9 +564,10 @@ export default function AccountPage() {
                         />
                       </div>
                     ) : (
-                      <div>
+                      <div className="opacity-50 pointer-events-none">
                         <label className="block text-xs font-medium mb-1" style={{ color: isDark ? "#DDDDDD" : "#555555", fontFamily: amazonFont }}>
                           Numéro de téléphone
+                          <span className="ml-1 text-[10px]" style={{ color: isDark ? "#666" : "#999" }}>(indisponible)</span>
                         </label>
                         <div className="flex">
                           <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 text-sm" style={{ background: isDark ? "#0A0A0A" : "#F4F4F4", borderColor: isDark ? "#2A2A2A" : "#E5E5E5", color: isDark ? "#AAAAAA" : "#666666" }}>
@@ -570,9 +579,9 @@ export default function AccountPage() {
                             value={formData.phone}
                             onChange={handleInputChange}
                             className="flex-1 px-3 py-2 text-sm rounded-r-md focus:outline-none focus:ring-1 focus:ring-[#D4372B]/20"
-                            style={{ background: isDark ? "#0A0A0A" : "#fff", border: isDark ? "1px solid #2A2A2A" : "1px solid #E5E5E5", borderLeft: "none", color: isDark ? "#fff" : "#0A0A0A", fontFamily: amazonFont }}
+                            style={{ background: isDark ? "#0A0A0A" : "#fff", border: isDark ? "1px solid #2A2A2A" : "1px solid #E5E5E5", borderLeft: "none", color: isDark ? "#444" : "#999", fontFamily: amazonFont }}
                             placeholder="01 23 45 67 89"
-                            required
+                            disabled
                           />
                         </div>
                       </div>
@@ -634,9 +643,9 @@ export default function AccountPage() {
 
                     <button
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || loginMethod === "phone"}
                       className="w-full text-white font-medium py-2 px-4 rounded-md text-sm transition-all disabled:opacity-50"
-                      style={{ background: "#D4372B", fontFamily: amazonFont }}
+                      style={{ background: loginMethod === "phone" ? "#888" : "#D4372B", fontFamily: amazonFont }}
                     >
                       {isSubmitting ? (
                         <span className="flex items-center justify-center">
@@ -647,7 +656,7 @@ export default function AccountPage() {
                           Chargement...
                         </span>
                       ) : (
-                        step === "login" ? "Se connecter" : "Créer mon compte"
+                        loginMethod === "phone" ? "Indisponible" : (step === "login" ? "Se connecter" : "Créer mon compte")
                       )}
                     </button>
                   </>
@@ -753,6 +762,10 @@ export default function AccountPage() {
                       setStep(step === "login" ? "register" : "login")
                       setError("")
                       setSuccess("")
+                      // Si on était en mode téléphone, revenir à email
+                      if (loginMethod === "phone") {
+                        setLoginMethod("email")
+                      }
                     }}
                     className="font-medium hover:underline"
                     style={{ color: "#D4372B" }}
