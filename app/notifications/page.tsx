@@ -11,6 +11,8 @@ import { useApi } from "@/hooks/useApi"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import { toast } from "sonner"
+import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { useLocale } from "@/context/LocaleProvider"
 
 interface Notification {
   id: string
@@ -20,12 +22,22 @@ interface Notification {
   read: boolean
   createdAt: string
   link?: string
-  metadata?: any
+  metadata?: {
+    amount?: number
+    total?: number
+    orderNumber?: string
+    productName?: string
+    quantity?: number
+    currency?: string
+    [key: string]: any
+  }
 }
 
 export default function NotificationsPage() {
   const { user, isLoading: authLoading } = useAuth()
   const { fetchWithAuth } = useApi()
+  const { formatPrice, getCurrencySymbol } = useCurrencyFormatter()
+  const { currency, country } = useLocale()
   
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -34,7 +46,6 @@ export default function NotificationsPage() {
   const [page, setPage] = useState(1)
   const [unreadCount, setUnreadCount] = useState(0)
   const observerRef = useRef<IntersectionObserver | null>(null)
-  const isInitialMount = useRef(true)
 
   // ============================================================
   // CHARGEMENT DES NOTIFICATIONS
@@ -105,7 +116,6 @@ export default function NotificationsPage() {
     setPage(1)
     setHasMore(true)
     loadNotifications(1, true)
-    // 🔔 Émettre l'événement pour mettre à jour le header
     window.dispatchEvent(new Event('notifications-updated'))
   }, [loadNotifications])
 
@@ -124,7 +134,6 @@ export default function NotificationsPage() {
           prev.map(n => n.id === id ? { ...n, read: true } : n)
         )
         setUnreadCount(prev => Math.max(0, prev - 1))
-        // 🔔 Émettre l'événement pour mettre à jour le header
         window.dispatchEvent(new Event('notifications-updated'))
       }
     } catch (error) {
@@ -144,7 +153,6 @@ export default function NotificationsPage() {
       if (response.ok) {
         refreshNotifications()
         toast.success("Toutes les notifications marquées comme lues")
-        // 🔔 Émettre l'événement pour mettre à jour le header
         window.dispatchEvent(new Event('notifications-updated'))
       } else {
         toast.error("Erreur lors du marquage")
@@ -171,7 +179,6 @@ export default function NotificationsPage() {
           setUnreadCount(prev => Math.max(0, prev - 1))
         }
         toast.success("Notification supprimée")
-        // 🔔 Émettre l'événement pour mettre à jour le header
         window.dispatchEvent(new Event('notifications-updated'))
       }
     } catch (error) {
@@ -179,6 +186,29 @@ export default function NotificationsPage() {
       toast.error("Erreur lors de la suppression")
     }
   }, [fetchWithAuth, notifications])
+
+  // ============================================================
+  // FORMATAGE DU MESSAGE AVEC LA BONNE DEVISE
+  // ============================================================
+  const formatNotificationMessage = useCallback((notification: Notification): string => {
+    let message = notification.message
+    
+    // Si le message contient un montant en USD, le convertir
+    if (notification.metadata?.amount) {
+      const formatted = formatPrice(notification.metadata.amount)
+      // Remplacer les motifs de prix en USD
+      message = message.replace(/\$\d+(\.\d{2})?/g, formatted)
+      message = message.replace(/\d+(\.\d{2})?\s*USD/g, formatted)
+    }
+    
+    if (notification.metadata?.total) {
+      const formatted = formatPrice(notification.metadata.total)
+      message = message.replace(/\$\d+(\.\d{2})?/g, formatted)
+      message = message.replace(/\d+(\.\d{2})?\s*USD/g, formatted)
+    }
+    
+    return message
+  }, [formatPrice])
 
   // ============================================================
   // MARQUAGE AUTO DES NOTIFICATIONS VISIBLES (SCROLL)
@@ -253,7 +283,7 @@ export default function NotificationsPage() {
     if (user) {
       refreshNotifications()
     }
-  }, [user, filter]) // Seulement quand user ou filter change
+  }, [user, filter])
 
   // ============================================================
   // SCROLL INFINI
@@ -321,15 +351,20 @@ export default function NotificationsPage() {
       <div className="lg:hidden"><MobileHeader /></div>
 
       <main className="max-w-[1440px] mx-auto px-4 lg:px-6 py-6 pb-20 lg:pb-8">
-        {/* En-tête */}
+        {/* En-tête avec indicateur de devise */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <h1 className="text-2xl lg:text-3xl font-bold flex items-center gap-2">
-            <Bell className="w-6 h-6 text-brand" />
-            Notifications
-            {unreadCount > 0 && (
-              <span className="bg-brand text-white text-sm px-2 py-0.5 rounded-full">{unreadCount}</span>
-            )}
-          </h1>
+          <div>
+            <h1 className="text-2xl lg:text-3xl font-bold flex items-center gap-2">
+              <Bell className="w-6 h-6 text-brand" />
+              Notifications
+              {unreadCount > 0 && (
+                <span className="bg-brand text-white text-sm px-2 py-0.5 rounded-full">{unreadCount}</span>
+              )}
+            </h1>
+            <p className="text-xs text-muted-foreground mt-1">
+              Devise: {getCurrencySymbol()} ({currency}) · Pays: {country}
+            </p>
+          </div>
           
           <div className="flex items-center gap-3">
             <div className="flex bg-white rounded-lg shadow-sm p-1">
@@ -384,58 +419,73 @@ export default function NotificationsPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {filteredNotifications.map((notification) => (
-              <div
-                key={notification.id}
-                data-notif-id={notification.id}
-                className={`bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer ${
-                  !notification.read ? 'border-l-4 border-brand' : 'opacity-80'
-                }`}
-              >
-                <div className="p-4 flex gap-4">
-                  <div className="flex-shrink-0">
-                    <Bell className="w-5 h-5 text-gray-500" />
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <h3 className={`font-medium ${!notification.read ? 'text-gray-900' : 'text-gray-600'}`}>
-                        {notification.title}
-                      </h3>
-                      <span className="text-xs text-gray-400 whitespace-nowrap">
-                        {format(new Date(notification.createdAt), "dd MMM yyyy", { locale: fr })}
-                      </span>
+            {filteredNotifications.map((notification) => {
+              const formattedMessage = formatNotificationMessage(notification)
+              const hasAmount = notification.metadata?.amount || notification.metadata?.total
+              
+              return (
+                <div
+                  key={notification.id}
+                  data-notif-id={notification.id}
+                  className={`bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer ${
+                    !notification.read ? 'border-l-4 border-brand' : 'opacity-80'
+                  }`}
+                >
+                  <div className="p-4 flex gap-4">
+                    <div className="flex-shrink-0">
+                      <Bell className="w-5 h-5 text-gray-500" />
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">{notification.message}</p>
-                  </div>
-                  
-                  <div className="flex-shrink-0 flex items-start gap-1">
-                    {!notification.read && (
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <h3 className={`font-medium ${!notification.read ? 'text-gray-900' : 'text-gray-600'}`}>
+                          {notification.title}
+                        </h3>
+                        <span className="text-xs text-gray-400 whitespace-nowrap">
+                          {format(new Date(notification.createdAt), "dd MMM yyyy", { locale: fr })}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1">{formattedMessage}</p>
+                      
+                      {/* Afficher le montant formaté si présent */}
+                      {hasAmount && (
+                        <div className="mt-2 inline-flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-md border border-gray-100">
+                          <span className="text-xs font-medium text-gray-600">Montant:</span>
+                          <span className="text-xs font-bold text-brand">
+                            {formatPrice(notification.metadata?.amount || notification.metadata?.total || 0)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex-shrink-0 flex items-start gap-1">
+                      {!notification.read && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            markAsRead(notification.id)
+                          }}
+                          className="p-1 text-gray-400 hover:text-green-600 rounded transition-colors"
+                          aria-label="Marquer comme lu"
+                        >
+                          <Check className="w-4 h-4" />
+                        </button>
+                      )}
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
-                          markAsRead(notification.id)
+                          deleteNotification(notification.id)
                         }}
-                        className="p-1 text-gray-400 hover:text-green-600 rounded transition-colors"
-                        aria-label="Marquer comme lu"
+                        className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors"
+                        aria-label="Supprimer"
                       >
-                        <Check className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
-                    )}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        deleteNotification(notification.id)
-                      }}
-                      className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors"
-                      aria-label="Supprimer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
 
