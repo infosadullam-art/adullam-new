@@ -8,8 +8,8 @@ const __dirname = dirname(__filename)
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: { ignoreBuildErrors: true },
-  
-  images: { 
+
+  images: {
     unoptimized: true,
   },
 
@@ -22,6 +22,50 @@ const nextConfig = {
         source: "/api/:path*",
         destination: "https://api.adullamarket.com/api/:path*",
       },
+    ]
+  },
+
+  // ✅ SECURITY HEADERS
+  async headers() {
+    return [
+      {
+        // Applique ces headers à toutes les routes du frontend
+        source: "/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net https://*.vercel-insights.com https://vercel.live",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: https: blob:",
+              "font-src 'self' data:",
+              "connect-src 'self' https://api.adullamarket.com https://*.facebook.com https://vitals.vercel-insights.com",
+              "frame-ancestors 'self'",
+              "base-uri 'self'",
+              "form-action 'self'",
+            ].join("; "),
+          },
+          {
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
+          },
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(self)",
+          },
+        ],
+      },
+      // CORS pour /api/* est géré par le middleware du backend (adullam-backend),
+      // pas ici — un bloc statique ici referait la même erreur qu'on vient de corriger côté VPS.
     ]
   },
 
