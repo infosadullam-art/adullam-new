@@ -2,97 +2,124 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronRight, Factory, Wallet, ShieldCheck } from "lucide-react"
+import { MapPin, ChevronRight, Truck, Shield, Clock } from "lucide-react"
 import { useLocale } from "@/context/LocaleProvider"
 import { useState, useEffect } from "react"
-import * as Flags from "country-flag-icons/react/3x2"
-
-// NOTE DEV : npm install country-flag-icons
-// (remplace les drapeaux emoji par du SVG plat, cohérent sur tous les devices)
 
 const pays = {
-  CI: { nom: "Côte d'Ivoire", code: "CI" }, SN: { nom: "Sénégal", code: "SN" },
-  CM: { nom: "Cameroun", code: "CM" }, MA: { nom: "Maroc", code: "MA" },
-  TN: { nom: "Tunisie", code: "TN" }, DZ: { nom: "Algérie", code: "DZ" },
-  BF: { nom: "Burkina Faso", code: "BF" }, ML: { nom: "Mali", code: "ML" },
-  NE: { nom: "Niger", code: "NE" }, TG: { nom: "Togo", code: "TG" },
-  BJ: { nom: "Bénin", code: "BJ" }, GN: { nom: "Guinée", code: "GN" },
-  GH: { nom: "Ghana", code: "GH" }, CD: { nom: "RDC", code: "CD" },
-  GA: { nom: "Gabon", code: "GA" }, KE: { nom: "Kenya", code: "KE" },
-  TZ: { nom: "Tanzanie", code: "TZ" }, RW: { nom: "Rwanda", code: "RW" },
-  ET: { nom: "Éthiopie", code: "ET" }, ZA: { nom: "Afrique du Sud", code: "ZA" },
-  EG: { nom: "Égypte", code: "EG" }, US: { nom: "États-Unis", code: "US" },
-} as const
-
-// Fournisseurs alignés sur le positionnement validé (Chine/Turquie/Dubaï/USA)
-const suppliers = [
-  { code: "CN", label: "Chine" },
-  { code: "AE", label: "Dubaï" },
-  { code: "TR", label: "Turquie" },
-  { code: "US", label: "USA" },
-] as const
-
-const trustItems = [
-  { icon: Factory, label: "0 intermédiaire", sub: "Prix usine réel" },
-  { icon: Wallet, label: "42 devises", sub: "Mobile Money natif" },
-  { icon: ShieldCheck, label: "Garanti ou remboursé", sub: "Non livré = remboursé" },
-]
-
-function Flag({ code, className }: { code: string; className?: string }) {
-  const Cmp = (Flags as Record<string, React.ComponentType<{ className?: string; title?: string }>>)[code]
-  if (!Cmp) return null
-  return <Cmp className={className} title={code} />
+  CI: { nom: "Côte d'Ivoire", drapeau: "🇨🇮", code: "CI" },
+  SN: { nom: "Sénégal", drapeau: "🇸🇳", code: "SN" },
+  CM: { nom: "Cameroun", drapeau: "🇨🇲", code: "CM" },
+  MA: { nom: "Maroc", drapeau: "🇲🇦", code: "MA" },
+  TN: { nom: "Tunisie", drapeau: "🇹🇳", code: "TN" },
+  DZ: { nom: "Algérie", drapeau: "🇩🇿", code: "DZ" },
+  BF: { nom: "Burkina Faso", drapeau: "🇧🇫", code: "BF" },
+  ML: { nom: "Mali", drapeau: "🇲🇱", code: "ML" },
+  NE: { nom: "Niger", drapeau: "🇳🇪", code: "NE" },
+  TG: { nom: "Togo", drapeau: "🇹🇬", code: "TG" },
+  BJ: { nom: "Bénin", drapeau: "🇧🇯", code: "BJ" },
+  GN: { nom: "Guinée", drapeau: "🇬🇳", code: "GN" },
+  GW: { nom: "Guinée-Bissau", drapeau: "🇬🇼", code: "GW" },
+  LR: { nom: "Libéria", drapeau: "🇱🇷", code: "LR" },
+  SL: { nom: "Sierra Leone", drapeau: "🇸🇱", code: "SL" },
+  GM: { nom: "Gambie", drapeau: "🇬🇲", code: "GM" },
+  GH: { nom: "Ghana", drapeau: "🇬🇭", code: "GH" },
+  CG: { nom: "Congo", drapeau: "🇨🇬", code: "CG" },
+  CD: { nom: "RDC", drapeau: "🇨🇩", code: "CD" },
+  GA: { nom: "Gabon", drapeau: "🇬🇦", code: "GA" },
+  GQ: { nom: "Guinée équatoriale", drapeau: "🇬🇶", code: "GQ" },
+  CF: { nom: "République centrafricaine", drapeau: "🇨🇫", code: "CF" },
+  TD: { nom: "Tchad", drapeau: "🇹🇩", code: "TD" },
+  ST: { nom: "Sao Tomé", drapeau: "🇸🇹", code: "ST" },
+  KE: { nom: "Kenya", drapeau: "🇰🇪", code: "KE" },
+  TZ: { nom: "Tanzanie", drapeau: "🇹🇿", code: "TZ" },
+  UG: { nom: "Ouganda", drapeau: "🇺🇬", code: "UG" },
+  RW: { nom: "Rwanda", drapeau: "🇷🇼", code: "RW" },
+  BI: { nom: "Burundi", drapeau: "🇧🇮", code: "BI" },
+  ET: { nom: "Éthiopie", drapeau: "🇪🇹", code: "ET" },
+  ER: { nom: "Érythrée", drapeau: "🇪🇷", code: "ER" },
+  SO: { nom: "Somalie", drapeau: "🇸🇴", code: "SO" },
+  DJ: { nom: "Djibouti", drapeau: "🇩🇯", code: "DJ" },
+  SS: { nom: "Soudan du Sud", drapeau: "🇸🇸", code: "SS" },
+  SD: { nom: "Soudan", drapeau: "🇸🇩", code: "SD" },
+  ZA: { nom: "Afrique du Sud", drapeau: "🇿🇦", code: "ZA" },
+  ZM: { nom: "Zambie", drapeau: "🇿🇲", code: "ZM" },
+  ZW: { nom: "Zimbabwe", drapeau: "🇿🇼", code: "ZW" },
+  MZ: { nom: "Mozambique", drapeau: "🇲🇿", code: "MZ" },
+  AO: { nom: "Angola", drapeau: "🇦🇴", code: "AO" },
+  NA: { nom: "Namibie", drapeau: "🇳🇦", code: "NA" },
+  BW: { nom: "Botswana", drapeau: "🇧🇼", code: "BW" },
+  MW: { nom: "Malawi", drapeau: "🇲🇼", code: "MW" },
+  MG: { nom: "Madagascar", drapeau: "🇲🇬", code: "MG" },
+  MU: { nom: "Maurice", drapeau: "🇲🇺", code: "MU" },
+  KM: { nom: "Comores", drapeau: "🇰🇲", code: "KM" },
+  SC: { nom: "Seychelles", drapeau: "🇸🇨", code: "SC" },
+  EG: { nom: "Égypte", drapeau: "🇪🇬", code: "EG" },
+  LY: { nom: "Libye", drapeau: "🇱🇾", code: "LY" },
+  MR: { nom: "Mauritanie", drapeau: "🇲🇷", code: "MR" },
+  EH: { nom: "Sahara occidental", drapeau: "🇪🇭", code: "EH" },
+  US: { nom: "États-Unis", drapeau: "🇺🇸", code: "US" },
 }
 
-// ────────────────────────────────────────────────────────────────
-// Slider storytelling — MÊMES images que ta prod actuelle (à adapter
-// plus tard), mais contenu recentré sur les 3 vrais arguments de vente
-// au lieu de 3 catégories produit. Punch conservé : badge + gros chiffre.
-// ────────────────────────────────────────────────────────────────
 const heroSlides = [
   {
     id: 1,
     image: "/hero-fashion.jpg",
-    badge: "Direct usine",
-    title: "Commandez direct usine",
-    subtitle: "Sans grossiste, sans intermédiaire",
-    statValue: "0",
-    statLabel: "intermédiaire",
-    href: "/for-you",
+    title: "Mode Africaine",
+    subtitle: "Collections printemps-été",
+    badge: "Nouvelle collection",
+    offre: "-30%",
+    href: "/categorie/mode",
   },
   {
     id: 2,
     image: "/hero-electronics.jpg",
-    badge: "Sourcing B2B",
-    title: "Sourcing sur mesure",
-    subtitle: "Produit précis, grande quantité : on négocie pour vous",
-    statValue: "B2B",
-    statLabel: "sur devis",
-    href: "/boutique-noel",
+    title: "Électronique",
+    subtitle: "Smartphones, accessoires",
+    badge: "Livraison 7j",
+    offre: "-25%",
+    href: "/categorie/electronique",
   },
   {
     id: 3,
     image: "/hero-home.jpg",
-    badge: "0 risque",
-    title: "Garanti ou remboursé",
-    subtitle: "Commande non livrée : remboursement automatique",
-    statValue: "100%",
-    statLabel: "remboursé",
-    href: "/for-you",
+    title: "Maison & Cuisine",
+    subtitle: "Équipez votre intérieur",
+    badge: "Meilleures ventes",
+    offre: "-40%",
+    href: "/categorie/maison",
   },
 ]
+
+const trustItems = [
+  { icon: Truck, label: "Livraison porte-à-porte", sub: "50j · 15j · 7j" },
+  { icon: Shield, label: "Paiement sécurisé", sub: "Mobile Money, Carte" },
+  { icon: Clock, label: "Suivi en temps réel", sub: "De l'usine à votre porte" },
+]
+
+const suppliers = [
+  { flag: "🇨🇳", label: "Chine" },
+  { flag: "🇦🇪", label: "Dubaï" },
+  { flag: "🇹🇷", label: "Turquie" },
+  { flag: "🇺🇸", label: "USA" },
+  { flag: "🇪🇺", label: "Europe" },
+]
+
+const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
 export function HeroSection() {
   const { country } = useLocale()
   const [currentSlide, setCurrentSlide] = useState(0)
   const [paysActuel, setPaysActuel] = useState(() => {
-    if (typeof window === "undefined") return pays.CI
+    if (typeof window === 'undefined') return pays.CI
     return pays[country as keyof typeof pays] || pays.CI
   })
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentSlide((prev) => (prev + 1) % heroSlides.length), 5000)
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
+    }, 5000)
     return () => clearInterval(timer)
   }, [])
 
@@ -106,13 +133,13 @@ export function HeroSection() {
   }, [])
 
   const MobileHero = () => (
-    <div
+    <div 
       className="lg:hidden relative overflow-hidden"
-      style={{
-        height: "150px",
+      style={{ 
+        height: "240px",
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? "translateY(0)" : "translateY(10px)",
-        transition: "opacity 0.5s ease-out, transform 0.5s ease-out",
+        transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
+        transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
       }}
     >
       {heroSlides.map((slide, index) => (
@@ -125,38 +152,46 @@ export function HeroSection() {
           <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.35) 70%, transparent 100%)" }} />
 
           <div className="absolute inset-0 flex flex-col justify-center px-5 z-20">
-            <div className="flex items-center gap-1.5 w-fit px-2.5 py-1 mb-3 rounded-md" style={{ background: "rgba(0,0,0,0.5)" }}>
-              <Flag code={paysActuel.code} className="w-3.5 h-3.5 rounded-[2px]" />
-              <span className="text-[10px] font-medium text-white font-sans">{paysActuel.nom}</span>
+            <div
+              className="flex items-center gap-1.5 w-fit px-2.5 py-1 mb-3"
+              style={{ background: "rgba(0,0,0,0.5)", borderRadius: "4px" }}
+            >
+              <MapPin className="w-3 h-3 text-white" />
+              <span style={{ fontSize: "10px", fontWeight: 500, color: "#fff", fontFamily: amazonFont }}>
+                {paysActuel.nom} {paysActuel.drapeau}
+              </span>
             </div>
 
             <span
-              className="w-fit px-2 py-0.5 mb-1.5 text-white text-[10px] font-bold font-sans rounded-[2px]"
-              style={{ background: "var(--accent)" }}
+              className="w-fit px-2 py-0.5 mb-1.5 text-white"
+              style={{ background: "#D4372B", borderRadius: "2px", fontSize: "10px", fontWeight: 700, fontFamily: amazonFont }}
             >
               {slide.badge}
             </span>
 
-            <h1 className="font-sans text-white mb-1.5" style={{ fontSize: "24px", fontWeight: 900, lineHeight: 1.15, letterSpacing: "-0.03em", textShadow: "0 1px 2px rgba(0,0,0,0.2)" }}>
+            <h1 style={{ fontSize: "24px", fontWeight: 900, color: "#fff", lineHeight: 1.15, letterSpacing: "-0.03em", fontFamily: amazonFont, marginBottom: "6px", textShadow: "0 1px 2px rgba(0,0,0,0.2)" }}>
               {slide.title}
             </h1>
-            <p className="font-sans text-[13px] mb-4" style={{ color: "rgba(255,255,255,0.85)" }}>
+            <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.85)", fontFamily: amazonFont, marginBottom: "16px", textShadow: "0 1px 1px rgba(0,0,0,0.1)" }}>
               {slide.subtitle}
             </p>
 
             <Link
               href={slide.href}
-              className="flex items-center gap-1.5 w-fit group transition-transform duration-200 hover:scale-105 font-sans font-bold text-[12px] rounded-md"
-              style={{ background: "#fff", color: "var(--brand)", padding: "8px 16px" }}
+              className="flex items-center gap-1.5 w-fit group transition-transform duration-200 hover:scale-105"
+              style={{
+                background: "#fff",
+                color: "#0A0A0A",
+                borderRadius: "6px",
+                padding: "8px 16px",
+                fontSize: "12px",
+                fontWeight: 700,
+                fontFamily: amazonFont,
+              }}
             >
-              Découvrir
+              Découvrir {slide.offre}
               <ChevronRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
-          </div>
-
-          <div className="absolute top-4 right-4 z-20 flex flex-col items-center rounded-lg" style={{ background: "var(--accent)", padding: "6px 12px" }}>
-            <span className="text-[16px] font-black text-white leading-none font-sans">{slide.statValue}</span>
-            <span className="text-[8px] text-white/80 font-sans">{slide.statLabel}</span>
           </div>
         </div>
       ))}
@@ -166,12 +201,11 @@ export function HeroSection() {
           <button
             key={i}
             onClick={() => setCurrentSlide(i)}
-            aria-label={`Voir le slide ${i + 1}`}
             style={{
               height: "2px",
               width: i === currentSlide ? "20px" : "6px",
               borderRadius: "1px",
-              background: i === currentSlide ? "var(--accent-amber)" : "rgba(255,255,255,0.3)",
+              background: i === currentSlide ? "#fff" : "rgba(255,255,255,0.4)",
               transition: "all 0.3s ease",
               border: "none",
               cursor: "pointer",
@@ -180,110 +214,177 @@ export function HeroSection() {
           />
         ))}
       </div>
+
+      <div
+        className="absolute top-4 right-4 z-30 flex flex-col items-center justify-center"
+        style={{ background: "#D4372B", borderRadius: "6px", width: "48px", height: "48px" }}
+      >
+        <span style={{ fontSize: "14px", fontWeight: 900, color: "#fff", lineHeight: 1, fontFamily: amazonFont }}>
+          {heroSlides[currentSlide].offre}
+        </span>
+        <span style={{ fontSize: "7px", color: "rgba(255,255,255,0.8)", fontFamily: amazonFont }}>
+          offre
+        </span>
+      </div>
     </div>
   )
 
   const DesktopHero = () => (
-    <div
+    <div 
       className="hidden lg:block"
-      style={{ background: "var(--brand)", opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out, transform 0.5s ease-out" }}
+      style={{ 
+        background: "#0A0A0A",
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
+        transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
+      }}
     >
-      <div className="max-w-7xl mx-auto px-8 py-6">
-        <div className="grid grid-cols-2 gap-8 items-center">
-          {/* Colonne texte */}
-          <div>
-            <div className="flex items-center gap-1.5 w-fit px-2.5 py-1 rounded-md mb-4" style={{ background: "color-mix(in oklab, white 10%, transparent)" }}>
-              <Flag code={paysActuel.code} className="w-3.5 h-3.5 rounded-[2px]" />
-              <span className="text-[11px] font-medium text-white/90 font-sans">{paysActuel.nom}</span>
-            </div>
+      <div className="max-w-7xl mx-auto px-8 py-8">
+        <div className="grid grid-cols-2 gap-12 items-center">
 
-            <div className="flex items-center gap-2 flex-wrap mb-5">
-              <span className="text-xs text-white/50 font-sans">Direct depuis</span>
+          {/* Gauche — Texte */}
+          <div>
+            <div className="flex items-center gap-2 flex-wrap mb-6">
+              <span style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: amazonFont }}>Direct depuis :</span>
               {suppliers.map((s) => (
                 <span
-                  key={s.code}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs text-white/85 font-sans transition-all duration-200 hover:scale-105"
-                  style={{ background: "color-mix(in oklab, white 7%, transparent)", border: "0.5px solid color-mix(in oklab, white 12%, transparent)" }}
+                  key={s.label}
+                  style={{
+                    background: "rgba(255,255,255,0.07)",
+                    border: "0.5px solid rgba(255,255,255,0.12)",
+                    borderRadius: "40px",
+                    padding: "4px 12px",
+                    fontSize: "12px",
+                    color: "#fff",
+                    fontFamily: amazonFont,
+                    transition: "all 0.2s ease",
+                  }}
+                  className="hover:bg-white/15 hover:scale-105 transition-all duration-200"
                 >
-                  <Flag code={s.code} className="w-3.5 h-2.5 rounded-[1px]" />
-                  {s.label}
+                  {s.flag} {s.label}
                 </span>
               ))}
             </div>
 
-            <h1 className="font-sans text-white mb-3" style={{ fontSize: "38px", fontWeight: 900, lineHeight: 1.12, letterSpacing: "-0.03em" }}>
-              L'usine directement
+            {/* ✅ TITRE CORRIGÉ : même taille pour les deux lignes */}
+            <h1
+              style={{
+                fontSize: "52px",
+                fontWeight: 900,
+                color: "#fff",
+                lineHeight: 1.1,
+                letterSpacing: "-0.03em",
+                fontFamily: amazonFont,
+                marginBottom: "20px",
+              }}
+            >
+              Achetez direct
               <br />
-              <span style={{ color: "var(--accent)" }}>chez toi.</span>
+              <span style={{ fontSize: "52px", fontWeight: 900, color: "#D4372B", fontFamily: amazonFont }}>
+                des usines du monde
+              </span>
             </h1>
 
-            <p className="font-sans mb-5" style={{ fontSize: "16px", color: "var(--muted-foreground)", lineHeight: 1.6, maxWidth: "440px" }}>
-              Sans intermédiaire. Payez en mobile money, 42 devises.
+            <p style={{ 
+              fontSize: "16px", 
+              color: "#D0D0D0", 
+              lineHeight: 1.6, 
+              fontFamily: amazonFont, 
+              maxWidth: "460px", 
+              marginBottom: "32px",
+              fontWeight: 400,
+            }}>
+              Adullam connecte les acheteurs africains aux meilleurs fournisseurs de Chine, Dubaï, Turquie, USA et Europe.
             </p>
 
-            <div className="flex items-center gap-3 mb-5">
+            <div className="flex items-center gap-3">
               <Link
                 href="/for-you"
-                className="group flex items-center gap-2 font-sans font-bold text-sm text-white rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg"
-                style={{ background: "var(--accent)", padding: "12px 28px" }}
+                className="group transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                style={{
+                  background: "#D4372B",
+                  color: "#fff",
+                  borderRadius: "8px",
+                  padding: "12px 28px",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  fontFamily: amazonFont,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
               >
                 Explorer la boutique
                 <ChevronRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
               </Link>
               <Link
                 href="/boutique-noel"
-                className="font-sans font-semibold text-sm text-white rounded-lg transition-all duration-200 hover:-translate-y-0.5"
-                style={{ border: "1px solid rgba(255,255,255,0.25)", padding: "11px 24px" }}
+                className="transition-all duration-200 hover:border-[#D4372B] hover:-translate-y-0.5"
+                style={{
+                  border: "1px solid rgba(255,255,255,0.25)",
+                  color: "#fff",
+                  borderRadius: "8px",
+                  padding: "11px 24px",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  fontFamily: amazonFont,
+                }}
               >
                 Sourcing B2B
               </Link>
             </div>
-
-            {/* Trust bar */}
-            <div className="grid grid-cols-3 gap-0" style={{ borderTop: "0.5px solid rgba(255,255,255,0.08)", paddingTop: "20px" }}>
-              {trustItems.map(({ icon: Icon, label, sub }, i) => (
-                <div
-                  key={label}
-                  className="flex items-center gap-3 group transition-all duration-200 hover:translate-x-0.5"
-                  style={{ borderRight: i < 2 ? "0.5px solid rgba(255,255,255,0.08)" : "none", paddingRight: i < 2 ? "20px" : 0, paddingLeft: i > 0 ? "20px" : 0 }}
-                >
-                  <div className="p-2 rounded-lg transition-all duration-300 group-hover:scale-110" style={{ background: "color-mix(in oklab, var(--accent) 15%, transparent)" }}>
-                    <Icon className="w-4 h-4" style={{ color: "var(--accent)" }} strokeWidth={2} />
-                  </div>
-                  <div>
-                    <p className="text-[13px] font-semibold text-white font-sans">{label}</p>
-                    <p className="text-[11px] font-sans" style={{ color: "var(--muted-foreground)" }}>{sub}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
 
-          {/* Colonne visuel — slider photos, punch conservé */}
-          <div className="relative" style={{ height: "190px" }}>
+          {/* Droite — Image carrousel */}
+          <div className="relative" style={{ height: "280px" }}>
             {heroSlides.map((slide, index) => (
               <div
                 key={slide.id}
-                className="absolute inset-0 transition-opacity duration-700 rounded-xl overflow-hidden"
-                style={{ opacity: index === currentSlide ? 1 : 0 }}
+                className="absolute inset-0 transition-all duration-700"
+                style={{ 
+                  opacity: index === currentSlide ? 1 : 0, 
+                  borderRadius: "12px", 
+                  overflow: "hidden",
+                }}
               >
-                <Image src={slide.image} alt={slide.title} fill className="object-cover" priority={index === 0} />
-                <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 60%)" }} />
+                <Image src={slide.image} alt={slide.title} fill className="object-cover" />
+                <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)" }} />
 
                 <div className="absolute top-4 left-4 z-10">
-                  <span className="px-3 py-1 rounded-md text-[11px] font-bold text-white font-sans" style={{ background: "var(--accent)" }}>
-                    {slide.badge}
-                  </span>
+                  <Link
+                    href={slide.href}
+                    className="flex items-center gap-1.5 w-fit group transition-transform duration-200 hover:scale-105"
+                    style={{
+                      background: "#fff",
+                      color: "#0A0A0A",
+                      borderRadius: "6px",
+                      padding: "6px 12px",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      fontFamily: amazonFont,
+                    }}
+                  >
+                    Découvrir {slide.offre}
+                    <ChevronRight className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </Link>
                 </div>
 
-                <div className="absolute top-4 right-4 z-10 flex flex-col items-center rounded-lg" style={{ background: "rgba(0,0,0,0.55)", border: "1px solid rgba(255,255,255,0.2)", padding: "6px 14px" }}>
-                  <span className="text-[20px] font-black text-white leading-none font-sans">{slide.statValue}</span>
-                  <span className="text-[9px] text-white/70 font-sans">{slide.statLabel}</span>
-                </div>
-
-                <div className="absolute bottom-4 left-4 right-4 z-10">
-                  <p className="text-[18px] font-extrabold text-white tracking-tight font-sans mb-0.5">{slide.title}</p>
-                  <p className="text-[12px] text-white/70 font-sans">{slide.subtitle}</p>
+                <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between z-10">
+                  <div>
+                    <p className="text-[11px] text-white/60" style={{ fontFamily: amazonFont }}>{slide.badge}</p>
+                    <p className="text-[18px] font-extrabold text-white tracking-tight" style={{ fontFamily: amazonFont }}>{slide.title}</p>
+                  </div>
+                  <div
+                    className="flex flex-col items-center"
+                    style={{
+                      background: "#D4372B",
+                      borderRadius: "8px",
+                      padding: "8px 14px",
+                    }}
+                  >
+                    <span className="text-[20px] font-black text-white leading-none" style={{ fontFamily: amazonFont }}>{slide.offre}</span>
+                    <span className="text-[9px] text-white/70" style={{ fontFamily: amazonFont }}>aujourd'hui</span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -293,12 +394,11 @@ export function HeroSection() {
                 <button
                   key={i}
                   onClick={() => setCurrentSlide(i)}
-                  aria-label={`Voir le slide ${i + 1}`}
                   style={{
                     height: "2px",
                     width: i === currentSlide ? "20px" : "6px",
                     borderRadius: "1px",
-                    background: i === currentSlide ? "var(--accent-amber)" : "rgba(255,255,255,0.3)",
+                    background: i === currentSlide ? "#D4372B" : "rgba(255,255,255,0.3)",
                     transition: "all 0.3s ease",
                     border: "none",
                     cursor: "pointer",
@@ -308,6 +408,35 @@ export function HeroSection() {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Trust bar */}
+        <div
+          className="grid grid-cols-3 gap-0 mt-8"
+          style={{ borderTop: "0.5px solid rgba(255,255,255,0.08)", paddingTop: "20px" }}
+        >
+          {trustItems.map(({ icon: Icon, label, sub }, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3 group transition-all duration-200 hover:translate-x-0.5"
+              style={{ 
+                borderRight: i < 2 ? "0.5px solid rgba(255,255,255,0.08)" : "none", 
+                paddingRight: i < 2 ? "32px" : "0", 
+                paddingLeft: i > 0 ? "32px" : "0",
+              }}
+            >
+              <div 
+                className="p-2 transition-all duration-300 group-hover:scale-110"
+                style={{ background: "rgba(212,55,43,0.15)", borderRadius: "8px" }}
+              >
+                <Icon className="w-5 h-5" style={{ color: "#D4372B" }} />
+              </div>
+              <div>
+                <p className="text-[13px] font-semibold text-white" style={{ fontFamily: amazonFont }}>{label}</p>
+                <p className="text-[12px] text-[#AAAAAA]" style={{ fontFamily: amazonFont }}>{sub}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
