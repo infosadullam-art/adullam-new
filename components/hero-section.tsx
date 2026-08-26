@@ -109,7 +109,7 @@ export function HeroSection() {
     <div
       className="lg:hidden relative overflow-hidden"
       style={{
-        height: "220px",
+        height: "150px",
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? "translateY(0)" : "translateY(10px)",
         transition: "opacity 0.5s ease-out, transform 0.5s ease-out",
@@ -188,8 +188,8 @@ export function HeroSection() {
       className="hidden lg:block"
       style={{ background: "var(--brand)", opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out, transform 0.5s ease-out" }}
     >
-      <div className="max-w-7xl mx-auto px-8 py-10">
-        <div className="grid grid-cols-2 gap-14 items-center">
+      <div className="max-w-7xl mx-auto px-8 py-6">
+        <div className="grid grid-cols-2 gap-8 items-center">
           {/* Colonne texte */}
           <div>
             <div className="flex items-center gap-1.5 w-fit px-2.5 py-1 rounded-md mb-4" style={{ background: "color-mix(in oklab, white 10%, transparent)" }}>
@@ -211,17 +211,17 @@ export function HeroSection() {
               ))}
             </div>
 
-            <h1 className="font-sans text-white mb-5" style={{ fontSize: "52px", fontWeight: 900, lineHeight: 1.1, letterSpacing: "-0.03em" }}>
+            <h1 className="font-sans text-white mb-3" style={{ fontSize: "38px", fontWeight: 900, lineHeight: 1.12, letterSpacing: "-0.03em" }}>
               L'usine directement
               <br />
               <span style={{ color: "var(--accent)" }}>chez toi.</span>
             </h1>
 
-            <p className="font-sans mb-8" style={{ fontSize: "16px", color: "var(--muted-foreground)", lineHeight: 1.6, maxWidth: "440px" }}>
+            <p className="font-sans mb-5" style={{ fontSize: "16px", color: "var(--muted-foreground)", lineHeight: 1.6, maxWidth: "440px" }}>
               Sans intermédiaire. Payez en mobile money, 42 devises.
             </p>
 
-            <div className="flex items-center gap-3 mb-8">
+            <div className="flex items-center gap-3 mb-5">
               <Link
                 href="/for-you"
                 className="group flex items-center gap-2 font-sans font-bold text-sm text-white rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg"
@@ -260,7 +260,7 @@ export function HeroSection() {
           </div>
 
           {/* Colonne visuel — slider photos, punch conservé */}
-          <div className="relative" style={{ height: "300px" }}>
+          <div className="relative" style={{ height: "190px" }}>
             {heroSlides.map((slide, index) => (
               <div
                 key={slide.id}
