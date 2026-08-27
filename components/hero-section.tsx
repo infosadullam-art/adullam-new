@@ -5,6 +5,14 @@ import Link from "next/link"
 import { MapPin, ChevronRight, Truck, Wallet, ShieldCheck } from "lucide-react"
 import { useLocale } from "@/context/LocaleProvider"
 import { useState, useEffect } from "react"
+import * as Flags from "country-flag-icons/react/3x2"
+
+// NOTE DEV : npm install country-flag-icons
+function Flag({ code, className }: { code: string; className?: string }) {
+  const Cmp = (Flags as Record<string, React.ComponentType<{ className?: string; title?: string }>>)[code]
+  if (!Cmp) return null
+  return <Cmp className={className} title={code} />
+}
 
 const pays = {
   CI: { nom: "Côte d'Ivoire", drapeau: "🇨🇮", code: "CI" },
@@ -106,10 +114,10 @@ const trustItems = [
 ]
 
 const suppliers = [
-  { flag: "🇨🇳", label: "Chine" },
-  { flag: "🇦🇪", label: "Dubaï" },
-  { flag: "🇹🇷", label: "Turquie" },
-  { flag: "🇺🇸", label: "USA" },
+  { code: "CN", label: "Chine" },
+  { code: "AE", label: "Dubaï" },
+  { code: "TR", label: "Turquie" },
+  { code: "US", label: "USA" },
 ]
 
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
@@ -161,25 +169,25 @@ export function HeroSection() {
           <div className="absolute inset-0 flex flex-col justify-center px-5 z-20">
             <div
               className="flex items-center gap-1.5 w-fit px-2.5 py-1 mb-3"
-              style={{ background: "rgba(0,0,0,0.5)", borderRadius: "4px" }}
+              style={{ background: "rgba(0,0,0,0.5)", borderRadius: "4px", opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(8px)", transition: "opacity 0.45s ease-out 0ms, transform 0.45s ease-out 0ms" }}
             >
-              <MapPin className="w-3 h-3 text-white" />
+              <Flag code={paysActuel.code} className="w-3.5 h-2.5 rounded-[1px]" />
               <span style={{ fontSize: "10px", fontWeight: 500, color: "#fff", fontFamily: amazonFont }}>
-                {paysActuel.nom} {paysActuel.drapeau}
+                {paysActuel.nom}
               </span>
             </div>
 
             <span
-              className="w-fit px-2 py-0.5 mb-1.5 text-white"
-              style={{ background: "#D4372B", borderRadius: "2px", fontSize: "10px", fontWeight: 700, fontFamily: amazonFont }}
+              className="w-fit px-2 py-0.5 mb-1.5 text-white transition-transform duration-200 hover:scale-105"
+              style={{ background: "#D4372B", borderRadius: "2px", fontSize: "10px", fontWeight: 700, fontFamily: amazonFont, opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(8px)", transition: "opacity 0.45s ease-out 60ms, transform 0.45s ease-out 60ms" }}
             >
               {slide.badge}
             </span>
 
-            <h1 style={{ fontSize: "24px", fontWeight: 900, color: "#fff", lineHeight: 1.15, letterSpacing: "-0.03em", fontFamily: amazonFont, marginBottom: "6px", textShadow: "0 1px 2px rgba(0,0,0,0.2)" }}>
+            <h1 style={{ fontSize: "24px", fontWeight: 900, color: "#fff", lineHeight: 1.15, letterSpacing: "-0.03em", fontFamily: amazonFont, marginBottom: "6px", textShadow: "0 1px 2px rgba(0,0,0,0.2)", opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(8px)", transition: "opacity 0.45s ease-out 120ms, transform 0.45s ease-out 120ms" }}>
               {slide.title}
             </h1>
-            <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.85)", fontFamily: amazonFont, marginBottom: "16px", textShadow: "0 1px 1px rgba(0,0,0,0.1)" }}>
+            <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.85)", fontFamily: amazonFont, marginBottom: "16px", textShadow: "0 1px 1px rgba(0,0,0,0.1)", opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(8px)", transition: "opacity 0.45s ease-out 180ms, transform 0.45s ease-out 180ms" }}>
               {slide.subtitle}
             </p>
 
@@ -194,6 +202,7 @@ export function HeroSection() {
                 fontSize: "12px",
                 fontWeight: 700,
                 fontFamily: amazonFont,
+                opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(8px)", transition: "opacity 0.45s ease-out 240ms, transform 0.45s ease-out 240ms",
               }}
             >
               {slide.cta}
@@ -251,7 +260,7 @@ export function HeroSection() {
 
           {/* Gauche — Texte */}
           <div>
-            <div className="flex items-center gap-2 flex-wrap mb-6">
+            <div className="flex items-center gap-2 flex-wrap mb-6" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out 0ms, transform 0.5s ease-out 0ms" }}>
               <span style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: amazonFont }}>Direct depuis :</span>
               {suppliers.map((s) => (
                 <span
@@ -266,9 +275,10 @@ export function HeroSection() {
                     fontFamily: amazonFont,
                     transition: "all 0.2s ease",
                   }}
-                  className="hover:bg-white/15 hover:scale-105 transition-all duration-200"
+                  className="inline-flex items-center gap-1.5 hover:bg-white/15 hover:scale-105 transition-all duration-200"
                 >
-                  {s.flag} {s.label}
+                  <Flag code={s.code} className="w-4 h-3 rounded-[1px]" />
+                  {s.label}
                 </span>
               ))}
             </div>
@@ -283,6 +293,7 @@ export function HeroSection() {
                 letterSpacing: "-0.03em",
                 fontFamily: amazonFont,
                 marginBottom: "16px",
+                opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out 90ms, transform 0.5s ease-out 90ms",
               }}
             >
               Tu veux commander direct usine ?
@@ -300,11 +311,12 @@ export function HeroSection() {
               maxWidth: "460px", 
               marginBottom: "32px",
               fontWeight: 400,
+              opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out 180ms, transform 0.5s ease-out 180ms",
             }}>
               Tu reçois chez toi. Si ça n'arrive pas — on te rembourse.
             </p>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out 270ms, transform 0.5s ease-out 270ms" }}>
               <Link
                 href="/for-you"
                 className="group transition-all duration-200 hover:scale-105 hover:shadow-lg"
@@ -420,7 +432,7 @@ export function HeroSection() {
         {/* Trust bar */}
         <div
           className="grid grid-cols-3 gap-0 mt-8"
-          style={{ borderTop: "0.5px solid rgba(255,255,255,0.08)", paddingTop: "20px" }}
+          style={{ borderTop: "0.5px solid rgba(255,255,255,0.08)", paddingTop: "20px", opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out 360ms, transform 0.5s ease-out 360ms" }}
         >
           {trustItems.map(({ icon: Icon, label, sub }, i) => (
             <div
