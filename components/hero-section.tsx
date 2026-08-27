@@ -427,8 +427,24 @@ export function HeroSection() {
 
                   <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between z-10">
                     <div>
-                      <p className="text-[11px] text-white/60" style={{ fontFamily: amazonFont }}>{slide.badge}</p>
-                      <p className="text-[18px] font-extrabold text-white tracking-tight" style={{ fontFamily: amazonFont }}>{slide.title}</p>
+                      <p 
+                        className="text-[11px]"
+                        style={{ 
+                          fontFamily: amazonFont, 
+                          color: isFirstSlide ? "#000000" : "rgba(255,255,255,0.6)" 
+                        }}
+                      >
+                        {slide.badge}
+                      </p>
+                      <p 
+                        className="text-[18px] font-extrabold tracking-tight"
+                        style={{ 
+                          fontFamily: amazonFont, 
+                          color: isFirstSlide ? "#000000" : "#ffffff" 
+                        }}
+                      >
+                        {slide.title}
+                      </p>
                     </div>
                     <div
                       className="flex flex-col items-center"
