@@ -3,7 +3,71 @@
 import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight, Truck, Wallet, ShieldCheck } from "lucide-react"
+import { useLocale } from "@/context/LocaleProvider"
 import { useState, useEffect } from "react"
+import * as Flags from "country-flag-icons/react/3x2"
+
+// NOTE DEV : npm install country-flag-icons
+function Flag({ code, className }: { code: string; className?: string }) {
+  const Cmp = (Flags as Record<string, React.ComponentType<{ className?: string; title?: string }>>)[code]
+  if (!Cmp) return null
+  return <Cmp className={className} title={code} />
+}
+
+const pays = {
+  CI: { nom: "Côte d'Ivoire", code: "CI" },
+  SN: { nom: "Sénégal", code: "SN" },
+  CM: { nom: "Cameroun", code: "CM" },
+  MA: { nom: "Maroc", code: "MA" },
+  TN: { nom: "Tunisie", code: "TN" },
+  DZ: { nom: "Algérie", code: "DZ" },
+  BF: { nom: "Burkina Faso", code: "BF" },
+  ML: { nom: "Mali", code: "ML" },
+  NE: { nom: "Niger", code: "NE" },
+  TG: { nom: "Togo", code: "TG" },
+  BJ: { nom: "Bénin", code: "BJ" },
+  GN: { nom: "Guinée", code: "GN" },
+  GW: { nom: "Guinée-Bissau", code: "GW" },
+  LR: { nom: "Libéria", code: "LR" },
+  SL: { nom: "Sierra Leone", code: "SL" },
+  GM: { nom: "Gambie", code: "GM" },
+  GH: { nom: "Ghana", code: "GH" },
+  CG: { nom: "Congo", code: "CG" },
+  CD: { nom: "RDC", code: "CD" },
+  GA: { nom: "Gabon", code: "GA" },
+  GQ: { nom: "Guinée équatoriale", code: "GQ" },
+  CF: { nom: "République centrafricaine", code: "CF" },
+  TD: { nom: "Tchad", code: "TD" },
+  ST: { nom: "Sao Tomé", code: "ST" },
+  KE: { nom: "Kenya", code: "KE" },
+  TZ: { nom: "Tanzanie", code: "TZ" },
+  UG: { nom: "Ouganda", code: "UG" },
+  RW: { nom: "Rwanda", code: "RW" },
+  BI: { nom: "Burundi", code: "BI" },
+  ET: { nom: "Éthiopie", code: "ET" },
+  ER: { nom: "Érythrée", code: "ER" },
+  SO: { nom: "Somalie", code: "SO" },
+  DJ: { nom: "Djibouti", code: "DJ" },
+  SS: { nom: "Soudan du Sud", code: "SS" },
+  SD: { nom: "Soudan", code: "SD" },
+  ZA: { nom: "Afrique du Sud", code: "ZA" },
+  ZM: { nom: "Zambie", code: "ZM" },
+  ZW: { nom: "Zimbabwe", code: "ZW" },
+  MZ: { nom: "Mozambique", code: "MZ" },
+  AO: { nom: "Angola", code: "AO" },
+  NA: { nom: "Namibie", code: "NA" },
+  BW: { nom: "Botswana", code: "BW" },
+  MW: { nom: "Malawi", code: "MW" },
+  MG: { nom: "Madagascar", code: "MG" },
+  MU: { nom: "Maurice", code: "MU" },
+  KM: { nom: "Comores", code: "KM" },
+  SC: { nom: "Seychelles", code: "SC" },
+  EG: { nom: "Égypte", code: "EG" },
+  LY: { nom: "Libye", code: "LY" },
+  MR: { nom: "Mauritanie", code: "MR" },
+  EH: { nom: "Sahara occidental", code: "EH" },
+  US: { nom: "États-Unis", code: "US" },
+}
 
 const heroSlides = [
   {
@@ -45,8 +109,13 @@ const suppliers = [
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
 export function HeroSection() {
+  const { country } = useLocale()
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isVisible, setIsVisible] = useState(false)
+  const [paysActuel, setPaysActuel] = useState(() => {
+    if (typeof window === "undefined") return pays.CI
+    return pays[country as keyof typeof pays] || pays.CI
+  })
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -54,6 +123,10 @@ export function HeroSection() {
     }, 5000)
     return () => clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    setPaysActuel(pays[country as keyof typeof pays] || pays.CI)
+  }, [country])
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100)
@@ -67,7 +140,7 @@ export function HeroSection() {
         href={heroSlides[currentSlide].href}
         className="flex items-center gap-1.5 group transition-transform duration-200 hover:scale-[1.03] active:scale-95"
         style={{
-          background: dark ? "#0A0A0A" : "#0A0A0A",
+          background: "#0A0A0A",
           color: "#fff",
           borderRadius: "8px",
           padding: "10px 18px",
@@ -111,6 +184,14 @@ export function HeroSection() {
         transition: "opacity 0.5s ease-out, transform 0.5s ease-out",
       }}
     >
+      {/* Localisation — au-dessus de l'image, pas de texte sur la photo */}
+      <div className="flex items-center gap-1.5 mb-2">
+        <Flag code={paysActuel.code} className="w-4 h-3 rounded-[1px]" />
+        <span style={{ fontSize: "11px", fontWeight: 500, color: "#555", fontFamily: amazonFont }}>
+          Livraison vers {paysActuel.nom}
+        </span>
+      </div>
+
       <div className="relative w-full overflow-hidden" style={{ aspectRatio: "2 / 1", borderRadius: "10px" }}>
         {heroSlides.map((slide, index) => (
           <div
@@ -149,12 +230,27 @@ export function HeroSection() {
 
           {/* Gauche — Texte */}
           <div>
+            {/* Localisation — au-dessus du bloc texte, pas sur l'image */}
+            <div
+              className="flex items-center gap-1.5 mb-3"
+              style={{
+                opacity: isVisible ? 1 : 0,
+                transform: isVisible ? "translateY(0)" : "translateY(10px)",
+                transition: "opacity 0.5s ease-out 0ms, transform 0.5s ease-out 0ms",
+              }}
+            >
+              <Flag code={paysActuel.code} className="w-4 h-3 rounded-[1px]" />
+              <span style={{ fontSize: "12px", fontWeight: 500, color: "#AAAAAA", fontFamily: amazonFont }}>
+                Livraison vers {paysActuel.nom}
+              </span>
+            </div>
+
             <div
               className="flex items-center gap-2 flex-wrap mb-6"
               style={{
                 opacity: isVisible ? 1 : 0,
                 transform: isVisible ? "translateY(0)" : "translateY(10px)",
-                transition: "opacity 0.5s ease-out 0ms, transform 0.5s ease-out 0ms",
+                transition: "opacity 0.5s ease-out 40ms, transform 0.5s ease-out 40ms",
               }}
             >
               <span style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: amazonFont }}>Direct depuis :</span>
@@ -172,6 +268,7 @@ export function HeroSection() {
                   }}
                   className="inline-flex items-center gap-1.5 hover:bg-white/15 hover:scale-105 transition-all duration-200"
                 >
+                  <Flag code={s.code} className="w-4 h-3 rounded-[1px]" />
                   {s.label}
                 </span>
               ))}
@@ -277,16 +374,15 @@ export function HeroSection() {
             <SlideControls dark={true} />
           </div>
         </div>
+      </div>
 
-        {/* Trust bar */}
+      {/* Trust bar — pleine largeur (edge-to-edge), contenu aligné sur le conteneur du hero */}
+      <div className="w-full" style={{ background: "#FFFFFF", marginTop: "24px" }}>
         <div
-          className="grid grid-cols-3 gap-0 mt-8"
+          className="max-w-7xl mx-auto px-8 grid grid-cols-3 gap-0"
           style={{
-            background: "#FFFFFF",
-            borderTop: "0.5px solid rgba(255,255,255,0.08)",
             paddingTop: "16px",
             paddingBottom: "16px",
-            borderRadius: "8px",
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? "translateY(0)" : "translateY(10px)",
             transition: "opacity 0.5s ease-out 360ms, transform 0.5s ease-out 360ms",
