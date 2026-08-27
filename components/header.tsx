@@ -1,6 +1,5 @@
 "use client"
 
-import { ShoppingCart, ChevronDown, Search, User, Menu, X, LogOut, LogIn, UserPlus, ChevronRight, Bell } from "lucide-react"
 import { useState, useRef, useEffect, useCallback } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { useCart } from "@/context/CartContext"
@@ -10,10 +9,114 @@ import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { apiFetch } from "@/lib/api"
 
+// ════════════════════════════════════════════════════════════
+// ICÔNES — dessinées maison (fini le look "lucide par défaut")
+// Trait 1.6, jonctions arrondies, gabarit 24×24 cohérent partout.
+// ════════════════════════════════════════════════════════════
+type IconProps = { className?: string }
+
+const IconSearch = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <circle cx="11" cy="11" r="6.75" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M20.2 20.2l-3.85-3.85" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+)
+
+const IconBag = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M7.2 8.2h9.6l.9 11.3a1.6 1.6 0 0 1-1.6 1.7H7.9a1.6 1.6 0 0 1-1.6-1.7l.9-11.3Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    <path d="M9 8.2V6.6a3 3 0 0 1 6 0v1.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+)
+
+const IconBell = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M6.2 9.2a5.8 5.8 0 1 1 11.6 0c0 3.05.92 4.8 1.5 5.6a.75.75 0 0 1-.6 1.2H5.3a.75.75 0 0 1-.6-1.2c.58-.8 1.5-2.55 1.5-5.6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    <path d="M9.6 18.4a2.4 2.4 0 0 0 4.8 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+)
+
+const IconUser = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <circle cx="12" cy="8.2" r="3.3" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M5.2 19.8c0-3.6 3-6.1 6.8-6.1s6.8 2.5 6.8 6.1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+)
+
+const IconMenu = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M4 7.5h16M4 12h16M4 16.5h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+)
+
+const IconClose = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+)
+
+const IconChevronDown = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M6 9.5l6 6 6-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+
+const IconChevronRight = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+
+const IconLogIn = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M12.5 4.5h4a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M9.8 8.3l3.7 3.7-3.7 3.7M13.3 12H3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+
+const IconUserPlus = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <circle cx="9.3" cy="8.2" r="3.1" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M3.8 19.6c0-3.3 2.7-5.6 5.9-5.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    <path d="M18.2 8.4v4.6M15.9 10.7h4.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+)
+
+const IconLogOut = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M11.5 4.5h-4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M14.2 8.3l3.7 3.7-3.7 3.7M17.7 12H7.9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+
 const searchSuggestions = [
   "chaussure", "robe de soirée", "écouteur", "sac à main",
   "montre", "parfum", "jean", "casquette"
 ]
+
+// Bouton icône "fantôme" premium : pas de contour, un halo au survol.
+function IconButton({
+  children,
+  onClick,
+  ariaLabel,
+  badge,
+}: {
+  children: React.ReactNode
+  onClick?: () => void
+  ariaLabel: string
+  badge?: React.ReactNode
+}) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label={ariaLabel}
+      className="relative flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-all duration-200 hover:bg-surface hover:scale-105 active:scale-95 focus:outline-none"
+    >
+      {children}
+      {badge}
+    </button>
+  )
+}
 
 export function Header() {
   const [mounted, setMounted] = useState(false)
@@ -286,35 +389,30 @@ export function Header() {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50">
-        {/* TOPBAR */}
+        {/* TOPBAR — ligne "Direct usine · Livraison Afrique · Mobile Money" retirée */}
         <div className="hidden lg:flex items-center justify-between gap-6 bg-brand px-6 py-2">
           <div className="flex items-center gap-6">
             {isLoading ? (
               <div className="h-3 w-32 rounded-sm animate-pulse bg-white/15" />
             ) : user ? (
-              <button onClick={goToAccount} className="text-xs font-medium text-white/70 transition-opacity hover:text-white">
+              <button onClick={goToAccount} className="link-underline text-xs font-medium text-white/70 transition-colors duration-200 hover:text-white">
                 Bonjour, {user.name || user.email?.split("@")[0]}
               </button>
             ) : (
               <>
-                <button onClick={goToLogin} className="flex items-center gap-1.5 text-xs text-white/70 transition-opacity hover:text-white">
-                  <LogIn className="w-3.5 h-3.5" /> Connexion
+                <button onClick={goToLogin} className="link-underline flex items-center gap-1.5 text-xs text-white/70 transition-colors duration-200 hover:text-white">
+                  <IconLogIn className="w-3.5 h-3.5" /> Connexion
                 </button>
-                <button onClick={goToRegister} className="flex items-center gap-1.5 text-xs font-medium text-white/70 transition-opacity hover:text-white">
-                  <UserPlus className="w-3.5 h-3.5" /> Inscription
+                <button onClick={goToRegister} className="link-underline flex items-center gap-1.5 text-xs font-medium text-white/70 transition-colors duration-200 hover:text-white">
+                  <IconUserPlus className="w-3.5 h-3.5" /> Inscription
                 </button>
               </>
             )}
-            <button onClick={goToAccount} className="text-xs text-white/70 transition-opacity hover:text-white">
+            <button onClick={goToAccount} className="link-underline text-xs text-white/70 transition-colors duration-200 hover:text-white">
               Compte &amp; commandes
             </button>
           </div>
-          <div className="flex items-center gap-5">
-            <span className="overline text-white/55">
-              Direct usine · Livraison Afrique · Mobile Money
-            </span>
-            <ThemeToggle variant="switch" />
-          </div>
+          <ThemeToggle variant="switch" />
         </div>
 
         {/* BARRE PRINCIPALE */}
@@ -328,7 +426,7 @@ export function Header() {
           >
             <div className="max-w-7xl mx-auto px-6 flex items-center gap-4">
               {/* Logo */}
-              <button onClick={() => router.push("/")} className="flex-shrink-0 focus:outline-none">
+              <button onClick={() => router.push("/")} className="flex-shrink-0 transition-transform duration-200 hover:scale-[1.03] focus:outline-none">
                 <span
                   className="font-logo text-foreground transition-all duration-300"
                   style={{ fontSize: isHeaderCompact ? "18px" : "22px" }}
@@ -343,10 +441,12 @@ export function Header() {
                   ref={buttonRef}
                   onMouseEnter={handleMouseEnterMega}
                   onMouseLeave={handleMouseLeaveMega}
-                  className="flex items-center gap-2 rounded-md border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-border-strong focus:outline-none"
+                  className="flex items-center gap-2 rounded-lg bg-surface px-4 py-2 text-sm font-medium text-foreground shadow-xs transition-all duration-200 hover:bg-surface-sunken hover:shadow-sm focus:outline-none"
                 >
                   Catégories
-                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                  <IconChevronDown
+                    className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${showMegaMenu ? "rotate-180" : ""}`}
+                  />
                 </button>
 
                 {showMegaMenu && (
@@ -354,10 +454,11 @@ export function Header() {
                     ref={menuRef}
                     onMouseEnter={handleMouseEnterMega}
                     onMouseLeave={handleMouseLeaveMega}
-                    className="anim-fade-up absolute top-full left-0 mt-2 z-[9999] w-[900px] rounded-xl border border-border bg-popover p-5 elevate-lg"
+                    className="anim-scale-in absolute top-full left-0 mt-2 z-[9999] w-[900px] rounded-xl border border-border bg-popover p-5 elevate-lg"
+                    style={{ transformOrigin: "top left" }}
                   >
                     <p className="overline mb-3 text-muted-foreground">Toutes les catégories</p>
-                    <div className="grid grid-cols-6 gap-2 mb-2">
+                    <div className="stagger grid grid-cols-6 gap-2 mb-2">
                       {categories.slice(0, 6).map((cat) => (
                         <button
                           key={cat.title}
@@ -368,7 +469,7 @@ export function Header() {
                               setShowMegaMenu(false)
                             }
                           }}
-                          className={`rounded-md px-2 py-2 text-xs font-medium text-center transition-colors ${
+                          className={`rounded-lg px-2 py-2 text-xs font-medium text-center transition-all duration-200 ${
                             activeCategory === cat.title
                               ? "bg-foreground text-background"
                               : "bg-surface text-foreground hover:bg-surface-sunken"
@@ -389,7 +490,7 @@ export function Header() {
                               setShowMegaMenu(false)
                             }
                           }}
-                          className={`rounded-md px-2 py-2 text-xs font-medium text-center transition-colors ${
+                          className={`rounded-lg px-2 py-2 text-xs font-medium text-center transition-all duration-200 ${
                             activeCategory === cat.title
                               ? "bg-foreground text-background"
                               : "bg-surface text-foreground hover:bg-surface-sunken"
@@ -401,7 +502,7 @@ export function Header() {
                     </div>
 
                     {activeCategory && (
-                      <div className="border-t border-border pt-4">
+                      <div className="anim-fade-up border-t border-border pt-4">
                         <p className="overline mb-3 text-accent">{activeCategory}</p>
                         <div className="grid grid-cols-4 gap-1.5">
                           {categories
@@ -414,7 +515,7 @@ export function Header() {
                                   goToCategory(item)
                                   setShowMegaMenu(false)
                                 }}
-                                className="link-underline rounded-md px-2 py-1.5 text-left text-xs text-ink-2 transition-colors hover:text-accent"
+                                className="link-underline rounded-lg px-2 py-1.5 text-left text-xs text-ink-2 transition-colors duration-200 hover:text-accent"
                               >
                                 {item}
                               </button>
@@ -428,7 +529,7 @@ export function Header() {
                             }}
                             className="mt-3 flex items-center gap-1 text-xs font-semibold text-accent"
                           >
-                            Voir tout <ChevronRight className="w-3.5 h-3.5" />
+                            Voir tout <IconChevronRight className="w-3.5 h-3.5" />
                           </button>
                         )}
                       </div>
@@ -451,8 +552,8 @@ export function Header() {
 
               {/* Search */}
               <div className="flex-1 hidden lg:block relative">
-                <Search
-                  className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-colors z-10 ${
+                <IconSearch
+                  className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-colors duration-200 z-10 ${
                     searchFocused ? "text-accent" : "text-muted-foreground"
                   }`}
                 />
@@ -481,41 +582,44 @@ export function Header() {
                   onFocus={() => setSearchFocused(true)}
                   onBlur={() => setSearchFocused(false)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  className={`w-full rounded-md bg-surface py-2.5 pl-10 pr-14 text-sm text-foreground transition-all focus:outline-none border ${
-                    searchFocused ? "border-accent ring-2 ring-accent/15" : "border-border"
+                  className={`w-full rounded-lg bg-surface py-2.5 pl-10 pr-14 text-sm text-foreground transition-all duration-200 focus:outline-none border ${
+                    searchFocused ? "border-accent ring-2 ring-accent/15 bg-background" : "border-transparent"
                   }`}
                 />
 
                 <button
                   onClick={handleSearch}
                   aria-label="Rechercher"
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-md bg-accent transition-colors hover:bg-accent-hover focus:outline-none"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-accent transition-all duration-200 hover:bg-accent-hover hover:scale-105 active:scale-95 focus:outline-none"
                 >
-                  <Search className="w-4 h-4 text-white" />
+                  <IconSearch className="w-4 h-4 text-white" />
                 </button>
               </div>
 
               {/* Actions */}
-              <div className="hidden lg:flex items-center gap-2">
+              <div className="hidden lg:flex items-center gap-1">
                 {isLoading ? (
-                  <div className="h-9 w-9 animate-pulse rounded-md bg-surface" />
+                  <div className="h-10 w-10 animate-pulse rounded-full bg-surface" />
                 ) : user ? (
                   <div className="relative">
                     <button
                       onClick={() => setUserMenuOpen(!userMenuOpen)}
-                      className="flex items-center gap-2 rounded-md border border-border bg-surface px-3 py-2 transition-colors hover:border-border-strong focus:outline-none"
+                      className="flex items-center gap-2 rounded-full pl-1.5 pr-3 py-1.5 transition-all duration-200 hover:bg-surface focus:outline-none"
                     >
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent">
-                        <User className="w-3.5 h-3.5 text-white" />
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-accent">
+                        <IconUser className="w-4 h-4 text-white" />
                       </div>
                       <span className="text-sm font-medium text-foreground">
                         {user.name || user.email?.split("@")[0]}
                       </span>
-                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                      <IconChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${userMenuOpen ? "rotate-180" : ""}`} />
                     </button>
 
                     {userMenuOpen && (
-                      <div className="anim-fade-up absolute right-0 mt-2 z-[9999] w-[200px] rounded-xl border border-border bg-popover p-1.5 elevate-lg">
+                      <div
+                        className="anim-scale-in absolute right-0 mt-2 z-[9999] w-[200px] rounded-xl border border-border bg-popover p-1.5 elevate-lg"
+                        style={{ transformOrigin: "top right" }}
+                      >
                         {[
                           { label: "Mon compte", href: "/account" },
                           { label: "Mes commandes", href: "/orders" },
@@ -524,7 +628,7 @@ export function Header() {
                           <Link
                             key={href}
                             href={href}
-                            className="block rounded-md px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-surface"
+                            className="block rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors duration-200 hover:bg-surface"
                           >
                             {label}
                           </Link>
@@ -532,56 +636,48 @@ export function Header() {
                         <div className="my-1 h-px bg-border" />
                         <button
                           onClick={handleLogout}
-                          className="flex w-full items-center gap-2 rounded-md px-3 py-2.5 text-sm text-accent transition-colors hover:bg-accent-light"
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-accent transition-colors duration-200 hover:bg-accent-light"
                         >
-                          <LogOut className="w-4 h-4" /> Déconnexion
+                          <IconLogOut className="w-4 h-4" /> Déconnexion
                         </button>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <button
-                    onClick={goToLogin}
-                    aria-label="Mon compte"
-                    className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-foreground transition-colors hover:border-border-strong focus:outline-none"
-                  >
-                    <User className="w-[18px] h-[18px]" />
-                  </button>
+                  <IconButton onClick={goToLogin} ariaLabel="Mon compte">
+                    <IconUser className="w-[19px] h-[19px]" />
+                  </IconButton>
                 )}
 
                 {/* Panier */}
                 <button
                   onClick={openCart}
-                  className="relative flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-white transition-colors hover:bg-accent-hover focus:outline-none"
+                  className="relative flex items-center gap-2 rounded-full bg-accent px-4 py-2.5 text-white transition-all duration-200 hover:bg-accent-hover hover:scale-105 active:scale-95 focus:outline-none"
                 >
-                  <ShoppingCart className="w-[18px] h-[18px]" />
+                  <IconBag className="w-[18px] h-[18px]" />
                   <span className="hidden text-sm font-semibold lg:inline">Panier</span>
                   {cart.length > 0 && (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-white tabular-nums">
+                    <span className="anim-scale-in flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-accent tabular-nums">
                       {cart.length}
                     </span>
                   )}
                 </button>
 
                 {/* 🔔 NOTIFICATIONS */}
-                <button
-                  onClick={() => router.push("/notifications")}
-                  className="relative flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-foreground transition-colors hover:border-border-strong focus:outline-none"
-                  aria-label="Notifications"
-                >
-                  <Bell className="w-[18px] h-[18px]" />
+                <IconButton onClick={() => router.push("/notifications")} ariaLabel="Notifications">
+                  <IconBell className="w-[19px] h-[19px]" />
                   {unreadCount > 0 && (
                     <span
-                      className="absolute -top-1 -right-1 flex items-center justify-center tabular-nums"
+                      className="anim-scale-in absolute top-1 right-1 flex items-center justify-center tabular-nums"
                       style={{
-                        minWidth: "18px",
-                        height: "18px",
+                        minWidth: "16px",
+                        height: "16px",
                         background: "var(--accent)",
                         color: "#fff",
                         fontSize: "9px",
                         fontWeight: 700,
                         borderRadius: "100px",
-                        padding: "0 5px",
+                        padding: "0 4px",
                         border: "2px solid var(--background)",
                         lineHeight: 1,
                       }}
@@ -589,16 +685,16 @@ export function Header() {
                       {unreadCount > 99 ? "99+" : unreadCount}
                     </span>
                   )}
-                </button>
+                </IconButton>
               </div>
 
               {/* Mobile menu toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label="Menu"
-                className="lg:hidden ml-auto flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-foreground focus:outline-none"
+                className="lg:hidden ml-auto flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-all duration-200 hover:bg-surface active:scale-95 focus:outline-none"
               >
-                {mobileMenuOpen ? <X className="w-[18px] h-[18px]" /> : <Menu className="w-[18px] h-[18px]" />}
+                {mobileMenuOpen ? <IconClose className="w-[19px] h-[19px]" /> : <IconMenu className="w-[19px] h-[19px]" />}
               </button>
             </div>
           </div>
@@ -619,13 +715,13 @@ export function Header() {
                     <button
                       key={item.path}
                       onClick={() => router.push(item.path)}
-                      className={`relative px-3 py-3.5 text-sm font-medium transition-colors ${
-                        isActive ? "text-white" : "text-white/55 hover:text-white"
+                      className={`relative px-3 py-3.5 text-sm font-medium transition-colors duration-200 ${
+                        isActive ? "text-white" : "link-underline text-white/55 hover:text-white"
                       }`}
                     >
                       {item.label}
                       {isActive && (
-                        <span className="absolute bottom-0 left-3 right-3 h-[2.5px] rounded-t-sm bg-accent" />
+                        <span className="absolute bottom-0 left-3 right-3 h-[2.5px] rounded-t-sm bg-accent transition-all duration-300" />
                       )}
                     </button>
                   )
@@ -644,20 +740,20 @@ export function Header() {
 
       {/* MOBILE MENU */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-[9999] overflow-y-auto bg-background" style={{ top: "56px" }}>
-          <div className="px-5 py-4">
+        <div className="anim-fade-in lg:hidden fixed inset-0 z-[9999] overflow-y-auto bg-background" style={{ top: "56px" }}>
+          <div className="anim-fade-up px-5 py-4">
             <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
               <span className="font-logo text-foreground" style={{ fontSize: "20px" }}>
                 adul<span className="text-accent">.</span>lam
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 <ThemeToggle variant="icon" />
                 <button
                   onClick={() => setMobileMenuOpen(false)}
                   aria-label="Fermer"
-                  className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-foreground focus:outline-none"
+                  className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-all duration-200 hover:bg-surface active:scale-95 focus:outline-none"
                 >
-                  <X className="w-5 h-5" />
+                  <IconClose className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -665,7 +761,7 @@ export function Header() {
             {isLoading ? (
               <div className="mb-4 h-4 w-2/5 animate-pulse rounded-sm bg-surface" />
             ) : user ? (
-              <div className="mb-4 rounded-lg border border-border bg-surface p-3">
+              <div className="mb-4 rounded-xl bg-surface p-3">
                 <p className="overline mb-1 text-muted-foreground">Connecté</p>
                 <p className="truncate text-sm font-semibold text-foreground">{user.name || user.email}</p>
               </div>
@@ -676,23 +772,23 @@ export function Header() {
                     goToLogin()
                     setMobileMenuOpen(false)
                   }}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-brand py-2.5 text-sm font-semibold text-white"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-brand py-2.5 text-sm font-semibold text-white transition-transform duration-200 active:scale-95"
                 >
-                  <LogIn className="w-4 h-4" /> Connexion
+                  <IconLogIn className="w-4 h-4" /> Connexion
                 </button>
                 <button
                   onClick={() => {
                     goToRegister()
                     setMobileMenuOpen(false)
                   }}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-background py-2.5 text-sm font-semibold text-foreground"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-surface py-2.5 text-sm font-semibold text-foreground transition-transform duration-200 active:scale-95"
                 >
-                  <UserPlus className="w-4 h-4" /> S&apos;inscrire
+                  <IconUserPlus className="w-4 h-4" /> S&apos;inscrire
                 </button>
               </div>
             )}
 
-            <div className="mb-4 flex flex-col">
+            <div className="stagger mb-4 flex flex-col">
               {navItems.map((item) => (
                 <button
                   key={item.path}
@@ -703,7 +799,7 @@ export function Header() {
                   className="flex items-center justify-between border-b border-border py-3.5 text-left text-sm font-medium text-foreground"
                 >
                   {item.label}
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  <IconChevronRight className="w-4 h-4 text-muted-foreground" />
                 </button>
               ))}
             </div>
@@ -724,15 +820,15 @@ export function Header() {
                 >
                   {cat.title}
                   {cat.items.length > 0 && (
-                    <ChevronDown
-                      className={`w-4 h-4 text-muted-foreground transition-transform ${
+                    <IconChevronDown
+                      className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${
                         activeCategory === cat.title ? "rotate-180" : ""
                       }`}
                     />
                   )}
                 </button>
                 {activeCategory === cat.title && cat.items.length > 0 && (
-                  <div className="flex flex-col gap-1 py-2 pl-4">
+                  <div className="anim-fade-up flex flex-col gap-1 py-2 pl-4">
                     {cat.items.map((item, i) => (
                       <button
                         key={i}
@@ -752,7 +848,7 @@ export function Header() {
 
             {user && (
               <button onClick={handleLogout} className="mt-4 flex items-center gap-2 text-sm font-medium text-accent">
-                <LogOut className="w-4 h-4" /> Déconnexion
+                <IconLogOut className="w-4 h-4" /> Déconnexion
               </button>
             )}
           </div>
