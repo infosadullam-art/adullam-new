@@ -69,8 +69,6 @@ const pays = {
   US: { nom: "États-Unis", drapeau: "🇺🇸", code: "US" },
 }
 
-// Storytelling — même mécanique de slide, contenu recentré sur les 3
-// vrais arguments de vente au lieu de 3 catégories produit interchangeables
 const heroSlides = [
   {
     id: 1,
