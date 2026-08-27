@@ -255,7 +255,7 @@ export function HeroSection() {
         transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
       }}
     >
-      <div className="max-w-7xl mx-auto px-8 py-8">
+      <div className="max-w-7xl mx-auto px-8 pt-8 pb-2">
         <div className="grid grid-cols-2 gap-12 items-center">
 
           {/* Gauche — Texte */}
@@ -432,7 +432,7 @@ export function HeroSection() {
         {/* Trust bar */}
         <div
           className="grid grid-cols-3 gap-0 mt-8"
-          style={{ borderTop: "0.5px solid rgba(255,255,255,0.08)", paddingTop: "20px", opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out 360ms, transform 0.5s ease-out 360ms" }}
+          style={{ borderTop: "0.5px solid rgba(255,255,255,0.08)", paddingTop: "16px", opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out 360ms, transform 0.5s ease-out 360ms" }}
         >
           {trustItems.map(({ icon: Icon, label, sub }, i) => (
             <div
