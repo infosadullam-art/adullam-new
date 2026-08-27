@@ -167,38 +167,26 @@ export function HeroSection() {
             style={{ opacity: index === currentSlide ? 1 : 0, zIndex: index === currentSlide ? 10 : 0 }}
           >
             <Image src={slide.image} alt={slide.title} fill className="object-cover" priority={index === 0} />
-            <div className="absolute inset-0" style={{ background: isFirstSlide ? "rgba(255,255,255,0.7)" : "linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.35) 70%, transparent 100%)" }} />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.35) 70%, transparent 100%)" }} />
 
             <div className="absolute inset-0 flex flex-col justify-center px-5 z-20">
               <div
                 className="flex items-center gap-1.5 w-fit px-2.5 py-1 mb-3"
-                style={{ 
-                  background: isFirstSlide ? "rgba(0,0,0,0.08)" : "rgba(0,0,0,0.5)", 
-                  borderRadius: "4px", 
-                  opacity: isVisible ? 1 : 0, 
-                  transform: isVisible ? "translateY(0)" : "translateY(8px)", 
-                  transition: "opacity 0.45s ease-out 0ms, transform 0.45s ease-out 0ms" 
-                }}
+                style={{ background: "rgba(0,0,0,0.5)", borderRadius: "4px", opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(8px)", transition: "opacity 0.45s ease-out 0ms, transform 0.45s ease-out 0ms" }}
               >
                 <Flag code={paysActuel.code} className="w-3.5 h-2.5 rounded-[1px]" />
-                <span style={{ 
-                  fontSize: "10px", 
-                  fontWeight: 500, 
-                  color: isFirstSlide ? "#000000" : "#fff", 
-                  fontFamily: amazonFont 
-                }}>
+                <span style={{ fontSize: "10px", fontWeight: 500, color: "#fff", fontFamily: amazonFont }}>
                   {paysActuel.nom}
                 </span>
               </div>
 
               <span
-                className="w-fit px-2 py-0.5 mb-1.5 transition-transform duration-200 hover:scale-105"
+                className="w-fit px-2 py-0.5 mb-1.5 text-white transition-transform duration-200 hover:scale-105"
                 style={{ 
-                  background: isFirstSlide ? "#000000" : "#D4372B",
+                  background: isFirstSlide ? "#000000" : "#D4372B", 
                   borderRadius: "2px", 
                   fontSize: "10px", 
                   fontWeight: 700, 
-                  color: "#fff",
                   fontFamily: amazonFont, 
                   opacity: isVisible ? 1 : 0, 
                   transform: isVisible ? "translateY(0)" : "translateY(8px)", 
@@ -211,7 +199,7 @@ export function HeroSection() {
               <h1 style={{ 
                 fontSize: "24px", 
                 fontWeight: 900, 
-                color: isFirstSlide ? "#000000" : "#fff",
+                color: isFirstSlide ? "#000000" : "#fff", 
                 lineHeight: 1.15, 
                 letterSpacing: "-0.03em", 
                 fontFamily: amazonFont, 
@@ -225,7 +213,7 @@ export function HeroSection() {
               
               <p style={{ 
                 fontSize: "13px", 
-                color: isFirstSlide ? "#000000" : "rgba(255,255,255,0.85)",
+                color: "rgba(255,255,255,0.85)", 
                 fontFamily: amazonFont, 
                 marginBottom: "16px",
                 opacity: isVisible ? 1 : 0, 
@@ -268,7 +256,7 @@ export function HeroSection() {
               height: "2px",
               width: i === currentSlide ? "20px" : "6px",
               borderRadius: "1px",
-              background: i === currentSlide ? "#D4372B" : "rgba(0,0,0,0.2)",
+              background: i === currentSlide ? "#fff" : "rgba(255,255,255,0.4)",
               transition: "all 0.3s ease",
               border: "none",
               cursor: "pointer",
@@ -330,146 +318,133 @@ export function HeroSection() {
               ))}
             </div>
 
-            {heroSlides.map((slide, index) => {
-              const isFirstSlide = index === 0 && currentSlide === 0;
-              
-              return (
-                <div key={slide.id} style={{ display: index === currentSlide ? "block" : "none" }}>
-                  <h1
-                    style={{
-                      fontSize: "40px",
-                      fontWeight: 900,
-                      color: isFirstSlide ? "#000000" : "#fff",
-                      lineHeight: 1.15,
-                      letterSpacing: "-0.03em",
-                      fontFamily: amazonFont,
-                      marginBottom: "16px",
-                      opacity: isVisible ? 1 : 0, 
-                      transform: isVisible ? "translateY(0)" : "translateY(10px)", 
-                      transition: "opacity 0.5s ease-out 90ms, transform 0.5s ease-out 90ms",
-                    }}
-                  >
-                    Tu veux commander direct usine ?
-                    <br />
-                    <span style={{ 
-                      fontSize: "40px", 
-                      fontWeight: 900, 
-                      color: isFirstSlide ? "#000000" : "#D4372B", 
-                      fontFamily: amazonFont 
-                    }}>
-                      On s'occupe de tout.
-                    </span>
-                  </h1>
+            <h1
+              style={{
+                fontSize: "40px",
+                fontWeight: 900,
+                color: "#fff",
+                lineHeight: 1.15,
+                letterSpacing: "-0.03em",
+                fontFamily: amazonFont,
+                marginBottom: "16px",
+                opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out 90ms, transform 0.5s ease-out 90ms",
+              }}
+            >
+              Tu veux commander direct usine ?
+              <br />
+              <span style={{ fontSize: "40px", fontWeight: 900, color: "#D4372B", fontFamily: amazonFont }}>
+                On s'occupe de tout.
+              </span>
+            </h1>
 
-                  <p style={{ 
-                    fontSize: "16px", 
-                    color: isFirstSlide ? "#000000" : "#D0D0D0", 
-                    lineHeight: 1.6, 
-                    fontFamily: amazonFont, 
-                    maxWidth: "460px", 
-                    marginBottom: "32px",
-                    fontWeight: 400,
-                    opacity: isVisible ? 1 : 0, 
-                    transform: isVisible ? "translateY(0)" : "translateY(10px)", 
-                    transition: "opacity 0.5s ease-out 180ms, transform 0.5s ease-out 180ms",
-                  }}>
-                    Tu reçois chez toi. Si ça n'arrive pas — on te rembourse.
-                  </p>
+            <p style={{ 
+              fontSize: "16px", 
+              color: "#D0D0D0", 
+              lineHeight: 1.6, 
+              fontFamily: amazonFont, 
+              maxWidth: "460px", 
+              marginBottom: "32px",
+              fontWeight: 400,
+              opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out 180ms, transform 0.5s ease-out 180ms",
+            }}>
+              Tu reçois chez toi. Si ça n'arrive pas — on te rembourse.
+            </p>
 
-                  <div className="flex items-center gap-3" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out 270ms, transform 0.5s ease-out 270ms" }}>
-                    <Link
-                      href={slide.href}
-                      className="group transition-all duration-200 hover:scale-105 hover:shadow-lg"
-                      style={{
-                        background: isFirstSlide ? "#000000" : "#D4372B",
-                        color: "#fff",
-                        borderRadius: "8px",
-                        padding: "12px 28px",
-                        fontSize: "14px",
-                        fontWeight: 700,
-                        fontFamily: amazonFont,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                      }}
-                    >
-                      {slide.cta}
-                      <ChevronRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
-                    </Link>
-                    <Link
-                      href="/boutique-noel"
-                      className="transition-all duration-200 hover:border-[#D4372B] hover:-translate-y-0.5"
-                      style={{
-                        border: isFirstSlide ? "1px solid rgba(0,0,0,0.25)" : "1px solid rgba(255,255,255,0.25)",
-                        color: isFirstSlide ? "#000000" : "#fff",
-                        borderRadius: "8px",
-                        padding: "11px 24px",
-                        fontSize: "14px",
-                        fontWeight: 600,
-                        fontFamily: amazonFont,
-                      }}
-                    >
-                      Sourcing B2B
-                    </Link>
-                  </div>
-                </div>
-              )
-            })}
+            <div className="flex items-center gap-3" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out 270ms, transform 0.5s ease-out 270ms" }}>
+              <Link
+                href="/for-you"
+                className="group transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                style={{
+                  background: "#D4372B",
+                  color: "#fff",
+                  borderRadius: "8px",
+                  padding: "12px 28px",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  fontFamily: amazonFont,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                Explorer la boutique
+                <ChevronRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+              </Link>
+              <Link
+                href="/boutique-noel"
+                className="transition-all duration-200 hover:border-[#D4372B] hover:-translate-y-0.5"
+                style={{
+                  border: "1px solid rgba(255,255,255,0.25)",
+                  color: "#fff",
+                  borderRadius: "8px",
+                  padding: "11px 24px",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  fontFamily: amazonFont,
+                }}
+              >
+                Sourcing B2B
+              </Link>
+            </div>
           </div>
 
           {/* Droite — Image carrousel */}
           <div className="relative" style={{ height: "280px" }}>
-            {heroSlides.map((slide, index) => (
-              <div
-                key={slide.id}
-                className="absolute inset-0 transition-all duration-700"
-                style={{ 
-                  opacity: index === currentSlide ? 1 : 0, 
-                  borderRadius: "12px", 
-                  overflow: "hidden",
-                }}
-              >
-                <Image src={slide.image} alt={slide.title} fill className="object-cover" />
-                <div className="absolute inset-0" style={{ background: index === 0 ? "rgba(255,255,255,0.3)" : "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)" }} />
+            {heroSlides.map((slide, index) => {
+              const isFirstSlide = index === 0;
+              
+              return (
+                <div
+                  key={slide.id}
+                  className="absolute inset-0 transition-all duration-700"
+                  style={{ 
+                    opacity: index === currentSlide ? 1 : 0, 
+                    borderRadius: "12px", 
+                    overflow: "hidden",
+                  }}
+                >
+                  <Image src={slide.image} alt={slide.title} fill className="object-cover" />
+                  <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)" }} />
 
-                <div className="absolute top-4 left-4 z-10">
-                  <Link
-                    href={slide.href}
-                    className="flex items-center gap-1.5 w-fit group transition-transform duration-200 hover:scale-105"
-                    style={{
-                      background: index === 0 ? "#000000" : "#fff",
-                      color: index === 0 ? "#fff" : "#0A0A0A",
-                      borderRadius: "6px",
-                      padding: "6px 12px",
-                      fontSize: "11px",
-                      fontWeight: 700,
-                      fontFamily: amazonFont,
-                    }}
-                  >
-                    {slide.cta}
-                    <ChevronRight className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5" />
-                  </Link>
-                </div>
+                  <div className="absolute top-4 left-4 z-10">
+                    <Link
+                      href={slide.href}
+                      className="flex items-center gap-1.5 w-fit group transition-transform duration-200 hover:scale-105"
+                      style={{
+                        background: isFirstSlide ? "#000000" : "#fff",
+                        color: isFirstSlide ? "#fff" : "#0A0A0A",
+                        borderRadius: "6px",
+                        padding: "6px 12px",
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        fontFamily: amazonFont,
+                      }}
+                    >
+                      {slide.cta}
+                      <ChevronRight className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+                    </Link>
+                  </div>
 
-                <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between z-10">
-                  <div>
-                    <p className="text-[11px] text-white/60" style={{ fontFamily: amazonFont }}>{slide.badge}</p>
-                    <p className="text-[18px] font-extrabold text-white tracking-tight" style={{ fontFamily: amazonFont }}>{slide.title}</p>
-                  </div>
-                  <div
-                    className="flex flex-col items-center"
-                    style={{
-                      background: "#D4372B",
-                      borderRadius: "8px",
-                      padding: "8px 14px",
-                    }}
-                  >
-                    <span className="text-[20px] font-black text-white leading-none" style={{ fontFamily: amazonFont }}>{slide.offre}</span>
-                    <span className="text-[9px] text-white/70" style={{ fontFamily: amazonFont }}>{slide.statLabel}</span>
+                  <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between z-10">
+                    <div>
+                      <p className="text-[11px] text-white/60" style={{ fontFamily: amazonFont }}>{slide.badge}</p>
+                      <p className="text-[18px] font-extrabold text-white tracking-tight" style={{ fontFamily: amazonFont }}>{slide.title}</p>
+                    </div>
+                    <div
+                      className="flex flex-col items-center"
+                      style={{
+                        background: "#D4372B",
+                        borderRadius: "8px",
+                        padding: "8px 14px",
+                      }}
+                    >
+                      <span className="text-[20px] font-black text-white leading-none" style={{ fontFamily: amazonFont }}>{slide.offre}</span>
+                      <span className="text-[9px] text-white/70" style={{ fontFamily: amazonFont }}>{slide.statLabel}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
 
             <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 z-30">
               {heroSlides.map((_, i) => (
