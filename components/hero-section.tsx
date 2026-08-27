@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { MapPin, ChevronRight, Truck, Shield, Clock } from "lucide-react"
+import { MapPin, ChevronRight, Truck, Wallet, ShieldCheck } from "lucide-react"
 import { useLocale } from "@/context/LocaleProvider"
 import { useState, useEffect } from "react"
 
@@ -61,40 +61,48 @@ const pays = {
   US: { nom: "États-Unis", drapeau: "🇺🇸", code: "US" },
 }
 
+// Storytelling — même mécanique de slide, contenu recentré sur les 3
+// vrais arguments de vente au lieu de 3 catégories produit interchangeables
 const heroSlides = [
   {
     id: 1,
     image: "/hero-fashion.jpg",
-    title: "Mode Africaine",
-    subtitle: "Collections printemps-été",
-    badge: "Nouvelle collection",
-    offre: "-30%",
-    href: "/categorie/mode",
+    title: "Commandez direct usine",
+    subtitle: "Sans grossiste, sans intermédiaire",
+    badge: "Direct usine",
+    offre: "0%",
+    statLabel: "intermédiaire",
+    cta: "Commander",
+    href: "/for-you",
   },
   {
     id: 2,
     image: "/hero-electronics.jpg",
-    title: "Électronique",
-    subtitle: "Smartphones, accessoires",
-    badge: "Livraison 7j",
-    offre: "-25%",
-    href: "/categorie/electronique",
+    title: "Sourcing sur mesure",
+    subtitle: "Produit précis, grande quantité : on négocie pour vous",
+    badge: "Sourcing B2B",
+    offre: "B2B",
+    statLabel: "sur devis",
+    cta: "Demander un devis",
+    href: "/boutique-noel",
   },
   {
     id: 3,
     image: "/hero-home.jpg",
-    title: "Maison & Cuisine",
-    subtitle: "Équipez votre intérieur",
-    badge: "Meilleures ventes",
-    offre: "-40%",
-    href: "/categorie/maison",
+    title: "Garanti ou remboursé",
+    subtitle: "Commande non livrée : remboursement automatique",
+    badge: "0 risque",
+    offre: "100%",
+    statLabel: "remboursé",
+    cta: "En savoir plus",
+    href: "/for-you",
   },
 ]
 
 const trustItems = [
-  { icon: Truck, label: "Livraison porte-à-porte", sub: "50j · 15j · 7j" },
-  { icon: Shield, label: "Paiement sécurisé", sub: "Mobile Money, Carte" },
-  { icon: Clock, label: "Suivi en temps réel", sub: "De l'usine à votre porte" },
+  { icon: Wallet, label: "Paiement sécurisé", sub: "Mobile Money, Carte" },
+  { icon: Truck, label: "Livraison rapide", sub: "7 à 45 jours" },
+  { icon: ShieldCheck, label: "Garanti ou remboursé", sub: "Si ça n'arrive pas" },
 ]
 
 const suppliers = [
@@ -102,7 +110,6 @@ const suppliers = [
   { flag: "🇦🇪", label: "Dubaï" },
   { flag: "🇹🇷", label: "Turquie" },
   { flag: "🇺🇸", label: "USA" },
-  { flag: "🇪🇺", label: "Europe" },
 ]
 
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
@@ -189,7 +196,7 @@ export function HeroSection() {
                 fontFamily: amazonFont,
               }}
             >
-              Découvrir {slide.offre}
+              {slide.cta}
               <ChevronRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
           </div>
@@ -223,7 +230,7 @@ export function HeroSection() {
           {heroSlides[currentSlide].offre}
         </span>
         <span style={{ fontSize: "7px", color: "rgba(255,255,255,0.8)", fontFamily: amazonFont }}>
-          offre
+          {heroSlides[currentSlide].statLabel}
         </span>
       </div>
     </div>
@@ -269,19 +276,19 @@ export function HeroSection() {
             {/* ✅ TITRE CORRIGÉ : même taille pour les deux lignes */}
             <h1
               style={{
-                fontSize: "52px",
+                fontSize: "40px",
                 fontWeight: 900,
                 color: "#fff",
-                lineHeight: 1.1,
+                lineHeight: 1.15,
                 letterSpacing: "-0.03em",
                 fontFamily: amazonFont,
-                marginBottom: "20px",
+                marginBottom: "16px",
               }}
             >
-              Achetez direct
+              Tu veux commander direct usine ?
               <br />
-              <span style={{ fontSize: "52px", fontWeight: 900, color: "#D4372B", fontFamily: amazonFont }}>
-                des usines du monde
+              <span style={{ fontSize: "40px", fontWeight: 900, color: "#D4372B", fontFamily: amazonFont }}>
+                On s'occupe de tout.
               </span>
             </h1>
 
@@ -294,7 +301,7 @@ export function HeroSection() {
               marginBottom: "32px",
               fontWeight: 400,
             }}>
-              Adullam connecte les acheteurs africains aux meilleurs fournisseurs de Chine, Dubaï, Turquie, USA et Europe.
+              Tu reçois chez toi. Si ça n'arrive pas — on te rembourse.
             </p>
 
             <div className="flex items-center gap-3">
@@ -364,7 +371,7 @@ export function HeroSection() {
                       fontFamily: amazonFont,
                     }}
                   >
-                    Découvrir {slide.offre}
+                    {slide.cta}
                     <ChevronRight className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </Link>
                 </div>
@@ -383,7 +390,7 @@ export function HeroSection() {
                     }}
                   >
                     <span className="text-[20px] font-black text-white leading-none" style={{ fontFamily: amazonFont }}>{slide.offre}</span>
-                    <span className="text-[9px] text-white/70" style={{ fontFamily: amazonFont }}>aujourd'hui</span>
+                    <span className="text-[9px] text-white/70" style={{ fontFamily: amazonFont }}>{slide.statLabel}</span>
                   </div>
                 </div>
               </div>
