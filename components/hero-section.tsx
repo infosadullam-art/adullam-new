@@ -428,61 +428,44 @@ export function HeroSection() {
             </div>
           </div>
         </div>
-
-        {/* Trust bar — carrousel animé */}
-        <div
-          className="mt-8 overflow-hidden"
-          style={{ 
-            background: "#FFFFFF", 
-            borderTop: "0.5px solid rgba(255,255,255,0.08)", 
-            borderRadius: "8px",
-            opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out 360ms, transform 0.5s ease-out 360ms" 
-          }}
-        >
-          <div
-            className="trust-track flex"
-            style={{ width: "200%", paddingTop: "16px", paddingBottom: "16px" }}
-          >
-            {[...trustItems, ...trustItems].map(({ icon: Icon, label, sub }, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-center gap-3 shrink-0"
-                style={{ 
-                  width: `${100 / (trustItems.length * 2)}%`,
-                  boxSizing: "border-box",
-                  padding: "0 32px",
-                  borderRight: i < trustItems.length * 2 - 1 ? "0.5px solid rgba(0,0,0,0.1)" : "none",
-                }}
-              >
-                <div 
-                  className="p-2"
-                  style={{ background: "rgba(0,0,0,0.06)", borderRadius: "8px" }}
-                >
-                  <Icon className="w-5 h-5" style={{ color: "#0A0A0A" }} />
-                </div>
-                <div>
-                  <p className="text-[13px] font-semibold whitespace-nowrap" style={{ fontFamily: amazonFont, color: "#0A0A0A" }}>{label}</p>
-                  <p className="text-[12px] whitespace-nowrap" style={{ fontFamily: amazonFont, color: "#555555" }}>{sub}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <style jsx>{`
-            .trust-track {
-              animation: trustScroll 9s cubic-bezier(0.65, 0, 0.35, 1) infinite;
-              will-change: transform;
-            }
-            .trust-track:hover {
-              animation-play-state: paused;
-            }
-            @keyframes trustScroll {
-              0% { transform: translateX(0%); }
-              100% { transform: translateX(-50%); }
-            }
-          `}</style>
-        </div>
       </div>
     </div>
+
+    {/* Trust bar — pleine largeur, statique (sans animation) */}
+    <div
+      className="w-full"
+      style={{ 
+        background: "#FFFFFF", 
+        borderTop: "0.5px solid rgba(255,255,255,0.08)",
+        marginTop: "32px",
+        opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out 360ms, transform 0.5s ease-out 360ms" 
+      }}
+    >
+      <div className="flex items-stretch justify-center" style={{ paddingTop: "16px", paddingBottom: "16px" }}>
+        {trustItems.map(({ icon: Icon, label, sub }, i) => (
+          <div
+            key={i}
+            className="flex items-center justify-center gap-3 flex-1"
+            style={{ 
+              padding: "0 32px",
+              borderRight: i < trustItems.length - 1 ? "0.5px solid rgba(0,0,0,0.1)" : "none",
+            }}
+          >
+            <div 
+              className="p-2"
+              style={{ background: "rgba(0,0,0,0.06)", borderRadius: "8px" }}
+            >
+              <Icon className="w-5 h-5" style={{ color: "#0A0A0A" }} />
+            </div>
+            <div>
+              <p className="text-[13px] font-semibold whitespace-nowrap" style={{ fontFamily: amazonFont, color: "#0A0A0A" }}>{label}</p>
+              <p className="text-[12px] whitespace-nowrap" style={{ fontFamily: amazonFont, color: "#555555" }}>{sub}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
   )
 
   return (
