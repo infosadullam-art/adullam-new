@@ -437,7 +437,7 @@ export function HeroSection() {
           {trustItems.map(({ icon: Icon, label, sub }, i) => (
             <div
               key={i}
-              className="flex items-center gap-3 group transition-all duration-200 hover:translate-x-0.5"
+              className="flex items-center justify-center gap-3 group transition-all duration-200 hover:translate-x-0.5"
               style={{ 
                 borderRight: i < 2 ? "0.5px solid rgba(255,255,255,0.08)" : "none", 
                 paddingRight: i < 2 ? "32px" : "0", 
@@ -451,7 +451,7 @@ export function HeroSection() {
                 <Icon className="w-5 h-5" style={{ color: "#D4372B" }} />
               </div>
               <div>
-                <p className="text-[13px] font-semibold text-white" style={{ fontFamily: amazonFont }}>{label}</p>
+                <p className="text-[13px] font-semibold" style={{ fontFamily: amazonFont, color: "#FFFFFF" }}>{label}</p>
                 <p className="text-[12px] text-[#AAAAAA]" style={{ fontFamily: amazonFont }}>{sub}</p>
               </div>
             </div>
