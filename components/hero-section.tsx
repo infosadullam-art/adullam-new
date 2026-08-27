@@ -74,7 +74,7 @@ const pays = {
 const heroSlides = [
   {
     id: 1,
-    image: "/hero-fashion.jpg",
+    image: "/hero-fashion.png",
     title: "Commandez direct usine",
     subtitle: "Sans grossiste, sans intermédiaire",
     badge: "Direct usine",
@@ -283,7 +283,6 @@ export function HeroSection() {
               ))}
             </div>
 
-            {/* ✅ TITRE CORRIGÉ : même taille pour les deux lignes */}
             <h1
               style={{
                 fontSize: "40px",
