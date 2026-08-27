@@ -2,105 +2,41 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { MapPin, ChevronRight, Truck, Wallet, ShieldCheck } from "lucide-react"
-import { useLocale } from "@/context/LocaleProvider"
 import { useState, useEffect } from "react"
 import * as Flags from "country-flag-icons/react/3x2"
+import { Truck, Wallet, ShieldCheck, ChevronRight } from "lucide-react"
 
-// NOTE DEV : npm install country-flag-icons
+// NOTE DEV : npm install country-flag-icons (déjà en place)
 function Flag({ code, className }: { code: string; className?: string }) {
   const Cmp = (Flags as Record<string, React.ComponentType<{ className?: string; title?: string }>>)[code]
   if (!Cmp) return null
   return <Cmp className={className} title={code} />
 }
 
-const pays = {
-  CI: { nom: "Côte d'Ivoire", drapeau: "🇨🇮", code: "CI" },
-  SN: { nom: "Sénégal", drapeau: "🇸🇳", code: "SN" },
-  CM: { nom: "Cameroun", drapeau: "🇨🇲", code: "CM" },
-  MA: { nom: "Maroc", drapeau: "🇲🇦", code: "MA" },
-  TN: { nom: "Tunisie", drapeau: "🇹🇳", code: "TN" },
-  DZ: { nom: "Algérie", drapeau: "🇩🇿", code: "DZ" },
-  BF: { nom: "Burkina Faso", drapeau: "🇧🇫", code: "BF" },
-  ML: { nom: "Mali", drapeau: "🇲🇱", code: "ML" },
-  NE: { nom: "Niger", drapeau: "🇳🇪", code: "NE" },
-  TG: { nom: "Togo", drapeau: "🇹🇬", code: "TG" },
-  BJ: { nom: "Bénin", drapeau: "🇧🇯", code: "BJ" },
-  GN: { nom: "Guinée", drapeau: "🇬🇳", code: "GN" },
-  GW: { nom: "Guinée-Bissau", drapeau: "🇬🇼", code: "GW" },
-  LR: { nom: "Libéria", drapeau: "🇱🇷", code: "LR" },
-  SL: { nom: "Sierra Leone", drapeau: "🇸🇱", code: "SL" },
-  GM: { nom: "Gambie", drapeau: "🇬🇲", code: "GM" },
-  GH: { nom: "Ghana", drapeau: "🇬🇭", code: "GH" },
-  CG: { nom: "Congo", drapeau: "🇨🇬", code: "CG" },
-  CD: { nom: "RDC", drapeau: "🇨🇩", code: "CD" },
-  GA: { nom: "Gabon", drapeau: "🇬🇦", code: "GA" },
-  GQ: { nom: "Guinée équatoriale", drapeau: "🇬🇶", code: "GQ" },
-  CF: { nom: "République centrafricaine", drapeau: "🇨🇫", code: "CF" },
-  TD: { nom: "Tchad", drapeau: "🇹🇩", code: "TD" },
-  ST: { nom: "Sao Tomé", drapeau: "🇸🇹", code: "ST" },
-  KE: { nom: "Kenya", drapeau: "🇰🇪", code: "KE" },
-  TZ: { nom: "Tanzanie", drapeau: "🇹🇿", code: "TZ" },
-  UG: { nom: "Ouganda", drapeau: "🇺🇬", code: "UG" },
-  RW: { nom: "Rwanda", drapeau: "🇷🇼", code: "RW" },
-  BI: { nom: "Burundi", drapeau: "🇧🇮", code: "BI" },
-  ET: { nom: "Éthiopie", drapeau: "🇪🇹", code: "ET" },
-  ER: { nom: "Érythrée", drapeau: "🇪🇷", code: "ER" },
-  SO: { nom: "Somalie", drapeau: "🇸🇴", code: "SO" },
-  DJ: { nom: "Djibouti", drapeau: "🇩🇯", code: "DJ" },
-  SS: { nom: "Soudan du Sud", drapeau: "🇸🇸", code: "SS" },
-  SD: { nom: "Soudan", drapeau: "🇸🇩", code: "SD" },
-  ZA: { nom: "Afrique du Sud", drapeau: "🇿🇦", code: "ZA" },
-  ZM: { nom: "Zambie", drapeau: "🇿🇲", code: "ZM" },
-  ZW: { nom: "Zimbabwe", drapeau: "🇿🇼", code: "ZW" },
-  MZ: { nom: "Mozambique", drapeau: "🇲🇿", code: "MZ" },
-  AO: { nom: "Angola", drapeau: "🇦🇴", code: "AO" },
-  NA: { nom: "Namibie", drapeau: "🇳🇦", code: "NA" },
-  BW: { nom: "Botswana", drapeau: "🇧🇼", code: "BW" },
-  MW: { nom: "Malawi", drapeau: "🇲🇼", code: "MW" },
-  MG: { nom: "Madagascar", drapeau: "🇲🇬", code: "MG" },
-  MU: { nom: "Maurice", drapeau: "🇲🇺", code: "MU" },
-  KM: { nom: "Comores", drapeau: "🇰🇲", code: "KM" },
-  SC: { nom: "Seychelles", drapeau: "🇸🇨", code: "SC" },
-  EG: { nom: "Égypte", drapeau: "🇪🇬", code: "EG" },
-  LY: { nom: "Libye", drapeau: "🇱🇾", code: "LY" },
-  MR: { nom: "Mauritanie", drapeau: "🇲🇷", code: "MR" },
-  EH: { nom: "Sahara occidental", drapeau: "🇪🇭", code: "EH" },
-  US: { nom: "États-Unis", drapeau: "🇺🇸", code: "US" },
-}
-
+// ── Les 3 visuels fournis contiennent déjà tout le texte (titre, icônes, bouton dessiné).
+// On ne remet donc RIEN par-dessus l'image : pas de titre, pas de sous-titre, pas de badge.
+// Chaque slide garde juste une destination (href) et le libellé du VRAI bouton cliquable
+// affiché sous le visuel (celui dessiné dans le PNG n'est qu'une image, pas un lien).
 const heroSlides = [
   {
     id: 1,
-    image: "/hero-fashion.png",
-    title: "Commandez direct usine",
-    subtitle: "Sans grossiste, sans intermédiaire",
-    badge: "Direct usine",
-    offre: "0%",
-    statLabel: "intermédiaire",
-    cta: "Commander",
+    image: "/images/hero/hero-1-direct-usine.webp",
+    alt: "Commandez directement à l'usine, sans intermédiaire",
+    cta: "Accédez aux usines, commandez en direct",
     href: "/for-you",
   },
   {
     id: 2,
-    image: "/hero-electronics.jpg",
-    title: "Sourcing sur mesure",
-    subtitle: "Produit précis, grande quantité : on négocie pour vous",
-    badge: "Sourcing B2B",
-    offre: "B2B",
-    statLabel: "sur devis",
-    cta: "Demander un devis",
+    image: "/images/hero/hero-2-sourcing-sur-mesure.webp",
+    alt: "Sourcing sur mesure : recherche, vérification, négociation, livraison",
+    cta: "Votre solution sourcing, clé en main",
     href: "/boutique-noel",
   },
   {
     id: 3,
-    image: "/hero-home.jpg",
-    title: "Garanti ou remboursé",
-    subtitle: "Commande non livrée : remboursement automatique",
-    badge: "0 risque",
-    offre: "100%",
-    statLabel: "remboursé",
-    cta: "En savoir plus",
+    image: "/images/hero/hero-3-garantie-remboursement.webp",
+    alt: "Livraison garantie ou remboursé",
+    cta: "Commandez en toute confiance",
     href: "/for-you",
   },
 ]
@@ -119,411 +55,196 @@ const suppliers = [
 ]
 
 const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+const SLIDE_DURATION = 5000
 
 export function HeroSection() {
-  const { country } = useLocale()
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [paysActuel, setPaysActuel] = useState(() => {
-    if (typeof window === 'undefined') return pays.CI
-    return pays[country as keyof typeof pays] || pays.CI
-  })
+  const [isPaused, setIsPaused] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
-    }, 5000)
-    return () => clearInterval(timer)
-  }, [])
-
-  useEffect(() => {
-    setPaysActuel(pays[country as keyof typeof pays] || pays.CI)
-  }, [country])
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100)
     return () => clearTimeout(timer)
   }, [])
 
-  const MobileHero = () => (
-    <div 
-      className="lg:hidden relative overflow-hidden"
-      style={{ 
-        height: "240px",
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
-        transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
-      }}
-    >
-      {heroSlides.map((slide, index) => {
-        const isFirstSlide = index === 0;
-        
-        return (
-          <div
-            key={slide.id}
-            className="absolute inset-0 transition-opacity duration-700"
-            style={{ opacity: index === currentSlide ? 1 : 0, zIndex: index === currentSlide ? 10 : 0 }}
-          >
-            <Image src={slide.image} alt={slide.title} fill className="object-cover" priority={index === 0} />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.35) 70%, transparent 100%)" }} />
+  useEffect(() => {
+    if (isPaused) return
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
+    }, SLIDE_DURATION)
+    return () => clearInterval(timer)
+  }, [isPaused])
 
-            <div className="absolute inset-0 flex flex-col justify-center px-5 z-20">
-              <div
-                className="flex items-center gap-1.5 w-fit px-2.5 py-1 mb-3"
-                style={{ background: "rgba(0,0,0,0.5)", borderRadius: "4px", opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(8px)", transition: "opacity 0.45s ease-out 0ms, transform 0.45s ease-out 0ms" }}
-              >
-                <Flag code={paysActuel.code} className="w-3.5 h-2.5 rounded-[1px]" />
-                <span style={{ fontSize: "10px", fontWeight: 500, color: "#fff", fontFamily: amazonFont }}>
-                  {paysActuel.nom}
-                </span>
-              </div>
+  const active = heroSlides[currentSlide]
 
-              <span
-                className="w-fit px-2 py-0.5 mb-1.5 text-white transition-transform duration-200 hover:scale-105"
-                style={{ 
-                  background: isFirstSlide ? "#000000" : "#D4372B", 
-                  borderRadius: "2px", 
-                  fontSize: "10px", 
-                  fontWeight: 700, 
-                  fontFamily: amazonFont, 
-                  opacity: isVisible ? 1 : 0, 
-                  transform: isVisible ? "translateY(0)" : "translateY(8px)", 
-                  transition: "opacity 0.45s ease-out 60ms, transform 0.45s ease-out 60ms" 
-                }}
-              >
-                {slide.badge}
-              </span>
-
-              <h1 style={{ 
-                fontSize: "24px", 
-                fontWeight: 900, 
-                color: isFirstSlide ? "#000000" : "#fff", 
-                lineHeight: 1.15, 
-                letterSpacing: "-0.03em", 
-                fontFamily: amazonFont, 
-                marginBottom: "6px",
-                opacity: isVisible ? 1 : 0, 
-                transform: isVisible ? "translateY(0)" : "translateY(8px)", 
-                transition: "opacity 0.45s ease-out 120ms, transform 0.45s ease-out 120ms" 
-              }}>
-                {slide.title}
-              </h1>
-              
-              <p style={{ 
-                fontSize: "13px", 
-                color: "rgba(255,255,255,0.85)", 
-                fontFamily: amazonFont, 
-                marginBottom: "16px",
-                opacity: isVisible ? 1 : 0, 
-                transform: isVisible ? "translateY(0)" : "translateY(8px)", 
-                transition: "opacity 0.45s ease-out 180ms, transform 0.45s ease-out 180ms" 
-              }}>
-                {slide.subtitle}
-              </p>
-
-              <Link
-                href={slide.href}
-                className="flex items-center gap-1.5 w-fit group transition-transform duration-200 hover:scale-105"
-                style={{
-                  background: isFirstSlide ? "#000000" : "#fff",
-                  color: isFirstSlide ? "#fff" : "#0A0A0A",
-                  borderRadius: "6px",
-                  padding: "8px 16px",
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  fontFamily: amazonFont,
-                  opacity: isVisible ? 1 : 0, 
-                  transform: isVisible ? "translateY(0)" : "translateY(8px)", 
-                  transition: "opacity 0.45s ease-out 240ms, transform 0.45s ease-out 240ms",
-                }}
-              >
-                {slide.cta}
-                <ChevronRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
-              </Link>
-            </div>
-          </div>
-        )
-      })}
-
-      <div className="absolute bottom-3 left-5 z-30 flex gap-1.5">
-        {heroSlides.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentSlide(i)}
-            style={{
-              height: "2px",
-              width: i === currentSlide ? "20px" : "6px",
-              borderRadius: "1px",
-              background: i === currentSlide ? "#fff" : "rgba(255,255,255,0.4)",
-              transition: "all 0.3s ease",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-            }}
-          />
-        ))}
-      </div>
-
-      <div
-        className="absolute top-4 right-4 z-30 flex flex-col items-center justify-center"
-        style={{ background: "#D4372B", borderRadius: "6px", width: "48px", height: "48px" }}
-      >
-        <span style={{ fontSize: "14px", fontWeight: 900, color: "#fff", lineHeight: 1, fontFamily: amazonFont }}>
-          {heroSlides[currentSlide].offre}
-        </span>
-        <span style={{ fontSize: "7px", color: "rgba(255,255,255,0.8)", fontFamily: amazonFont }}>
-          {heroSlides[currentSlide].statLabel}
-        </span>
-      </div>
-    </div>
-  )
-
-  const DesktopHero = () => (
-    <div 
-      className="hidden lg:block"
-      style={{ 
+  return (
+    <div
+      style={{
         background: "#0A0A0A",
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
-        transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
+        transform: isVisible ? "translateY(0)" : "translateY(10px)",
+        transition: "opacity 0.5s ease-out, transform 0.5s ease-out",
       }}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="max-w-7xl mx-auto px-8 pt-8 pb-2">
-        <div className="grid grid-cols-2 gap-12 items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-6 lg:pt-8 lg:pb-8">
 
-          {/* Gauche — Texte */}
-          <div>
-            <div className="flex items-center gap-2 flex-wrap mb-6" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out 0ms, transform 0.5s ease-out 0ms" }}>
-              <span style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: amazonFont }}>Direct depuis :</span>
-              {suppliers.map((s) => (
-                <span
-                  key={s.label}
-                  style={{
-                    background: "rgba(255,255,255,0.07)",
-                    border: "0.5px solid rgba(255,255,255,0.12)",
-                    borderRadius: "40px",
-                    padding: "4px 12px",
-                    fontSize: "12px",
-                    color: "#fff",
-                    fontFamily: amazonFont,
-                    transition: "all 0.2s ease",
-                  }}
-                  className="inline-flex items-center gap-1.5 hover:bg-white/15 hover:scale-105 transition-all duration-200"
-                >
-                  <Flag code={s.code} className="w-4 h-3 rounded-[1px]" />
-                  {s.label}
-                </span>
-              ))}
-            </div>
-
-            <h1
+        {/* Bandeau fournisseurs — la seule info que les visuels ne portent pas */}
+        <div className="flex items-center gap-2 flex-wrap mb-4 lg:mb-6">
+          <span style={{ fontSize: "11px", color: "#AAAAAA", fontFamily: amazonFont }} className="shrink-0">
+            Direct depuis :
+          </span>
+          {suppliers.map((s) => (
+            <span
+              key={s.label}
+              className="inline-flex items-center gap-1.5 hover:bg-white/15 hover:scale-105 transition-all duration-200"
               style={{
-                fontSize: "40px",
-                fontWeight: 900,
+                background: "rgba(255,255,255,0.07)",
+                border: "0.5px solid rgba(255,255,255,0.12)",
+                borderRadius: "40px",
+                padding: "4px 12px",
+                fontSize: "11px",
                 color: "#fff",
-                lineHeight: 1.15,
-                letterSpacing: "-0.03em",
                 fontFamily: amazonFont,
-                marginBottom: "16px",
-                opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out 90ms, transform 0.5s ease-out 90ms",
               }}
             >
-              Tu veux commander direct usine ?
-              <br />
-              <span style={{ fontSize: "40px", fontWeight: 900, color: "#D4372B", fontFamily: amazonFont }}>
-                On s'occupe de tout.
-              </span>
-            </h1>
+              <Flag code={s.code} className="w-3.5 h-2.5 rounded-[1px]" />
+              {s.label}
+            </span>
+          ))}
+        </div>
 
-            <p style={{ 
-              fontSize: "16px", 
-              color: "#D0D0D0", 
-              lineHeight: 1.6, 
-              fontFamily: amazonFont, 
-              maxWidth: "460px", 
-              marginBottom: "32px",
-              fontWeight: 400,
-              opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out 180ms, transform 0.5s ease-out 180ms",
-            }}>
-              Tu reçois chez toi. Si ça n'arrive pas — on te rembourse.
-            </p>
-
-            <div className="flex items-center gap-3" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out 270ms, transform 0.5s ease-out 270ms" }}>
+        {/* Carrousel — ratio 2:1 fixe = identique à celui des 3 visuels fournis.
+            On voit TOUJOURS l'image entière, jamais coupée, jamais démesurée en hauteur,
+            que ce soit sur mobile ou desktop : c'est le ratio qui fixe la hauteur, pas un px codé en dur. */}
+        <div className="relative w-full aspect-[2/1] max-h-[70vh] lg:max-h-[480px] rounded-xl overflow-hidden">
+          {heroSlides.map((slide, index) => {
+            const isActive = index === currentSlide
+            return (
               <Link
-                href="/for-you"
-                className="group transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                key={slide.id}
+                href={slide.href}
+                aria-label={slide.alt}
+                aria-hidden={!isActive}
+                tabIndex={isActive ? 0 : -1}
+                className="absolute inset-0 block"
                 style={{
-                  background: "#D4372B",
-                  color: "#fff",
-                  borderRadius: "8px",
-                  padding: "12px 28px",
-                  fontSize: "14px",
-                  fontWeight: 700,
-                  fontFamily: amazonFont,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
+                  opacity: isActive ? 1 : 0,
+                  transition: "opacity 900ms cubic-bezier(0.22,1,0.36,1)",
+                  pointerEvents: isActive ? "auto" : "none",
+                  zIndex: isActive ? 10 : 0,
                 }}
               >
-                Explorer la boutique
-                <ChevronRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
-              </Link>
-              <Link
-                href="/boutique-noel"
-                className="transition-all duration-200 hover:border-[#D4372B] hover:-translate-y-0.5"
-                style={{
-                  border: "1px solid rgba(255,255,255,0.25)",
-                  color: "#fff",
-                  borderRadius: "8px",
-                  padding: "11px 24px",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  fontFamily: amazonFont,
-                }}
-              >
-                Sourcing B2B
-              </Link>
-            </div>
-          </div>
-
-          {/* Droite — Image carrousel */}
-          <div className="relative" style={{ height: "280px" }}>
-            {heroSlides.map((slide, index) => {
-              const isFirstSlide = index === 0;
-              
-              return (
-                <div
-                  key={slide.id}
-                  className="absolute inset-0 transition-all duration-700"
-                  style={{ 
-                    opacity: index === currentSlide ? 1 : 0, 
-                    borderRadius: "12px", 
-                    overflow: "hidden",
-                  }}
-                >
-                  <Image src={slide.image} alt={slide.title} fill className="object-cover" />
-                  <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)" }} />
-
-                  <div className="absolute top-4 left-4 z-10">
-                    <Link
-                      href={slide.href}
-                      className="flex items-center gap-1.5 w-fit group transition-transform duration-200 hover:scale-105"
-                      style={{
-                        background: isFirstSlide ? "#000000" : "#fff",
-                        color: isFirstSlide ? "#fff" : "#0A0A0A",
-                        borderRadius: "6px",
-                        padding: "6px 12px",
-                        fontSize: "11px",
-                        fontWeight: 700,
-                        fontFamily: amazonFont,
-                      }}
-                    >
-                      {slide.cta}
-                      <ChevronRight className="w-3 h-3 transition-transform duration-200 group-hover:translate-x-0.5" />
-                    </Link>
-                  </div>
-
-                  <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between z-10">
-                    <div>
-                      <p 
-                        className="text-[11px]"
-                        style={{ 
-                          fontFamily: amazonFont, 
-                          color: isFirstSlide ? "#000000" : "rgba(255,255,255,0.6)" 
-                        }}
-                      >
-                        {slide.badge}
-                      </p>
-                      <p 
-                        className="text-[18px] font-extrabold tracking-tight"
-                        style={{ 
-                          fontFamily: amazonFont, 
-                          color: isFirstSlide ? "#000000" : "#ffffff" 
-                        }}
-                      >
-                        {slide.title}
-                      </p>
-                    </div>
-                    <div
-                      className="flex flex-col items-center"
-                      style={{
-                        background: "#D4372B",
-                        borderRadius: "8px",
-                        padding: "8px 14px",
-                      }}
-                    >
-                      <span className="text-[20px] font-black text-white leading-none" style={{ fontFamily: amazonFont }}>{slide.offre}</span>
-                      <span className="text-[9px] text-white/70" style={{ fontFamily: amazonFont }}>{slide.statLabel}</span>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-
-            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 z-30">
-              {heroSlides.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrentSlide(i)}
+                <Image
+                  src={slide.image}
+                  alt={slide.alt}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 1200px"
+                  quality={85}
+                  priority={index === 0}
+                  className="object-cover"
                   style={{
-                    height: "2px",
-                    width: i === currentSlide ? "20px" : "6px",
-                    borderRadius: "1px",
-                    background: i === currentSlide ? "#D4372B" : "rgba(255,255,255,0.3)",
-                    transition: "all 0.3s ease",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: 0,
+                    transform: isActive ? "scale(1.05)" : "scale(1)",
+                    transition: `transform ${SLIDE_DURATION + 900}ms linear`,
                   }}
                 />
-              ))}
-            </div>
+              </Link>
+            )
+          })}
+
+          {/* Indicateurs — barres de progression (pas de simples points statiques) :
+              elles se remplissent pendant les 5s, on voit visuellement le rythme du carrousel. */}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+            {heroSlides.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentSlide(i)}
+                aria-label={`Voir la diapositive ${i + 1}`}
+                className="relative h-[3px] w-8 rounded-full overflow-hidden"
+                style={{ background: "rgba(255,255,255,0.25)", border: "none", cursor: "pointer", padding: 0 }}
+              >
+                <span
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    transformOrigin: "left",
+                    background: "#F5A623",
+                    transform: `scaleX(${i === currentSlide ? 1 : 0})`,
+                    transition:
+                      i === currentSlide && !isPaused
+                        ? `transform ${SLIDE_DURATION}ms linear`
+                        : "transform 200ms ease",
+                  }}
+                />
+              </button>
+            ))}
           </div>
+        </div>
+
+        {/* Bouton réel sous le visuel — un seul, celui de la slide active.
+            Pas de texte dupliqué : juste l'action, cliquable, qui change avec le carrousel. */}
+        <div className="mt-4 lg:mt-5">
+          <Link
+            key={active.id}
+            href={active.href}
+            className="animate-fade-in flex w-full sm:w-fit items-center justify-center gap-1.5 transition-transform duration-200 hover:-translate-y-0.5"
+            style={{
+              background: "#D4372B",
+              color: "#fff",
+              borderRadius: "8px",
+              padding: "13px 28px",
+              fontSize: "14px",
+              fontWeight: 700,
+              fontFamily: amazonFont,
+            }}
+          >
+            {active.cta}
+            <ChevronRight className="w-4 h-4" />
+          </Link>
         </div>
 
         {/* Trust bar */}
         <div
-          className="grid grid-cols-3 gap-0 mt-8"
-          style={{ 
-            background: "#FFFFFF", 
-            borderTop: "0.5px solid rgba(255,255,255,0.08)", 
-            paddingTop: "16px", 
-            paddingBottom: "16px",
+          className="grid grid-cols-3 gap-0 mt-6 lg:mt-8"
+          style={{
+            background: "#FFFFFF",
+            paddingTop: "12px",
+            paddingBottom: "12px",
             borderRadius: "8px",
-            opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(10px)", transition: "opacity 0.5s ease-out 360ms, transform 0.5s ease-out 360ms" 
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? "translateY(0)" : "translateY(10px)",
+            transition: "opacity 0.5s ease-out 200ms, transform 0.5s ease-out 200ms",
           }}
         >
           {trustItems.map(({ icon: Icon, label, sub }, i) => (
             <div
               key={i}
-              className="flex items-center justify-center gap-3 group transition-all duration-200 hover:translate-x-0.5"
-              style={{ 
-                borderRight: i < 2 ? "0.5px solid rgba(0,0,0,0.1)" : "none", 
-                paddingRight: i < 2 ? "32px" : "0", 
-                paddingLeft: i > 0 ? "32px" : "0",
+              className="flex items-center justify-center gap-2 group transition-transform duration-200 hover:translate-x-0.5"
+              style={{
+                borderRight: i < 2 ? "0.5px solid rgba(0,0,0,0.1)" : "none",
+                paddingRight: i < 2 ? "16px" : "0",
+                paddingLeft: i > 0 ? "16px" : "0",
               }}
             >
-              <div 
-                className="p-2 transition-all duration-300 group-hover:scale-110"
-                style={{ background: "rgba(0,0,0,0.06)", borderRadius: "8px" }}
+              <div
+                className="p-1.5 transition-transform duration-300 group-hover:scale-110 shrink-0"
+                style={{ background: "rgba(0,0,0,0.06)", borderRadius: "7px" }}
               >
-                <Icon className="w-5 h-5" style={{ color: "#0A0A0A" }} />
+                <Icon className="w-4 h-4" style={{ color: "#0A0A0A" }} />
               </div>
-              <div>
-                <p className="text-[13px] font-semibold" style={{ fontFamily: amazonFont, color: "#0A0A0A" }}>{label}</p>
-                <p className="text-[12px]" style={{ fontFamily: amazonFont, color: "#555555" }}>{sub}</p>
+              <div className="min-w-0">
+                <p className="text-[12px] leading-tight font-semibold truncate" style={{ fontFamily: amazonFont, color: "#0A0A0A" }}>
+                  {label}
+                </p>
+                <p className="text-[11px] leading-tight truncate" style={{ fontFamily: amazonFont, color: "#555555" }}>
+                  {sub}
+                </p>
               </div>
             </div>
           ))}
         </div>
       </div>
     </div>
-  )
-
-  return (
-    <>
-      <MobileHero />
-      <DesktopHero />
-    </>
   )
 }
