@@ -321,12 +321,13 @@ export function DealCountdown() {
             </Link>
           </div>
 
-          <Ticker className="px-4 mb-2" />
-
-          <div className="flex items-center justify-between px-4 pt-1">
-            <div className="flex items-center gap-1.5">
-              <IconClock className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] font-medium text-muted-foreground">Se termine dans</span>
+          <div className="flex items-center justify-between gap-3 px-4 pt-1">
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <div className="flex items-center gap-1.5">
+                <IconClock className="h-3 w-3 shrink-0 text-muted-foreground" />
+                <span className="whitespace-nowrap text-[10px] font-medium text-muted-foreground">Fin dans</span>
+              </div>
+              <Ticker className="max-w-[170px]" />
             </div>
             <Countdown h={timeLeft.hours} m={timeLeft.minutes} s={timeLeft.seconds} />
           </div>
@@ -486,11 +487,11 @@ export function DealCountdown() {
 
         /* Balayage lumineux sur les étiquettes promo (façon Alibaba/AliExpress) — ralenti */
         @keyframes badge-shine-sweep {
-          0%   { transform: translateX(-130%) skewX(-18deg); }
-          35%  { transform: translateX(220%) skewX(-18deg); }
-          100% { transform: translateX(220%) skewX(-18deg); }
+          0%   { transform: translate3d(-130%, 0, 0) skewX(-18deg); }
+          35%  { transform: translate3d(220%, 0, 0) skewX(-18deg); }
+          100% { transform: translate3d(220%, 0, 0) skewX(-18deg); }
         }
-        .badge-shine { position: relative; overflow: hidden; }
+        .badge-shine { position: relative; overflow: hidden; isolation: isolate; }
         .badge-shine::after {
           content: "";
           position: absolute;
@@ -499,6 +500,9 @@ export function DealCountdown() {
           height: 100%;
           background: linear-gradient(115deg, transparent, rgba(255,255,255,0.65), transparent);
           animation: badge-shine-sweep 5.5s ease-in-out infinite;
+          will-change: transform;
+          backface-visibility: hidden;
+          transform: translate3d(-130%, 0, 0) skewX(-18deg);
         }
 
         /* Clignotement doux des deux-points du chrono */
