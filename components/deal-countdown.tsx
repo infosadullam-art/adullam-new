@@ -487,9 +487,11 @@ export function DealCountdown() {
 
         /* Balayage lumineux sur les étiquettes promo (façon Alibaba/AliExpress) — ralenti */
         @keyframes badge-shine-sweep {
-          0%   { transform: translate3d(-130%, 0, 0) skewX(-18deg); }
-          35%  { transform: translate3d(220%, 0, 0) skewX(-18deg); }
-          100% { transform: translate3d(220%, 0, 0) skewX(-18deg); }
+          0%   { transform: translate3d(-130%, 0, 0) skewX(-18deg); opacity: 0; }
+          6%   { opacity: 1; }
+          28%  { opacity: 1; animation-timing-function: ease-out; }
+          34%  { transform: translate3d(220%, 0, 0) skewX(-18deg); opacity: 0; }
+          100% { transform: translate3d(220%, 0, 0) skewX(-18deg); opacity: 0; }
         }
         .badge-shine { position: relative; overflow: hidden; isolation: isolate; }
         .badge-shine::after {
@@ -500,7 +502,7 @@ export function DealCountdown() {
           height: 100%;
           background: linear-gradient(115deg, transparent, rgba(255,255,255,0.65), transparent);
           animation: badge-shine-sweep 5.5s linear infinite;
-          will-change: transform;
+          will-change: transform, opacity;
           backface-visibility: hidden;
           transform: translate3d(-130%, 0, 0) skewX(-18deg);
         }
