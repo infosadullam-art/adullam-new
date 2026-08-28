@@ -499,7 +499,7 @@ export function DealCountdown() {
           width: 35%;
           height: 100%;
           background: linear-gradient(115deg, transparent, rgba(255,255,255,0.65), transparent);
-          animation: badge-shine-sweep 5.5s ease-in-out infinite;
+          animation: badge-shine-sweep 5.5s linear infinite;
           will-change: transform;
           backface-visibility: hidden;
           transform: translate3d(-130%, 0, 0) skewX(-18deg);
