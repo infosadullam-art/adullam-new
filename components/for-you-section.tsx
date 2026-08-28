@@ -5,8 +5,6 @@ import { useEffect, useRef, useState, useCallback, useLayoutEffect } from "react
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useApi } from "@/hooks/useApi"
 
-const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-
 interface Product {
   id: string
   name: string
@@ -21,14 +19,16 @@ interface Product {
   type?: "prediction" | "diversity" | "trending"
 }
 
-const badgeConfig: Record<string, { label: string; bg: string; color: string }> = {
-  session_graph: { label: "Pour vous",  bg: "#F0F4FF", color: "#3B5BDB" },
-  session:       { label: "Pour vous",  bg: "#F0F4FF", color: "#3B5BDB" },
-  als:           { label: "Recommandé", bg: "#FFF8E1", color: "#E67700" },
-  trend:         { label: "Tendance",   bg: "#FFF0F0", color: "#D4372B" },
-  new:           { label: "Nouveau",    bg: "#F3F0FF", color: "#7048E8" },
-  random:        { label: "Découverte", bg: "#EBFBEE", color: "#2F9E44" },
-  popular:       { label: "Populaire",  bg: "#FFF4E6", color: "#E67700" },
+// Même langage que product-card.tsx : étiquette pleine sombre par défaut,
+// accent réservé aux signaux à caractère promotionnel.
+const badgeConfig: Record<string, { label: string; tone: "dark" | "accent" }> = {
+  session_graph: { label: "Pour vous",  tone: "dark" },
+  session:       { label: "Pour vous",  tone: "dark" },
+  als:           { label: "Recommandé", tone: "dark" },
+  trend:         { label: "Tendance",   tone: "accent" },
+  new:           { label: "Nouveau",    tone: "dark" },
+  random:        { label: "Découverte", tone: "dark" },
+  popular:       { label: "Populaire",  tone: "dark" },
 }
 
 const TITLES = [
@@ -106,10 +106,10 @@ export function ForYouSection() {
   const saveState = useCallback(() => {
     if (!sessionId) return
     if (productsRef.current.length === 0) return
-    
+
     const scrollY = window.scrollY
     if (scrollY < 0) return
-    
+
     const state: SavedState = {
       products: productsRef.current,
       page: pageRef.current,
@@ -117,7 +117,7 @@ export function ForYouSection() {
       scrollPosition: scrollY,
       timestamp: Date.now()
     }
-    
+
     try {
       sessionStorage.setItem(`${STORAGE_KEY}_${sessionId}`, JSON.stringify(state))
       lastSavedScrollRef.current = scrollY
@@ -139,7 +139,7 @@ export function ForYouSection() {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current)
       }
-      
+
       saveTimeoutRef.current = setTimeout(() => {
         const currentScroll = window.scrollY
         if (Math.abs(currentScroll - lastSavedScrollRef.current) > 100) {
@@ -147,14 +147,14 @@ export function ForYouSection() {
         }
       }, 500)
     }
-    
+
     const handleBeforeUnload = () => {
       saveState()
     }
-    
+
     window.addEventListener("scroll", handleScroll)
     window.addEventListener("beforeunload", handleBeforeUnload)
-    
+
     return () => {
       window.removeEventListener("scroll", handleScroll)
       window.removeEventListener("beforeunload", handleBeforeUnload)
@@ -288,7 +288,7 @@ export function ForYouSection() {
 
       productsRef.current = [...productsRef.current, ...newProducts]
       setProducts([...productsRef.current])
-      
+
       saveState()
 
       const more = json.meta?.hasMore ?? false
@@ -338,9 +338,9 @@ export function ForYouSection() {
 
   if (!isLoading && products.length === 0 && !error) {
     return (
-      <section className="w-full py-8" style={{ background: "#fff" }}>
+      <section className="w-full py-8 bg-background">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <p style={{ color: "#AAAAAA", fontSize: "13px", fontFamily: amazonFont }}>
+          <p className="text-[13px] text-muted-foreground">
             Chargement des recommandations...
           </p>
         </div>
@@ -349,32 +349,26 @@ export function ForYouSection() {
   }
 
   return (
-    <section className="w-full py-6 lg:py-10" style={{ background: "#FAFAFA" }}>
+    <section className="w-full py-6 lg:py-10 bg-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-1">
-            <span style={{ display: "inline-block", width: "3px", height: "18px", background: "#D4372B", borderRadius: "2px" }} />
-            <h2
-              key={titleIndex}
-              style={{
-                fontSize: "18px", fontWeight: 800, color: "#0A0A0A",
-                fontFamily: amazonFont, letterSpacing: "-0.02em",
-              }}
-            >
+            <span className="inline-block w-[3px] h-[18px] rounded-sm bg-accent" />
+            <h2 key={titleIndex} className="text-lg font-extrabold tracking-[-0.02em] text-foreground">
               {TITLES[titleIndex].main}{" "}
-              <span style={{ color: "#D4372B" }}>{TITLES[titleIndex].sub}</span>
+              <span className="text-accent">{TITLES[titleIndex].sub}</span>
             </h2>
           </div>
-          <p className="flex items-center gap-1.5" style={{ fontSize: "11px", color: "#AAAAAA", fontFamily: amazonFont }}>
-            <span style={{ display: "inline-block", width: "5px", height: "5px", borderRadius: "50%", background: "#D4372B" }} />
+          <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <span className="inline-block w-[5px] h-[5px] rounded-full bg-accent" />
             {products.length} articles · mise à jour en continu
           </p>
         </div>
 
         <div className="space-y-3">
           {error && (
-            <div className="text-center py-4" style={{ color: "#D4372B", fontSize: "12px", fontFamily: amazonFont }}>
+            <div className="text-center py-4 text-xs text-accent">
               Erreur de chargement — réessai au prochain scroll
             </div>
           )}
@@ -382,39 +376,21 @@ export function ForYouSection() {
           {rows.map((row, rowIndex) => (
             <div key={rowIndex} className="grid grid-cols-1 md:grid-cols-3 gap-2">
               {[0, 1, 2].map((blockIndex) => (
-                <div
-                  key={blockIndex}
-                  className="p-2"
-                  style={{ background: "#fff", border: "0.5px solid #ECECEC", borderRadius: "6px" }}
-                >
+                <div key={blockIndex} className="p-2 rounded-md bg-background shadow-xs">
                   <div className="grid grid-cols-2 gap-2">
                     {row.slice(blockIndex * 2, blockIndex * 2 + 2).map((product) => {
                       const badge = product.source ? badgeConfig[product.source] : null
                       return (
                         <div
                           key={product.id}
-                          className="relative cursor-pointer group"
+                          className="relative cursor-pointer group transition-transform duration-200 hover:-translate-y-0.5"
                           data-product-id={product.id}
                           onClick={() => trackInteraction(product.id, "CLICK")}
-                          style={{ transition: "transform 0.2s ease" }}
-                          onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)")}
-                          onMouseLeave={e => (e.currentTarget.style.transform = "translateY(0)")}
                         >
                           {badge && (
                             <span
-                              className="absolute z-10"
-                              style={{
-                                top: "6px",
-                                left: "6px",
-                                background: badge.bg,
-                                color: badge.color,
-                                fontSize: "7px",
-                                fontWeight: 700,
-                                padding: "2px 6px",
-                                borderRadius: "3px",
-                                fontFamily: amazonFont,
-                                border: `0.5px solid ${badge.color}20`,
-                              }}
+                              className="absolute z-10 top-1.5 left-1.5 rounded-sm px-1.5 py-0.5 text-[9px] font-bold text-white"
+                              style={{ background: badge.tone === "accent" ? "var(--accent)" : "color-mix(in oklab, var(--foreground) 82%, transparent)" }}
                             >
                               {badge.label}
                             </span>
@@ -439,17 +415,14 @@ export function ForYouSection() {
           <div ref={observerRef} className="flex justify-center py-4">
             {isLoading && (
               <div className="flex flex-col items-center gap-1.5">
-                <div className="relative w-6 h-6">
-                  <div className="absolute inset-0 rounded-full" style={{ border: "1.5px solid #ECECEC" }} />
-                  <div className="absolute inset-0 rounded-full animate-spin" style={{ border: "1.5px solid #D4372B", borderTopColor: "transparent" }} />
-                </div>
-                <span style={{ fontSize: "10px", color: "#AAAAAA", fontFamily: amazonFont }}>
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-border border-t-accent" />
+                <span className="text-[10px] text-muted-foreground">
                   Chargement...
                 </span>
               </div>
             )}
             {!hasMore && products.length > 0 && !isLoading && (
-              <p style={{ fontSize: "10px", color: "#AAAAAA", fontFamily: amazonFont }}>
+              <p className="text-[10px] text-muted-foreground">
                 {products.length} suggestions
               </p>
             )}
