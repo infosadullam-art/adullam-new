@@ -256,18 +256,14 @@ export function DealCountdown() {
     </Link>
   )
 
-  const TimeBlock = ({ val, big = false }: { val: number; label: string; big?: boolean }) => (
-    <div
-      className={`flex flex-col items-center justify-center rounded-md bg-brand ${
-        big ? "min-w-[70px] px-3 py-2" : "min-w-[38px] px-1.5 py-1"
-      }`}
-    >
-      <span className={`font-black leading-none tracking-tight text-white tabular-nums ${big ? "text-2xl" : "text-sm"}`}>
-        {fmt(val)}
-      </span>
-      <span className={`mt-1 font-semibold uppercase leading-none tracking-wider text-white/50 ${big ? "text-[9px]" : "text-[7px]"}`}>
-        &nbsp;
-      </span>
+  // Chrono unique en continu (plus de grille de 3 blocs séparés)
+  const Countdown = ({ h, m, s, big = false }: { h: number; m: number; s: number; big?: boolean }) => (
+    <div className={`inline-flex items-center rounded-md bg-brand ${big ? "gap-[3px] px-4 py-2.5" : "gap-[2px] px-2.5 py-1.5"}`}>
+      <span className={`font-black text-white tabular-nums ${big ? "text-2xl" : "text-sm"}`}>{fmt(h)}</span>
+      <span className={`font-black text-accent ${big ? "text-2xl" : "text-sm"}`} style={{ animation: "colonBlink 1.4s ease-in-out infinite" }}>:</span>
+      <span className={`font-black text-white tabular-nums ${big ? "text-2xl" : "text-sm"}`}>{fmt(m)}</span>
+      <span className={`font-black text-accent ${big ? "text-2xl" : "text-sm"}`} style={{ animation: "colonBlink 1.4s ease-in-out infinite" }}>:</span>
+      <span className={`font-black text-white tabular-nums ${big ? "text-2xl" : "text-sm"}`}>{fmt(s)}</span>
     </div>
   )
 
@@ -332,18 +328,7 @@ export function DealCountdown() {
               <IconClock className="h-3 w-3 text-muted-foreground" />
               <span className="text-[10px] font-medium text-muted-foreground">Se termine dans</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              {[
-                { val: timeLeft.hours, label: "h" },
-                { val: timeLeft.minutes, label: "m" },
-                { val: timeLeft.seconds, label: "s" },
-              ].map(({ val, label }, idx) => (
-                <div key={label} className="flex items-center gap-1">
-                  <TimeBlock val={val} label={label} />
-                  {idx < 2 && <span className="text-sm font-bold text-accent">:</span>}
-                </div>
-              ))}
-            </div>
+            <Countdown h={timeLeft.hours} m={timeLeft.minutes} s={timeLeft.seconds} />
           </div>
         </div>
 
@@ -370,18 +355,7 @@ export function DealCountdown() {
                 <span className="text-sm font-medium text-muted-foreground">Fin dans</span>
               </div>
 
-              <div className="flex items-center gap-2">
-                {[
-                  { val: timeLeft.hours, label: "HEURES" },
-                  { val: timeLeft.minutes, label: "MINUTES" },
-                  { val: timeLeft.seconds, label: "SECONDES" },
-                ].map(({ val, label }, idx) => (
-                  <div key={label} className="flex items-center gap-2">
-                    <TimeBlock val={val} label={label} big />
-                    {idx < 2 && <span className="text-xl font-black text-accent">:</span>}
-                  </div>
-                ))}
-              </div>
+              <Countdown h={timeLeft.hours} m={timeLeft.minutes} s={timeLeft.seconds} big />
 
               <Link
                 href="/deals-du-jour"
@@ -510,10 +484,10 @@ export function DealCountdown() {
           animation: pulse 4s ease-in-out infinite;
         }
 
-        /* Balayage lumineux sur les étiquettes promo (façon Alibaba/AliExpress) */
+        /* Balayage lumineux sur les étiquettes promo (façon Alibaba/AliExpress) — ralenti */
         @keyframes badge-shine-sweep {
           0%   { transform: translateX(-130%) skewX(-18deg); }
-          55%  { transform: translateX(220%) skewX(-18deg); }
+          35%  { transform: translateX(220%) skewX(-18deg); }
           100% { transform: translateX(220%) skewX(-18deg); }
         }
         .badge-shine { position: relative; overflow: hidden; }
@@ -524,7 +498,13 @@ export function DealCountdown() {
           width: 35%;
           height: 100%;
           background: linear-gradient(115deg, transparent, rgba(255,255,255,0.65), transparent);
-          animation: badge-shine-sweep 3.2s ease-in-out infinite;
+          animation: badge-shine-sweep 5.5s ease-in-out infinite;
+        }
+
+        /* Clignotement doux des deux-points du chrono */
+        @keyframes colonBlink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.25; }
         }
       `}</style>
     </div>
