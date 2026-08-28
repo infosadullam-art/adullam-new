@@ -1,17 +1,58 @@
 "use client"
 
-import { Home, Search, Newspaper, Bell, User } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/admin/auth-context"
 import { apiFetch } from "@/lib/api"
 
+// ════════════════════════════════════════════════════════════
+// ICÔNES — mêmes dessins maison que le header / deal-countdown
+// (trait 1.6-1.8, jonctions arrondies) : une seule identité SVG.
+// ════════════════════════════════════════════════════════════
+type IconProps = { className?: string; style?: React.CSSProperties }
+
+const IconHome = ({ className, style }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+    <path d="M4 11.5 12 4l8 7.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M6 10v9.2c0 .4.3.8.8.8H10v-5.4c0-.5.4-1 1-1h2c.6 0 1 .5 1 1V20h3.2c.4 0 .8-.4.8-.8V10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+
+const IconSearch = ({ className, style }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+    <circle cx="10.8" cy="10.8" r="6.3" stroke="currentColor" strokeWidth="1.7" />
+    <path d="M19.5 19.5 15.6 15.6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+  </svg>
+)
+
+const IconNewspaper = ({ className, style }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+    <rect x="3.5" y="5" width="13" height="14" rx="1.3" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    <path d="M16.5 8.5H19a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M6.3 8.3h4M6.3 11.2h7M6.3 14.1h7M6.3 17h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+  </svg>
+)
+
+const IconBell = ({ className, style }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+    <path d="M6 10.3c0-3.6 2.4-6.1 6-6.1s6 2.5 6 6.1c0 4 1.3 5.3 1.8 5.9.3.3.1.9-.4.9H4.6c-.5 0-.7-.6-.4-.9.5-.6 1.8-1.9 1.8-5.9Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    <path d="M9.8 19.8a2.3 2.3 0 0 0 4.4 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+)
+
+const IconUser = ({ className, style }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+    <circle cx="12" cy="8.2" r="3.7" stroke="currentColor" strokeWidth="1.7" />
+    <path d="M4.8 19.5c.9-3.6 3.7-5.6 7.2-5.6s6.3 2 7.2 5.6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+
 const navItems = [
-  { icon: Home,      label: "Accueil",        id: "home",          path: "/" },
-  { icon: Search,    label: "Sourcing",        id: "sourcing",      path: "/boutique-noel" },
-  { icon: Newspaper, label: "Fil d'actualité", id: "feed",          path: "/feed" },
-  { icon: Bell,      label: "Notifications",   id: "notifications", path: "/notifications" },
-  { icon: User,      label: "Compte",          id: "account",       path: "/account" },
+  { icon: IconHome,      label: "Accueil",        id: "home",          path: "/" },
+  { icon: IconSearch,    label: "Sourcing",        id: "sourcing",      path: "/boutique-noel" },
+  { icon: IconNewspaper, label: "Fil d'actualité", id: "feed",          path: "/feed" },
+  { icon: IconBell,      label: "Notifications",   id: "notifications", path: "/notifications" },
+  { icon: IconUser,      label: "Compte",          id: "account",       path: "/account" },
 ]
 
 export default function MobileNav() {
@@ -131,7 +172,6 @@ export default function MobileNav() {
                       height: "20px",
                       color: isActive ? "var(--accent)" : "var(--muted-foreground)",
                       transition: "color 0.15s ease",
-                      strokeWidth: isActive ? 2.2 : 1.8,
                     }}
                   />
 
