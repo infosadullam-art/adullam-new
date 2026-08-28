@@ -5,21 +5,22 @@ import Image from "next/image"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
 // ✅ Configuration des badges selon la source
-const badgeConfig: Record<string, { label: string; bg: string; color: string }> = {
-  session_graph: { label: "Pour vous", bg: "#F0F4FF", color: "#3B5BDB" },
-  session: { label: "Pour vous", bg: "#F0F4FF", color: "#3B5BDB" },
-  als: { label: "Recommandé", bg: "#FFF8E1", color: "#E67700" },
-  trend: { label: "Tendance", bg: "#FFF0F0", color: "#D4372B" },
-  new: { label: "Nouveau", bg: "#F3F0FF", color: "#7048E8" },
-  random: { label: "Découverte", bg: "#EBFBEE", color: "#2F9E44" },
-  popular: { label: "Populaire", bg: "#FFF4E6", color: "#E67700" },
-  abandoned_cart: { label: "Panier", bg: "#FFE4E1", color: "#D4372B" },
-  cache: { label: "Pour vous", bg: "#F0F4FF", color: "#3B5BDB" },
-  fallback_total: { label: "Nouveauté", bg: "#F3F0FF", color: "#7048E8" },
-  // ✅ NOUVEAUX BADGES POUR LE CHAT
-  chat: { label: "💬 Adu", bg: "#FFF0F0", color: "#D4372B" },
-  chat_category: { label: "💬 Catégorie", bg: "#F0F4FF", color: "#3B5BDB" },
-  selected_product: { label: "🔍 Similaire", bg: "#EBFBEE", color: "#2F9E44" },
+// Un seul langage visuel : étiquette pleine sombre par défaut,
+// accent (rouge) réservé aux badges à caractère promotionnel.
+const badgeConfig: Record<string, { label: string; tone: "dark" | "accent" }> = {
+  session_graph: { label: "Pour vous", tone: "dark" },
+  session: { label: "Pour vous", tone: "dark" },
+  als: { label: "Recommandé", tone: "dark" },
+  trend: { label: "Tendance", tone: "accent" },
+  new: { label: "Nouveau", tone: "dark" },
+  random: { label: "Découverte", tone: "dark" },
+  popular: { label: "Populaire", tone: "dark" },
+  abandoned_cart: { label: "Panier", tone: "accent" },
+  cache: { label: "Pour vous", tone: "dark" },
+  fallback_total: { label: "Nouveauté", tone: "dark" },
+  chat: { label: "💬 Adu", tone: "accent" },
+  chat_category: { label: "💬 Catégorie", tone: "dark" },
+  selected_product: { label: "🔍 Similaire", tone: "dark" },
 }
 
 interface ProductCardProps {
@@ -42,30 +43,30 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onClick, size = 'md' }: ProductCardProps) {
-  const { formatPrice, getCurrencySymbol } = useCurrencyFormatter()
-  
+  const { formatPrice } = useCurrencyFormatter()
+
   // ✅ Protection si priceUSD est undefined ou null
-  const price = typeof product.priceUSD === 'number' && !isNaN(product.priceUSD) 
-    ? product.priceUSD 
+  const price = typeof product.priceUSD === 'number' && !isNaN(product.priceUSD)
+    ? product.priceUSD
     : 0
 
   const formattedPrice = formatPrice(price)
-  
+
   // ✅ Déterminer le badge à afficher (priorité à badge, sinon source)
   let badgeLabel = product.badge
-  let badgeStyle = { background: "#1F2937", color: "white" } // default
-  
+  let badgeTone: "dark" | "accent" = "dark"
+
   if (!badgeLabel && product.source) {
     const config = badgeConfig[product.source]
     if (config) {
       badgeLabel = config.label
-      badgeStyle = { background: config.bg, color: config.color }
+      badgeTone = config.tone
     }
   }
-  
+
   // ✅ Texte de preuve sociale
-  const viewersText = product.viewers && product.viewers > 0 
-    ? `🔥 ${product.viewers} regardent`
+  const viewersText = product.viewers && product.viewers > 0
+    ? `${product.viewers} regardent`
     : null
 
   // ✅ Taille du composant
@@ -82,14 +83,14 @@ export function ProductCard({ product, onClick, size = 'md' }: ProductCardProps)
       padding: 'p-2 lg:p-3',
       name: 'text-xs lg:text-sm',
       price: 'text-sm lg:text-base',
-      badge: 'text-[10px] px-2 py-1',
+      badge: 'text-[9px] px-1.5 py-0.5',
     },
     lg: {
       image: 'aspect-square',
       padding: 'p-3 lg:p-4',
       name: 'text-sm lg:text-base',
       price: 'text-base lg:text-lg',
-      badge: 'text-[10px] px-2 py-1',
+      badge: 'text-[9px] px-1.5 py-0.5',
     },
   }
 
@@ -98,66 +99,69 @@ export function ProductCard({ product, onClick, size = 'md' }: ProductCardProps)
   // ✅ Si onClick est fourni, on utilise un div (pour le chat)
   // Sinon, un Link (pour le catalogue)
   const Wrapper = onClick ? 'div' : Link
-  const wrapperProps = onClick 
+  const wrapperProps = onClick
     ? { onClick, className: "block cursor-pointer" }
     : { href: `/products/${product.id}`, className: "block group" }
 
   return (
     <Wrapper {...wrapperProps}>
-      <div className={`bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all border ${product.isSelected ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-100 hover:border-gray-200'}`}>
-        
+      <div
+        className="rounded-md bg-background overflow-hidden shadow-xs transition-shadow duration-300 hover:shadow-sm"
+        style={product.isSelected ? { boxShadow: "var(--shadow-accent)" } : undefined}
+      >
+
         {/* IMAGE */}
-        <div className={`relative ${classes.image} bg-gray-50`}>
+        <div className={`media-zoom relative ${classes.image} bg-surface`}>
           <Image
             src={product.image || "/placeholder.svg"}
             alt={product.name}
             width={200}
             height={200}
-            className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-contain p-4"
           />
-          
-          {/* BADGE - avec style dynamique */}
+
+          {/* BADGE */}
           {badgeLabel && (
-            <span 
-              className={`absolute top-2 left-2 rounded-full font-medium z-10 ${classes.badge}`}
-              style={badgeStyle}
+            <span
+              className={`absolute top-2 left-2 rounded-sm font-medium z-10 text-white ${classes.badge}`}
+              style={{ background: badgeTone === "accent" ? "var(--accent)" : "color-mix(in oklab, var(--foreground) 82%, transparent)" }}
             >
               {badgeLabel}
             </span>
           )}
-          
+
           {/* FLAG */}
           {product.flag && (
             <span className="absolute top-2 right-2 text-lg z-10">
               {product.flag}
             </span>
           )}
-          
+
           {/* VIEWERS - Preuve sociale */}
           {viewersText && (
-            <span className="absolute bottom-2 left-2 text-[10px] bg-black/70 text-white px-2 py-0.5 rounded-full z-10">
+            <span className="absolute bottom-2 left-2 rounded-sm bg-brand/75 px-1.5 py-0.5 text-[10px] text-white z-10">
               {viewersText}
             </span>
           )}
 
           {/* ✅ BADGE "SÉLECTIONNÉ" (poids fort) */}
           {product.isSelected && (
-            <span className="absolute bottom-2 right-2 text-[10px] bg-red-500 text-white px-2 py-0.5 rounded-full z-10">
-              🔥 Sélectionné
+            <span className="absolute bottom-2 right-2 rounded-sm bg-accent px-1.5 py-0.5 text-[10px] text-white z-10">
+              Sélectionné
             </span>
           )}
         </div>
 
         {/* INFOS */}
         <div className={classes.padding}>
-          <h3 className={`${classes.name} font-medium text-gray-900 truncate mb-1`}>
+          <h3 className={`${classes.name} font-medium text-foreground truncate mb-1`}>
             {product.name}
           </h3>
 
           {/* ✅ RAISON (pour le chat) */}
           {product.reason && (
-            <p className="text-[10px] text-gray-500 mb-1 truncate">
-              💡 {product.reason}
+            <p className="text-[10px] text-muted-foreground mb-1 truncate">
+              {product.reason}
             </p>
           )}
 
@@ -168,11 +172,8 @@ export function ProductCard({ product, onClick, size = 'md' }: ProductCardProps)
                 {[1, 2, 3, 4, 5].map((star) => (
                   <svg
                     key={star}
-                    className={`w-3 h-3 ${
-                      star <= Math.round(product.rating || 0)
-                        ? "text-yellow-400"
-                        : "text-gray-200"
-                    }`}
+                    className="w-3 h-3"
+                    style={{ color: star <= Math.round(product.rating || 0) ? "var(--accent-amber)" : "var(--border-strong)" }}
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -181,16 +182,16 @@ export function ProductCard({ product, onClick, size = 'md' }: ProductCardProps)
                 ))}
               </div>
               {product.reviews && (
-                <span className="text-[10px] lg:text-xs text-gray-500">
+                <span className="text-[10px] lg:text-xs text-muted-foreground">
                   ({product.reviews})
                 </span>
               )}
             </div>
           )}
 
-          {/* PRIX EN ROUGE */}
+          {/* PRIX */}
           <div className="mt-2">
-            <p className={`${classes.price} font-bold text-red-500`}>
+            <p className={`${classes.price} font-bold text-accent tabular-nums`}>
               {formattedPrice}
             </p>
           </div>

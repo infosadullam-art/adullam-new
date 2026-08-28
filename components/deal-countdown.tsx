@@ -191,7 +191,7 @@ export function DealCountdown() {
   const fmt = (n: number) => n.toString().padStart(2, "0")
 
   const ProductCard = ({ product, hideName = false }: { product: Product; hideName?: boolean }) => (
-    <Link href={`/products/${product.id}`} className="group elevate-hover block rounded-lg border border-border bg-background overflow-hidden">
+    <Link href={`/products/${product.id}`} className="group block overflow-hidden rounded-md bg-background shadow-xs transition-shadow duration-300 hover:shadow-sm">
       <div className="media-zoom relative w-full aspect-square bg-surface">
         <Image
           src={product.image || "/placeholder.jpg"}
@@ -201,7 +201,7 @@ export function DealCountdown() {
           className="object-contain p-1.5"
         />
         {product.badge && (
-          <span className="absolute top-1.5 left-1.5 rounded-md bg-accent px-1.5 py-0.5 text-[9px] font-bold text-white">
+          <span className="absolute top-1.5 left-1.5 rounded-sm bg-accent px-1.5 py-0.5 text-[9px] font-bold text-white">
             {product.badge}
           </span>
         )}
@@ -222,7 +222,7 @@ export function DealCountdown() {
 
   const TimeBlock = ({ val, big = false }: { val: number; label: string; big?: boolean }) => (
     <div
-      className={`flex flex-col items-center justify-center rounded-lg bg-brand elevate-md ${
+      className={`flex flex-col items-center justify-center rounded-md bg-brand ${
         big ? "min-w-[70px] px-3 py-2" : "min-w-[38px] px-1.5 py-1"
       }`}
     >
@@ -277,7 +277,7 @@ export function DealCountdown() {
         <div className="py-3 lg:hidden">
           <div className="flex items-center justify-between px-4 mb-2">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent">
                 <IconBolt className="h-4 w-4 text-white" />
               </div>
               <div>
@@ -286,13 +286,13 @@ export function DealCountdown() {
               </div>
             </div>
 
-            <Link href="/deals-du-jour" className="link-underline flex items-center gap-1 text-[11px] font-semibold text-accent">
+            <Link href="/deals-du-jour" className="flex items-center gap-1 text-[11px] font-semibold text-accent transition-opacity duration-200 hover:opacity-70">
               Voir tout
               <IconArrowRight className="h-3 w-3" />
             </Link>
           </div>
 
-          <div className="flex items-center justify-between px-4 pt-2 border-t border-border">
+          <div className="flex items-center justify-between px-4 pt-2">
             <div className="flex items-center gap-1.5">
               <IconClock className="h-3 w-3 text-muted-foreground" />
               <span className="text-[10px] font-medium text-muted-foreground">Se termine dans</span>
@@ -315,13 +315,13 @@ export function DealCountdown() {
         <div className="hidden lg:block mx-auto max-w-6xl px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent elevate-sm">
+              <div className="flex h-12 w-12 items-center justify-center rounded-md bg-accent">
                 <IconBolt className="h-6 w-6 text-white" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-xl font-black tracking-[-0.03em] text-foreground">FLASH SALE</h2>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-bold text-accent">
+                  <span className="inline-flex items-center gap-1 rounded-sm bg-accent px-2 py-0.5 text-[10px] font-bold text-white">
                     <IconFlame className="h-3 w-3" />
                     Limited
                   </span>
@@ -351,7 +351,7 @@ export function DealCountdown() {
 
               <Link
                 href="/deals-du-jour"
-                className="group flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-white elevate-sm transition-all duration-300 hover:bg-accent-hover hover:elevate-md"
+                className="group flex items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-bold text-white transition-colors duration-300 hover:bg-accent-hover"
               >
                 Voir toutes les offres
                 <IconArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
@@ -364,7 +364,7 @@ export function DealCountdown() {
       <div className="lg:hidden">
         <div className="grid grid-cols-2 gap-2 p-2">
           <div
-            className="rounded-xl border border-border bg-background transition-colors duration-1000 ease-in-out"
+            className="rounded-md bg-background transition-colors duration-1000 ease-in-out"
             style={{ animation: "pulseBlock 8s ease-in-out infinite" }}
           >
             <div className="p-2">
@@ -373,7 +373,7 @@ export function DealCountdown() {
                   <IconSparkle className="h-3 w-3 text-accent" />
                   Sélection
                 </h3>
-                <span className="rounded-full bg-accent px-1.5 py-0.5 text-[8px] font-bold text-white">Nouveau</span>
+                <span className="rounded-sm bg-accent px-1.5 py-0.5 text-[8px] font-bold text-white">Nouveau</span>
               </div>
               <motion.div
                 variants={containerStagger}
@@ -392,7 +392,7 @@ export function DealCountdown() {
           </div>
 
           <div
-            className="rounded-xl border border-border bg-background transition-colors duration-1000 ease-in-out"
+            className="rounded-md bg-background transition-colors duration-1000 ease-in-out"
             style={{ animation: "pulseBlock 8s ease-in-out infinite", animationDelay: "2s" }}
           >
             <div className="p-2">
@@ -401,7 +401,7 @@ export function DealCountdown() {
                   <IconFlame className="h-3 w-3 text-accent" />
                   Best-sellers
                 </h3>
-                <span className="rounded-full bg-accent/10 px-1.5 py-0.5 text-[8px] font-bold text-accent">
+                <span className="rounded-sm bg-surface-sunken px-1.5 py-0.5 text-[8px] font-bold text-foreground">
                   Top ventes
                 </span>
               </div>
@@ -426,7 +426,7 @@ export function DealCountdown() {
       <div className="hidden lg:block mx-auto max-w-6xl px-8 py-4">
         <div className="grid grid-cols-2 gap-3">
           <div
-            className="rounded-xl border border-border bg-background p-4 transition-colors duration-1000 ease-in-out"
+            className="rounded-md bg-background p-4 transition-colors duration-1000 ease-in-out"
             style={{ animation: "pulseBlock 8s ease-in-out infinite" }}
           >
             <div className="mb-4 flex items-center justify-between">
@@ -434,7 +434,7 @@ export function DealCountdown() {
                 <IconSparkle className="h-3.5 w-3.5 text-accent" />
                 Sélection du moment
               </h3>
-              <span className="rounded-full bg-accent px-2 py-0.5 text-[9px] font-bold text-white">Nouveau</span>
+              <span className="rounded-sm bg-accent px-2 py-0.5 text-[9px] font-bold text-white">Nouveau</span>
             </div>
             <motion.div
               variants={containerStagger}
@@ -452,7 +452,7 @@ export function DealCountdown() {
           </div>
 
           <div
-            className="rounded-xl border border-border bg-background p-4 transition-colors duration-1000 ease-in-out"
+            className="rounded-md bg-background p-4 transition-colors duration-1000 ease-in-out"
             style={{ animation: "pulseBlock 8s ease-in-out infinite", animationDelay: "2s" }}
           >
             <div className="mb-4 flex items-center justify-between">
@@ -460,7 +460,7 @@ export function DealCountdown() {
                 <IconFlame className="h-3.5 w-3.5 text-accent" />
                 Meilleures ventes
               </h3>
-              <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[9px] font-bold text-accent">
+              <span className="rounded-sm bg-surface-sunken px-2 py-0.5 text-[9px] font-bold text-foreground">
                 Top ventes
               </span>
             </div>
