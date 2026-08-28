@@ -5,6 +5,27 @@ import { useEffect, useRef, useState, useCallback, useLayoutEffect } from "react
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useApi } from "@/hooks/useApi"
 
+// ════════════════════════════════════════════════════════════
+// Icônes de réassurance (mêmes garanties déjà affichées sur le
+// site — paiement sécurisé / livraison rapide — pas d'allégation
+// fabriquée par produit, juste les garanties réelles de la plateforme)
+// ════════════════════════════════════════════════════════════
+const IconShieldCheck = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M12 3.6 19 6.4v5.3c0 4.4-3 7.4-7 8.7-4-1.3-7-4.3-7-8.7V6.4L12 3.6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    <path d="M9.2 12.2l1.9 1.9 3.7-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+
+const IconTruck = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M3.5 7h9.5v9H3.5V7Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    <path d="M13 10h3.6L20 13.2V16h-7v-6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    <circle cx="7" cy="18" r="1.7" stroke="currentColor" strokeWidth="1.6" />
+    <circle cx="16.5" cy="18" r="1.7" stroke="currentColor" strokeWidth="1.6" />
+  </svg>
+)
+
 interface Product {
   id: string
   name: string
@@ -331,10 +352,7 @@ export function ForYouSection() {
     return () => observer.disconnect()
   }, [initialized, fetchForYou])
 
-  const rows: Product[][] = []
-  for (let i = 0; i < products.length; i += 6) {
-    rows.push(products.slice(i, i + 6))
-  }
+  const badgeFor = (product: Product) => (product.source ? badgeConfig[product.source] : null)
 
   if (!isLoading && products.length === 0 && !error) {
     return (
@@ -373,44 +391,47 @@ export function ForYouSection() {
             </div>
           )}
 
-          {rows.map((row, rowIndex) => (
-            <div key={rowIndex} className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              {[0, 1, 2].map((blockIndex) => (
-                <div key={blockIndex} className="p-2 rounded-md bg-background shadow-xs">
-                  <div className="grid grid-cols-2 gap-2">
-                    {row.slice(blockIndex * 2, blockIndex * 2 + 2).map((product) => {
-                      const badge = product.source ? badgeConfig[product.source] : null
-                      return (
-                        <div
-                          key={product.id}
-                          className="relative cursor-pointer group transition-transform duration-200 hover:-translate-y-0.5"
-                          data-product-id={product.id}
-                          onClick={() => trackInteraction(product.id, "CLICK")}
-                        >
-                          {badge && (
-                            <span
-                              className="absolute z-10 top-1.5 left-1.5 rounded-sm px-1.5 py-0.5 text-[9px] font-bold text-white"
-                              style={{ background: badge.tone === "accent" ? "var(--accent)" : "color-mix(in oklab, var(--foreground) 82%, transparent)" }}
-                            >
-                              {badge.label}
-                            </span>
-                          )}
-                          <div className="[&_.p-2]:!p-1 [&_.mb-1]:!mb-0 [&_.mt-2]:!mt-0.5">
-                            <ProductCard product={{
-                              id: product.id,
-                              name: product.name,
-                              priceUSD: product.priceUSD,
-                              image: product.image,
-                            }} />
-                          </div>
-                        </div>
-                      )
-                    })}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+            {products.map((product) => {
+              const badge = badgeFor(product)
+              return (
+                <div
+                  key={product.id}
+                  className="relative cursor-pointer group transition-transform duration-200 hover:-translate-y-0.5"
+                  data-product-id={product.id}
+                  onClick={() => trackInteraction(product.id, "CLICK")}
+                >
+                  {badge && (
+                    <span
+                      className="absolute z-10 top-1.5 left-1.5 rounded-sm px-1.5 py-0.5 text-[9px] font-bold text-white"
+                      style={{ background: badge.tone === "accent" ? "var(--accent)" : "color-mix(in oklab, var(--foreground) 82%, transparent)" }}
+                    >
+                      {badge.label}
+                    </span>
+                  )}
+
+                  <ProductCard product={{
+                    id: product.id,
+                    name: product.name,
+                    priceUSD: product.priceUSD,
+                    image: product.image,
+                  }} />
+
+                  {/* Réassurance façon Alibaba — garanties réelles de la plateforme */}
+                  <div className="mt-1.5 flex items-center gap-2.5 px-0.5">
+                    <span className="inline-flex items-center gap-1 text-[9px] font-medium text-muted-foreground">
+                      <IconShieldCheck className="h-3 w-3 text-accent shrink-0" />
+                      Sécurisé
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[9px] font-medium text-muted-foreground">
+                      <IconTruck className="h-3 w-3 shrink-0" />
+                      Livraison rapide
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          ))}
+              )
+            })}
+          </div>
 
           <div ref={observerRef} className="flex justify-center py-4">
             {isLoading && (
