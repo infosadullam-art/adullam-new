@@ -26,6 +26,95 @@ const IconTruck = ({ className }: { className?: string }) => (
   </svg>
 )
 
+const IconFactory = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M3.5 20V11l5-3v3l5-3v3l5-3v12H3.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    <path d="M16.5 8V5.2h2V8" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    <path d="M7 20v-4h3v4M13.5 20v-3h3v3" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+  </svg>
+)
+
+const IconVerifiedBadge = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path
+      d="M12 3.6 13.9 5l2.4-.3.9 2.3 2.3.9-.3 2.4 1.4 1.9-1.4 1.9.3 2.4-2.3.9-.9 2.3-2.4-.3L12 20.4 10.1 19l-2.4.3-.9-2.3-2.3-.9.3-2.4L3.4 12l1.4-1.9-.3-2.4 2.3-.9.9-2.3 2.4.3L12 3.6Z"
+      stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"
+    />
+    <path d="M9.2 12.2l1.9 1.9 3.7-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+
+const IconCheckCircle = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <circle cx="12" cy="12" r="8.2" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M8.7 12.3l2.1 2.1 4.3-4.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+
+const IconHeadset = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M4.5 13.5v-2a7.5 7.5 0 0 1 15 0v2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    <rect x="3.5" y="13" width="3.2" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.6" />
+    <rect x="17.3" y="13" width="3.2" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M19.5 18.3v.7a2.5 2.5 0 0 1-2.5 2.5h-2.3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+)
+
+// Banque de messages de réassurance (façon Alibaba) — chaque carte n'en
+// affiche qu'un sous-ensemble, différent d'une carte à l'autre.
+const trustPool: { label: string; icon: (p: { className?: string }) => JSX.Element }[] = [
+  { label: "Paiement sécurisé", icon: IconShieldCheck },
+  { label: "Livraison garantie", icon: IconTruck },
+  { label: "Tout droit de l'usine", icon: IconFactory },
+  { label: "Fournisseur vérifié", icon: IconVerifiedBadge },
+  { label: "Produit vérifié", icon: IconCheckCircle },
+  { label: "Assistance 7j/7", icon: IconHeadset },
+]
+
+// Sélection stable (par produit) d'une fenêtre de 3 messages dans la
+// banque — deux produits voisins n'affichent jamais la même combinaison.
+function pickTrustItems(id: string, count = 3) {
+  let hash = 0
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0
+  const start = hash % trustPool.length
+  return Array.from({ length: count }, (_, i) => trustPool[(start + i) % trustPool.length])
+}
+
+// Carrousel vertical de réassurance, comme les tuiles produit Alibaba
+function TrustCarousel({ items }: { items: { label: string; icon: (p: { className?: string }) => JSX.Element }[] }) {
+  const [index, setIndex] = useState(0)
+  const [animating, setAnimating] = useState(false)
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setAnimating(true)
+      setTimeout(() => {
+        setIndex((i) => (i + 1) % items.length)
+        setAnimating(false)
+      }, 200)
+    }, 2200)
+    return () => clearInterval(t)
+  }, [items.length])
+
+  const current = items[index]
+  const Icon = current.icon
+
+  return (
+    <div className="mt-1.5 px-0.5 overflow-hidden" style={{ height: "14px" }}>
+      <div
+        className="flex items-center gap-1 text-[9px] font-medium text-muted-foreground transition-all duration-200 ease-out"
+        style={{
+          transform: animating ? "translateY(-100%)" : "translateY(0)",
+          opacity: animating ? 0 : 1,
+        }}
+      >
+        <Icon className="h-3 w-3 text-accent shrink-0" />
+        <span className="truncate">{current.label}</span>
+      </div>
+    </div>
+  )
+}
+
 interface Product {
   id: string
   name: string
@@ -391,7 +480,7 @@ export function ForYouSection() {
             </div>
           )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-2.5">
             {products.map((product) => {
               const badge = badgeFor(product)
               return (
@@ -417,17 +506,8 @@ export function ForYouSection() {
                     image: product.image,
                   }} />
 
-                  {/* Réassurance façon Alibaba — garanties réelles de la plateforme */}
-                  <div className="mt-1.5 flex items-center gap-2.5 px-0.5">
-                    <span className="inline-flex items-center gap-1 text-[9px] font-medium text-muted-foreground">
-                      <IconShieldCheck className="h-3 w-3 text-accent shrink-0" />
-                      Sécurisé
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-[9px] font-medium text-muted-foreground">
-                      <IconTruck className="h-3 w-3 shrink-0" />
-                      Livraison rapide
-                    </span>
-                  </div>
+                  {/* Réassurance façon Alibaba — variable et défilante par carte */}
+                  <TrustCarousel items={pickTrustItems(product.id)} />
                 </div>
               )
             })}
