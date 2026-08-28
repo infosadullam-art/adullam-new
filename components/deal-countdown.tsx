@@ -14,7 +14,7 @@ type IconProps = { className?: string }
 
 const IconBolt = ({ className }: IconProps) => (
   <svg viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M12.8 3.5 6 13.2h4.6L10.6 20.5 18 10.3h-4.7L12.8 3.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" fill="currentColor" fillOpacity="0.12" />
+    <path d="M12.8 3.5 6 13.2h4.6L10.6 20.5 18 10.3h-4.7L12.8 3.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" fill="currentColor" fillOpacity="0.18" />
   </svg>
 )
 
@@ -54,6 +54,9 @@ const IconFlame = ({ className }: IconProps) => (
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
 const REFRESH_INTERVAL = 6 * 60 * 60 * 1000 // 6 heures
 
+// Messages du bandeau défilant (façon ticker Alibaba/AliExpress)
+const tickerMessages = ["Jusqu'à -50%", "Renouvellement quotidien", "Stock limité", "Livraison rapide"]
+
 // ════════════════════════════════════════════════════════════
 // TYPES
 // ════════════════════════════════════════════════════════════
@@ -82,6 +85,39 @@ interface FlashSaleData {
     originalPrice: number
     discountedPrice: number
   }
+}
+
+// Bandeau défilant réutilisable
+function Ticker({ className }: { className?: string }) {
+  return (
+    <div className={`overflow-hidden ${className || ""}`}>
+      <div className="marquee">
+        {[0, 1].map((dup) => (
+          <div key={dup} className="flex items-center gap-2 pr-6 shrink-0">
+            {tickerMessages.map((msg, i) => (
+              <span key={i} className="flex items-center gap-2 text-[11px] font-medium text-muted-foreground whitespace-nowrap">
+                {msg}
+                <span className="h-1 w-1 rounded-full bg-border-strong" />
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// Étiquette avec balayage lumineux (façon badge promo Alibaba/AliExpress)
+function ShineTag({ children, tone = "accent" }: { children: React.ReactNode; tone?: "accent" | "dark" }) {
+  return (
+    <span
+      className={`badge-shine inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[10px] font-bold text-white ${
+        tone === "accent" ? "bg-accent" : "bg-brand"
+      }`}
+    >
+      {children}
+    </span>
+  )
 }
 
 // ════════════════════════════════════════════════════════════
@@ -201,7 +237,7 @@ export function DealCountdown() {
           className="object-contain p-1.5"
         />
         {product.badge && (
-          <span className="absolute top-1.5 left-1.5 rounded-sm bg-accent px-1.5 py-0.5 text-[9px] font-bold text-white">
+          <span className="badge-shine absolute top-1.5 left-1.5 rounded-sm bg-accent px-1.5 py-0.5 text-[9px] font-bold text-white">
             {product.badge}
           </span>
         )}
@@ -274,16 +310,13 @@ export function DealCountdown() {
           style={{ background: "radial-gradient(circle at 0% 0%, var(--accent) 0%, transparent 70%)" }}
         />
 
+        {/* ── MOBILE ── */}
         <div className="py-3 lg:hidden">
-          <div className="flex items-center justify-between px-4 mb-2">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent">
-                <IconBolt className="h-4 w-4 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-black tracking-tight text-foreground">FLASH SALE</p>
-                <p className="text-[10px] font-medium text-muted-foreground">jusqu&apos;à -50%</p>
-              </div>
+          <div className="flex items-center justify-between px-4 mb-1.5">
+            <div className="flex items-center gap-1.5">
+              <IconBolt className="h-4 w-4 text-accent" />
+              <p className="text-sm font-black tracking-tight text-foreground">FLASH SALE</p>
+              <ShineTag>Limited</ShineTag>
             </div>
 
             <Link href="/deals-du-jour" className="flex items-center gap-1 text-[11px] font-semibold text-accent transition-opacity duration-200 hover:opacity-70">
@@ -292,7 +325,9 @@ export function DealCountdown() {
             </Link>
           </div>
 
-          <div className="flex items-center justify-between px-4 pt-2">
+          <Ticker className="px-4 mb-2" />
+
+          <div className="flex items-center justify-between px-4 pt-1">
             <div className="flex items-center gap-1.5">
               <IconClock className="h-3 w-3 text-muted-foreground" />
               <span className="text-[10px] font-medium text-muted-foreground">Se termine dans</span>
@@ -312,21 +347,20 @@ export function DealCountdown() {
           </div>
         </div>
 
+        {/* ── DESKTOP ── */}
         <div className="hidden lg:block mx-auto max-w-6xl px-8 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-md bg-accent">
-                <IconBolt className="h-6 w-6 text-white" />
-              </div>
+            <div className="flex items-center gap-3">
+              <IconBolt className="h-6 w-6 text-accent" />
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-xl font-black tracking-[-0.03em] text-foreground">FLASH SALE</h2>
-                  <span className="inline-flex items-center gap-1 rounded-sm bg-accent px-2 py-0.5 text-[10px] font-bold text-white">
+                  <ShineTag>
                     <IconFlame className="h-3 w-3" />
                     Limited
-                  </span>
+                  </ShineTag>
                 </div>
-                <p className="text-sm text-muted-foreground">Jusqu&apos;à -50% · Renouvellement quotidien</p>
+                <Ticker className="mt-0.5 max-w-[340px]" />
               </div>
             </div>
 
@@ -361,19 +395,17 @@ export function DealCountdown() {
         </div>
       </div>
 
+      {/* ── GRILLES PRODUITS — MOBILE ── */}
       <div className="lg:hidden">
         <div className="grid grid-cols-2 gap-2 p-2">
-          <div
-            className="rounded-md bg-background transition-colors duration-1000 ease-in-out"
-            style={{ animation: "pulseBlock 8s ease-in-out infinite" }}
-          >
+          <div className="rounded-md bg-background">
             <div className="p-2">
               <div className="mb-2 flex items-center justify-between">
-                <h3 className="overline flex items-center gap-1 text-foreground">
-                  <IconSparkle className="h-3 w-3 text-accent" />
+                <h3 className="flex items-center gap-1 text-xs font-bold text-foreground">
+                  <IconSparkle className="h-3.5 w-3.5 text-accent" />
                   Sélection
                 </h3>
-                <span className="rounded-sm bg-accent px-1.5 py-0.5 text-[8px] font-bold text-white">Nouveau</span>
+                <ShineTag>Nouveau</ShineTag>
               </div>
               <motion.div
                 variants={containerStagger}
@@ -391,19 +423,14 @@ export function DealCountdown() {
             </div>
           </div>
 
-          <div
-            className="rounded-md bg-background transition-colors duration-1000 ease-in-out"
-            style={{ animation: "pulseBlock 8s ease-in-out infinite", animationDelay: "2s" }}
-          >
+          <div className="rounded-md bg-background">
             <div className="p-2">
               <div className="mb-2 flex items-center justify-between">
-                <h3 className="overline flex items-center gap-1 text-foreground">
-                  <IconFlame className="h-3 w-3 text-accent" />
+                <h3 className="flex items-center gap-1 text-xs font-bold text-foreground">
+                  <IconFlame className="h-3.5 w-3.5 text-accent" />
                   Best-sellers
                 </h3>
-                <span className="rounded-sm bg-surface-sunken px-1.5 py-0.5 text-[8px] font-bold text-foreground">
-                  Top ventes
-                </span>
+                <ShineTag tone="dark">Top ventes</ShineTag>
               </div>
               <motion.div
                 variants={containerStagger}
@@ -423,18 +450,16 @@ export function DealCountdown() {
         </div>
       </div>
 
+      {/* ── GRILLES PRODUITS — DESKTOP ── */}
       <div className="hidden lg:block mx-auto max-w-6xl px-8 py-4">
         <div className="grid grid-cols-2 gap-3">
-          <div
-            className="rounded-md bg-background p-4 transition-colors duration-1000 ease-in-out"
-            style={{ animation: "pulseBlock 8s ease-in-out infinite" }}
-          >
+          <div className="rounded-md bg-background p-4">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="overline flex items-center gap-1.5 text-foreground">
-                <IconSparkle className="h-3.5 w-3.5 text-accent" />
+              <h3 className="flex items-center gap-1.5 text-sm font-bold text-foreground">
+                <IconSparkle className="h-4 w-4 text-accent" />
                 Sélection du moment
               </h3>
-              <span className="rounded-sm bg-accent px-2 py-0.5 text-[9px] font-bold text-white">Nouveau</span>
+              <ShineTag>Nouveau</ShineTag>
             </div>
             <motion.div
               variants={containerStagger}
@@ -451,18 +476,13 @@ export function DealCountdown() {
             </motion.div>
           </div>
 
-          <div
-            className="rounded-md bg-background p-4 transition-colors duration-1000 ease-in-out"
-            style={{ animation: "pulseBlock 8s ease-in-out infinite", animationDelay: "2s" }}
-          >
+          <div className="rounded-md bg-background p-4">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="overline flex items-center gap-1.5 text-foreground">
-                <IconFlame className="h-3.5 w-3.5 text-accent" />
+              <h3 className="flex items-center gap-1.5 text-sm font-bold text-foreground">
+                <IconFlame className="h-4 w-4 text-accent" />
                 Meilleures ventes
               </h3>
-              <span className="rounded-sm bg-surface-sunken px-2 py-0.5 text-[9px] font-bold text-foreground">
-                Top ventes
-              </span>
+              <ShineTag tone="dark">Top ventes</ShineTag>
             </div>
             <motion.div
               variants={containerStagger}
@@ -486,13 +506,25 @@ export function DealCountdown() {
           0%, 100% { opacity: 0.04; }
           50% { opacity: 0.08; }
         }
-        @keyframes pulseBlock {
-          0% { background: var(--background); }
-          50% { background: var(--accent-light); }
-          100% { background: var(--background); }
-        }
         .animate-pulse-slow {
           animation: pulse 4s ease-in-out infinite;
+        }
+
+        /* Balayage lumineux sur les étiquettes promo (façon Alibaba/AliExpress) */
+        @keyframes badge-shine-sweep {
+          0%   { transform: translateX(-130%) skewX(-18deg); }
+          55%  { transform: translateX(220%) skewX(-18deg); }
+          100% { transform: translateX(220%) skewX(-18deg); }
+        }
+        .badge-shine { position: relative; overflow: hidden; }
+        .badge-shine::after {
+          content: "";
+          position: absolute;
+          top: 0; left: 0;
+          width: 35%;
+          height: 100%;
+          background: linear-gradient(115deg, transparent, rgba(255,255,255,0.65), transparent);
+          animation: badge-shine-sweep 3.2s ease-in-out infinite;
         }
       `}</style>
     </div>
