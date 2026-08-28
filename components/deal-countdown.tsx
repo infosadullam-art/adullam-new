@@ -1,11 +1,51 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Zap, ArrowRight, Clock, Sparkles, Flame } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+
+// ════════════════════════════════════════════════════════════
+// ICÔNES — mêmes dessins maison que le header (trait 1.6,
+// jonctions arrondies) : fini lucide, une seule identité SVG.
+// ════════════════════════════════════════════════════════════
+type IconProps = { className?: string }
+
+const IconBolt = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M12.8 3.5 6 13.2h4.6L10.6 20.5 18 10.3h-4.7L12.8 3.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" fill="currentColor" fillOpacity="0.12" />
+  </svg>
+)
+
+const IconArrowRight = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M4 12h15.5M14 6.2 19.8 12l-5.8 5.8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+
+const IconClock = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <circle cx="12" cy="12" r="8.2" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M12 7.6V12l3 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+
+const IconSparkle = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M12 3.5c.5 3.2 1.3 4 4.5 4.5-3.2.5-4 1.3-4.5 4.5-.5-3.2-1.3-4-4.5-4.5 3.2-.5 4-1.3 4.5-4.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+    <path d="M18.3 14.5c.3 1.5.6 1.9 2.1 2.2-1.5.3-1.8.7-2.1 2.2-.3-1.5-.6-1.9-2.1-2.2 1.5-.3 1.8-.7 2.1-2.2Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+  </svg>
+)
+
+const IconFlame = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path
+      d="M12 3.2c1.3 2.4-.4 3.8-1.4 5-1.4 1.7-2.1 3-2.1 4.7a3.5 3.5 0 0 0 7 0c0-.9-.3-1.6-.7-2.3.9.6 1.7 1.8 1.7 3.4a4.5 4.5 0 0 1-9 0c0-4.4 3.2-6 4.5-10.8Z"
+      stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"
+    />
+  </svg>
+)
 
 // ════════════════════════════════════════════════════════════
 // API - Changement de produits toutes les 6h
@@ -58,7 +98,6 @@ export function DealCountdown() {
   const [error, setError] = useState<string | null>(null)
 
   const { formatPrice } = useCurrencyFormatter()
-  const brandAccent = "#D4372B"
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -152,71 +191,56 @@ export function DealCountdown() {
   const fmt = (n: number) => n.toString().padStart(2, "0")
 
   const ProductCard = ({ product, hideName = false }: { product: Product; hideName?: boolean }) => (
-    <Link href={`/products/${product.id}`} className="group block transition-all duration-200 hover:-translate-y-0.5">
-      <div
-        className="overflow-hidden transition-all duration-200 hover:shadow-md"
-        style={{
-          background: "#fff",
-          borderRadius: "6px",
-          border: "0.5px solid #ECECEC",
-        }}
-      >
-        <div className="relative w-full aspect-square" style={{ background: "#FAFAFA" }}>
-          <Image
-            src={product.image || "/placeholder.jpg"}
-            alt={product.name || "Produit"}
-            fill
-            sizes="(max-width: 768px) 150px, 200px"
-            className="object-contain p-1.5 transition-transform duration-300 group-hover:scale-105"
-          />
-          {product.badge && (
-            <span
-              className="absolute top-1 left-1 text-[8px] font-bold px-1.5 py-0.5 text-white"
-              style={{ background: "#D4372B", borderRadius: "3px" }}
-            >
-              {product.badge}
-            </span>
-          )}
-        </div>
+    <Link href={`/products/${product.id}`} className="group elevate-hover block rounded-lg border border-border bg-background overflow-hidden">
+      <div className="media-zoom relative w-full aspect-square bg-surface">
+        <Image
+          src={product.image || "/placeholder.jpg"}
+          alt={product.name || "Produit"}
+          fill
+          sizes="(max-width: 768px) 150px, 200px"
+          className="object-contain p-1.5"
+        />
+        {product.badge && (
+          <span className="absolute top-1.5 left-1.5 rounded-md bg-accent px-1.5 py-0.5 text-[9px] font-bold text-white">
+            {product.badge}
+          </span>
+        )}
+      </div>
 
-        <div className="px-1.5 py-1.5">
-          {!hideName && (
-            <p
-              className="truncate mb-0.5"
-              style={{ fontSize: "9px", fontWeight: 500, color: "#0A0A0A" }}
-            >
-              {product.name || "Produit"}
-            </p>
-          )}
-          <p style={{ fontSize: "10px", fontWeight: 700, color: "#D4372B" }}>
-            {formatPrice(product.price)}
+      <div className="px-2 py-2">
+        {!hideName && (
+          <p className="truncate mb-0.5 text-[11px] font-medium text-foreground">
+            {product.name || "Produit"}
           </p>
-        </div>
+        )}
+        <p className="text-xs font-bold text-accent tabular-nums">
+          {formatPrice(product.price)}
+        </p>
       </div>
     </Link>
   )
 
-  const TimeBlock = ({ val, label, big = false }: { val: number; label: string; big?: boolean }) => (
+  const TimeBlock = ({ val, big = false }: { val: number; label: string; big?: boolean }) => (
     <div
-      className={`flex flex-col items-center justify-center rounded-md bg-[#0A0A0A] shadow-lg shadow-black/20 ${
+      className={`flex flex-col items-center justify-center rounded-lg bg-brand elevate-md ${
         big ? "min-w-[70px] px-3 py-2" : "min-w-[38px] px-1.5 py-1"
       }`}
     >
-      <span className={`font-black leading-none tracking-tight text-white ${big ? "text-2xl" : "text-sm"}`}>
+      <span className={`font-black leading-none tracking-tight text-white tabular-nums ${big ? "text-2xl" : "text-sm"}`}>
         {fmt(val)}
       </span>
       <span className={`mt-1 font-semibold uppercase leading-none tracking-wider text-white/50 ${big ? "text-[9px]" : "text-[7px]"}`}>
-        {label}
+        &nbsp;
       </span>
     </div>
   )
 
   if (isLoading) {
     return (
-      <div className="w-full" style={{ background: "#FAFAFA" }}>
+      <div className="w-full bg-surface">
         <div className="py-6">
           <div className="flex h-20 animate-pulse items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#D4372B] border-t-transparent" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
           </div>
         </div>
       </div>
@@ -225,9 +249,9 @@ export function DealCountdown() {
 
   if (error) {
     return (
-      <div className="w-full" style={{ background: "#FAFAFA" }}>
+      <div className="w-full bg-surface">
         <div className="py-4 text-center">
-          <p className="text-sm text-[#D4372B]">{error}</p>
+          <p className="text-sm text-accent">{error}</p>
         </div>
       </div>
     )
@@ -243,37 +267,35 @@ export function DealCountdown() {
   }
 
   return (
-    <div className="w-[calc(100%+32px)] lg:w-full -mx-4 lg:mx-0" style={{ background: "#FAFAFA" }}>
-      <div className="relative overflow-hidden" style={{ background: "#fff" }}>
+    <div className="w-[calc(100%+32px)] lg:w-full -mx-4 lg:mx-0 bg-surface">
+      <div className="relative overflow-hidden bg-background">
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.04] animate-pulse-slow"
-          style={{
-            background: `radial-gradient(circle at 0% 0%, ${brandAccent} 0%, transparent 70%)`,
-          }}
+          style={{ background: "radial-gradient(circle at 0% 0%, var(--accent) 0%, transparent 70%)" }}
         />
 
         <div className="py-3 lg:hidden">
           <div className="flex items-center justify-between px-4 mb-2">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[#D4372B]">
-                <Zap className="h-4 w-4 text-white" fill="white" strokeWidth={2} />
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent">
+                <IconBolt className="h-4 w-4 text-white" />
               </div>
               <div>
-                <p className="text-sm font-black tracking-tight text-[#0A0A0A]">FLASH SALE</p>
-                <p className="text-[10px] font-medium text-[#AAAAAA]">jusqu&apos;à -50%</p>
+                <p className="text-sm font-black tracking-tight text-foreground">FLASH SALE</p>
+                <p className="text-[10px] font-medium text-muted-foreground">jusqu&apos;à -50%</p>
               </div>
             </div>
 
-            <Link href="/deals-du-jour" className="flex items-center gap-1 text-[11px] font-semibold text-[#D4372B]">
+            <Link href="/deals-du-jour" className="link-underline flex items-center gap-1 text-[11px] font-semibold text-accent">
               Voir tout
-              <ArrowRight className="h-3 w-3" />
+              <IconArrowRight className="h-3 w-3" />
             </Link>
           </div>
 
-          <div className="flex items-center justify-between px-4 pt-2 border-t border-[#ECECEC]">
+          <div className="flex items-center justify-between px-4 pt-2 border-t border-border">
             <div className="flex items-center gap-1.5">
-              <Clock className="h-3 w-3 text-[#AAAAAA]" />
-              <span className="text-[10px] font-medium text-[#AAAAAA]">Se termine dans</span>
+              <IconClock className="h-3 w-3 text-muted-foreground" />
+              <span className="text-[10px] font-medium text-muted-foreground">Se termine dans</span>
             </div>
             <div className="flex items-center gap-1.5">
               {[
@@ -283,7 +305,7 @@ export function DealCountdown() {
               ].map(({ val, label }, idx) => (
                 <div key={label} className="flex items-center gap-1">
                   <TimeBlock val={val} label={label} />
-                  {idx < 2 && <span className="text-sm font-bold text-[#D4372B]">:</span>}
+                  {idx < 2 && <span className="text-sm font-bold text-accent">:</span>}
                 </div>
               ))}
             </div>
@@ -293,25 +315,25 @@ export function DealCountdown() {
         <div className="hidden lg:block mx-auto max-w-6xl px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-md bg-[#D4372B] shadow-lg shadow-[#D4372B]/25">
-                <Sparkles className="h-6 w-6 text-white" strokeWidth={2} />
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent elevate-sm">
+                <IconBolt className="h-6 w-6 text-white" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-black tracking-[-0.03em] text-[#0A0A0A]">FLASH SALE</h2>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#D4372B]/10 px-2 py-0.5 text-[10px] font-bold text-[#D4372B]">
-                    <Flame className="h-3 w-3" strokeWidth={2.25} />
+                  <h2 className="text-xl font-black tracking-[-0.03em] text-foreground">FLASH SALE</h2>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-bold text-accent">
+                    <IconFlame className="h-3 w-3" />
                     Limited
                   </span>
                 </div>
-                <p className="text-sm text-[#AAAAAA]">Jusqu&apos;à -50% · Renouvellement quotidien</p>
+                <p className="text-sm text-muted-foreground">Jusqu&apos;à -50% · Renouvellement quotidien</p>
               </div>
             </div>
 
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-[#AAAAAA]" />
-                <span className="text-sm font-medium text-[#AAAAAA]">Fin dans</span>
+                <IconClock className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-muted-foreground">Fin dans</span>
               </div>
 
               <div className="flex items-center gap-2">
@@ -322,17 +344,17 @@ export function DealCountdown() {
                 ].map(({ val, label }, idx) => (
                   <div key={label} className="flex items-center gap-2">
                     <TimeBlock val={val} label={label} big />
-                    {idx < 2 && <span className="text-xl font-black text-[#D4372B]">:</span>}
+                    {idx < 2 && <span className="text-xl font-black text-accent">:</span>}
                   </div>
                 ))}
               </div>
 
               <Link
                 href="/deals-du-jour"
-                className="group flex items-center gap-2 rounded-md bg-[#D4372B] px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-[#D4372B]/25 transition-all duration-300 hover:brightness-110 hover:shadow-xl"
+                className="group flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-white elevate-sm transition-all duration-300 hover:bg-accent-hover hover:elevate-md"
               >
                 Voir toutes les offres
-                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                <IconArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </div>
           </div>
@@ -342,18 +364,16 @@ export function DealCountdown() {
       <div className="lg:hidden">
         <div className="grid grid-cols-2 gap-2 p-2">
           <div
-            className="rounded-md border border-[#ECECEC] bg-white transition-all duration-1000 ease-in-out"
-            style={{
-              animation: "pulseBlock 8s ease-in-out infinite",
-            }}
+            className="rounded-xl border border-border bg-background transition-colors duration-1000 ease-in-out"
+            style={{ animation: "pulseBlock 8s ease-in-out infinite" }}
           >
             <div className="p-2">
               <div className="mb-2 flex items-center justify-between">
-                <h3 className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0A0A0A]">
-                  <Sparkles className="h-3 w-3 text-[#D4372B]" strokeWidth={2.25} />
+                <h3 className="overline flex items-center gap-1 text-foreground">
+                  <IconSparkle className="h-3 w-3 text-accent" />
                   Sélection
                 </h3>
-                <span className="rounded-full bg-[#D4372B] px-1.5 py-0.5 text-[8px] font-bold text-white">Nouveau</span>
+                <span className="rounded-full bg-accent px-1.5 py-0.5 text-[8px] font-bold text-white">Nouveau</span>
               </div>
               <motion.div
                 variants={containerStagger}
@@ -372,19 +392,16 @@ export function DealCountdown() {
           </div>
 
           <div
-            className="rounded-md border border-[#ECECEC] bg-white transition-all duration-1000 ease-in-out"
-            style={{
-              animation: "pulseBlock 8s ease-in-out infinite",
-              animationDelay: "2s",
-            }}
+            className="rounded-xl border border-border bg-background transition-colors duration-1000 ease-in-out"
+            style={{ animation: "pulseBlock 8s ease-in-out infinite", animationDelay: "2s" }}
           >
             <div className="p-2">
               <div className="mb-2 flex items-center justify-between">
-                <h3 className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0A0A0A]">
-                  <Flame className="h-3 w-3 text-[#D4372B]" strokeWidth={2.25} />
+                <h3 className="overline flex items-center gap-1 text-foreground">
+                  <IconFlame className="h-3 w-3 text-accent" />
                   Best-sellers
                 </h3>
-                <span className="rounded-full bg-[#D4372B]/10 px-1.5 py-0.5 text-[8px] font-bold text-[#D4372B]">
+                <span className="rounded-full bg-accent/10 px-1.5 py-0.5 text-[8px] font-bold text-accent">
                   Top ventes
                 </span>
               </div>
@@ -409,17 +426,15 @@ export function DealCountdown() {
       <div className="hidden lg:block mx-auto max-w-6xl px-8 py-4">
         <div className="grid grid-cols-2 gap-3">
           <div
-            className="rounded-md border border-[#ECECEC] bg-white p-4 transition-all duration-1000 ease-in-out"
-            style={{
-              animation: "pulseBlock 8s ease-in-out infinite",
-            }}
+            className="rounded-xl border border-border bg-background p-4 transition-colors duration-1000 ease-in-out"
+            style={{ animation: "pulseBlock 8s ease-in-out infinite" }}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.1em] text-[#0A0A0A]">
-                <Sparkles className="h-3.5 w-3.5 text-[#D4372B]" strokeWidth={2.25} />
+              <h3 className="overline flex items-center gap-1.5 text-foreground">
+                <IconSparkle className="h-3.5 w-3.5 text-accent" />
                 Sélection du moment
               </h3>
-              <span className="rounded-full bg-[#D4372B] px-2 py-0.5 text-[9px] font-bold text-white">Nouveau</span>
+              <span className="rounded-full bg-accent px-2 py-0.5 text-[9px] font-bold text-white">Nouveau</span>
             </div>
             <motion.div
               variants={containerStagger}
@@ -437,18 +452,15 @@ export function DealCountdown() {
           </div>
 
           <div
-            className="rounded-md border border-[#ECECEC] bg-white p-4 transition-all duration-1000 ease-in-out"
-            style={{
-              animation: "pulseBlock 8s ease-in-out infinite",
-              animationDelay: "2s",
-            }}
+            className="rounded-xl border border-border bg-background p-4 transition-colors duration-1000 ease-in-out"
+            style={{ animation: "pulseBlock 8s ease-in-out infinite", animationDelay: "2s" }}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.1em] text-[#0A0A0A]">
-                <Flame className="h-3.5 w-3.5 text-[#D4372B]" strokeWidth={2.25} />
+              <h3 className="overline flex items-center gap-1.5 text-foreground">
+                <IconFlame className="h-3.5 w-3.5 text-accent" />
                 Meilleures ventes
               </h3>
-              <span className="rounded-full bg-[#D4372B]/10 px-2 py-0.5 text-[9px] font-bold text-[#D4372B]">
+              <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[9px] font-bold text-accent">
                 Top ventes
               </span>
             </div>
@@ -475,9 +487,9 @@ export function DealCountdown() {
           50% { opacity: 0.08; }
         }
         @keyframes pulseBlock {
-          0% { background: #fff; }
-          50% { background: #FFF5F5; }
-          100% { background: #fff; }
+          0% { background: var(--background); }
+          50% { background: var(--accent-light); }
+          100% { background: var(--background); }
         }
         .animate-pulse-slow {
           animation: pulse 4s ease-in-out infinite;
