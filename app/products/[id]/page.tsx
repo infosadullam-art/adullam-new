@@ -3,31 +3,215 @@
 import { Header } from "@/components/header"
 import { MobileHeader } from "@/components/mobile-header"
 import { Footer } from "@/components/footer"
-import {
-  ChevronRight,
-  ChevronDown,
-  Heart,
-  Star,
-  Minus,
-  Plus,
-  ShoppingCart,
-  Truck,
-  Shield,
-  RotateCcw,
-  Check,
-  ChevronLeft,
-  Clock,
-  Package,
-  Sparkles,
-  Zap,
-  Ship,
-  X,
-  Info,
-  CreditCard,
-  Smartphone,
-  Lock,
-  PenLine,
-} from "lucide-react"
+
+// ════════════════════════════════════════════════════════════
+// ICÔNES — dessinées maison, même trait (1.6, jonctions arrondies)
+// que le header/for-you/product-card. Noms identiques aux imports
+// lucide d'origine : aucune des ~70 utilisations plus bas n'est
+// à modifier, elles pointent maintenant vers ces composants.
+// ════════════════════════════════════════════════════════════
+type IconProps = { className?: string; style?: React.CSSProperties }
+
+function ChevronRight({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function ChevronLeft({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function ChevronDown({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M6 9.5l6 6 6-6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function Heart({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12 20s-7.3-4.5-9.4-9.2C1.2 7 3.1 4 6.4 4c2 0 3.4 1.1 5.6 4 2.2-2.9 3.6-4 5.6-4 3.3 0 5.2 3 3.9 6.6C19.3 15.5 12 20 12 20Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function Star({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className={className} style={style}>
+      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function Minus({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M5 12h14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function Plus({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function ShoppingCart({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M7.2 8.2h9.6l.9 11.3a1.6 1.6 0 0 1-1.6 1.7H7.9a1.6 1.6 0 0 1-1.6-1.7l.9-11.3Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M9 8.2V6.6a3 3 0 0 1 6 0v1.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function Truck({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M3.5 7h9.5v9H3.5V7Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M13 10h3.6L20 13.2V16h-7v-6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <circle cx="7" cy="18" r="1.7" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="16.5" cy="18" r="1.7" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  )
+}
+
+function Shield({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12 3.6 19 6.4v5.3c0 4.4-3 7.4-7 8.7-4-1.3-7-4.3-7-8.7V6.4L12 3.6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function RotateCcw({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M4.5 9.5A8 8 0 1 1 4 15" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M4 5v4.5h4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function Check({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M5 12.5l4.5 4.5L19 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function Clock({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <circle cx="12" cy="12" r="8.2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M12 7.6V12l3 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function Package({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M3.6 8.4L12 4l8.4 4.4v7.2L12 20l-8.4-4.4V8.4Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M3.6 8.4L12 12.6l8.4-4.2M12 12.6V20" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function Sparkles({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12 3.5c.5 3.2 1.3 4 4.5 4.5-3.2.5-4 1.3-4.5 4.5-.5-3.2-1.3-4-4.5-4.5 3.2-.5 4-1.3 4.5-4.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+      <path d="M18.3 14.5c.3 1.5.6 1.9 2.1 2.2-1.5.3-1.8.7-2.1 2.2-.3-1.5-.6-1.9-2.1-2.2 1.5-.3 1.8-.7 2.1-2.2Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function Zap({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12.8 3.5 6 13.2h4.6L10.6 20.5 18 10.3h-4.7L12.8 3.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function Ship({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M4 14.5l1.4 4.4c.2.7.9 1.1 1.6 1.1h10c.7 0 1.4-.4 1.6-1.1l1.4-4.4H4Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M6.5 14.5V6.8h6.7l3.3 3.4v4.3" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M9 6.8V4.5h3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function X({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function Info({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <circle cx="12" cy="12" r="8.2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M12 11v5.2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <circle cx="12" cy="8.1" r="0.15" stroke="currentColor" strokeWidth="1.9" />
+    </svg>
+  )
+}
+
+function CreditCard({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <rect x="3" y="5.5" width="18" height="13" rx="1.8" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M3 9.5h18" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M6.5 14.5h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function Smartphone({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <rect x="6.5" y="2.5" width="11" height="19" rx="2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M10.5 18.3h3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function Lock({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <rect x="4.5" y="10.5" width="15" height="10" rx="1.8" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M7.5 10.5V7.5a4.5 4.5 0 0 1 9 0v3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function PenLine({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M14.5 4.5l5 5L8.5 20.5l-5.5 1 1-5.5L14.5 4.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M13 6l5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
 
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
@@ -390,10 +574,10 @@ export default function ProductPage() {
   const [product, setProduct] = useState<any>(null)
 
   // Couleurs dynamiques
-  const brandColor = "#D4372B"
-  const brandGradient = "#D4372B"
-  const accentColor = "#F5A623"
-  const softBg = "#F4F4F4"
+  const brandColor = "var(--accent)"
+  const brandGradient = "var(--accent)"
+  const accentColor = "var(--accent-amber)"
+  const softBg = "var(--surface)"
 
   // ============================================================
   // GESTION DES IMAGES
@@ -1410,7 +1594,7 @@ export default function ProductPage() {
                 <div className="relative">
                   <button
                     onClick={() => setIsImageModalOpen(true)}
-                    className="w-full aspect-square bg-card flex items-center justify-center overflow-hidden rounded-2xl border border-border"
+                    className="w-full aspect-square bg-card flex items-center justify-center overflow-hidden rounded-lg shadow-xs"
                   >
                     <Image
                       src={safeImages[selectedImage] || "/placeholder.svg"}
@@ -1423,7 +1607,7 @@ export default function ProductPage() {
                   </button>
 
                   <div className="absolute bottom-4 left-0 right-0 flex justify-center">
-                    <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-background/80 backdrop-blur-sm shadow-sm border border-border">
+                    <div className="flex items-center gap-2 px-2 py-1 rounded-full bg-background/80 backdrop-blur-sm shadow-sm">
                       <div className="flex gap-1.5">
                         {safeImages.slice(0, 12).map((_, idx) => (
                           <button
@@ -1542,7 +1726,7 @@ export default function ProductPage() {
                 {hasVariants && (
                   <>
                     {hasSimpleVariants && (
-                      <div className="p-4 rounded-2xl mb-4 bg-muted border border-border">
+                      <div className="p-4 rounded-lg mb-4 bg-muted shadow-xs">
                         <h3 className="text-sm font-semibold text-foreground mb-3">{primaryAttrName}</h3>
                         <div className="flex flex-wrap gap-2">
                           {Object.entries(simpleVariantQuantities).map(([value, qty]) => {
@@ -1555,7 +1739,7 @@ export default function ProductPage() {
                                 className={`px-3 py-1.5 text-xs rounded-lg transition-all relative ${
                                   qty > 0
                                     ? "text-white font-semibold shadow-sm"
-                                    : "bg-card text-foreground hover:bg-accent border border-border"
+                                    : "bg-card text-foreground hover:bg-accent shadow-xs"
                                 }`}
                                 style={qty > 0 ? { background: brandColor } : undefined}
                               >
@@ -1592,11 +1776,11 @@ export default function ProductPage() {
                           if (qty === 0) return null
 
                           return (
-                            <div key={value} className="bg-card p-2 rounded-lg mt-3 border border-border">
+                            <div key={value} className="bg-card p-2 rounded-lg mt-3 shadow-xs">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   {attributeImages[`${simpleVariantType}:${value}`] && (
-                                    <div className="w-6 h-6 rounded-full overflow-hidden border border-border">
+                                    <div className="w-6 h-6 rounded-full overflow-hidden">
                                       <Image
                                         src={attributeImages[`${simpleVariantType}:${value}`] || "/placeholder.svg"}
                                         alt={value}
@@ -1618,7 +1802,7 @@ export default function ProductPage() {
 
                     {hasComplexVariants && (
                       <>
-                        <div className="p-4 rounded-2xl mb-4 bg-muted border border-border">
+                        <div className="p-4 rounded-lg mb-4 bg-muted shadow-xs">
                           <h3 className="text-sm font-semibold text-foreground mb-3">{primaryAttrName}</h3>
                           <div className="flex flex-wrap gap-2">
                             {Object.keys(complexSelections).map((primaryValue) => {
@@ -1632,7 +1816,7 @@ export default function ProductPage() {
                                   className={`px-3 py-1.5 text-xs rounded-lg transition-all relative ${
                                     total > 0
                                       ? "text-white font-semibold shadow-sm"
-                                      : "bg-card text-foreground hover:bg-accent border border-border"
+                                      : "bg-card text-foreground hover:bg-accent shadow-xs"
                                   }`}
                                   style={total > 0 ? { background: brandColor } : undefined}
                                 >
@@ -1670,7 +1854,7 @@ export default function ProductPage() {
                         </div>
 
                         {secondaryAttrName && (
-                          <div className="p-4 rounded-2xl mb-4 bg-muted border border-border">
+                          <div className="p-4 rounded-lg mb-4 bg-muted shadow-xs">
                             <h3 className="text-sm font-semibold text-foreground mb-3">{secondaryAttrName}</h3>
                             <div className="flex flex-wrap gap-2">
                               {attributeGroups[Object.keys(attributeGroups)[1]]?.values.map((secondaryValue) => {
@@ -1683,7 +1867,7 @@ export default function ProductPage() {
                                     className={`px-3 py-1.5 text-xs rounded-lg transition-all relative ${
                                       total > 0
                                         ? "text-white font-semibold shadow-sm"
-                                        : "bg-card text-foreground hover:bg-accent border border-border"
+                                        : "bg-card text-foreground hover:bg-accent shadow-xs"
                                     }`}
                                     style={total > 0 ? { background: brandColor } : undefined}
                                   >
@@ -1708,10 +1892,10 @@ export default function ProductPage() {
                           if (nonZeroSelections.length === 0) return null
 
                           return (
-                            <div key={primaryValue} className="bg-card p-3 rounded-lg mb-2 border border-border">
+                            <div key={primaryValue} className="bg-card p-3 rounded-lg mb-2 shadow-xs">
                               <div className="flex items-center gap-2 mb-2">
                                 {attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`] && (
-                                  <div className="w-6 h-6 rounded-full overflow-hidden border border-border">
+                                  <div className="w-6 h-6 rounded-full overflow-hidden">
                                     <Image
                                       src={
                                         attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`] ||
@@ -1728,7 +1912,7 @@ export default function ProductPage() {
                               </div>
                               <div className="flex flex-wrap gap-2 pl-2">
                                 {nonZeroSelections.map(([secondaryValue, qty]) => (
-                                  <div key={secondaryValue} className="bg-muted px-2 py-1 rounded-md border border-border text-xs">
+                                  <div key={secondaryValue} className="bg-muted px-2 py-1 rounded-md text-xs">
                                     <span className="font-medium">{secondaryValue}</span>
                                     <span className="ml-1 font-bold" style={{ color: brandColor }}>
                                       x{qty}
@@ -1747,7 +1931,7 @@ export default function ProductPage() {
                 {!hasVariants && (
                   <div className="mb-4">
                     <h3 className="text-sm font-semibold text-foreground mb-2">Quantité</h3>
-                    <div className="flex items-center rounded-lg overflow-hidden border border-border w-fit">
+                    <div className="flex items-center rounded-lg overflow-hidden shadow-xs w-fit">
                       <button
                         onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))}
                         className="p-2.5 bg-muted hover:bg-accent transition-colors"
@@ -1809,7 +1993,7 @@ export default function ProductPage() {
                       {[1, 2, 3].map((i) => (
                         <div
                           key={i}
-                          className="flex flex-col items-center p-2 rounded-lg border border-border bg-muted animate-pulse"
+                          className="flex flex-col items-center p-2 rounded-lg bg-muted animate-pulse"
                         >
                           <div className="w-4 h-4 bg-border rounded-full mb-1" />
                           <div className="w-8 h-3 bg-border rounded mb-1" />
@@ -1868,7 +2052,7 @@ export default function ProductPage() {
 
                 <div
                   onClick={() => setIsProtectionModalOpen(true)}
-                  className="rounded-2xl p-3 cursor-pointer transition-all bg-muted border border-border hover:border-foreground/20"
+                  className="rounded-lg p-3 cursor-pointer transition-all bg-muted shadow-xs hover:shadow-sm"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -1882,7 +2066,7 @@ export default function ProductPage() {
                     {["MTN", "Orange", "Wave", "Visa"].map((method) => (
                       <span
                         key={method}
-                        className="text-xs px-2 py-1 bg-card border border-border rounded-md text-muted-foreground"
+                        className="text-xs px-2 py-1 bg-card shadow-xs rounded-md text-muted-foreground"
                       >
                         {method}
                       </span>
@@ -1915,14 +2099,14 @@ export default function ProductPage() {
                       onClick={handleBuyNow}
                       disabled={!isMOQMet || grandTotal === 0}
                       className="flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] text-white"
-                      style={{ background: "#0A0A0A", opacity: isMOQMet && grandTotal > 0 ? 1 : 0.5 }}
+                      style={{ background: "var(--brand)", opacity: isMOQMet && grandTotal > 0 ? 1 : 0.5 }}
                     >
                       Acheter
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 py-3 text-xs border-y border-border my-2">
+                <div className="grid grid-cols-2 gap-2 p-3 mt-2 bg-muted rounded-lg text-xs shadow-xs">
                   <div className="flex items-center gap-1.5">
                     <Shield className="w-3.5 h-3.5" style={{ color: brandColor }} />
                     <span>Garantie 12 mois</span>
@@ -1931,11 +2115,19 @@ export default function ProductPage() {
                     <RotateCcw className="w-3.5 h-3.5" style={{ color: brandColor }} />
                     <span>Retour 15 jours</span>
                   </div>
+                  <div className="flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5" style={{ color: brandColor }} />
+                    <span>Certifié</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Truck className="w-3.5 h-3.5" style={{ color: brandColor }} />
+                    <span>Suivi colis</span>
+                  </div>
                 </div>
               </div>
 
               {/* Mobile Tabs */}
-              <div className="mt-6 bg-card rounded-2xl p-4 border border-border">
+              <div className="mt-6 bg-card rounded-lg p-4 shadow-xs">
                 <div className="overflow-x-auto hide-scrollbar border-b border-border">
                   <div className="flex gap-4 min-w-max px-1">
                     {[
@@ -2119,7 +2311,7 @@ export default function ProductPage() {
                       )}
 
                       {showReviewForm && (
-                        <div className="rounded-2xl p-4 space-y-4 bg-card border border-border">
+                        <div className="rounded-lg p-4 space-y-4 bg-card shadow-xs">
                           <div className="flex items-center justify-between">
                             <h4 className="font-semibold text-foreground">Votre avis</h4>
                             <button
@@ -2175,7 +2367,7 @@ export default function ProductPage() {
                           <div className="flex gap-3 pt-2">
                             <button
                               onClick={() => setShowReviewForm(false)}
-                              className="flex-1 py-3 border border-border rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
+                              className="flex-1 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
                             >
                               Annuler
                             </button>
@@ -2307,7 +2499,7 @@ export default function ProductPage() {
             >
               {/* PARTIE GAUCHE - IMAGE (sticky + hauteur fixe 400px) */}
               <div className="sticky top-24">
-                <div className="bg-card mb-2 h-[400px] flex items-center justify-center overflow-hidden border border-border rounded-2xl transition-all">
+                <div className="bg-card mb-2 h-[400px] flex items-center justify-center overflow-hidden rounded-lg shadow-xs transition-all">
                   <Image
                     src={safeImages[selectedImage] || "/placeholder.svg"}
                     alt={productName}
@@ -2323,7 +2515,7 @@ export default function ProductPage() {
                     {safeImages.length > 5 && (
                       <button
                         onClick={() => scrollThumbnails("left")}
-                        className="absolute -left-3 top-1/2 -translate-y-1/2 z-20 bg-background rounded-full p-1 shadow-sm border border-border hover:bg-muted"
+                        className="absolute -left-3 top-1/2 -translate-y-1/2 z-20 bg-background rounded-full p-1 shadow-sm hover:bg-muted"
                       >
                         <ChevronLeft className="w-3 h-3" />
                       </button>
@@ -2359,7 +2551,7 @@ export default function ProductPage() {
                     {safeImages.length > 5 && (
                       <button
                         onClick={() => scrollThumbnails("right")}
-                        className="absolute -right-3 top-1/2 -translate-y-1/2 z-20 bg-background rounded-full p-1 shadow-sm border border-border hover:bg-muted"
+                        className="absolute -right-3 top-1/2 -translate-y-1/2 z-20 bg-background rounded-full p-1 shadow-sm hover:bg-muted"
                       >
                         <ChevronRight className="w-3 h-3" />
                       </button>
@@ -2408,7 +2600,7 @@ export default function ProductPage() {
                   </button>
                 </div>
 
-                <div className="bg-card rounded-2xl p-4 mb-4 border border-border">
+                <div className="bg-card rounded-lg p-4 mb-4 shadow-xs">
                   <div className="flex items-baseline gap-2 mb-1">
                     <span
                       className="text-2xl font-bold"
@@ -2446,7 +2638,7 @@ export default function ProductPage() {
                                   }}
                                 >
                                   {hasImage && (
-                                    <div className="w-5 h-5 rounded-full overflow-hidden border border-border">
+                                    <div className="w-5 h-5 rounded-full overflow-hidden">
                                       <Image
                                         src={attributeImages[`${simpleVariantType}:${value}`] || "/placeholder.svg"}
                                         alt={value}
@@ -2522,7 +2714,7 @@ export default function ProductPage() {
                                     }}
                                   >
                                     {hasImage && (
-                                      <div className="w-5 h-5 rounded-full overflow-hidden border border-border">
+                                      <div className="w-5 h-5 rounded-full overflow-hidden">
                                         <Image
                                           src={
                                             attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`] ||
@@ -2592,7 +2784,7 @@ export default function ProductPage() {
                   {!hasVariants && (
                     <div className="mb-3">
                       <div className="text-xs text-muted-foreground mb-2">Quantité</div>
-                      <div className="flex items-center rounded-lg overflow-hidden border border-border w-fit">
+                      <div className="flex items-center rounded-lg overflow-hidden shadow-xs w-fit">
                         <button
                           onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))}
                           className="p-1.5 hover:bg-muted transition-colors"
@@ -2649,7 +2841,7 @@ export default function ProductPage() {
 
                 <div
                   onClick={() => setIsProtectionModalOpen(true)}
-                  className="bg-muted border border-border rounded-2xl p-4 mb-4 cursor-pointer hover:border-foreground/20 transition-all"
+                  className="bg-muted rounded-lg p-4 mb-4 cursor-pointer shadow-xs hover:shadow-sm transition-all"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -2663,7 +2855,7 @@ export default function ProductPage() {
                     {["MTN", "Orange", "Wave", "Visa"].map((method) => (
                       <span
                         key={method}
-                        className="text-xs px-3 py-1.5 bg-card border border-border rounded-md text-muted-foreground"
+                        className="text-xs px-3 py-1.5 bg-card shadow-xs rounded-md text-muted-foreground"
                       >
                         {method}
                       </span>
@@ -2693,7 +2885,7 @@ export default function ProductPage() {
                       {[1, 2, 3].map((i) => (
                         <div
                           key={i}
-                          className="flex items-center justify-between p-2 rounded-lg border border-border bg-muted animate-pulse"
+                          className="flex items-center justify-between p-2 rounded-lg bg-muted animate-pulse"
                         >
                           <div className="flex items-center gap-1.5">
                             <div className="w-5 h-5 bg-border rounded-full" />
@@ -2778,14 +2970,14 @@ export default function ProductPage() {
                       onClick={handleBuyNow}
                       disabled={!isMOQMet || grandTotal === 0}
                       className="flex-1 py-2.5 text-sm text-white font-semibold rounded-xl transition-all hover:opacity-90"
-                      style={{ background: "#0A0A0A", opacity: isMOQMet && grandTotal > 0 ? 1 : 0.5 }}
+                      style={{ background: "var(--brand)", opacity: isMOQMet && grandTotal > 0 ? 1 : 0.5 }}
                     >
                       Acheter
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 p-3 bg-muted rounded-2xl text-xs border border-border">
+                <div className="grid grid-cols-4 gap-2 p-3 bg-muted rounded-lg text-xs shadow-xs">
                   <div className="flex items-center gap-1.5">
                     <Shield className="w-3.5 h-3.5" style={{ color: brandColor }} />
                     <span>Garantie 12 mois</span>
@@ -2807,7 +2999,7 @@ export default function ProductPage() {
             </motion.div>
 
             {/* Desktop Tabs */}
-            <div className="hidden lg:block mt-8 bg-card rounded-2xl p-6 border border-border">
+            <div className="hidden lg:block mt-8 bg-card rounded-lg p-6 shadow-xs">
               <div className="border-b border-border mb-6">
                 <div className="flex gap-6">
                   {[
@@ -2986,7 +3178,7 @@ export default function ProductPage() {
                     )}
 
                     {showReviewForm && (
-                      <div className="bg-background border border-border rounded-2xl p-6 mb-6">
+                      <div className="bg-background rounded-lg p-6 mb-6 shadow-xs">
                         <div className="flex items-center justify-between mb-4">
                           <h3 className="font-semibold text-foreground">Donnez votre avis</h3>
                           <button
@@ -3041,7 +3233,7 @@ export default function ProductPage() {
                         <div className="flex gap-3">
                           <button
                             onClick={() => setShowReviewForm(false)}
-                            className="px-4 py-2 border border-border rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted"
+                            className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
                           >
                             Annuler
                           </button>
@@ -3209,7 +3401,7 @@ export default function ProductPage() {
               ) : (
                 <>
                   <div className="lg:hidden">
-                    <div className="bg-card rounded-2xl p-4 border border-border">
+                    <div className="bg-card rounded-lg p-4 shadow-xs">
                       <div className="relative">
                         <div className="overflow-x-auto overflow-y-hidden hide-scrollbar">
                           <div className="flex gap-3 w-max">
@@ -3219,7 +3411,7 @@ export default function ProductPage() {
                                 href={`/products/${p.id}`}
                                 className="group w-[calc((100vw-4rem)/3-0.5rem)] min-w-[calc((100vw-4rem)/3-0.5rem)]"
                               >
-                                <div className="bg-background rounded-xl aspect-square mb-2 overflow-hidden border border-border group-hover:border-foreground/20 transition-all">
+                                <div className="bg-background rounded-lg aspect-square mb-2 overflow-hidden shadow-xs group-hover:shadow-sm transition-all">
                                   <Image
                                     src={p.image || "/placeholder.svg"}
                                     alt={p.name}
@@ -3256,7 +3448,7 @@ export default function ProductPage() {
                       <div className="flex gap-4 w-max">
                         {relatedProducts.map((p) => (
                           <a key={p.id} href={`/products/${p.id}`} className="group w-[calc((1200px-4rem)/6-1rem)] min-w-[160px]">
-                            <div className="bg-card rounded-xl aspect-square mb-3 overflow-hidden border border-border group-hover:border-foreground/20 transition-all">
+                            <div className="bg-card rounded-lg aspect-square mb-3 overflow-hidden shadow-xs group-hover:shadow-sm transition-all">
                               <Image
                                 src={p.image || "/placeholder.svg"}
                                 alt={p.name}
@@ -3284,13 +3476,13 @@ export default function ProductPage() {
 
                     <button
                       onClick={() => scrollRelated("left")}
-                      className="absolute left-0 top-1/3 -translate-y-1/2 -ml-4 w-7 h-7 bg-background rounded-full shadow-sm border border-border flex items-center justify-center hover:bg-muted transition-colors z-10"
+                      className="absolute left-0 top-1/3 -translate-y-1/2 -ml-4 w-7 h-7 bg-background rounded-full shadow-sm flex items-center justify-center hover:bg-muted transition-colors z-10"
                     >
                       <ChevronLeft className="w-3.5 h-3.5 text-muted-foreground" />
                     </button>
                     <button
                       onClick={() => scrollRelated("right")}
-                      className="absolute right-0 top-1/3 -translate-y-1/2 -mr-4 w-7 h-7 bg-background rounded-full shadow-sm border border-border flex items-center justify-center hover:bg-muted transition-colors z-10"
+                      className="absolute right-0 top-1/3 -translate-y-1/2 -mr-4 w-7 h-7 bg-background rounded-full shadow-sm flex items-center justify-center hover:bg-muted transition-colors z-10"
                     >
                       <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
                     </button>
@@ -3309,7 +3501,7 @@ export default function ProductPage() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="bg-background rounded-t-2xl lg:rounded-2xl w-full max-w-md overflow-hidden shadow-xl border border-border"
+            className="bg-background rounded-t-2xl lg:rounded-2xl w-full max-w-md overflow-hidden shadow-xl"
           >
             <div className="sticky top-0 bg-background border-b border-border p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -3346,7 +3538,7 @@ export default function ProductPage() {
                   <button
                     onClick={decrementSimpleModal}
                     disabled={simpleModalQuantity <= 0}
-                    className="w-10 h-10 border border-border rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    className="w-10 h-10 bg-surface rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
@@ -3355,14 +3547,14 @@ export default function ProductPage() {
                   </span>
                   <button
                     onClick={incrementSimpleModal}
-                    className="w-10 h-10 border border-border rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent transition-all"
+                    className="w-10 h-10 bg-surface rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent transition-all"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
-              <div className="mt-4 p-3 rounded-xl" style={{ background: "#0A0A0A" }}>
+              <div className="mt-4 p-3 rounded-xl" style={{ background: "var(--brand)" }}>
                 <div className="flex justify-between text-sm font-medium text-white">
                   <span>Total sélectionné:</span>
                   <span>{simpleModalQuantity} article(s)</span>
@@ -3372,7 +3564,7 @@ export default function ProductPage() {
               <div className="flex gap-3 mt-4">
                 <button
                   onClick={() => setIsSimpleVariantModalOpen(false)}
-                  className="flex-1 py-3 border border-border rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted transition-all"
+                  className="flex-1 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted transition-all"
                 >
                   Annuler
                 </button>
@@ -3396,7 +3588,7 @@ export default function ProductPage() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="bg-background rounded-t-2xl lg:rounded-2xl w-full max-w-md max-h-[80vh] overflow-y-auto shadow-xl border border-border"
+            className="bg-background rounded-t-2xl lg:rounded-2xl w-full max-w-md max-h-[80vh] overflow-y-auto shadow-xl"
           >
             <div className="sticky top-0 bg-background border-b border-border p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -3438,14 +3630,14 @@ export default function ProductPage() {
                     <button
                       onClick={() => removeModalQuantity(value)}
                       disabled={!modalQuantities[value]}
-                      className="w-8 h-8 border border-border rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                      className="w-8 h-8 bg-surface rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                     >
                       <Minus className="w-3 h-3" />
                     </button>
                     <span className="w-8 text-center text-sm font-medium">{modalQuantities[value] || 0}</span>
                     <button
                       onClick={() => addModalQuantity(value)}
-                      className="w-8 h-8 border border-border rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent transition-all"
+                      className="w-8 h-8 bg-surface rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent transition-all"
                     >
                       <Plus className="w-3 h-3" />
                     </button>
@@ -3453,7 +3645,7 @@ export default function ProductPage() {
                 </div>
               ))}
 
-              <div className="mt-4 p-3 rounded-xl" style={{ background: "#0A0A0A" }}>
+              <div className="mt-4 p-3 rounded-xl" style={{ background: "var(--brand)" }}>
                 <div className="flex justify-between text-sm font-medium text-white">
                   <span>Total sélectionné:</span>
                   <span>{Object.values(modalQuantities).reduce((a, b) => a + b, 0)} articles</span>
@@ -3463,7 +3655,7 @@ export default function ProductPage() {
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setIsVariantModalOpen(false)}
-                  className="flex-1 py-3 border border-border rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted transition-all"
+                  className="flex-1 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted transition-all"
                 >
                   Annuler
                 </button>
@@ -3487,7 +3679,7 @@ export default function ProductPage() {
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="bg-background rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl border border-border"
+            className="bg-background rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl"
           >
             <div className="sticky top-0 bg-background border-b border-border p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -3506,19 +3698,19 @@ export default function ProductPage() {
               <div>
                 <h4 className="text-sm font-semibold text-foreground mb-3">Moyens de paiement acceptés</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="bg-muted border border-border rounded-xl p-3 text-center">
+                  <div className="bg-muted rounded-xl p-3 text-center shadow-xs">
                     <Smartphone className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
                     <p className="text-xs font-medium text-foreground">MTN Money</p>
                   </div>
-                  <div className="bg-muted border border-border rounded-xl p-3 text-center">
+                  <div className="bg-muted rounded-xl p-3 text-center shadow-xs">
                     <Smartphone className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
                     <p className="text-xs font-medium text-foreground">Orange Money</p>
                   </div>
-                  <div className="bg-muted border border-border rounded-xl p-3 text-center">
+                  <div className="bg-muted rounded-xl p-3 text-center shadow-xs">
                     <CreditCard className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
                     <p className="text-xs font-medium text-foreground">Wave</p>
                   </div>
-                  <div className="bg-muted border border-border rounded-xl p-3 text-center">
+                  <div className="bg-muted rounded-xl p-3 text-center shadow-xs">
                     <CreditCard className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
                     <p className="text-xs font-medium text-foreground">Visa/Mastercard</p>
                   </div>
