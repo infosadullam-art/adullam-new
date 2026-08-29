@@ -222,6 +222,62 @@ function MessageCircle({ className, style }: IconProps) {
   )
 }
 
+function BadgeCheck({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path
+        d="M12 3.6 13.9 5l2.4-.3.9 2.3 2.3.9-.3 2.4 1.4 1.9-1.4 1.9.3 2.4-2.3.9-.9 2.3-2.4-.3L12 20.4 10.1 19l-2.4.3-.9-2.3-2.3-.9.3-2.4L3.4 12l1.4-1.9-.3-2.4 2.3-.9.9-2.3 2.4.3L12 3.6Z"
+        stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"
+      />
+      <path d="M9.2 12.2l1.9 1.9 3.7-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+// Réassurance secondaire, en carrousel — volontairement différente des 4
+// points déjà affichés juste au-dessus (pas de répétition sur la page).
+const secondaryTrustPool: { label: string; icon: (p: IconProps) => JSX.Element }[] = [
+  { label: "Garantie 12 mois", icon: Shield },
+  { label: "Contrôle qualité systématique", icon: Check },
+  { label: "Retour accepté sous 5 jours", icon: RotateCcw },
+  { label: "Fournisseur vérifié", icon: BadgeCheck },
+  { label: "Suivi de colis en temps réel", icon: Truck },
+]
+
+function TrustCarouselRow() {
+  const [index, setIndex] = useState(0)
+  const [fading, setFading] = useState(false)
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setFading(true)
+      setTimeout(() => {
+        setIndex((i) => (i + 1) % secondaryTrustPool.length)
+        setFading(false)
+      }, 350)
+    }, 2600)
+    return () => clearInterval(t)
+  }, [])
+
+  const current = secondaryTrustPool[index]
+  const Icon = current.icon
+
+  return (
+    <div className="flex items-center gap-1.5 px-3 py-2.5 bg-muted rounded-lg shadow-xs overflow-hidden">
+      <Icon
+        className="w-3.5 h-3.5 text-accent shrink-0 transition-opacity duration-300"
+        style={{ opacity: fading ? 0 : 1 }}
+      />
+      <span
+        className="text-xs font-medium text-foreground whitespace-nowrap truncate transition-all duration-300"
+        style={{ opacity: fading ? 0 : 1, transform: fading ? "translateY(-2px)" : "translateY(0)" }}
+      >
+        {current.label}
+      </span>
+    </div>
+  )
+}
+
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
@@ -575,6 +631,16 @@ export default function ProductPage() {
   const [modalSecondaryOptions, setModalSecondaryOptions] = useState<string[]>([])
   const [modalQuantities, setModalQuantities] = useState<Record<string, number>>({})
   const [modalAttrName, setModalAttrName] = useState<string>("")
+
+  // ✅ Empêche la page derrière de défiler quand une modale est ouverte
+  useEffect(() => {
+    const anyModalOpen = isImageModalOpen || isProtectionModalOpen || isSimpleVariantModalOpen || isVariantModalOpen
+    document.body.style.overflow = anyModalOpen ? "hidden" : ""
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [isImageModalOpen, isProtectionModalOpen, isSimpleVariantModalOpen, isVariantModalOpen])
+
 
   // ✅ AJOUT : État pour la quantité totale à envoyer à l'API
   const [totalQuantity, setTotalQuantity] = useState(1)
@@ -1581,10 +1647,10 @@ export default function ProductPage() {
                 <>
                   <ChevronRight className="w-3 h-3" />
                   <a
-                    href={`/category/${product.category.slug || product.category.id}`}
+                    href={`/category/${String(product.category).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`}
                     className="hover:text-foreground transition-colors"
                   >
-                    {product.category.name}
+                    {product.category}
                   </a>
                 </>
               )}
@@ -1978,24 +2044,24 @@ export default function ProductPage() {
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <h3 className="text-xs font-medium text-muted-foreground flex items-center justify-between">
+                <div className="space-y-2">
+                  <h3 className="text-xs font-semibold text-foreground flex items-center justify-between">
                     <span>Mode de livraison</span>
                     {selectedPortePorteCost > 0 && (
-                      <span className="text-xs font-medium text-foreground">
-                        Frais porte-à-porte:{" "}
-                        <span className="font-bold" style={{ color: brandColor }}>
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Porte-à-porte:{" "}
+                        <span className="font-bold text-accent">
                           {formatPrice(selectedPortePorteCost)}
                         </span>
                       </span>
                     )}
                   </h3>
                   {isLoadingLogistics ? (
-                    <div className="grid grid-cols-3 gap-1.5">
+                    <div className="grid grid-cols-3 gap-2">
                       {[1, 2, 3].map((i) => (
                         <div
                           key={i}
-                          className="flex flex-col items-center p-2 rounded-lg bg-muted animate-pulse"
+                          className="flex flex-col items-center p-2.5 rounded-lg bg-muted animate-pulse"
                         >
                           <div className="w-4 h-4 bg-border rounded-full mb-1" />
                           <div className="w-8 h-3 bg-border rounded mb-1" />
@@ -2010,7 +2076,7 @@ export default function ProductPage() {
                     </div>
                   ) : (
                     <>
-                      <div className="grid grid-cols-3 gap-1.5">
+                      <div className="grid grid-cols-3 gap-2">
                         {SHIPPING_OPTIONS.map((item) => {
                           const shippingMode = item.mode as "bateau" | "avion" | "express"
                           const isAvailable = logisticsData?.shipping?.[shippingMode]
@@ -2024,20 +2090,20 @@ export default function ProductPage() {
                             <button
                               key={item.mode}
                               onClick={() => setSelectedShipping(shippingMode)}
-                              className={`flex flex-col items-center p-2 rounded-lg border transition-all ${
-                                isSelected ? "text-white" : "bg-card border-border text-foreground hover:bg-accent"
+                              className={`flex flex-col items-center p-2.5 rounded-lg transition-all ${
+                                isSelected
+                                  ? "text-white shadow-sm"
+                                  : "bg-card text-foreground shadow-xs hover:shadow-sm"
                               }`}
-                              style={isSelected ? { borderColor: brandColor, background: brandColor } : undefined}
+                              style={isSelected ? { background: brandColor } : undefined}
                             >
                               <item.icon
-                                className="w-4 h-4 mb-1"
-                                style={{ color: isSelected ? "white" : undefined }}
+                                className={`w-4 h-4 mb-1 ${isSelected ? "text-white" : "text-accent"}`}
                               />
-                              <span className="text-xs font-medium">{item.labelShort}</span>
-                              <span className="text-[10px] opacity-80">{days}</span>
+                              <span className="text-xs font-semibold">{item.labelShort}</span>
+                              <span className={`text-[10px] ${isSelected ? "text-white/75" : "text-muted-foreground"}`}>{days}</span>
                               <span
-                                className="text-xs font-semibold mt-0.5"
-                                style={{ color: isSelected ? "white" : brandColor }}
+                                className={`text-xs font-bold mt-0.5 ${isSelected ? "text-white" : "text-accent"}`}
                               >
                                 {formatPrice(cost)}
                               </span>
@@ -2045,9 +2111,7 @@ export default function ProductPage() {
                           )
                         })}
                       </div>
-                      <div className="text-center mt-1">
-                        <span className="text-[10px] text-muted-foreground">* Frais de porte-à-porte inclus</span>
-                      </div>
+                      <p className="text-center text-[10px] text-muted-foreground">Frais de porte-à-porte inclus</p>
                     </>
                   )}
                 </div>
@@ -2107,24 +2171,7 @@ export default function ProductPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 p-3 mt-2 bg-muted rounded-lg text-xs shadow-xs">
-                  <div className="flex items-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                    <span>Garantie 12 mois</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <RotateCcw className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                    <span>Retour 15 jours</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                    <span>Certifié</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Truck className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                    <span>Suivi colis</span>
-                  </div>
-                </div>
+                <TrustCarouselRow />
               </div>
 
               {/* Mobile Tabs */}
@@ -2864,12 +2911,12 @@ export default function ProductPage() {
                 </div>
 
                 <div className="mb-4">
-                  <h3 className="text-sm font-semibold mb-2 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center justify-between">
                     <span>Mode de livraison</span>
                     {selectedPortePorteCost > 0 && (
-                      <span className="text-xs font-medium text-foreground">
-                        Frais porte-à-porte:{" "}
-                        <span className="font-bold" style={{ color: brandColor }}>
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Porte-à-porte:{" "}
+                        <span className="font-bold text-accent">
                           {formatPrice(selectedPortePorteCost)}
                         </span>
                       </span>
@@ -2916,23 +2963,23 @@ export default function ProductPage() {
                           <button
                             key={item.mode}
                             onClick={() => setSelectedShipping(shippingMode)}
-                            className={`flex items-center justify-between p-2 rounded-lg border transition-all text-xs ${
-                              isSelected ? "text-white" : "bg-card border-border text-foreground hover:bg-accent"
+                            className={`flex items-center justify-between p-2.5 rounded-lg transition-all text-xs ${
+                              isSelected ? "text-white shadow-sm" : "bg-card text-foreground shadow-xs hover:shadow-sm"
                             }`}
-                            style={isSelected ? { borderColor: brandColor, background: brandColor } : undefined}
+                            style={isSelected ? { background: brandColor } : undefined}
                           >
                             <div className="flex items-center gap-1.5">
-                              <item.icon className="w-3.5 h-3.5" style={{ color: isSelected ? "white" : undefined }} />
+                              <item.icon className={`w-3.5 h-3.5 ${isSelected ? "text-white" : "text-accent"}`} />
                               <div className="text-left">
-                                <p className="font-medium text-xs">{item.label}</p>
-                                <p className="text-[10px] opacity-80">{days}</p>
+                                <p className="font-semibold text-xs">{item.label}</p>
+                                <p className={`text-[10px] ${isSelected ? "text-white/75" : "text-muted-foreground"}`}>{days}</p>
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="font-semibold text-xs" style={{ color: isSelected ? "white" : brandColor }}>
+                              <p className={`font-bold text-xs ${isSelected ? "text-white" : "text-accent"}`}>
                                 {formatPrice(cost)}
                               </p>
-                              <p className="text-[9px] opacity-80">{estimatedDate}</p>
+                              <p className={`text-[9px] ${isSelected ? "text-white/75" : "text-muted-foreground"}`}>{estimatedDate}</p>
                             </div>
                           </button>
                         )
@@ -2974,24 +3021,7 @@ export default function ProductPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 p-3 bg-muted rounded-lg text-xs shadow-xs">
-                  <div className="flex items-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                    <span>Garantie 12 mois</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <RotateCcw className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                    <span>Retour 15j</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                    <span>Certifié</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Truck className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                    <span>Suivi</span>
-                  </div>
-                </div>
+                <TrustCarouselRow />
               </div>
             </motion.div>
 
@@ -3620,6 +3650,12 @@ export default function ProductPage() {
             </div>
 
             <div className="p-6 space-y-6">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Adullam vous connecte directement aux usines, sans intermédiaire. Chaque commande est vérifiée
+                avant expédition et couverte par nos garanties ci-dessous — c&apos;est notre engagement pour que
+                vous puissiez acheter en toute confiance.
+              </p>
+
               <div>
                 <h4 className="text-sm font-semibold text-foreground mb-3">Moyens de paiement acceptés</h4>
                 <div className="grid grid-cols-2 gap-3">
@@ -3635,18 +3671,61 @@ export default function ProductPage() {
               </div>
 
               <div>
-                <h4 className="text-sm font-semibold text-foreground mb-3">Protection de votre commande</h4>
+                <h4 className="text-sm font-semibold text-foreground mb-3">Nos garanties, en détail</h4>
                 <div className="space-y-3">
-                  <div className="bg-muted rounded-xl p-4">
-                    <p className="text-sm font-medium text-foreground mb-1">Paiements sécurisés</p>
-                    <p className="text-sm text-muted-foreground">Chaque transaction est protégée par un cryptage SSL strict.</p>
+                  <div className="bg-muted rounded-xl p-4 flex gap-3">
+                    <Lock className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground mb-1">Paiement 100% sécurisé</p>
+                      <p className="text-sm text-muted-foreground">
+                        Chaque transaction est chiffrée en SSL. Vos informations de paiement ne sont jamais
+                        stockées ni partagées.
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="bg-muted rounded-xl p-4">
-                    <p className="text-sm font-medium text-foreground mb-1">Garantie remboursement</p>
-                    <p className="text-sm text-muted-foreground">
-                      Obtenez un remboursement si votre commande n&apos;est pas expédiée.
-                    </p>
+                  <div className="bg-muted rounded-xl p-4 flex gap-3">
+                    <Truck className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground mb-1">Remboursé si votre commande n&apos;arrive pas</p>
+                      <p className="text-sm text-muted-foreground">
+                        Vous êtes intégralement remboursé si votre colis n&apos;est pas expédié ou n&apos;arrive
+                        pas à destination — aucune démarche compliquée, on s&apos;en occupe.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-muted rounded-xl p-4 flex gap-3">
+                    <BadgeCheck className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground mb-1">Contrôle qualité systématique</p>
+                      <p className="text-sm text-muted-foreground">
+                        Chaque commande est vérifiée avant son départ de l&apos;usine, pour s&apos;assurer qu&apos;elle
+                        correspond bien à ce que vous avez commandé.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-muted rounded-xl p-4 flex gap-3">
+                    <RotateCcw className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground mb-1">Retour accepté sous 5 jours</p>
+                      <p className="text-sm text-muted-foreground">
+                        Produit non conforme à la description ? Vous avez 5 jours après réception pour nous le
+                        signaler et être remboursé ou échangé.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-muted rounded-xl p-4 flex gap-3">
+                    <Shield className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground mb-1">Garantie 12 mois</p>
+                      <p className="text-sm text-muted-foreground">
+                        En cas de défaut de fabrication constaté dans les 12 mois suivant l&apos;achat, votre
+                        produit est réparé, remplacé ou remboursé.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
