@@ -5,137 +5,6 @@ import { useEffect, useRef, useState, useCallback, useLayoutEffect } from "react
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useApi } from "@/hooks/useApi"
 
-// ════════════════════════════════════════════════════════════
-// Icônes de réassurance (mêmes garanties déjà affichées sur le
-// site — paiement sécurisé / livraison rapide — pas d'allégation
-// fabriquée par produit, juste les garanties réelles de la plateforme)
-// ════════════════════════════════════════════════════════════
-const IconShieldCheck = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M12 3.6 19 6.4v5.3c0 4.4-3 7.4-7 8.7-4-1.3-7-4.3-7-8.7V6.4L12 3.6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-    <path d="M9.2 12.2l1.9 1.9 3.7-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-)
-
-const IconTruck = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M3.5 7h9.5v9H3.5V7Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-    <path d="M13 10h3.6L20 13.2V16h-7v-6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-    <circle cx="7" cy="18" r="1.7" stroke="currentColor" strokeWidth="1.6" />
-    <circle cx="16.5" cy="18" r="1.7" stroke="currentColor" strokeWidth="1.6" />
-  </svg>
-)
-
-const IconFactory = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M3.5 20V11l5-3v3l5-3v3l5-3v12H3.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-    <path d="M16.5 8V5.2h2V8" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-    <path d="M7 20v-4h3v4M13.5 20v-3h3v3" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-  </svg>
-)
-
-const IconVerifiedBadge = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" className={className}>
-    <path
-      d="M12 3.6 13.9 5l2.4-.3.9 2.3 2.3.9-.3 2.4 1.4 1.9-1.4 1.9.3 2.4-2.3.9-.9 2.3-2.4-.3L12 20.4 10.1 19l-2.4.3-.9-2.3-2.3-.9.3-2.4L3.4 12l1.4-1.9-.3-2.4 2.3-.9.9-2.3 2.4.3L12 3.6Z"
-      stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"
-    />
-    <path d="M9.2 12.2l1.9 1.9 3.7-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-)
-
-const IconCheckCircle = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" className={className}>
-    <circle cx="12" cy="12" r="8.2" stroke="currentColor" strokeWidth="1.6" />
-    <path d="M8.7 12.3l2.1 2.1 4.3-4.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-)
-
-const IconHeadset = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M4.5 13.5v-2a7.5 7.5 0 0 1 15 0v2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    <rect x="3.5" y="13" width="3.2" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.6" />
-    <rect x="17.3" y="13" width="3.2" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.6" />
-    <path d="M19.5 18.3v.7a2.5 2.5 0 0 1-2.5 2.5h-2.3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-  </svg>
-)
-
-// Banque de messages de réassurance (façon Alibaba) — chaque carte n'en
-// affiche qu'un sous-ensemble, différent d'une carte à l'autre.
-const trustPool: { label: string; icon: (p: { className?: string }) => JSX.Element }[] = [
-  { label: "Paiement sécurisé", icon: IconShieldCheck },
-  { label: "Livraison garantie", icon: IconTruck },
-  { label: "Tout droit de l'usine", icon: IconFactory },
-  { label: "Fournisseur vérifié", icon: IconVerifiedBadge },
-  { label: "Produit vérifié", icon: IconCheckCircle },
-  { label: "Assistance 7j/7", icon: IconHeadset },
-]
-
-// Sélection stable (par produit) d'une fenêtre de 3 messages dans la
-// banque — deux produits voisins n'affichent jamais la même combinaison.
-function pickTrustItems(id: string, count = 3) {
-  let hash = 0
-  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0
-  const start = hash % trustPool.length
-  return Array.from({ length: count }, (_, i) => trustPool[(start + i) % trustPool.length])
-}
-
-// Petit hash stable pour dériver un décalage propre à chaque produit
-function hashOf(id: string): number {
-  let h = 0
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
-  return h
-}
-
-// Carrousel vertical de réassurance, doux et désynchronisé d'une carte à
-// l'autre (chaque produit a son propre décalage de départ et tourne à
-// son rythme, sans jamais changer en même temps que ses voisins).
-function TrustCarousel({ items, productId }: { items: { label: string; icon: (p: { className?: string }) => JSX.Element }[]; productId: string }) {
-  const [index, setIndex] = useState(0)
-  const [animating, setAnimating] = useState(false)
-
-  const h = hashOf(productId)
-  const startDelay = h % 2400          // décalage de départ : 0–2.4s
-  const cycleDuration = 3400 + (h % 900) // rythme propre : 3.4–4.3s
-
-  useEffect(() => {
-    let intervalId: ReturnType<typeof setInterval>
-    const startTimer = setTimeout(() => {
-      intervalId = setInterval(() => {
-        setAnimating(true)
-        setTimeout(() => {
-          setIndex((i) => (i + 1) % items.length)
-          setAnimating(false)
-        }, 420)
-      }, cycleDuration)
-    }, startDelay)
-
-    return () => {
-      clearTimeout(startTimer)
-      if (intervalId) clearInterval(intervalId)
-    }
-  }, [items.length, startDelay, cycleDuration])
-
-  const current = items[index]
-  const Icon = current.icon
-
-  return (
-    <div className="overflow-hidden" style={{ height: "14px" }}>
-      <div
-        className="flex items-center gap-1 text-[9px] font-medium text-muted-foreground transition-all ease-in-out"
-        style={{
-          transitionDuration: "420ms",
-          transform: animating ? "translateY(-100%)" : "translateY(0)",
-          opacity: animating ? 0 : 1,
-        }}
-      >
-        <Icon className="h-3 w-3 text-accent shrink-0" />
-        <span className="truncate">{current.label}</span>
-      </div>
-    </div>
-  )
-}
-
 interface Product {
   id: string
   name: string
@@ -520,17 +389,15 @@ export function ForYouSection() {
                     </span>
                   )}
 
-                  <ProductCard product={{
-                    id: product.id,
-                    name: product.name,
-                    priceUSD: product.priceUSD,
-                    image: product.image,
-                  }} />
-
-                  {/* Réassurance façon Alibaba — alignée sur le padding du titre/prix */}
-                  <div className="px-2 lg:px-3 -mt-1">
-                    <TrustCarousel items={pickTrustItems(product.id)} productId={product.id} />
-                  </div>
+                  <ProductCard
+                    product={{
+                      id: product.id,
+                      name: product.name,
+                      priceUSD: product.priceUSD,
+                      image: product.image,
+                    }}
+                    showTrust
+                  />
                 </div>
               )
             })}

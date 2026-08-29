@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
+import { useState, useEffect } from "react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
 // ✅ Configuration des badges selon la source
@@ -23,6 +24,138 @@ const badgeConfig: Record<string, { label: string; tone: "dark" | "accent" }> = 
   selected_product: { label: "🔍 Similaire", tone: "dark" },
 }
 
+// ════════════════════════════════════════════════════════════
+// Réassurance façon Alibaba — icônes maison, petites, compactes
+// ════════════════════════════════════════════════════════════
+type TrustIconProps = { className?: string }
+
+const IconShieldCheck = ({ className }: TrustIconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M12 3.6 19 6.4v5.3c0 4.4-3 7.4-7 8.7-4-1.3-7-4.3-7-8.7V6.4L12 3.6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    <path d="M9.2 12.2l1.9 1.9 3.7-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+
+const IconTruck = ({ className }: TrustIconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M3.5 7h9.5v9H3.5V7Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    <path d="M13 10h3.6L20 13.2V16h-7v-6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    <circle cx="7" cy="18" r="1.7" stroke="currentColor" strokeWidth="1.6" />
+    <circle cx="16.5" cy="18" r="1.7" stroke="currentColor" strokeWidth="1.6" />
+  </svg>
+)
+
+const IconFactory = ({ className }: TrustIconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M3.5 20V11l5-3v3l5-3v3l5-3v12H3.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    <path d="M16.5 8V5.2h2V8" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    <path d="M7 20v-4h3v4M13.5 20v-3h3v3" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+  </svg>
+)
+
+const IconVerifiedBadge = ({ className }: TrustIconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path
+      d="M12 3.6 13.9 5l2.4-.3.9 2.3 2.3.9-.3 2.4 1.4 1.9-1.4 1.9.3 2.4-2.3.9-.9 2.3-2.4-.3L12 20.4 10.1 19l-2.4.3-.9-2.3-2.3-.9.3-2.4L3.4 12l1.4-1.9-.3-2.4 2.3-.9.9-2.3 2.4.3L12 3.6Z"
+      stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"
+    />
+    <path d="M9.2 12.2l1.9 1.9 3.7-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+
+const IconCheckCircle = ({ className }: TrustIconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <circle cx="12" cy="12" r="8.2" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M8.7 12.3l2.1 2.1 4.3-4.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+
+const IconHeadset = ({ className }: TrustIconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M4.5 13.5v-2a7.5 7.5 0 0 1 15 0v2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    <rect x="3.5" y="13" width="3.2" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.6" />
+    <rect x="17.3" y="13" width="3.2" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M19.5 18.3v.7a2.5 2.5 0 0 1-2.5 2.5h-2.3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+)
+
+const trustPool: { label: string; icon: (p: TrustIconProps) => JSX.Element }[] = [
+  { label: "Paiement sécurisé", icon: IconShieldCheck },
+  { label: "Livraison garantie", icon: IconTruck },
+  { label: "Tout droit de l'usine", icon: IconFactory },
+  { label: "Fournisseur vérifié", icon: IconVerifiedBadge },
+  { label: "Produit vérifié", icon: IconCheckCircle },
+  { label: "Assistance 7j/7", icon: IconHeadset },
+]
+
+function hashOf(id: string): number {
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
+  return h
+}
+
+// Sélection stable (par produit) de 3 messages — deux cartes voisines
+// n'affichent jamais la même combinaison.
+function pickTrustItems(id: string, count = 3) {
+  const h = hashOf(id)
+  const start = h % trustPool.length
+  return Array.from({ length: count }, (_, i) => trustPool[(start + i) % trustPool.length])
+}
+
+// Carrousel doux et désynchronisé : décalage de départ + rythme propres
+// à chaque produit, transition légère (fondu + micro-glissement), donc
+// jamais deux cartes qui changent en même temps sur une ligne.
+function TrustCarousel({ productId }: { productId: string }) {
+  const items = pickTrustItems(productId)
+  const [index, setIndex] = useState(0)
+  const [fading, setFading] = useState(false)
+
+  const h = hashOf(productId)
+  const startDelay = h % 2400
+  const cycleDuration = 3600 + (h % 900)
+
+  useEffect(() => {
+    let intervalId: ReturnType<typeof setInterval>
+    const startTimer = setTimeout(() => {
+      intervalId = setInterval(() => {
+        setFading(true)
+        setTimeout(() => {
+          setIndex((i) => (i + 1) % items.length)
+          setFading(false)
+        }, 450)
+      }, cycleDuration)
+    }, startDelay)
+
+    return () => {
+      clearTimeout(startTimer)
+      if (intervalId) clearInterval(intervalId)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const current = items[index]
+  const Icon = current.icon
+
+  return (
+    <div className="mt-1.5 flex items-center gap-1 text-[9px] font-medium text-muted-foreground">
+      <Icon
+        className="h-3 w-3 text-accent shrink-0 transition-opacity ease-in-out"
+        style={{ transitionDuration: "450ms", opacity: fading ? 0 : 1 }}
+      />
+      <span
+        className="truncate transition-all ease-in-out"
+        style={{
+          transitionDuration: "450ms",
+          opacity: fading ? 0 : 1,
+          transform: fading ? "translateY(-2px)" : "translateY(0)",
+        }}
+      >
+        {current.label}
+      </span>
+    </div>
+  )
+}
+
 interface ProductCardProps {
   product: {
     id: string | number
@@ -40,9 +173,10 @@ interface ProductCardProps {
   }
   onClick?: () => void   // ✅ Pour le chat
   size?: 'sm' | 'md' | 'lg'
+  showTrust?: boolean    // ✅ Affiche le carrousel de réassurance dans le cadre
 }
 
-export function ProductCard({ product, onClick, size = 'md' }: ProductCardProps) {
+export function ProductCard({ product, onClick, size = 'md', showTrust = false }: ProductCardProps) {
   const { formatPrice } = useCurrencyFormatter()
 
   // ✅ Protection si priceUSD est undefined ou null
@@ -195,6 +329,9 @@ export function ProductCard({ product, onClick, size = 'md' }: ProductCardProps)
               {formattedPrice}
             </p>
           </div>
+
+          {/* RÉASSURANCE — dans le même cadre que le titre/prix */}
+          {showTrust && <TrustCarousel productId={String(product.id)} />}
         </div>
       </div>
     </Wrapper>
