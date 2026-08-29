@@ -105,7 +105,7 @@ function pickTrustItems(id: string, count = 3) {
 // Carrousel doux et désynchronisé : décalage de départ + rythme propres
 // à chaque produit, transition légère (fondu + micro-glissement), donc
 // jamais deux cartes qui changent en même temps sur une ligne.
-function TrustCarousel({ productId }: { productId: string }) {
+function TrustCarousel({ productId, sizeClass }: { productId: string; sizeClass: string }) {
   const items = pickTrustItems(productId)
   const [index, setIndex] = useState(0)
   const [fading, setFading] = useState(false)
@@ -137,12 +137,9 @@ function TrustCarousel({ productId }: { productId: string }) {
   const Icon = current.icon
 
   return (
-    <div
-      className="mt-0 flex items-center gap-1 text-[8px] leading-none font-bold text-foreground"
-      style={{ fontFamily: "'Roboto', Arial, sans-serif" }}
-    >
+    <div className={`mt-0 flex items-center gap-1 ${sizeClass} font-medium text-foreground`}>
       <Icon
-        className="h-2.5 w-2.5 text-accent shrink-0 transition-opacity ease-in-out"
+        className="h-3 w-3 text-accent shrink-0 transition-opacity ease-in-out"
         style={{ transitionDuration: "300ms", opacity: fading ? 0 : 1 }}
       />
       <span
@@ -334,7 +331,7 @@ export function ProductCard({ product, onClick, size = 'md', showTrust = false }
           </div>
 
           {/* RÉASSURANCE — dans le même cadre que le titre/prix */}
-          {showTrust && <TrustCarousel productId={String(product.id)} />}
+          {showTrust && <TrustCarousel productId={String(product.id)} sizeClass={classes.name} />}
         </div>
       </div>
     </Wrapper>
