@@ -74,21 +74,21 @@ export function ProductCard({ product, onClick, size = 'md' }: ProductCardProps)
     sm: {
       image: 'aspect-[3/4]',
       padding: 'p-2',
-      name: 'text-xs',
+      name: 'text-[10px]',
       price: 'text-sm',
       badge: 'text-[8px] px-1.5 py-0.5',
     },
     md: {
       image: 'aspect-square',
       padding: 'p-2 lg:p-3',
-      name: 'text-xs lg:text-sm',
+      name: 'text-[11px] lg:text-xs',
       price: 'text-sm lg:text-base',
       badge: 'text-[9px] px-1.5 py-0.5',
     },
     lg: {
       image: 'aspect-square',
       padding: 'p-3 lg:p-4',
-      name: 'text-sm lg:text-base',
+      name: 'text-xs lg:text-sm',
       price: 'text-base lg:text-lg',
       badge: 'text-[9px] px-1.5 py-0.5',
     },
@@ -154,7 +154,7 @@ export function ProductCard({ product, onClick, size = 'md' }: ProductCardProps)
 
         {/* INFOS */}
         <div className={classes.padding}>
-          <h3 className={`${classes.name} font-medium text-foreground truncate mb-1`}>
+          <h3 className={`${classes.name} font-bold leading-tight text-foreground truncate mb-1`}>
             {product.name}
           </h3>
 

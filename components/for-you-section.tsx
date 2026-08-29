@@ -80,30 +80,51 @@ function pickTrustItems(id: string, count = 3) {
   return Array.from({ length: count }, (_, i) => trustPool[(start + i) % trustPool.length])
 }
 
-// Carrousel vertical de réassurance, comme les tuiles produit Alibaba
-function TrustCarousel({ items }: { items: { label: string; icon: (p: { className?: string }) => JSX.Element }[] }) {
+// Petit hash stable pour dériver un décalage propre à chaque produit
+function hashOf(id: string): number {
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
+  return h
+}
+
+// Carrousel vertical de réassurance, doux et désynchronisé d'une carte à
+// l'autre (chaque produit a son propre décalage de départ et tourne à
+// son rythme, sans jamais changer en même temps que ses voisins).
+function TrustCarousel({ items, productId }: { items: { label: string; icon: (p: { className?: string }) => JSX.Element }[]; productId: string }) {
   const [index, setIndex] = useState(0)
   const [animating, setAnimating] = useState(false)
 
+  const h = hashOf(productId)
+  const startDelay = h % 2400          // décalage de départ : 0–2.4s
+  const cycleDuration = 3400 + (h % 900) // rythme propre : 3.4–4.3s
+
   useEffect(() => {
-    const t = setInterval(() => {
-      setAnimating(true)
-      setTimeout(() => {
-        setIndex((i) => (i + 1) % items.length)
-        setAnimating(false)
-      }, 200)
-    }, 2200)
-    return () => clearInterval(t)
-  }, [items.length])
+    let intervalId: ReturnType<typeof setInterval>
+    const startTimer = setTimeout(() => {
+      intervalId = setInterval(() => {
+        setAnimating(true)
+        setTimeout(() => {
+          setIndex((i) => (i + 1) % items.length)
+          setAnimating(false)
+        }, 420)
+      }, cycleDuration)
+    }, startDelay)
+
+    return () => {
+      clearTimeout(startTimer)
+      if (intervalId) clearInterval(intervalId)
+    }
+  }, [items.length, startDelay, cycleDuration])
 
   const current = items[index]
   const Icon = current.icon
 
   return (
-    <div className="mt-1.5 px-0.5 overflow-hidden" style={{ height: "14px" }}>
+    <div className="overflow-hidden" style={{ height: "14px" }}>
       <div
-        className="flex items-center gap-1 text-[9px] font-medium text-muted-foreground transition-all duration-200 ease-out"
+        className="flex items-center gap-1 text-[9px] font-medium text-muted-foreground transition-all ease-in-out"
         style={{
+          transitionDuration: "420ms",
           transform: animating ? "translateY(-100%)" : "translateY(0)",
           opacity: animating ? 0 : 1,
         }}
@@ -506,8 +527,10 @@ export function ForYouSection() {
                     image: product.image,
                   }} />
 
-                  {/* Réassurance façon Alibaba — variable et défilante par carte */}
-                  <TrustCarousel items={pickTrustItems(product.id)} />
+                  {/* Réassurance façon Alibaba — alignée sur le padding du titre/prix */}
+                  <div className="px-2 lg:px-3 -mt-1">
+                    <TrustCarousel items={pickTrustItems(product.id)} productId={product.id} />
+                  </div>
                 </div>
               )
             })}
