@@ -137,7 +137,7 @@ function TrustCarousel({ productId }: { productId: string }) {
   const Icon = current.icon
 
   return (
-    <div className="mt-0 flex items-center gap-1 text-[8px] font-bold text-foreground">
+    <div className="mt-0 flex items-center gap-1 text-[6px] font-bold text-foreground">
       <Icon
         className="h-3 w-3 text-accent shrink-0 transition-opacity ease-in-out"
         style={{ transitionDuration: "300ms", opacity: fading ? 0 : 1 }}
@@ -208,21 +208,21 @@ export function ProductCard({ product, onClick, size = 'md', showTrust = false }
     sm: {
       image: 'aspect-[3/4]',
       padding: 'p-2',
-      name: 'text-[10px]',
+      name: 'text-xs',
       price: 'text-sm',
       badge: 'text-[8px] px-1.5 py-0.5',
     },
     md: {
       image: 'aspect-square',
       padding: 'p-2 lg:p-3',
-      name: 'text-[11px] lg:text-xs',
+      name: 'text-xs lg:text-sm',
       price: 'text-sm lg:text-base',
       badge: 'text-[9px] px-1.5 py-0.5',
     },
     lg: {
       image: 'aspect-square',
       padding: 'p-3 lg:p-4',
-      name: 'text-xs lg:text-sm',
+      name: 'text-sm lg:text-base',
       price: 'text-base lg:text-lg',
       badge: 'text-[9px] px-1.5 py-0.5',
     },
@@ -288,7 +288,7 @@ export function ProductCard({ product, onClick, size = 'md', showTrust = false }
 
         {/* INFOS */}
         <div className={classes.padding}>
-          <h3 className={`${classes.name} font-bold leading-tight text-foreground truncate mb-1`}>
+          <h3 className={`${classes.name} font-medium text-foreground truncate mb-1`}>
             {product.name}
           </h3>
 
