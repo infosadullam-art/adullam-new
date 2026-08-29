@@ -137,9 +137,9 @@ function TrustCarousel({ productId }: { productId: string }) {
   const Icon = current.icon
 
   return (
-    <div className="mt-0 flex items-center gap-1 text-[7px] font-bold text-foreground">
+    <div className="mt-0 flex items-center gap-1 text-[8px] font-bold text-foreground">
       <Icon
-        className="h-2 w-2 text-accent shrink-0 transition-opacity ease-in-out"
+        className="h-3 w-3 text-accent shrink-0 transition-opacity ease-in-out"
         style={{ transitionDuration: "300ms", opacity: fading ? 0 : 1 }}
       />
       <span
