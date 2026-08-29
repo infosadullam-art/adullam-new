@@ -111,8 +111,8 @@ function TrustCarousel({ productId }: { productId: string }) {
   const [fading, setFading] = useState(false)
 
   const h = hashOf(productId)
-  const startDelay = h % 2400
-  const cycleDuration = 3600 + (h % 900)
+  const startDelay = h % 3000
+  const cycleDuration = 5500 + (h % 1500)
 
   useEffect(() => {
     let intervalId: ReturnType<typeof setInterval>
@@ -122,7 +122,7 @@ function TrustCarousel({ productId }: { productId: string }) {
         setTimeout(() => {
           setIndex((i) => (i + 1) % items.length)
           setFading(false)
-        }, 450)
+        }, 700)
       }, cycleDuration)
     }, startDelay)
 
@@ -137,17 +137,17 @@ function TrustCarousel({ productId }: { productId: string }) {
   const Icon = current.icon
 
   return (
-    <div className="mt-1.5 flex items-center gap-1 text-[9px] font-medium text-muted-foreground">
+    <div className="mt-1.5 flex items-center gap-1 text-[9px] font-bold text-foreground">
       <Icon
         className="h-3 w-3 text-accent shrink-0 transition-opacity ease-in-out"
-        style={{ transitionDuration: "450ms", opacity: fading ? 0 : 1 }}
+        style={{ transitionDuration: "700ms", opacity: fading ? 0 : 1 }}
       />
       <span
         className="truncate transition-all ease-in-out"
         style={{
-          transitionDuration: "450ms",
+          transitionDuration: "700ms",
           opacity: fading ? 0 : 1,
-          transform: fading ? "translateY(-2px)" : "translateY(0)",
+          transform: fading ? "translateY(-1px)" : "translateY(0)",
         }}
       >
         {current.label}
