@@ -3,6 +3,7 @@
 import { Header } from "@/components/header"
 import { MobileHeader } from "@/components/mobile-header"
 import { Footer } from "@/components/footer"
+import { ProductCard } from "@/components/product-card"
 
 // ════════════════════════════════════════════════════════════
 // ICÔNES — dessinées maison, même trait (1.6, jonctions arrondies)
@@ -209,6 +210,14 @@ function PenLine({ className, style }: IconProps) {
     <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
       <path d="M14.5 4.5l5 5L8.5 20.5l-5.5 1 1-5.5L14.5 4.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
       <path d="M13 6l5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function MessageCircle({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12 20c4.7 0 8.5-3.4 8.5-7.5S16.7 5 12 5s-8.5 3.4-8.5 7.5c0 1.7.6 3.2 1.7 4.5-.2 1-.5 1.9-1 2.7 1.1-.2 2.1-.6 3-1.1 1 .5 2.1.9 3.3 1v-.6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -1471,17 +1480,6 @@ export default function ProductPage() {
     }
   }
 
-  const scrollRelated = (direction: "left" | "right") => {
-    if (relatedCarouselRef.current) {
-      const container = relatedCarouselRef.current
-      const scrollAmount = container.clientWidth * 0.8
-      container.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      })
-    }
-  }
-
   // ============================================================
   // API FALLBACK - RECOMMANDATIONS RAPIDES
   // ============================================================
@@ -1579,10 +1577,17 @@ export default function ProductPage() {
               <a href="/" className="hover:text-foreground transition-colors">
                 Accueil
               </a>
-              <ChevronRight className="w-3 h-3" />
-              <a href="/category/electronique" className="hover:text-foreground transition-colors">
-                Électronique
-              </a>
+              {product?.category && (
+                <>
+                  <ChevronRight className="w-3 h-3" />
+                  <a
+                    href={`/category/${String(product.category).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`}
+                    className="hover:text-foreground transition-colors"
+                  >
+                    {product.category}
+                  </a>
+                </>
+              )}
               <ChevronRight className="w-3 h-3" />
               <span className="text-foreground">{productName}</span>
             </div>
@@ -1681,7 +1686,7 @@ export default function ProductPage() {
                       </span>
                       <span className="text-xs text-muted-foreground">SKU: {product.id}</span>
                     </div>
-                    <h1 className="text-lg font-semibold leading-tight text-balance">{productName}</h1>
+                    <h1 className="text-sm font-semibold leading-snug text-balance line-clamp-2">{productName}</h1>
                   </div>
                   <button
                     onClick={handleToggleWishlist}
@@ -1950,27 +1955,24 @@ export default function ProductPage() {
                   </div>
                 )}
 
-                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1">
-                    <Package className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                    <span>MOQ: {minQuantity}</span>
+                    <Package className="w-3.5 h-3.5 text-accent" />
+                    <span>MOQ {minQuantity}</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Check className="w-3.5 h-3.5 text-green-600" />
-                    <span>En stock</span>
+                    <Clock className="w-3.5 h-3.5 text-accent" />
+                    <span>{logisticsData?.recommended.days || "15-20 jours"}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     {isLoadingLogistics ? (
                       <span className="inline-flex items-center text-muted-foreground">
-                        <span
-                          className="w-3 h-3 border-2 border-border rounded-full animate-spin mr-1"
-                          style={{ borderTopColor: brandColor }}
-                        />
+                        <span className="w-3 h-3 border-2 border-border border-t-accent rounded-full animate-spin mr-1" />
                         Calcul...
                       </span>
                     ) : (
                       <span className="text-muted-foreground">
-                        {logisticsData ? `${logisticsData.weight.totalWeight.toFixed(2)} kg total` : "0.00 kg total"}
+                        {logisticsData ? `${logisticsData.weight.totalWeight.toFixed(2)} kg` : "0.00 kg"}
                       </span>
                     )}
                   </div>
@@ -2050,33 +2052,30 @@ export default function ProductPage() {
                   )}
                 </div>
 
-                <div
-                  onClick={() => setIsProtectionModalOpen(true)}
-                  className="rounded-lg p-3 cursor-pointer transition-all bg-muted shadow-xs hover:shadow-sm"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-4 h-4" style={{ color: brandColor }} />
-                      <span className="text-xs font-semibold text-foreground">Protection Adullam</span>
-                    </div>
-                    <Info className="w-3.5 h-3.5 text-muted-foreground" />
+                <div className="rounded-lg p-3 bg-muted shadow-xs space-y-2">
+                  <div className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
+                    <span className="text-xs text-foreground">Direct depuis l'usine, sans intermédiaire</span>
                   </div>
-
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
-                    {["MTN", "Orange", "Wave", "Visa"].map((method) => (
-                      <span
-                        key={method}
-                        className="text-xs px-2 py-1 bg-card shadow-xs rounded-md text-muted-foreground"
-                      >
-                        {method}
-                      </span>
-                    ))}
+                  <div className="flex items-start gap-2">
+                    <Check className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
+                    <span className="text-xs text-foreground">Tous les frais inclus — rien à payer en plus à la livraison</span>
                   </div>
-
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Lock className="w-3 h-3" />
-                    Paiement sécurisé
-                  </p>
+                  <div className="flex items-start gap-2">
+                    <Shield className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
+                    <span className="text-xs text-foreground">Remboursé si votre commande n'arrive pas</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Lock className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
+                    <span className="text-xs text-foreground">Paiement sécurisé — Mobile Money & carte bancaire</span>
+                  </div>
+                  <button
+                    onClick={() => setIsProtectionModalOpen(true)}
+                    className="flex items-center gap-1 text-xs font-semibold text-accent pt-1"
+                  >
+                    Voir les détails de la protection Adullam
+                    <ChevronRight className="w-3 h-3" />
+                  </button>
                 </div>
 
                 {!isMOQMet && grandTotal > 0 && (
@@ -2092,7 +2091,9 @@ export default function ProductPage() {
                       className="flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] text-white"
                       style={{ background: isMOQMet && grandTotal > 0 ? brandColor : accentColor }}
                     >
-                      <ShoppingCart className="w-4 h-4" />
+                      {isMOQMet && grandTotal > 0
+                        ? <ShoppingCart className="w-4 h-4" />
+                        : <MessageCircle className="w-4 h-4" />}
                       {isMOQMet && grandTotal > 0 ? `Ajouter (${grandTotal})` : "Nous contacter"}
                     </button>
                     <button
@@ -2573,7 +2574,7 @@ export default function ProductPage() {
                       </span>
                       <span className="text-xs text-muted-foreground">SKU: {product.id}</span>
                     </div>
-                    <h1 className="text-xl font-semibold text-balance">{productName}</h1>
+                    <h1 className="text-base font-semibold leading-snug text-balance line-clamp-2">{productName}</h1>
 
                     <div className="flex items-center gap-3 text-xs mt-2">
                       <div className="flex items-center gap-1">
@@ -2804,7 +2805,7 @@ export default function ProductPage() {
                   )}
 
                   <div className="flex items-center gap-2 text-xs mb-2">
-                    <span className="px-2 py-0.5 rounded-md text-white" style={{ background: brandColor }}>
+                    <span className="px-2 py-0.5 rounded-md text-white font-semibold" style={{ background: brandColor }}>
                       Prix direct usine
                     </span>
                     <span className="text-muted-foreground">
@@ -2812,60 +2813,54 @@ export default function ProductPage() {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-4 text-xs">
+                  <div className="flex items-center gap-4 text-xs mb-4">
                     <div className="flex items-center gap-1 text-muted-foreground">
-                      <Package className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                      <span>MOQ: {minQuantity}</span>
+                      <Package className="w-3.5 h-3.5 text-accent" />
+                      <span>MOQ {minQuantity}</span>
                     </div>
                     <div className="flex items-center gap-1 text-muted-foreground">
-                      <Clock className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                      <span>Délai: {logisticsData?.recommended.days || "15-20"} jours</span>
+                      <Clock className="w-3.5 h-3.5 text-accent" />
+                      <span>{logisticsData?.recommended.days || "15-20 jours"}</span>
                     </div>
                     <div className="flex items-center gap-1 text-muted-foreground">
                       {isLoadingLogistics ? (
                         <span className="inline-flex items-center text-muted-foreground">
-                          <span
-                            className="w-3 h-3 border-2 border-border rounded-full animate-spin mr-1"
-                            style={{ borderTopColor: brandColor }}
-                          />
+                          <span className="w-3 h-3 border-2 border-border border-t-accent rounded-full animate-spin mr-1" />
                           Calcul...
                         </span>
                       ) : (
                         <span className="text-muted-foreground">
-                          {logisticsData ? `${logisticsData.weight.totalWeight.toFixed(2)} kg total` : "0.00 kg total"}
+                          {logisticsData ? `${logisticsData.weight.totalWeight.toFixed(2)} kg` : "0.00 kg"}
                         </span>
                       )}
                     </div>
                   </div>
                 </div>
 
-                <div
-                  onClick={() => setIsProtectionModalOpen(true)}
-                  className="bg-muted rounded-lg p-4 mb-4 cursor-pointer shadow-xs hover:shadow-sm transition-all"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-5 h-5" style={{ color: brandColor }} />
-                      <span className="text-sm font-semibold text-foreground">Protection des achats Adullam</span>
-                    </div>
-                    <Info className="w-4 h-4 text-muted-foreground" />
+                <div className="bg-muted rounded-lg p-4 mb-4 shadow-xs space-y-2.5">
+                  <div className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-accent mt-0.5 shrink-0" />
+                    <span className="text-sm text-foreground">Direct depuis l'usine, sans intermédiaire</span>
                   </div>
-
-                  <div className="flex flex-wrap items-center gap-3 mb-3">
-                    {["MTN", "Orange", "Wave", "Visa"].map((method) => (
-                      <span
-                        key={method}
-                        className="text-xs px-3 py-1.5 bg-card shadow-xs rounded-md text-muted-foreground"
-                      >
-                        {method}
-                      </span>
-                    ))}
+                  <div className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-accent mt-0.5 shrink-0" />
+                    <span className="text-sm text-foreground">Tous les frais inclus — rien à payer en plus à la livraison</span>
                   </div>
-
-                  <p className="text-sm text-muted-foreground flex items-center gap-1">
-                    <Lock className="w-4 h-4" />
-                    Paiement sécurisé - Cliquez pour en savoir plus
-                  </p>
+                  <div className="flex items-start gap-2">
+                    <Shield className="w-4 h-4 text-accent mt-0.5 shrink-0" />
+                    <span className="text-sm text-foreground">Remboursé si votre commande n'arrive pas</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Lock className="w-4 h-4 text-accent mt-0.5 shrink-0" />
+                    <span className="text-sm text-foreground">Paiement sécurisé — Mobile Money & carte bancaire</span>
+                  </div>
+                  <button
+                    onClick={() => setIsProtectionModalOpen(true)}
+                    className="flex items-center gap-1 text-sm font-semibold text-accent pt-1"
+                  >
+                    Voir les détails de la protection Adullam
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
 
                 <div className="mb-4">
@@ -2962,7 +2957,9 @@ export default function ProductPage() {
                       className="flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 text-white hover:opacity-90"
                       style={{ background: isMOQMet && grandTotal > 0 ? brandColor : accentColor }}
                     >
-                      <ShoppingCart className="w-4 h-4" />
+                      {isMOQMet && grandTotal > 0
+                        ? <ShoppingCart className="w-4 h-4" />
+                        : <MessageCircle className="w-4 h-4" />}
                       {isMOQMet && grandTotal > 0 ? `Ajouter (${grandTotal})` : "Nous contacter"}
                     </button>
 
@@ -3386,108 +3383,36 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* RELATED PRODUCTS */}
+            {/* RELATED PRODUCTS — même grille que la section For You */}
             <div className="mt-8 lg:mt-12">
-              <div className="flex items-center justify-between mb-4 lg:mb-6">
-                <h2 className="text-base lg:text-lg font-semibold">Vous aimerez aussi</h2>
+              <div className="flex items-center gap-2 mb-4 lg:mb-6">
+                <span className="inline-block w-[3px] h-[18px] rounded-sm bg-accent" />
+                <h2 className="text-base lg:text-lg font-extrabold tracking-[-0.02em] text-foreground">Vous aimerez aussi</h2>
               </div>
 
               {isLoadingRelated ? (
                 <div className="flex justify-center items-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: brandColor }} />
+                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-accent" />
                 </div>
               ) : relatedProducts.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground text-sm">Aucune recommandation pour le moment</div>
               ) : (
-                <>
-                  <div className="lg:hidden">
-                    <div className="bg-card rounded-lg p-4 shadow-xs">
-                      <div className="relative">
-                        <div className="overflow-x-auto overflow-y-hidden hide-scrollbar">
-                          <div className="flex gap-3 w-max">
-                            {relatedProducts.map((p) => (
-                              <a
-                                key={p.id}
-                                href={`/products/${p.id}`}
-                                className="group w-[calc((100vw-4rem)/3-0.5rem)] min-w-[calc((100vw-4rem)/3-0.5rem)]"
-                              >
-                                <div className="bg-background rounded-lg aspect-square mb-2 overflow-hidden shadow-xs group-hover:shadow-sm transition-all">
-                                  <Image
-                                    src={p.image || "/placeholder.svg"}
-                                    alt={p.name}
-                                    width={150}
-                                    height={150}
-                                    className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform"
-                                  />
-                                </div>
-                                <h3 className="font-medium text-xs mb-0.5 line-clamp-2 text-foreground">{p.name}</h3>
-                                <div className="flex items-center gap-1 mb-0.5">
-                                  <div className="flex">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                      <Star key={star} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
-                                    ))}
-                                  </div>
-                                  <span className="text-[9px] text-muted-foreground">{p.rating || 4.5}</span>
-                                </div>
-                                <p
-                                  className="text-sm font-bold"
-                                  style={{ color: brandColor, fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.02em" }}
-                                >
-                                  {formatPrice(p.priceUSD)}
-                                </p>
-                              </a>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-2.5">
+                  {relatedProducts.map((p) => (
+                    <div key={p.id} className="transition-transform duration-200 hover:-translate-y-0.5">
+                      <ProductCard
+                        product={{
+                          id: p.id,
+                          name: p.name,
+                          priceUSD: p.priceUSD,
+                          image: p.image,
+                          rating: p.rating,
+                        }}
+                        showTrust
+                      />
                     </div>
-                  </div>
-
-                  <div className="hidden lg:block relative">
-                    <div ref={relatedCarouselRef} className="overflow-x-auto overflow-y-hidden hide-scrollbar pb-4 scroll-smooth">
-                      <div className="flex gap-4 w-max">
-                        {relatedProducts.map((p) => (
-                          <a key={p.id} href={`/products/${p.id}`} className="group w-[calc((1200px-4rem)/6-1rem)] min-w-[160px]">
-                            <div className="bg-card rounded-lg aspect-square mb-3 overflow-hidden shadow-xs group-hover:shadow-sm transition-all">
-                              <Image
-                                src={p.image || "/placeholder.svg"}
-                                alt={p.name}
-                                width={180}
-                                height={180}
-                                className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform"
-                              />
-                            </div>
-                            <h3 className="font-medium text-xs mb-1 line-clamp-2 text-foreground">{p.name}</h3>
-                            <div className="flex items-center gap-1 mb-1">
-                              <div className="flex">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star key={star} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
-                                ))}
-                              </div>
-                              <span className="text-[10px] text-muted-foreground">{p.rating || 4.5}</span>
-                            </div>
-                            <p className="text-xs font-bold" style={{ color: brandColor }}>
-                              {formatPrice(p.priceUSD)}
-                            </p>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => scrollRelated("left")}
-                      className="absolute left-0 top-1/3 -translate-y-1/2 -ml-4 w-7 h-7 bg-background rounded-full shadow-sm flex items-center justify-center hover:bg-muted transition-colors z-10"
-                    >
-                      <ChevronLeft className="w-3.5 h-3.5 text-muted-foreground" />
-                    </button>
-                    <button
-                      onClick={() => scrollRelated("right")}
-                      className="absolute right-0 top-1/3 -translate-y-1/2 -mr-4 w-7 h-7 bg-background rounded-full shadow-sm flex items-center justify-center hover:bg-muted transition-colors z-10"
-                    >
-                      <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
-                    </button>
-                  </div>
-                </>
+                  ))}
+                </div>
               )}
             </div>
           </div>
@@ -3697,22 +3622,14 @@ export default function ProductPage() {
             <div className="p-6 space-y-6">
               <div>
                 <h4 className="text-sm font-semibold text-foreground mb-3">Moyens de paiement acceptés</h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="bg-muted rounded-xl p-3 text-center shadow-xs">
                     <Smartphone className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
-                    <p className="text-xs font-medium text-foreground">MTN Money</p>
-                  </div>
-                  <div className="bg-muted rounded-xl p-3 text-center shadow-xs">
-                    <Smartphone className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
-                    <p className="text-xs font-medium text-foreground">Orange Money</p>
+                    <p className="text-xs font-medium text-foreground">Mobile Money</p>
                   </div>
                   <div className="bg-muted rounded-xl p-3 text-center shadow-xs">
                     <CreditCard className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
-                    <p className="text-xs font-medium text-foreground">Wave</p>
-                  </div>
-                  <div className="bg-muted rounded-xl p-3 text-center shadow-xs">
-                    <CreditCard className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
-                    <p className="text-xs font-medium text-foreground">Visa/Mastercard</p>
+                    <p className="text-xs font-medium text-foreground">Carte bancaire</p>
                   </div>
                 </div>
               </div>
