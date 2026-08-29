@@ -1581,10 +1581,10 @@ export default function ProductPage() {
                 <>
                   <ChevronRight className="w-3 h-3" />
                   <a
-                    href={`/category/${String(product.category).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`}
+                    href={`/category/${product.category.slug || product.category.id}`}
                     className="hover:text-foreground transition-colors"
                   >
-                    {product.category}
+                    {product.category.name}
                   </a>
                 </>
               )}
