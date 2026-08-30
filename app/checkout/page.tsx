@@ -4,24 +4,159 @@ import { Header } from "@/components/header";
 import { MobileHeader } from "@/components/mobile-header";
 import MobileNav from "@/components/mobile-nav";
 import { Footer } from "@/components/footer";
-import { 
-  ChevronRight, 
-  Shield, 
-  Lock, 
-  CreditCard,
-  MapPin,
-  Phone,
-  Mail,
-  Home,
-  Truck,
-  AlertCircle,
-  Plus,
-  Ship,
-  Zap,
-  Check,
-  ArrowLeft,
-  Menu
-} from "lucide-react";
+
+// ════════════════════════════════════════════════════════════
+// ICÔNES — dessinées maison, même trait (1.6, jonctions arrondies)
+// que le reste du site. Noms identiques aux imports lucide
+// d'origine : aucune des utilisations plus bas n'est à modifier.
+// ════════════════════════════════════════════════════════════
+type IconProps = { className?: string; style?: React.CSSProperties };
+
+function ChevronRight({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ArrowLeft({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function Shield({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12 3.6 19 6.4v5.3c0 4.4-3 7.4-7 8.7-4-1.3-7-4.3-7-8.7V6.4L12 3.6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function Lock({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <rect x="4.5" y="10.5" width="15" height="10" rx="1.8" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M7.5 10.5V7.5a4.5 4.5 0 0 1 9 0v3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CreditCard({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <rect x="3" y="5.5" width="18" height="13" rx="1.8" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M3 9.5h18" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M6.5 14.5h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function MapPin({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12 21.5s-7-6.3-7-11.7a7 7 0 1 1 14 0c0 5.4-7 11.7-7 11.7Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <circle cx="12" cy="9.8" r="2.4" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  );
+}
+
+function Phone({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path
+        d="M6.6 3.5 9 5.9c.4.4.5 1 .2 1.5L7.9 9.7a12.5 12.5 0 0 0 6.4 6.4l2.3-1.3c.5-.3 1.1-.2 1.5.2l2.4 2.4c.5.5.5 1.4-.1 1.8-1.1.9-2.7 1.6-4.4 1.2C10.7 19.3 4.7 13.3 3.8 8c-.4-1.7.3-3.3 1.2-4.4.4-.6 1.3-.6 1.8-.1Z"
+        stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function Mail({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <rect x="3" y="5.5" width="18" height="13" rx="1.8" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M4 7l8 6 8-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function Home({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M4.5 11.2 12 4.6l7.5 6.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M6.5 9.8V19a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V9.8" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M10 20v-5h4v5" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function Truck({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M3.5 7h9.5v9H3.5V7Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M13 10h3.6L20 13.2V16h-7v-6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <circle cx="7" cy="18" r="1.7" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="16.5" cy="18" r="1.7" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  );
+}
+
+function AlertCircle({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <circle cx="12" cy="12" r="8.2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M12 7.6v5.2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <circle cx="12" cy="16.1" r="0.15" stroke="currentColor" strokeWidth="1.9" />
+    </svg>
+  );
+}
+
+function Plus({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function Ship({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M4 14.5l1.4 4.4c.2.7.9 1.1 1.6 1.1h10c.7 0 1.4-.4 1.6-1.1l1.4-4.4H4Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M6.5 14.5V6.8h6.7l3.3 3.4v4.3" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M9 6.8V4.5h3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function Zap({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12.8 3.5 6 13.2h4.6L10.6 20.5 18 10.3h-4.7L12.8 3.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function Check({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M5 12.5l4.5 4.5L19 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function Menu({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M4 7.5h16M4 12h16M4 16.5h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 import { useCart } from "@/context/CartContext";
 import { useLocale } from "@/context/LocaleProvider";
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter";
@@ -33,14 +168,13 @@ import { useRouter } from "next/navigation";
 import { PaymentButton } from "@/components/PaymentButton";
 import { CouponInput } from "@/components/CouponInput";
 import { apiFetch } from "@/lib/api";
-import { useTheme } from "@/components/theme-provider";
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Couleurs dynamiques
-const brandColor = "#D4372B";
-const brandGradient = "#D4372B";
-const softBg = "#FAFAFA";
+const brandColor = "var(--accent)";
+const brandGradient = "var(--accent)";
+const softBg = "var(--surface)";
 
 // ============================================================
 // FONCTION MOQ
@@ -166,8 +300,6 @@ function getProductMOQTotals(cart: any[]): Map<string, { total: number; minQty: 
 export default function CheckoutPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
   
   const { 
     cart, 
@@ -607,15 +739,15 @@ export default function CheckoutPage() {
   // ==================== LOADING ====================
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: isDark ? "#0A0A0A" : "#FAFAFA" }}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#D4372B' }} />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--surface)" }}>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: 'var(--accent)' }} />
       </div>
     );
   }
 
   // ==================== RENDU ====================
   return (
-    <div className="min-h-screen" style={{ backgroundColor: isDark ? "#0A0A0A" : "#FAFAFA" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "var(--surface)" }}>
       <div className="hidden lg:block"><Header /></div>
       <div className="lg:hidden"><MobileHeader /></div>
 
@@ -623,26 +755,26 @@ export default function CheckoutPage() {
         <div className="max-w-6xl mx-auto px-4">
           
           <div className="hidden lg:flex items-center gap-2 text-xs mb-6">
-            <Link href="/" className={isDark ? "text-gray-500 hover:text-gray-300" : "text-gray-400 hover:text-gray-600"}>Accueil</Link>
-            <ChevronRight className={isDark ? "w-3 h-3 text-gray-600" : "w-3 h-3 text-gray-300"} />
-            <Link href="/cart" className={isDark ? "text-gray-500 hover:text-gray-300" : "text-gray-400 hover:text-gray-600"}>Panier</Link>
-            <ChevronRight className={isDark ? "w-3 h-3 text-gray-600" : "w-3 h-3 text-gray-300"} />
-            <span className={isDark ? "text-gray-400" : "text-gray-600"}>Checkout</span>
+            <Link href="/" className="text-muted-foreground hover:text-foreground">Accueil</Link>
+            <ChevronRight className="w-3 h-3 text-border-strong" />
+            <Link href="/cart" className="text-muted-foreground hover:text-foreground">Panier</Link>
+            <ChevronRight className="w-3 h-3 text-border-strong" />
+            <span className="text-muted-foreground">Checkout</span>
           </div>
 
           <div className="flex items-center gap-3 mb-4 lg:hidden">
             <button
               onClick={() => router.back()}
-              className={`p-2 -ml-2 rounded-lg transition-colors ${isDark ? "hover:bg-white/5" : "hover:bg-white"}`}
+              className={`p-2 -ml-2 rounded-lg transition-colors hover:bg-muted`}
             >
-              <ArrowLeft className={`w-5 h-5 ${isDark ? "text-gray-400" : "text-gray-600"}`} />
+              <ArrowLeft className={`w-5 h-5 text-muted-foreground`} />
             </button>
-            <h1 className={`text-lg font-medium ${isDark ? "text-white" : "text-gray-900"}`}>Finaliser la commande</h1>
+            <h1 className={`text-lg font-medium text-foreground`}>Finaliser la commande</h1>
           </div>
 
-          <h1 className={`hidden lg:block text-2xl font-medium mb-6 ${isDark ? "text-white" : "text-gray-900"}`}>Finaliser la commande</h1>
+          <h1 className={`hidden lg:block text-2xl font-medium mb-6 text-foreground`}>Finaliser la commande</h1>
 
-          <div className="flex items-center justify-between mb-6 lg:mb-8 max-w-2xl">
+          <div className="flex items-center justify-between mb-4 max-w-2xl">
             {[
               { step: 1, label: "Livraison" },
               { step: 2, label: "Expédition" },
@@ -650,22 +782,64 @@ export default function CheckoutPage() {
             ].map((item, index) => (
               <div key={item.step} className="flex items-center">
                 <div className="flex flex-col items-center">
-                  <div 
+                  <motion.div
+                    animate={{ scale: step === item.step ? 1.12 : 1 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 15 }}
                     className={`w-7 h-7 lg:w-8 lg:h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
-                      step >= item.step ? 'text-white' : isDark ? 'text-gray-500' : 'text-gray-400'
+                      step >= item.step ? 'text-white' : 'text-muted-foreground'
                     }`}
-                    style={{ background: step >= item.step ? '#D4372B' : isDark ? '#1A1A1A' : '#F4F4F4' }}
+                    style={{ background: step >= item.step ? 'var(--accent)' : 'var(--surface)' }}
                   >
-                    {step > item.step ? <Check className="w-3 h-3 lg:w-4 lg:h-4" /> : item.step}
-                  </div>
-                  <span className={`text-[10px] lg:text-xs mt-1 ${isDark ? "text-gray-500" : "text-gray-500"}`}>{item.label}</span>
+                    <AnimatePresence mode="wait" initial={false}>
+                      {step > item.step ? (
+                        <motion.span
+                          key="check"
+                          initial={{ scale: 0, rotate: -45 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 18 }}
+                        >
+                          <Check className="w-3 h-3 lg:w-4 lg:h-4" />
+                        </motion.span>
+                      ) : (
+                        <motion.span key="num" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                          {item.step}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                  <span className={`text-[10px] lg:text-xs mt-1 text-muted-foreground`}>{item.label}</span>
                 </div>
                 {index < 2 && (
-                  <div className={`w-8 lg:w-12 h-0.5 mx-1 lg:mx-2 ${
-                    step > item.step ? 'bg-[#D4372B]' : isDark ? 'bg-gray-700' : 'bg-gray-200'
-                  }`} />
+                  <div className={`w-8 lg:w-12 h-0.5 mx-1 lg:mx-2 relative overflow-hidden rounded-full bg-border`}>
+                    <motion.div
+                      className="absolute inset-y-0 left-0 bg-accent rounded-full"
+                      initial={{ width: "0%" }}
+                      animate={{ width: step > item.step ? "100%" : "0%" }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
+                    />
+                  </div>
                 )}
               </div>
+            ))}
+          </div>
+
+          {/* Bande de confiance — visible à chaque étape, positionnement clair, aucune surprise */}
+          <div className="flex items-center gap-3 lg:gap-5 mb-6 lg:mb-8 max-w-2xl flex-wrap">
+            {[
+              { icon: Shield, text: "Paiement sécurisé" },
+              { icon: Truck, text: "Livraison suivie" },
+              { icon: Lock, text: "Données protégées" },
+            ].map(({ icon: TrustIcon, text }, i) => (
+              <motion.div
+                key={text}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.08 }}
+                className="flex items-center gap-1.5 text-[11px] lg:text-xs text-muted-foreground"
+              >
+                <TrustIcon className="w-3.5 h-3.5 text-accent" />
+                <span>{text}</span>
+              </motion.div>
             ))}
           </div>
 
@@ -684,39 +858,39 @@ export default function CheckoutPage() {
                   className="lg:col-span-2 space-y-4"
                 >
                   {/* ÉTAPE 1 - LIVRAISON Desktop */}
-                  <div className={`rounded-xl border-0 p-4 lg:p-6 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
-                    <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
-                      <MapPin className="w-4 h-4" style={{ color: '#D4372B' }} />
+                  <div className={`rounded-xl border-0 p-4 lg:p-6 bg-card`}>
+                    <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2 text-foreground`}>
+                      <MapPin className="w-4 h-4" style={{ color: 'var(--accent)' }} />
                       Adresse de livraison
                     </h2>
 
                     <div className="mb-3 lg:mb-4">
-                      <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Pays</label>
+                      <label className={`block text-xs mb-1 text-muted-foreground`}>Pays</label>
                       <div className="relative" ref={countryDropdownRef}>
                         <button
                           type="button"
                           onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                          className={`w-full px-3 py-2.5 flex items-center justify-between text-sm transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white" : "bg-[#F4F4F4] text-gray-900"}`}
+                          className={`w-full px-3 py-2.5 flex items-center justify-between text-sm transition-all rounded-lg bg-muted text-foreground`}
                         >
                           <div className="flex items-center gap-2 truncate">
                             <span>{selectedCountry.flag}</span>
                             <span className="truncate">{selectedCountry.name}</span>
-                            <span className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"} hidden sm:inline`}>{selectedCountry.prefix}</span>
+                            <span className={`text-xs text-muted-foreground hidden sm:inline`}>{selectedCountry.prefix}</span>
                           </div>
-                          <ChevronRight className={`w-4 h-4 ${isDark ? "text-gray-500" : "text-gray-400"} transition-transform flex-shrink-0 ${isCountryDropdownOpen ? 'rotate-90' : ''}`} />
+                          <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform flex-shrink-0 ${isCountryDropdownOpen ? 'rotate-90' : ''}`} />
                         </button>
 
                         {isCountryDropdownOpen && (
-                          <div className="absolute z-50 w-full mt-1 overflow-y-auto rounded-lg border-0" style={{ background: isDark ? '#1A1A1A' : '#fff', boxShadow: isDark ? '0 8px 30px rgba(0,0,0,0.5)' : '0 8px 30px rgba(0,0,0,0.08)', maxHeight: '240px' }}>
+                          <div className="absolute z-50 w-full mt-1 overflow-y-auto rounded-lg border-0" style={{ background: 'var(--popover)', boxShadow: 'var(--shadow-lg)', maxHeight: '240px' }}>
                             {AFRICAN_COUNTRIES.map((country) => (
                               <button
                                 key={country.code}
                                 onClick={() => handleCountryChange(country)}
-                                className={`w-full px-3 py-2 text-left flex items-center gap-2 text-sm border-b last:border-0 ${isDark ? "hover:bg-white/5 text-gray-300 border-gray-800" : "hover:bg-gray-50 text-gray-900 border-gray-100"}`}
+                                className={`w-full px-3 py-2 text-left flex items-center gap-2 text-sm border-b last:border-0 hover:bg-muted text-foreground border-border`}
                               >
                                 <span>{country.flag}</span>
                                 <span className="flex-1 truncate">{country.name}</span>
-                                <span className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>{country.prefix}</span>
+                                <span className={`text-xs text-muted-foreground`}>{country.prefix}</span>
                               </button>
                             ))}
                           </div>
@@ -726,7 +900,7 @@ export default function CheckoutPage() {
 
                     {addresses.length > 0 && !showNewAddressForm && (
                       <div className="mb-3 lg:mb-4">
-                        <label className={`block text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Adresse existante</label>
+                        <label className={`block text-xs mb-2 text-muted-foreground`}>Adresse existante</label>
                         <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                           {addresses
                             .filter(a => a.country === selectedCountry.code)
@@ -736,25 +910,25 @@ export default function CheckoutPage() {
                               onClick={() => selectAddress(addr)}
                               className={`w-full p-3 border rounded-lg text-left transition-all ${
                                 selectedAddressId === addr.id
-                                  ? 'border-[#D4372B] bg-[#D4372B]/5'
-                                  : isDark ? 'border-gray-800 hover:border-gray-700' : 'border-gray-100 hover:border-gray-200'
+                                  ? 'border-accent bg-accent/5'
+                                  : 'border-border hover:border-foreground/20'
                               }`}
                             >
                               <div className="flex items-start gap-2">
                                 <div className={`mt-1 w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 ${
                                   selectedAddressId === addr.id
-                                    ? 'border-[#D4372B]'
-                                    : isDark ? 'border-gray-600' : 'border-gray-300'
+                                    ? 'border-accent'
+                                    : 'border-border-strong'
                                 }`}>
                                   {selectedAddressId === addr.id && (
                                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: brandColor }} />
                                   )}
                                 </div>
                                 <div className="text-xs min-w-0 flex-1">
-                                  <p className={`font-medium truncate ${isDark ? "text-white" : "text-gray-900"}`}>{addr.firstName} {addr.lastName}</p>
-                                  <p className={`mt-0.5 truncate ${isDark ? "text-gray-400" : "text-gray-500"}`}>{addr.address}</p>
-                                  {addr.quartier && <p className={`truncate ${isDark ? "text-gray-400" : "text-gray-500"}`}>{addr.quartier}</p>}
-                                  <p className={`truncate ${isDark ? "text-gray-400" : "text-gray-500"}`}>{addr.city}</p>
+                                  <p className={`font-medium truncate text-foreground`}>{addr.firstName} {addr.lastName}</p>
+                                  <p className={`mt-0.5 truncate text-muted-foreground`}>{addr.address}</p>
+                                  {addr.quartier && <p className={`truncate text-muted-foreground`}>{addr.quartier}</p>}
+                                  <p className={`truncate text-muted-foreground`}>{addr.city}</p>
                                 </div>
                               </div>
                             </button>
@@ -763,16 +937,16 @@ export default function CheckoutPage() {
                         
                         <div className="relative my-3 lg:my-4">
                           <div className="absolute inset-0 flex items-center">
-                            <div className={`w-full border-t ${isDark ? "border-gray-800" : "border-gray-100"}`}></div>
+                            <div className={`w-full border-t border-border`}></div>
                           </div>
                           <div className="relative flex justify-center text-xs">
-                            <span className={`px-2 ${isDark ? "bg-[#1A1A1A] text-gray-500" : "bg-white text-gray-400"}`}>ou</span>
+                            <span className={`px-2 bg-card text-muted-foreground`}>ou</span>
                           </div>
                         </div>
 
                         <button
                           onClick={() => setShowNewAddressForm(true)}
-                          className={`w-full py-2 border border-dashed rounded-lg text-xs transition flex items-center justify-center gap-1 ${isDark ? "border-gray-700 text-gray-400 hover:border-gray-600 hover:text-gray-300" : "border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700"}`}
+                          className={`w-full py-2 border border-dashed rounded-lg text-xs transition flex items-center justify-center gap-1 border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground`}
                         >
                           <Plus className="w-3 h-3" />
                           Nouvelle adresse
@@ -784,46 +958,46 @@ export default function CheckoutPage() {
                       <div className="space-y-3">
                         <div className="grid grid-cols-2 gap-2 lg:gap-3">
                           <div>
-                            <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Prénom</label>
+                            <label className={`block text-xs mb-1 text-muted-foreground`}>Prénom</label>
                             <input
                               type="text"
                               name="firstName"
                               value={showNewAddressForm ? newAddress.firstName : shippingInfo.firstName}
                               onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                              className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
+                              className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg bg-muted text-foreground border-0`}
                               placeholder="Jean"
                             />
                           </div>
                           <div>
-                            <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Nom</label>
+                            <label className={`block text-xs mb-1 text-muted-foreground`}>Nom</label>
                             <input
                               type="text"
                               name="lastName"
                               value={showNewAddressForm ? newAddress.lastName : shippingInfo.lastName}
                               onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                              className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
+                              className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg bg-muted text-foreground border-0`}
                               placeholder="Dupont"
                             />
                           </div>
                         </div>
 
                         <div>
-                          <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Email</label>
+                          <label className={`block text-xs mb-1 text-muted-foreground`}>Email</label>
                           <input
                             type="email"
                             name="email"
                             value={shippingInfo.email}
                             onChange={handleInputChange}
                             disabled={!showNewAddressForm}
-                            className={`w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4372B]/20 ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-gray-50 text-gray-900 border-0"}`}
+                            className={`w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/20 bg-muted text-foreground border-0`}
                             placeholder="jean@exemple.com"
                           />
                         </div>
 
                         <div>
-                          <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Téléphone</label>
+                          <label className={`block text-xs mb-1 text-muted-foreground`}>Téléphone</label>
                           <div className="flex">
-                            <span className={`inline-flex items-center px-3 rounded-l-lg text-xs ${isDark ? "bg-[#0A0A0A] text-gray-400" : "bg-gray-50 text-gray-600"}`}>
+                            <span className={`inline-flex items-center px-3 rounded-l-lg text-xs bg-muted text-muted-foreground`}>
                               {selectedCountry.prefix}
                             </span>
                             <input
@@ -831,56 +1005,56 @@ export default function CheckoutPage() {
                               name="phone"
                               value={showNewAddressForm ? newAddress.phone : shippingInfo.phone}
                               onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                              className={`flex-1 px-3 py-2.5 text-sm focus:outline-none rounded-r-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
+                              className={`flex-1 px-3 py-2.5 text-sm focus:outline-none rounded-r-lg bg-muted text-foreground border-0`}
                               placeholder="01 23 45 67"
                             />
                           </div>
                         </div>
 
                         <div>
-                          <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Adresse</label>
+                          <label className={`block text-xs mb-1 text-muted-foreground`}>Adresse</label>
                           <input
                             type="text"
                             name="address"
                             value={showNewAddressForm ? newAddress.address : shippingInfo.address}
                             onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                            className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
+                            className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg bg-muted text-foreground border-0`}
                             placeholder="Rue, numéro"
                           />
                         </div>
 
                         <div>
-                          <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Quartier</label>
+                          <label className={`block text-xs mb-1 text-muted-foreground`}>Quartier</label>
                           <input
                             type="text"
                             name="quartier"
                             value={showNewAddressForm ? newAddress.quartier : shippingInfo.quartier}
                             onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                            className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
+                            className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg bg-muted text-foreground border-0`}
                             placeholder="Quartier / Zone"
                           />
                         </div>
 
                         <div className="grid grid-cols-2 gap-2 lg:gap-3">
                           <div>
-                            <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Ville</label>
+                            <label className={`block text-xs mb-1 text-muted-foreground`}>Ville</label>
                             <input
                               type="text"
                               name="city"
                               value={showNewAddressForm ? newAddress.city : shippingInfo.city}
                               onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                              className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
+                              className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg bg-muted text-foreground border-0`}
                               placeholder="Ville"
                             />
                           </div>
                           <div>
-                            <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Code postal</label>
+                            <label className={`block text-xs mb-1 text-muted-foreground`}>Code postal</label>
                             <input
                               type="text"
                               name="postalCode"
                               value={showNewAddressForm ? newAddress.postalCode : shippingInfo.postalCode}
                               onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
-                              className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-0" : "bg-[#F4F4F4] text-gray-900 border-0"}`}
+                              className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg bg-muted text-foreground border-0`}
                               placeholder="BP"
                             />
                           </div>
@@ -888,7 +1062,7 @@ export default function CheckoutPage() {
 
                         {showNewAddressForm && (
                           <>
-                            <label className={`flex items-center gap-2 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+                            <label className={`flex items-center gap-2 text-muted-foreground`}>
                               <input
                                 type="checkbox"
                                 name="isDefault"
@@ -903,13 +1077,13 @@ export default function CheckoutPage() {
                               <button
                                 onClick={handleAddAddress}
                                 className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-lg transition-colors"
-                                style={{ background: '#D4372B' }}
+                                style={{ background: 'var(--accent)' }}
                               >
                                 Enregistrer
                               </button>
                               <button
                                 onClick={() => setShowNewAddressForm(false)}
-                                className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${isDark ? "border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
+                                className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors border border-border text-foreground hover:bg-muted`}
                               >
                                 Annuler
                               </button>
@@ -924,7 +1098,7 @@ export default function CheckoutPage() {
                         onClick={() => validateStep1() && setStep(2)}
                         disabled={!validateStep1()}
                         className="w-full mt-4 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-all disabled:opacity-50"
-                        style={{ background: '#D4372B' }}
+                        style={{ background: 'var(--accent)' }}
                       >
                         Continuer
                       </button>
@@ -943,13 +1117,13 @@ export default function CheckoutPage() {
                   className="lg:col-span-2 space-y-4"
                 >
                   {/* ÉTAPE 2 - EXPÉDITION Desktop */}
-                  <div className={`rounded-xl border-0 p-4 lg:p-6 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
-                    <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
-                      <Truck className="w-4 h-4" style={{ color: '#D4372B' }} />
+                  <div className={`rounded-xl border-0 p-4 lg:p-6 bg-card`}>
+                    <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2 text-foreground`}>
+                      <Truck className="w-4 h-4" style={{ color: 'var(--accent)' }} />
                       Mode d'expédition par produit
                     </h2>
                     
-                    <p className={`text-xs mb-4 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                    <p className={`text-xs mb-4 text-muted-foreground`}>
                       Choisissez le mode d'expédition pour chaque article.
                     </p>
 
@@ -963,11 +1137,11 @@ export default function CheckoutPage() {
                         return (
                           <div 
                             key={item.variantKey} 
-                            className={`rounded-lg p-3 border-0 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'} ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}
-                            style={isBelowMOQ ? { border: '1px solid #D4372B' } : {}}
+                            className={`rounded-lg p-3 border-0 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'} bg-muted`}
+                            style={isBelowMOQ ? { border: '1px solid var(--accent)' } : {}}
                           >
                             <div className="flex gap-3">
-                              <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border ${isDark ? "bg-[#1A1A1A] border-gray-800" : "bg-white border-gray-200"}`}>
+                              <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border bg-card border-border`}>
                                 <Image
                                   src={item.image || "/placeholder.svg"}
                                   alt={item.name || "Produit"}
@@ -977,28 +1151,28 @@ export default function CheckoutPage() {
                                 />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className={`text-sm font-medium break-words leading-tight ${isDark ? "text-white" : "text-gray-900"}`}>
+                                <p className={`text-sm font-medium break-words leading-tight text-foreground`}>
                                   {item.name || "Produit"}
                                 </p>
                                 {(item.color || item.eurSize) && (
-                                  <p className={`text-xs mt-0.5 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                                  <p className={`text-xs mt-0.5 text-muted-foreground`}>
                                     {item.color} {item.eurSize && `• Pointure ${item.eurSize}`}
                                   </p>
                                 )}
-                                <p className={`text-xs mt-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}>Quantité: {item.quantity}</p>
+                                <p className={`text-xs mt-1 text-muted-foreground`}>Quantité: {item.quantity}</p>
                                 {isBelowMOQ && (
                                   <span className="text-xs text-red-500 font-medium">⚠️ MOQ: {minQty} min</span>
                                 )}
                               </div>
                               <div className="text-right flex-shrink-0">
-                                <p className="text-sm font-bold whitespace-nowrap" style={{ color: '#D4372B' }}>
+                                <p className="text-sm font-bold whitespace-nowrap" style={{ color: 'var(--accent)' }}>
                                   {formatPrice(item.price * item.quantity)}
                                 </p>
                               </div>
                             </div>
 
-                            <div className="mt-3 pt-2 border-t" style={{ borderColor: isDark ? '#2A2A2A' : '#E5E5E5' }}>
-                              <span className={`text-xs mr-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Expédition:</span>
+                            <div className="mt-3 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
+                              <span className={`text-xs mr-2 text-muted-foreground`}>Expédition:</span>
                               <div className="flex gap-2 mt-1 flex-wrap">
                                 {SHIPPING_METHODS.map((method) => (
                                   <button
@@ -1007,9 +1181,9 @@ export default function CheckoutPage() {
                                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                                       currentMode === method.id
                                         ? 'text-white'
-                                        : isDark ? 'bg-[#0A0A0A] border border-gray-700 text-gray-400 hover:border-gray-600' : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
+                                        : 'bg-card border border-border text-muted-foreground hover:border-foreground/30'
                                     }`}
-                                    style={currentMode === method.id ? { background: '#D4372B' } : {}}
+                                    style={currentMode === method.id ? { background: 'var(--accent)' } : {}}
                                   >
                                     {method.label}
                                   </button>
@@ -1021,14 +1195,14 @@ export default function CheckoutPage() {
                       })}
                     </div>
 
-                    <div className="mt-4 pt-3 border-t" style={{ borderColor: isDark ? '#2A2A2A' : '#E5E5E5' }}>
-                      <p className={`text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Appliquer le même mode à tous les articles:</p>
+                    <div className="mt-4 pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
+                      <p className={`text-xs mb-2 text-muted-foreground`}>Appliquer le même mode à tous les articles:</p>
                       <div className="flex gap-2 flex-wrap">
                         {SHIPPING_METHODS.map((method) => (
                           <button
                             key={method.id}
                             onClick={() => handleGlobalShippingChange(method.id as any)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${isDark ? "bg-[#0A0A0A] text-gray-300 hover:bg-white/5" : "bg-[#F4F4F4] text-gray-700 hover:bg-gray-200"}`}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors bg-muted text-foreground hover:bg-surface-sunken`}
                           >
                             {method.label}
                           </button>
@@ -1039,7 +1213,7 @@ export default function CheckoutPage() {
                     <div className="flex gap-2 mt-4">
                       <button
                         onClick={() => setStep(1)}
-                        className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors ${isDark ? "border border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
+                        className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors border border-border text-foreground hover:bg-muted`}
                       >
                         Retour
                       </button>
@@ -1050,7 +1224,7 @@ export default function CheckoutPage() {
                           await createOrderIfNeeded();
                         }}
                         className="flex-1 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
-                        style={{ background: '#D4372B' }}
+                        style={{ background: 'var(--accent)' }}
                       >
                         Continuer
                       </button>
@@ -1069,23 +1243,23 @@ export default function CheckoutPage() {
                   className="lg:col-span-2 space-y-4"
                 >
                   {/* ÉTAPE 3 - CONFIRMATION Desktop */}
-                  <div className={`rounded-xl border-0 p-4 lg:p-6 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
-                    <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>Confirmation</h2>
+                  <div className={`rounded-xl border-0 p-4 lg:p-6 bg-card`}>
+                    <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 text-foreground`}>Confirmation</h2>
 
                     {error && (
-                      <div className="mb-4 p-3 rounded-xl flex items-center gap-2 text-xs" style={{ background: isDark ? '#3A0A0A' : '#FFF0F0', border: isDark ? '0.5px solid #5A1A1A' : '0.5px solid #FECACA', color: '#D4372B' }}>
+                      <div className="mb-4 p-3 rounded-xl flex items-center gap-2 text-xs" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
                         <AlertCircle className="w-4 h-4 flex-shrink-0" />
                         <span>{error}</span>
                       </div>
                     )}
 
                     <div className="space-y-3">
-                      <div className={`p-3 rounded-lg ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
+                      <div className={`p-3 rounded-lg bg-muted`}>
                         <div className="flex items-center gap-1 mb-2">
-                          <Home className="w-3 h-3" style={{ color: '#D4372B' }} />
-                          <span className={`text-xs font-medium ${isDark ? "text-white" : "text-gray-900"}`}>Livraison</span>
+                          <Home className="w-3 h-3" style={{ color: 'var(--accent)' }} />
+                          <span className={`text-xs font-medium text-foreground`}>Livraison</span>
                         </div>
-                        <p className={`text-xs leading-relaxed break-words ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                        <p className={`text-xs leading-relaxed break-words text-muted-foreground`}>
                           {shippingInfo.firstName} {shippingInfo.lastName}<br />
                           {shippingInfo.address}<br />
                           {shippingInfo.quartier && <>{shippingInfo.quartier}<br /></>}
@@ -1094,19 +1268,19 @@ export default function CheckoutPage() {
                         </p>
                       </div>
 
-                      <div className={`p-3 rounded-lg ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
+                      <div className={`p-3 rounded-lg bg-muted`}>
                         <div className="space-y-1.5 text-xs">
                           <div className="flex justify-between">
-                            <span className={isDark ? "text-gray-400" : "text-gray-500"}>Sous-total</span>
-                            <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalUSD)}</span>
+                            <span className="text-muted-foreground">Sous-total</span>
+                            <span className="text-foreground">{formatPrice(totalUSD)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className={isDark ? "text-gray-400" : "text-gray-500"}>Expédition</span>
-                            <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalShippingUSD)}</span>
+                            <span className="text-muted-foreground">Expédition</span>
+                            <span className="text-foreground">{formatPrice(totalShippingUSD)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className={isDark ? "text-gray-400" : "text-gray-500"}>Porte-à-porte</span>
-                            <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalPortePorteUSD)}</span>
+                            <span className="text-muted-foreground">Porte-à-porte</span>
+                            <span className="text-foreground">{formatPrice(totalPortePorteUSD)}</span>
                           </div>
                           {discountAmount > 0 && (
                             <div className="flex justify-between text-green-600">
@@ -1114,9 +1288,9 @@ export default function CheckoutPage() {
                               <span>- {formatPrice(discountAmount)}</span>
                             </div>
                           )}
-                          <div className={`border-t pt-1.5 mt-1.5 flex justify-between font-medium ${isDark ? "border-gray-800" : "border-gray-200"}`}>
-                            <span className={isDark ? "text-white" : "text-gray-900"}>Total</span>
-                            <span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span>
+                          <div className={`border-t pt-1.5 mt-1.5 flex justify-between font-medium border-border`}>
+                            <span className="text-foreground">Total</span>
+                            <span style={{ color: 'var(--accent)' }}>{formatPrice(finalTotal)}</span>
                           </div>
                         </div>
                       </div>
@@ -1132,7 +1306,7 @@ export default function CheckoutPage() {
                       <div className="flex gap-2 pt-2">
                         <button
                           onClick={() => setStep(2)}
-                          className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors ${isDark ? "border border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
+                          className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors border border-border text-foreground hover:bg-muted`}
                         >
                           Retour
                         </button>
@@ -1156,9 +1330,9 @@ export default function CheckoutPage() {
 
             {/* Desktop: Résumé à droite */}
             <div className="lg:col-span-1">
-              <div className={`rounded-xl border-0 p-4 lg:p-5 sticky lg:top-24 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
-                <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
-                  <Truck className="w-4 h-4" style={{ color: '#D4372B' }} />
+              <div className={`rounded-xl border-0 p-4 lg:p-5 sticky lg:top-24 bg-card`}>
+                <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 text-foreground`}>
+                  <Truck className="w-4 h-4" style={{ color: 'var(--accent)' }} />
                   Commande ({totalItems})
                 </h2>
 
@@ -1172,8 +1346,8 @@ export default function CheckoutPage() {
                     const isBelowMOQ = isProductBelowMOQ(item);
                     
                     return (
-                      <div key={item.variantKey} className={`flex gap-2 pb-2 border-b ${isDark ? "border-gray-800" : "border-gray-100"} last:border-0`}>
-                        <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border-0 ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
+                      <div key={item.variantKey} className={`flex gap-2 pb-2 border-b border-border last:border-0`}>
+                        <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border-0 bg-muted`}>
                           <Image
                             src={item.image || "/placeholder.svg"}
                             alt={item.name || "Produit"}
@@ -1183,25 +1357,25 @@ export default function CheckoutPage() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={`text-xs font-medium break-words leading-tight ${isDark ? "text-white" : "text-gray-900"}`}>
+                          <p className={`text-xs font-medium break-words leading-tight text-foreground`}>
                             {truncatedTitle}
                             {isBelowMOQ && (
                               <span className="ml-1 text-xs text-red-500">⚠️ MOQ</span>
                             )}
                           </p>
                           {(item.color || item.eurSize) && (
-                            <p className={`text-[10px] mt-0.5 break-words ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+                            <p className={`text-[10px] mt-0.5 break-words text-muted-foreground`}>
                               {item.color} {item.eurSize && `• ${item.eurSize}`}
                             </p>
                           )}
                           <div className="mt-1">
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${isDark ? "bg-[#0A0A0A] text-gray-400" : "bg-gray-100 text-gray-500"}`}>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground`}>
                               {getShippingLabel(shippingMode)}
                             </span>
                           </div>
                           <div className="flex justify-between items-center mt-1">
-                            <span className={`text-[10px] ${isDark ? "text-gray-500" : "text-gray-400"}`}>x{item.quantity}</span>
-                            <span className="text-xs font-medium whitespace-nowrap" style={{ color: '#D4372B' }}>
+                            <span className={`text-[10px] text-muted-foreground`}>x{item.quantity}</span>
+                            <span className="text-xs font-medium whitespace-nowrap" style={{ color: 'var(--accent)' }}>
                               {formatPrice(item.price * item.quantity)}
                             </span>
                           </div>
@@ -1211,18 +1385,18 @@ export default function CheckoutPage() {
                   })}
                 </div>
 
-                <div className={`border-t mt-3 pt-3 space-y-1.5 ${isDark ? "border-gray-800" : "border-gray-100"}`}>
+                <div className={`border-t mt-3 pt-3 space-y-1.5 border-border`}>
                   <div className="flex justify-between text-xs">
-                    <span className={isDark ? "text-gray-400" : "text-gray-500"}>Sous-total</span>
-                    <span className={`font-medium ${isDark ? "text-white" : "text-gray-900"}`}>{formatPrice(totalUSD)}</span>
+                    <span className="text-muted-foreground">Sous-total</span>
+                    <span className={`font-medium text-foreground`}>{formatPrice(totalUSD)}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className={isDark ? "text-gray-400" : "text-gray-500"}>Expédition</span>
-                    <span className={`font-medium ${isDark ? "text-white" : "text-gray-900"}`}>{formatPrice(totalShippingUSD)}</span>
+                    <span className="text-muted-foreground">Expédition</span>
+                    <span className={`font-medium text-foreground`}>{formatPrice(totalShippingUSD)}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className={isDark ? "text-gray-400" : "text-gray-500"}>Porte-à-porte</span>
-                    <span className={`font-medium ${isDark ? "text-white" : "text-gray-900"}`}>{formatPrice(totalPortePorteUSD)}</span>
+                    <span className="text-muted-foreground">Porte-à-porte</span>
+                    <span className={`font-medium text-foreground`}>{formatPrice(totalPortePorteUSD)}</span>
                   </div>
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-xs text-green-600">
@@ -1230,14 +1404,14 @@ export default function CheckoutPage() {
                       <span>- {formatPrice(discountAmount)}</span>
                     </div>
                   )}
-                  <div className={`flex justify-between text-xs font-medium pt-1.5 border-t ${isDark ? "border-gray-800" : "border-gray-100"}`}>
-                    <span className={isDark ? "text-white" : "text-gray-900"}>Total</span>
-                    <span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span>
+                  <div className={`flex justify-between text-xs font-medium pt-1.5 border-t border-border`}>
+                    <span className="text-foreground">Total</span>
+                    <span style={{ color: 'var(--accent)' }}>{formatPrice(finalTotal)}</span>
                   </div>
                 </div>
 
-                <div className="mt-3 pt-3 border-t" style={{ borderColor: isDark ? '#2A2A2A' : '#E5E5E5' }}>
-                  <div className={`flex items-center gap-1.5 text-[10px] ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+                <div className="mt-3 pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
+                  <div className={`flex items-center gap-1.5 text-[10px] text-muted-foreground`}>
                     <Lock className="w-3 h-3" />
                     <span>Paiement sécurisé</span>
                   </div>
@@ -1258,33 +1432,33 @@ export default function CheckoutPage() {
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
                   {/* ÉTAPE 1 - LIVRAISON Mobile */}
-                  <div className={`rounded-xl border-0 p-4 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
-                    <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
-                      <MapPin className="w-4 h-4" style={{ color: '#D4372B' }} />
+                  <div className={`rounded-xl border-0 p-4 bg-card`}>
+                    <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 text-foreground`}>
+                      <MapPin className="w-4 h-4" style={{ color: 'var(--accent)' }} />
                       Adresse de livraison
                     </h2>
 
                     <div className="mb-3">
-                      <label className={`block text-xs mb-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Pays</label>
+                      <label className={`block text-xs mb-1 text-muted-foreground`}>Pays</label>
                       <div className="relative" ref={countryDropdownRef}>
                         <button
                           type="button"
                           onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                          className={`w-full px-3 py-2 border rounded-lg flex items-center justify-between text-sm ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`}
+                          className={`w-full px-3 py-2 border rounded-lg flex items-center justify-between text-sm bg-card text-foreground border-border`}
                         >
                           <div className="flex items-center gap-2">
                             <span>{selectedCountry.flag}</span>
                             <span>{selectedCountry.name}</span>
                           </div>
-                          <ChevronRight className={`w-4 h-4 ${isDark ? "text-gray-500" : "text-gray-400"} transition-transform ${isCountryDropdownOpen ? 'rotate-90' : ''}`} />
+                          <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${isCountryDropdownOpen ? 'rotate-90' : ''}`} />
                         </button>
                         {isCountryDropdownOpen && (
-                          <div className={`absolute z-50 w-full mt-1 border rounded-lg shadow-lg max-h-60 overflow-y-auto ${isDark ? "bg-[#1A1A1A] border-gray-700" : "bg-white border-gray-200"}`}>
+                          <div className={`absolute z-50 w-full mt-1 border rounded-lg shadow-lg max-h-60 overflow-y-auto bg-card border-border`}>
                             {AFRICAN_COUNTRIES.map((country) => (
                               <button
                                 key={country.code}
                                 onClick={() => handleCountryChange(country)}
-                                className={`w-full px-3 py-2 text-left flex items-center gap-2 text-sm border-b ${isDark ? "hover:bg-white/5 text-gray-300 border-gray-800" : "hover:bg-gray-50 text-gray-900 border-gray-100"}`}
+                                className={`w-full px-3 py-2 text-left flex items-center gap-2 text-sm border-b hover:bg-muted text-foreground border-border`}
                               >
                                 <span>{country.flag}</span>
                                 <span>{country.name}</span>
@@ -1297,7 +1471,7 @@ export default function CheckoutPage() {
 
                     {addresses.length > 0 && !showNewAddressForm ? (
                       <div>
-                        <label className={`block text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Adresse existante</label>
+                        <label className={`block text-xs mb-2 text-muted-foreground`}>Adresse existante</label>
                         <div className="space-y-2 max-h-48 overflow-y-auto">
                           {addresses
                             .filter(a => a.country === selectedCountry.code)
@@ -1307,22 +1481,22 @@ export default function CheckoutPage() {
                                 onClick={() => selectAddress(addr)}
                                 className={`w-full p-3 border rounded-lg text-left transition-all ${
                                   selectedAddressId === addr.id
-                                    ? 'border-[#D4372B] bg-[#D4372B]/5'
-                                    : isDark ? 'border-gray-800' : 'border-gray-100'
+                                    ? 'border-accent bg-accent/5'
+                                    : 'border-border'
                                 }`}
                               >
                                 <div className="flex items-start gap-2">
                                   <div className={`mt-1 w-4 h-4 rounded-full border flex items-center justify-center ${
-                                    selectedAddressId === addr.id ? 'border-[#D4372B]' : isDark ? 'border-gray-600' : 'border-gray-300'
+                                    selectedAddressId === addr.id ? 'border-accent' : 'border-border-strong'
                                   }`}>
                                     {selectedAddressId === addr.id && (
                                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: brandColor }} />
                                     )}
                                   </div>
-                                  <div className={`text-xs flex-1 ${isDark ? "text-gray-300" : "text-gray-900"}`}>
+                                  <div className={`text-xs flex-1 text-foreground`}>
                                     <p className="font-medium">{addr.firstName} {addr.lastName}</p>
-                                    <p className={isDark ? "text-gray-400" : "text-gray-500"}>{addr.address}</p>
-                                    <p className={isDark ? "text-gray-400" : "text-gray-500"}>{addr.city}</p>
+                                    <p className="text-muted-foreground">{addr.address}</p>
+                                    <p className="text-muted-foreground">{addr.city}</p>
                                   </div>
                                 </div>
                               </button>
@@ -1330,7 +1504,7 @@ export default function CheckoutPage() {
                         </div>
                         <button
                           onClick={() => setShowNewAddressForm(true)}
-                          className={`w-full mt-3 py-2 border border-dashed rounded-lg text-xs flex items-center justify-center gap-1 ${isDark ? "border-gray-700 text-gray-400 hover:border-gray-600" : "border-gray-200 text-gray-500 hover:border-gray-300"}`}
+                          className={`w-full mt-3 py-2 border border-dashed rounded-lg text-xs flex items-center justify-center gap-1 border-border text-muted-foreground hover:border-foreground/30`}
                         >
                           <Plus className="w-3 h-3" /> Nouvelle adresse
                         </button>
@@ -1338,16 +1512,16 @@ export default function CheckoutPage() {
                     ) : (
                       <div className="space-y-3">
                         <div className="grid grid-cols-2 gap-2">
-                          <input type="text" name="firstName" value={shippingInfo.firstName} onChange={handleInputChange} placeholder="Prénom" className={`px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
-                          <input type="text" name="lastName" value={shippingInfo.lastName} onChange={handleInputChange} placeholder="Nom" className={`px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
+                          <input type="text" name="firstName" value={shippingInfo.firstName} onChange={handleInputChange} placeholder="Prénom" className={`px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
+                          <input type="text" name="lastName" value={shippingInfo.lastName} onChange={handleInputChange} placeholder="Nom" className={`px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
                         </div>
-                        <input type="email" name="email" value={shippingInfo.email} onChange={handleInputChange} placeholder="Email" className={`w-full px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
-                        <input type="tel" name="phone" value={shippingInfo.phone} onChange={handleInputChange} placeholder="Téléphone" className={`w-full px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
-                        <input type="text" name="address" value={shippingInfo.address} onChange={handleInputChange} placeholder="Adresse" className={`w-full px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
-                        <input type="text" name="quartier" value={shippingInfo.quartier} onChange={handleInputChange} placeholder="Quartier" className={`w-full px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
+                        <input type="email" name="email" value={shippingInfo.email} onChange={handleInputChange} placeholder="Email" className={`w-full px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
+                        <input type="tel" name="phone" value={shippingInfo.phone} onChange={handleInputChange} placeholder="Téléphone" className={`w-full px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
+                        <input type="text" name="address" value={shippingInfo.address} onChange={handleInputChange} placeholder="Adresse" className={`w-full px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
+                        <input type="text" name="quartier" value={shippingInfo.quartier} onChange={handleInputChange} placeholder="Quartier" className={`w-full px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
                         <div className="grid grid-cols-2 gap-2">
-                          <input type="text" name="city" value={shippingInfo.city} onChange={handleInputChange} placeholder="Ville" className={`px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
-                          <input type="text" name="postalCode" value={shippingInfo.postalCode} onChange={handleInputChange} placeholder="Code postal" className={`px-3 py-2 text-sm border rounded-lg ${isDark ? "bg-[#0A0A0A] text-white border-gray-700" : "bg-white text-gray-900 border-gray-200"}`} />
+                          <input type="text" name="city" value={shippingInfo.city} onChange={handleInputChange} placeholder="Ville" className={`px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
+                          <input type="text" name="postalCode" value={shippingInfo.postalCode} onChange={handleInputChange} placeholder="Code postal" className={`px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
                         </div>
                       </div>
                     )}
@@ -1356,7 +1530,7 @@ export default function CheckoutPage() {
                       onClick={() => validateStep1() && setStep(2)}
                       disabled={!validateStep1()}
                       className="w-full mt-4 py-2.5 text-sm font-medium text-white rounded-lg disabled:opacity-50"
-                      style={{ background: '#D4372B' }}
+                      style={{ background: 'var(--accent)' }}
                     >
                       Continuer
                     </button>
@@ -1373,13 +1547,13 @@ export default function CheckoutPage() {
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
                   {/* ÉTAPE 2 - EXPÉDITION Mobile */}
-                  <div className={`rounded-xl border-0 p-4 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
-                    <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 ${isDark ? "text-white" : "text-gray-900"}`}>
-                      <Truck className="w-4 h-4" style={{ color: '#D4372B' }} />
+                  <div className={`rounded-xl border-0 p-4 bg-card`}>
+                    <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 text-foreground`}>
+                      <Truck className="w-4 h-4" style={{ color: 'var(--accent)' }} />
                       Mode d'expédition par produit
                     </h2>
                     
-                    <p className={`text-xs mb-4 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                    <p className={`text-xs mb-4 text-muted-foreground`}>
                       Choisissez le mode d'expédition pour chaque article.
                     </p>
 
@@ -1391,34 +1565,34 @@ export default function CheckoutPage() {
                         const isBelowMOQ = isProductBelowMOQ(item);
                         
                         return (
-                          <div key={item.variantKey} className={`rounded-lg p-3 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'} ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}
-                          style={isBelowMOQ ? { border: '1px solid #D4372B' } : {}}>
+                          <div key={item.variantKey} className={`rounded-lg p-3 transition-opacity ${isUpdating ? 'opacity-50' : 'opacity-100'} bg-muted`}
+                          style={isBelowMOQ ? { border: '1px solid var(--accent)' } : {}}>
                             <div className="flex gap-3">
-                              <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border ${isDark ? "bg-[#1A1A1A] border-gray-800" : "bg-white border-gray-200"}`}>
+                              <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border bg-card border-border`}>
                                 <Image src={item.image || "/placeholder.svg"} alt={item.name || "Produit"} width={48} height={48} className="w-full h-full object-contain p-1" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className={`text-sm font-medium break-words leading-tight ${isDark ? "text-white" : "text-gray-900"}`}>
+                                <p className={`text-sm font-medium break-words leading-tight text-foreground`}>
                                   {item.name || "Produit"}
                                 </p>
                                 {(item.color || item.eurSize) && (
-                                  <p className={`text-xs mt-0.5 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                                  <p className={`text-xs mt-0.5 text-muted-foreground`}>
                                     {item.color} {item.eurSize && `• ${item.eurSize}`}
                                   </p>
                                 )}
-                                <p className={`text-xs mt-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}>Qté: {item.quantity}</p>
+                                <p className={`text-xs mt-1 text-muted-foreground`}>Qté: {item.quantity}</p>
                                 {isBelowMOQ && (
                                   <span className="text-xs text-red-500 font-medium">⚠️ MOQ: {minQty} min</span>
                                 )}
                               </div>
                               <div className="text-right flex-shrink-0">
-                                <p className="text-sm font-bold whitespace-nowrap" style={{ color: '#D4372B' }}>
+                                <p className="text-sm font-bold whitespace-nowrap" style={{ color: 'var(--accent)' }}>
                                   {formatPrice(item.price * item.quantity)}
                                 </p>
                               </div>
                             </div>
-                            <div className="mt-3 pt-2 border-t" style={{ borderColor: isDark ? '#2A2A2A' : '#E5E5E5' }}>
-                              <span className={`text-xs mr-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Expédition:</span>
+                            <div className="mt-3 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
+                              <span className={`text-xs mr-2 text-muted-foreground`}>Expédition:</span>
                               <div className="flex gap-2 mt-1 flex-wrap">
                                 {SHIPPING_METHODS.map((method) => (
                                   <button
@@ -1427,9 +1601,9 @@ export default function CheckoutPage() {
                                     className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
                                       currentMode === method.id
                                         ? 'text-white'
-                                        : isDark ? 'bg-[#0A0A0A] border border-gray-700 text-gray-400' : 'bg-white border border-gray-200 text-gray-600'
+                                        : 'bg-card border border-border text-muted-foreground'
                                     }`}
-                                    style={currentMode === method.id ? { background: '#D4372B' } : {}}
+                                    style={currentMode === method.id ? { background: 'var(--accent)' } : {}}
                                   >
                                     {method.label}
                                   </button>
@@ -1441,14 +1615,14 @@ export default function CheckoutPage() {
                       })}
                     </div>
 
-                    <div className="mt-4 pt-3 border-t" style={{ borderColor: isDark ? '#2A2A2A' : '#E5E5E5' }}>
-                      <p className={`text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Appliquer à tous:</p>
+                    <div className="mt-4 pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
+                      <p className={`text-xs mb-2 text-muted-foreground`}>Appliquer à tous:</p>
                       <div className="flex gap-2 flex-wrap">
                         {SHIPPING_METHODS.map((method) => (
                           <button
                             key={method.id}
                             onClick={() => handleGlobalShippingChange(method.id as any)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-medium ${isDark ? "bg-[#0A0A0A] text-gray-300" : "bg-gray-100 text-gray-600"}`}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium bg-muted text-muted-foreground`}
                           >
                             {method.label}
                           </button>
@@ -1459,7 +1633,7 @@ export default function CheckoutPage() {
                     <div className="flex gap-2 mt-4">
                       <button
                         onClick={() => setStep(1)}
-                        className={`flex-1 py-2.5 text-sm rounded-lg transition-colors ${isDark ? "border border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
+                        className={`flex-1 py-2.5 text-sm rounded-lg transition-colors border border-border text-foreground hover:bg-muted`}
                       >
                         Retour
                       </button>
@@ -1470,7 +1644,7 @@ export default function CheckoutPage() {
                           await createOrderIfNeeded();
                         }}
                         className="flex-1 py-2.5 text-sm font-medium text-white rounded-lg transition-colors"
-                        style={{ background: '#D4372B' }}
+                        style={{ background: 'var(--accent)' }}
                       >
                         Continuer
                       </button>
@@ -1488,14 +1662,14 @@ export default function CheckoutPage() {
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
                   {/* ÉTAPE 3 - CONFIRMATION Mobile */}
-                  <div className={`rounded-xl border-0 p-4 ${isDark ? "bg-[#1A1A1A]" : "bg-white"}`}>
-                    <h2 className={`text-sm font-medium mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Confirmation</h2>
+                  <div className={`rounded-xl border-0 p-4 bg-card`}>
+                    <h2 className={`text-sm font-medium mb-3 text-foreground`}>Confirmation</h2>
                     
-                    {error && <div className={`mb-3 p-2 rounded-lg text-xs ${isDark ? "bg-[#3A0A0A] text-[#D4372B]" : "bg-red-50 text-red-600"}`}>{error}</div>}
+                    {error && <div className={`mb-3 p-2 rounded-lg text-xs bg-accent-light text-accent`}>{error}</div>}
                     
                     <div className="space-y-3">
-                      <div className={`p-3 rounded-lg ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
-                        <p className={`text-xs break-words ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                      <div className={`p-3 rounded-lg bg-muted`}>
+                        <p className={`text-xs break-words text-muted-foreground`}>
                           {shippingInfo.firstName} {shippingInfo.lastName}<br />
                           {shippingInfo.address}<br />
                           {shippingInfo.quartier && <>{shippingInfo.quartier}<br /></>}
@@ -1504,19 +1678,19 @@ export default function CheckoutPage() {
                         </p>
                       </div>
 
-                      <div className={`p-3 rounded-lg ${isDark ? "bg-[#0A0A0A]" : "bg-gray-50"}`}>
+                      <div className={`p-3 rounded-lg bg-muted`}>
                         <div className="space-y-1.5 text-xs">
                           <div className="flex justify-between">
-                            <span className={isDark ? "text-gray-400" : "text-gray-500"}>Sous-total</span>
-                            <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalUSD)}</span>
+                            <span className="text-muted-foreground">Sous-total</span>
+                            <span className="text-foreground">{formatPrice(totalUSD)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className={isDark ? "text-gray-400" : "text-gray-500"}>Expédition</span>
-                            <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalShippingUSD)}</span>
+                            <span className="text-muted-foreground">Expédition</span>
+                            <span className="text-foreground">{formatPrice(totalShippingUSD)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className={isDark ? "text-gray-400" : "text-gray-500"}>Porte-à-porte</span>
-                            <span className={isDark ? "text-white" : "text-gray-900"}>{formatPrice(totalPortePorteUSD)}</span>
+                            <span className="text-muted-foreground">Porte-à-porte</span>
+                            <span className="text-foreground">{formatPrice(totalPortePorteUSD)}</span>
                           </div>
                           {discountAmount > 0 && (
                             <div className="flex justify-between text-xs text-green-600">
@@ -1524,9 +1698,9 @@ export default function CheckoutPage() {
                               <span>- {formatPrice(discountAmount)}</span>
                             </div>
                           )}
-                          <div className={`flex justify-between font-bold pt-1 border-t ${isDark ? "border-gray-800" : "border-gray-200"}`}>
-                            <span className={isDark ? "text-white" : "text-gray-900"}>Total</span>
-                            <span style={{ color: '#D4372B' }}>{formatPrice(finalTotal)}</span>
+                          <div className={`flex justify-between font-bold pt-1 border-t border-border`}>
+                            <span className="text-foreground">Total</span>
+                            <span style={{ color: 'var(--accent)' }}>{formatPrice(finalTotal)}</span>
                           </div>
                         </div>
                       </div>
@@ -1540,7 +1714,7 @@ export default function CheckoutPage() {
                       />
 
                       <div className="flex gap-2 pt-2">
-                        <button onClick={() => setStep(2)} className={`flex-1 py-2 text-sm rounded-lg ${isDark ? "border border-gray-700 text-gray-300 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}>Retour</button>
+                        <button onClick={() => setStep(2)} className={`flex-1 py-2 text-sm rounded-lg border border-border text-foreground hover:bg-muted`}>Retour</button>
                         <PaymentButton
                           email={shippingInfo.email || user?.email || ""}
                           amount={finalTotal}

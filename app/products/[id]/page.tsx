@@ -222,6 +222,62 @@ function MessageCircle({ className, style }: IconProps) {
   )
 }
 
+function BadgeCheck({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path
+        d="M12 3.6 13.9 5l2.4-.3.9 2.3 2.3.9-.3 2.4 1.4 1.9-1.4 1.9.3 2.4-2.3.9-.9 2.3-2.4-.3L12 20.4 10.1 19l-2.4.3-.9-2.3-2.3-.9.3-2.4L3.4 12l1.4-1.9-.3-2.4 2.3-.9.9-2.3 2.4.3L12 3.6Z"
+        stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"
+      />
+      <path d="M9.2 12.2l1.9 1.9 3.7-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+// Réassurance secondaire, en carrousel — volontairement différente des 4
+// points déjà affichés juste au-dessus (pas de répétition sur la page).
+const secondaryTrustPool: { label: string; icon: (p: IconProps) => JSX.Element }[] = [
+  { label: "Garantie 12 mois", icon: Shield },
+  { label: "Contrôle qualité systématique", icon: Check },
+  { label: "Retour accepté sous 5 jours", icon: RotateCcw },
+  { label: "Fournisseur vérifié", icon: BadgeCheck },
+  { label: "Suivi de colis en temps réel", icon: Truck },
+]
+
+function TrustCarouselRow() {
+  const [index, setIndex] = useState(0)
+  const [fading, setFading] = useState(false)
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setFading(true)
+      setTimeout(() => {
+        setIndex((i) => (i + 1) % secondaryTrustPool.length)
+        setFading(false)
+      }, 350)
+    }, 2600)
+    return () => clearInterval(t)
+  }, [])
+
+  const current = secondaryTrustPool[index]
+  const Icon = current.icon
+
+  return (
+    <div className="flex items-center gap-1.5 px-3 py-2.5 bg-muted rounded-lg shadow-xs overflow-hidden">
+      <Icon
+        className="w-3.5 h-3.5 text-accent shrink-0 transition-opacity duration-300"
+        style={{ opacity: fading ? 0 : 1 }}
+      />
+      <span
+        className="text-xs font-medium text-foreground whitespace-nowrap truncate transition-all duration-300"
+        style={{ opacity: fading ? 0 : 1, transform: fading ? "translateY(-2px)" : "translateY(0)" }}
+      >
+        {current.label}
+      </span>
+    </div>
+  )
+}
+
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
@@ -235,6 +291,31 @@ import { wishlistApi } from "@/lib/admin/api-client"
 import { useAuth } from "@/lib/admin/auth-context"
 import { Loader } from "@/components/Loader"
 import { apiFetch } from "@/lib/api"
+
+// Compteur animé (1 → cible) pour rendre le MOQ bien visible
+function CountUp({ target }: { target: number }) {
+  const [value, setValue] = useState(target > 0 ? 1 : 0)
+
+  useEffect(() => {
+    if (target <= 1) {
+      setValue(target)
+      return
+    }
+    setValue(1)
+    const duration = 700
+    const steps = target - 1
+    const interval = Math.max(35, duration / steps)
+    let current = 1
+    const timer = setInterval(() => {
+      current += 1
+      setValue(current)
+      if (current >= target) clearInterval(timer)
+    }, interval)
+    return () => clearInterval(timer)
+  }, [target])
+
+  return <span className="tabular-nums">{value}</span>
+}
 
 // ============================================================
 // INTERFACE POUR LES AVIS CLIENTS
@@ -503,6 +584,7 @@ export default function ProductPage() {
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [selectedShipping, setSelectedShipping] = useState<"bateau" | "avion" | "express">("bateau")
   const [isImageModalOpen, setIsImageModalOpen] = useState(false)
+  const [isNavigatingToProduct, setIsNavigatingToProduct] = useState(false)
   const [isProtectionModalOpen, setIsProtectionModalOpen] = useState(false)
 
   // ============================================================
@@ -575,6 +657,16 @@ export default function ProductPage() {
   const [modalSecondaryOptions, setModalSecondaryOptions] = useState<string[]>([])
   const [modalQuantities, setModalQuantities] = useState<Record<string, number>>({})
   const [modalAttrName, setModalAttrName] = useState<string>("")
+
+  // ✅ Empêche la page derrière de défiler quand une modale est ouverte
+  useEffect(() => {
+    const anyModalOpen = isImageModalOpen || isProtectionModalOpen || isSimpleVariantModalOpen || isVariantModalOpen
+    document.body.style.overflow = anyModalOpen ? "hidden" : ""
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [isImageModalOpen, isProtectionModalOpen, isSimpleVariantModalOpen, isVariantModalOpen])
+
 
   // ✅ AJOUT : État pour la quantité totale à envoyer à l'API
   const [totalQuantity, setTotalQuantity] = useState(1)
@@ -1956,9 +2048,9 @@ export default function ProductPage() {
                 )}
 
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-accent/10">
                     <Package className="w-3.5 h-3.5 text-accent" />
-                    <span>MOQ {minQuantity}</span>
+                    <span className="font-bold text-accent">MOQ <CountUp target={minQuantity} /></span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5 text-accent" />
@@ -1978,24 +2070,24 @@ export default function ProductPage() {
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <h3 className="text-xs font-medium text-muted-foreground flex items-center justify-between">
+                <div className="space-y-2">
+                  <h3 className="text-xs font-semibold text-foreground flex items-center justify-between">
                     <span>Mode de livraison</span>
                     {selectedPortePorteCost > 0 && (
-                      <span className="text-xs font-medium text-foreground">
-                        Frais porte-à-porte:{" "}
-                        <span className="font-bold" style={{ color: brandColor }}>
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Porte-à-porte:{" "}
+                        <span className="font-bold text-accent">
                           {formatPrice(selectedPortePorteCost)}
                         </span>
                       </span>
                     )}
                   </h3>
                   {isLoadingLogistics ? (
-                    <div className="grid grid-cols-3 gap-1.5">
+                    <div className="grid grid-cols-3 gap-2">
                       {[1, 2, 3].map((i) => (
                         <div
                           key={i}
-                          className="flex flex-col items-center p-2 rounded-lg bg-muted animate-pulse"
+                          className="flex flex-col items-center p-2.5 rounded-lg bg-muted animate-pulse"
                         >
                           <div className="w-4 h-4 bg-border rounded-full mb-1" />
                           <div className="w-8 h-3 bg-border rounded mb-1" />
@@ -2010,8 +2102,8 @@ export default function ProductPage() {
                     </div>
                   ) : (
                     <>
-                      <div className="grid grid-cols-3 gap-1.5">
-                        {SHIPPING_OPTIONS.map((item) => {
+                      <div className="grid grid-cols-3 gap-2">
+                        {SHIPPING_OPTIONS.map((item, idx) => {
                           const shippingMode = item.mode as "bateau" | "avion" | "express"
                           const isAvailable = logisticsData?.shipping?.[shippingMode]
                           const days = getShippingDays(shippingMode)
@@ -2021,57 +2113,59 @@ export default function ProductPage() {
                           if (!isAvailable) return null
 
                           return (
-                            <button
+                            <motion.button
                               key={item.mode}
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.3, delay: idx * 0.07, ease: "easeOut" }}
                               onClick={() => setSelectedShipping(shippingMode)}
-                              className={`flex flex-col items-center p-2 rounded-lg border transition-all ${
-                                isSelected ? "text-white" : "bg-card border-border text-foreground hover:bg-accent"
+                              className={`flex flex-col items-center p-2.5 rounded-lg transition-all ${
+                                isSelected
+                                  ? "text-white shadow-sm"
+                                  : "bg-card text-foreground shadow-xs hover:shadow-sm"
                               }`}
-                              style={isSelected ? { borderColor: brandColor, background: brandColor } : undefined}
+                              style={isSelected ? { background: brandColor } : undefined}
                             >
                               <item.icon
-                                className="w-4 h-4 mb-1"
-                                style={{ color: isSelected ? "white" : undefined }}
+                                className={`w-4 h-4 mb-1 ${isSelected ? "text-white" : "text-accent"}`}
                               />
-                              <span className="text-xs font-medium">{item.labelShort}</span>
-                              <span className="text-[10px] opacity-80">{days}</span>
+                              <span className="text-xs font-semibold">{item.labelShort}</span>
+                              <span className={`text-[10px] ${isSelected ? "text-white/75" : "text-muted-foreground"}`}>{days}</span>
                               <span
-                                className="text-xs font-semibold mt-0.5"
-                                style={{ color: isSelected ? "white" : brandColor }}
+                                className={`text-xs font-bold mt-0.5 ${isSelected ? "text-white" : "text-accent"}`}
                               >
                                 {formatPrice(cost)}
                               </span>
-                            </button>
+                            </motion.button>
                           )
                         })}
                       </div>
-                      <div className="text-center mt-1">
-                        <span className="text-[10px] text-muted-foreground">* Frais de porte-à-porte inclus</span>
-                      </div>
+                      <p className="text-center text-[10px] text-muted-foreground">Frais de porte-à-porte inclus</p>
                     </>
                   )}
                 </div>
 
                 <div className="rounded-lg p-3 bg-muted shadow-xs space-y-2">
-                  <div className="flex items-start gap-2">
-                    <Check className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
-                    <span className="text-xs text-foreground">Direct depuis l'usine, sans intermédiaire</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Check className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
-                    <span className="text-xs text-foreground">Tous les frais inclus — rien à payer en plus à la livraison</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Shield className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
-                    <span className="text-xs text-foreground">Remboursé si votre commande n'arrive pas</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Lock className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
-                    <span className="text-xs text-foreground">Paiement sécurisé — Mobile Money & carte bancaire</span>
-                  </div>
+                  {[
+                    { icon: Check, text: "Direct depuis l'usine, sans intermédiaire" },
+                    { icon: Check, text: "Tous les frais inclus — rien à payer en plus à la livraison" },
+                    { icon: Shield, text: "Remboursé si votre commande n'arrive pas" },
+                    { icon: Lock, text: "Paiement sécurisé — Mobile Money & carte bancaire" },
+                  ].map(({ icon: BulletIcon, text }, i) => (
+                    <motion.div
+                      key={text}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: i * 0.08, ease: "easeOut" }}
+                      className="flex items-start gap-2"
+                    >
+                      <BulletIcon className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
+                      <span className="text-xs text-foreground">{text}</span>
+                    </motion.div>
+                  ))}
                   <button
                     onClick={() => setIsProtectionModalOpen(true)}
-                    className="flex items-center gap-1 text-xs font-semibold text-accent pt-1"
+                    className="flex items-center gap-1 text-xs font-semibold text-accent pt-1 transition-transform duration-150 active:scale-95"
                   >
                     Voir les détails de la protection Adullam
                     <ChevronRight className="w-3 h-3" />
@@ -2107,24 +2201,7 @@ export default function ProductPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 p-3 mt-2 bg-muted rounded-lg text-xs shadow-xs">
-                  <div className="flex items-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                    <span>Garantie 12 mois</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <RotateCcw className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                    <span>Retour 15 jours</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                    <span>Certifié</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Truck className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                    <span>Suivi colis</span>
-                  </div>
-                </div>
+                <TrustCarouselRow />
               </div>
 
               {/* Mobile Tabs */}
@@ -2814,9 +2891,9 @@ export default function ProductPage() {
                   </div>
 
                   <div className="flex items-center gap-4 text-xs mb-4">
-                    <div className="flex items-center gap-1 text-muted-foreground">
+                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-accent/10">
                       <Package className="w-3.5 h-3.5 text-accent" />
-                      <span>MOQ {minQuantity}</span>
+                      <span className="font-bold text-accent">MOQ <CountUp target={minQuantity} /></span>
                     </div>
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <Clock className="w-3.5 h-3.5 text-accent" />
@@ -2838,25 +2915,26 @@ export default function ProductPage() {
                 </div>
 
                 <div className="bg-muted rounded-lg p-4 mb-4 shadow-xs space-y-2.5">
-                  <div className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-accent mt-0.5 shrink-0" />
-                    <span className="text-sm text-foreground">Direct depuis l'usine, sans intermédiaire</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-accent mt-0.5 shrink-0" />
-                    <span className="text-sm text-foreground">Tous les frais inclus — rien à payer en plus à la livraison</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Shield className="w-4 h-4 text-accent mt-0.5 shrink-0" />
-                    <span className="text-sm text-foreground">Remboursé si votre commande n'arrive pas</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Lock className="w-4 h-4 text-accent mt-0.5 shrink-0" />
-                    <span className="text-sm text-foreground">Paiement sécurisé — Mobile Money & carte bancaire</span>
-                  </div>
+                  {[
+                    { icon: Check, text: "Direct depuis l'usine, sans intermédiaire" },
+                    { icon: Check, text: "Tous les frais inclus — rien à payer en plus à la livraison" },
+                    { icon: Shield, text: "Remboursé si votre commande n'arrive pas" },
+                    { icon: Lock, text: "Paiement sécurisé — Mobile Money & carte bancaire" },
+                  ].map(({ icon: BulletIcon, text }, i) => (
+                    <motion.div
+                      key={text}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: i * 0.08, ease: "easeOut" }}
+                      className="flex items-start gap-2"
+                    >
+                      <BulletIcon className="w-4 h-4 text-accent mt-0.5 shrink-0" />
+                      <span className="text-sm text-foreground">{text}</span>
+                    </motion.div>
+                  ))}
                   <button
                     onClick={() => setIsProtectionModalOpen(true)}
-                    className="flex items-center gap-1 text-sm font-semibold text-accent pt-1"
+                    className="flex items-center gap-1 text-sm font-semibold text-accent pt-1 transition-transform duration-150 active:scale-95"
                   >
                     Voir les détails de la protection Adullam
                     <ChevronRight className="w-3.5 h-3.5" />
@@ -2864,12 +2942,12 @@ export default function ProductPage() {
                 </div>
 
                 <div className="mb-4">
-                  <h3 className="text-sm font-semibold mb-2 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center justify-between">
                     <span>Mode de livraison</span>
                     {selectedPortePorteCost > 0 && (
-                      <span className="text-xs font-medium text-foreground">
-                        Frais porte-à-porte:{" "}
-                        <span className="font-bold" style={{ color: brandColor }}>
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Porte-à-porte:{" "}
+                        <span className="font-bold text-accent">
                           {formatPrice(selectedPortePorteCost)}
                         </span>
                       </span>
@@ -2902,7 +2980,7 @@ export default function ProductPage() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-3 gap-2">
-                      {SHIPPING_OPTIONS.map((item) => {
+                      {SHIPPING_OPTIONS.map((item, idx) => {
                         const shippingMode = item.mode as "bateau" | "avion" | "express"
                         const isAvailable = logisticsData?.shipping?.[shippingMode]
                         const days = getShippingDays(shippingMode)
@@ -2913,28 +2991,31 @@ export default function ProductPage() {
                         if (!isAvailable) return null
 
                         return (
-                          <button
+                          <motion.button
                             key={item.mode}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, delay: idx * 0.07, ease: "easeOut" }}
                             onClick={() => setSelectedShipping(shippingMode)}
-                            className={`flex items-center justify-between p-2 rounded-lg border transition-all text-xs ${
-                              isSelected ? "text-white" : "bg-card border-border text-foreground hover:bg-accent"
+                            className={`flex items-center justify-between p-2.5 rounded-lg transition-all text-xs ${
+                              isSelected ? "text-white shadow-sm" : "bg-card text-foreground shadow-xs hover:shadow-sm"
                             }`}
-                            style={isSelected ? { borderColor: brandColor, background: brandColor } : undefined}
+                            style={isSelected ? { background: brandColor } : undefined}
                           >
                             <div className="flex items-center gap-1.5">
-                              <item.icon className="w-3.5 h-3.5" style={{ color: isSelected ? "white" : undefined }} />
+                              <item.icon className={`w-3.5 h-3.5 ${isSelected ? "text-white" : "text-accent"}`} />
                               <div className="text-left">
-                                <p className="font-medium text-xs">{item.label}</p>
-                                <p className="text-[10px] opacity-80">{days}</p>
+                                <p className="font-semibold text-xs">{item.label}</p>
+                                <p className={`text-[10px] ${isSelected ? "text-white/75" : "text-muted-foreground"}`}>{days}</p>
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="font-semibold text-xs" style={{ color: isSelected ? "white" : brandColor }}>
+                              <p className={`font-bold text-xs ${isSelected ? "text-white" : "text-accent"}`}>
                                 {formatPrice(cost)}
                               </p>
-                              <p className="text-[9px] opacity-80">{estimatedDate}</p>
+                              <p className={`text-[9px] ${isSelected ? "text-white/75" : "text-muted-foreground"}`}>{estimatedDate}</p>
                             </div>
-                          </button>
+                          </motion.button>
                         )
                       })}
                     </div>
@@ -2974,24 +3055,7 @@ export default function ProductPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 p-3 bg-muted rounded-lg text-xs shadow-xs">
-                  <div className="flex items-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                    <span>Garantie 12 mois</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <RotateCcw className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                    <span>Retour 15j</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                    <span>Certifié</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Truck className="w-3.5 h-3.5" style={{ color: brandColor }} />
-                    <span>Suivi</span>
-                  </div>
-                </div>
+                <TrustCarouselRow />
               </div>
             </motion.div>
 
@@ -3398,8 +3462,16 @@ export default function ProductPage() {
                 <div className="text-center py-8 text-muted-foreground text-sm">Aucune recommandation pour le moment</div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-2.5">
-                  {relatedProducts.map((p) => (
-                    <div key={p.id} className="transition-transform duration-200 hover:-translate-y-0.5">
+                  {relatedProducts.map((p, i) => (
+                    <motion.div
+                      key={p.id}
+                      initial={{ opacity: 0, y: 14 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-40px" }}
+                      transition={{ duration: 0.35, delay: Math.min(i, 6) * 0.05, ease: "easeOut" }}
+                      className="transition-transform duration-200 hover:-translate-y-0.5"
+                      onClick={() => setIsNavigatingToProduct(true)}
+                    >
                       <ProductCard
                         product={{
                           id: p.id,
@@ -3410,7 +3482,7 @@ export default function ProductPage() {
                         }}
                         showTrust
                       />
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               )}
@@ -3620,6 +3692,12 @@ export default function ProductPage() {
             </div>
 
             <div className="p-6 space-y-6">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Adullam vous connecte directement aux usines, sans intermédiaire. Chaque commande est vérifiée
+                avant expédition et couverte par nos garanties ci-dessous — c&apos;est notre engagement pour que
+                vous puissiez acheter en toute confiance.
+              </p>
+
               <div>
                 <h4 className="text-sm font-semibold text-foreground mb-3">Moyens de paiement acceptés</h4>
                 <div className="grid grid-cols-2 gap-3">
@@ -3635,24 +3713,78 @@ export default function ProductPage() {
               </div>
 
               <div>
-                <h4 className="text-sm font-semibold text-foreground mb-3">Protection de votre commande</h4>
+                <h4 className="text-sm font-semibold text-foreground mb-3">Nos garanties, en détail</h4>
                 <div className="space-y-3">
-                  <div className="bg-muted rounded-xl p-4">
-                    <p className="text-sm font-medium text-foreground mb-1">Paiements sécurisés</p>
-                    <p className="text-sm text-muted-foreground">Chaque transaction est protégée par un cryptage SSL strict.</p>
+                  <div className="bg-muted rounded-xl p-4 flex gap-3">
+                    <Lock className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground mb-1">Paiement 100% sécurisé</p>
+                      <p className="text-sm text-muted-foreground">
+                        Chaque transaction est chiffrée en SSL. Vos informations de paiement ne sont jamais
+                        stockées ni partagées.
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="bg-muted rounded-xl p-4">
-                    <p className="text-sm font-medium text-foreground mb-1">Garantie remboursement</p>
-                    <p className="text-sm text-muted-foreground">
-                      Obtenez un remboursement si votre commande n&apos;est pas expédiée.
-                    </p>
+                  <div className="bg-muted rounded-xl p-4 flex gap-3">
+                    <Truck className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground mb-1">Remboursé si votre commande n&apos;arrive pas</p>
+                      <p className="text-sm text-muted-foreground">
+                        Vous êtes intégralement remboursé si votre colis n&apos;est pas expédié ou n&apos;arrive
+                        pas à destination — aucune démarche compliquée, on s&apos;en occupe.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-muted rounded-xl p-4 flex gap-3">
+                    <BadgeCheck className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground mb-1">Contrôle qualité systématique</p>
+                      <p className="text-sm text-muted-foreground">
+                        Chaque commande est vérifiée avant son départ de l&apos;usine, pour s&apos;assurer qu&apos;elle
+                        correspond bien à ce que vous avez commandé.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-muted rounded-xl p-4 flex gap-3">
+                    <RotateCcw className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground mb-1">Retour accepté sous 5 jours</p>
+                      <p className="text-sm text-muted-foreground">
+                        Produit non conforme à la description ? Vous avez 5 jours après réception pour nous le
+                        signaler et être remboursé ou échangé.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-muted rounded-xl p-4 flex gap-3">
+                    <Shield className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground mb-1">Garantie 12 mois</p>
+                      <p className="text-sm text-muted-foreground">
+                        En cas de défaut de fabrication constaté dans les 12 mois suivant l&apos;achat, votre
+                        produit est réparé, remplacé ou remboursé.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </motion.div>
         </div>
+      )}
+
+      {isNavigatingToProduct && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.15 }}
+          className="fixed inset-0 z-[200] bg-background flex items-center justify-center"
+        >
+          <Loader />
+        </motion.div>
       )}
 
       <Footer />
