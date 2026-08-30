@@ -16,6 +16,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter" // ✅ AJOUTÉ
+import { ordersApi } from "@/lib/admin/api-client" // ✅ AJOUTÉ
 
 export default function OrderDetailPage() {
   const params = useParams()
@@ -39,10 +40,10 @@ export default function OrderDetailPage() {
 
   const fetchOrder = async () => {
     try {
-      const res = await fetch(`/api/orders/${params.id}`)
-      if (res.ok) {
-        const data = await res.json()
-        setOrder(data.data)
+      // ✅ CORRIGÉ : utilise ordersApi qui envoie le token d'authentification
+      const response = await ordersApi.get(params.id as string)
+      if (response.success) {
+        setOrder(response.data)
       } else {
         setError("Commande introuvable")
       }
@@ -191,7 +192,7 @@ export default function OrderDetailPage() {
                     ? "bg-green-100 text-green-700"
                     : "bg-yellow-100 text-yellow-700"
                 }`}>
-                  {order.paymentStatus === "PAID" ? "Payé" : "En attente"}
+                  {order.paymentStatus === "PAID" ? "Payé" : "Paiement en attente"}
                 </span>
               </div>
             </div>
