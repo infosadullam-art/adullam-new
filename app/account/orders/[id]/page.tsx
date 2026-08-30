@@ -65,7 +65,7 @@ export default function OrderDetailPage() {
 
   const getStatusLabel = (status: string): string => {
     const statusMap: Record<string, string> = {
-      "PENDING": "En attente",
+      "PENDING": "Paiement en attente",
       "CONFIRMED": "Confirmée",
       "PROCESSING": "En cours",
       "SHIPPED": "Expédiée",
