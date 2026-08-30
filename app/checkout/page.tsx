@@ -823,22 +823,45 @@ export default function CheckoutPage() {
             ))}
           </div>
 
-          {/* Bande de confiance — visible à chaque étape, positionnement clair, aucune surprise */}
-          <div className="flex items-center gap-3 lg:gap-5 mb-6 lg:mb-8 max-w-2xl flex-wrap">
+          {/* Bande de confiance — carrousel horizontal, une seule ligne, visible à chaque étape */}
+          <div className="mb-4 max-w-2xl overflow-hidden">
+            <div className="marquee">
+              {[0, 1].map((dup) => (
+                <div key={dup} className="flex items-center gap-6 pr-6 shrink-0">
+                  {[
+                    { icon: Shield, text: "Paiement sécurisé" },
+                    { icon: Truck, text: "Livraison suivie" },
+                    { icon: Lock, text: "Données protégées" },
+                    { icon: Check, text: "Fournisseur vérifié" },
+                    { icon: CreditCard, text: "Mobile Money & carte bancaire" },
+                  ].map(({ icon: TrustIcon, text }, i) => (
+                    <span key={i} className="flex items-center gap-1.5 text-[11px] lg:text-xs text-muted-foreground whitespace-nowrap">
+                      <TrustIcon className="w-3.5 h-3.5 text-accent shrink-0" />
+                      {text}
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Protection Adullam — mêmes engagements que sur la fiche produit, aucune surprise au moment de payer */}
+          <div className="rounded-lg p-3 bg-muted shadow-xs space-y-2 mb-6 lg:mb-8 max-w-2xl">
             {[
-              { icon: Shield, text: "Paiement sécurisé" },
-              { icon: Truck, text: "Livraison suivie" },
-              { icon: Lock, text: "Données protégées" },
-            ].map(({ icon: TrustIcon, text }, i) => (
+              { icon: Check, text: "Direct depuis l'usine, sans intermédiaire" },
+              { icon: Check, text: "Tous les frais inclus — rien à payer en plus à la livraison" },
+              { icon: Shield, text: "Remboursé si votre commande n'arrive pas" },
+              { icon: Lock, text: "Paiement sécurisé — Mobile Money & carte bancaire" },
+            ].map(({ icon: BulletIcon, text }, i) => (
               <motion.div
                 key={text}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: i * 0.08 }}
-                className="flex items-center gap-1.5 text-[11px] lg:text-xs text-muted-foreground"
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.08, ease: "easeOut" }}
+                className="flex items-start gap-2"
               >
-                <TrustIcon className="w-3.5 h-3.5 text-accent" />
-                <span>{text}</span>
+                <BulletIcon className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
+                <span className="text-xs text-foreground">{text}</span>
               </motion.div>
             ))}
           </div>
