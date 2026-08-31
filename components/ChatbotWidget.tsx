@@ -150,6 +150,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   const { country, currency } = useLocale()
 
   const [isOpen, setIsOpen] = useState(false)
+  const [isClosing, setIsClosing] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -193,7 +194,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   const pendingProductFromPageRef = useRef<any>(null)
 
   const messagesEndRef  = useRef<HTMLDivElement>(null)
-  const inputRef        = useRef<HTMLInputElement>(null)
+  const inputRef        = useRef<HTMLTextAreaElement>(null)
   const lastActionRef   = useRef<number>(Date.now())
   const triggerTimerRef = useRef<NodeJS.Timeout>()
   const viewCountRef    = useRef(0)
@@ -847,6 +848,17 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     setTimeout(() => inputRef.current?.focus(), 100)
   }, [proactiveMessage, isFirstOpen, addAssistantMessage])
 
+  // Ferme avec une animation de sortie (au lieu d'un démontage brutal) :
+  // on joue chatClose pendant ~220ms, puis on retire le composant du DOM.
+  const closeChat = useCallback(() => {
+    setIsClosing(true)
+    setIsMinimized(false)
+    setTimeout(() => {
+      setIsOpen(false)
+      setIsClosing(false)
+    }, 220)
+  }, [])
+
   // ============================================================
   // VOCAL
   // ============================================================
@@ -1003,6 +1015,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     }
     setMessages(prev => [...prev, userMsg])
     setInput('')
+    // Le textarea a grandi avec le message tapé — on le remet à sa
+    // hauteur d'une ligne une fois envoyé.
+    if (inputRef.current) inputRef.current.style.height = 'auto'
     setIsTyping(true)
     lastActionRef.current = Date.now()
 
@@ -1185,7 +1200,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }, [sendMessage])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    // Entrée seule = envoi. Maj+Entrée = retour à la ligne (comportement
+    // natif du textarea, on ne fait rien). isComposing exclu pour ne pas
+    // couper une saisie IME (clavier chinois/japonais/coréen) en cours.
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault()
       sendMessage()
     }
@@ -1209,8 +1227,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   const buttonFontSize = isMobile ? 20 : 24
   const bottomPosition = isMobile ? 80 : 24
   const rightPosition = isMobile ? 12 : 24
-  const widgetWidth = isMobile ? 'calc(100vw - 24px)' : '380px'
-  const widgetHeight = isMobile ? '500px' : '540px'
+  const widgetWidth = isMobile ? 'calc(100vw - 24px)' : '400px'
+  // Hauteur "façon Messenger" : plus généreuse que l'ancienne fenêtre étriquée,
+  // proche du plein écran sur mobile, fenêtre haute sur desktop.
+  const widgetHeight = isMobile ? '78dvh' : '648px'
 
   let positionStyle: React.CSSProperties
   let heightStyle: React.CSSProperties
@@ -1229,8 +1249,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       heightStyle = {
         height: keyboardInset > 0
           ? `${windowHeight - keyboardInset - 80}px`
-          : 'calc(100dvh - 140px)',
-        maxHeight: 'calc(100dvh - 140px)',
+          : 'calc(100dvh - 96px)',
+        maxHeight: 'calc(100dvh - 96px)',
       }
     }
   } else if (dragPos) {
@@ -1274,8 +1294,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   useEffect(() => {
     const handlePopState = () => {
       if (isOpen && isMobile) {
-        setIsOpen(false)
-        setIsMinimized(false)
+        closeChat()
         window.history.pushState(null, '', window.location.href)
       }
     }
@@ -1288,7 +1307,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     return () => {
       window.removeEventListener('popstate', handlePopState)
     }
-  }, [isOpen, isMobile])
+  }, [isOpen, isMobile, closeChat])
 
   // ============================================================
   // RENDU PRINCIPAL
@@ -1317,7 +1336,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
             transform: 'translateY(-50%)',
             zIndex: 9999,
             width: couponExpanded ? '280px' : '44px',
-            background: couponExpanded ? '#D4372B' : 'transparent',
+            background: couponExpanded ? 'var(--accent)' : 'transparent',
             borderRadius: '12px 0 0 12px',
             padding: couponExpanded ? '16px 18px' : '0px',
             color: '#fff',
@@ -1400,7 +1419,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                 right: '0px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                background: '#D4372B',
+                background: 'var(--accent)',
                 padding: '12px 8px',
                 borderRadius: '8px 0 0 8px',
                 border: '1px solid rgba(255,255,255,0.15)',
@@ -1512,7 +1531,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                     flex: 1,
                     padding: isMobile ? '8px' : '10px',
                     background: '#fff',
-                    color: '#D4372B',
+                    color: 'var(--accent)',
                     border: 'none',
                     borderRadius: '8px',
                     fontSize: isMobile ? '11px' : '13px',
@@ -1659,7 +1678,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
               cursor: 'pointer',
               fontSize: isMobile ? '12px' : '13px',
               color: 'var(--foreground)',
-              fontFamily: "'Poppins', sans-serif",
               lineHeight: 1.4,
               border: '0.5px solid var(--border)',
               transition: 'left 0.3s cubic-bezier(0.22,1,0.36,1), right 0.3s cubic-bezier(0.22,1,0.36,1), top 0.3s cubic-bezier(0.22,1,0.36,1)',
@@ -1681,10 +1699,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
         )
       })()}
 
-      {isOpen && (
+      {(isOpen || isClosing) && (
         <div
           ref={containerRef}
-          className="chatbot-container"
+          className={`chatbot-container${isClosing ? ' chatbot-container-closing' : ''}`}
           style={{
             position: 'fixed',
             ...positionStyle,
@@ -1698,12 +1716,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            fontFamily: "'Poppins', sans-serif",
-            transition: isDragging ? 'none' : 'height 0.3s ease, bottom 0.25s ease',
+            transition: isDragging ? 'none' : 'height 0.3s cubic-bezier(0.22, 1, 0.36, 1), bottom 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
             touchAction: isDragging ? 'none' : 'auto',
             userSelect: isDragging ? 'none' : 'auto',
             overscrollBehavior: 'contain',
-            willChange: 'transform',
+            willChange: 'transform, opacity',
           }}
           onWheel={(e) => {
             const target = e.currentTarget
@@ -1783,7 +1800,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                 <ChevronIcon size={16} up={isMinimized} />
               </button>
               <button
-                onClick={e => { e.stopPropagation(); setIsOpen(false) }}
+                onClick={e => { e.stopPropagation(); closeChat() }}
                 aria-label="Fermer"
                 style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}
               >
@@ -1953,7 +1970,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 padding: '0 8px',
-                                background: index === 0 ? '#D4372B' : index === 1 ? '#E67700' : '#999',
+                                background: index === 0 ? 'var(--accent)' : index === 1 ? '#E67700' : '#999',
                                 borderRadius: '10px',
                                 color: '#fff',
                                 fontSize: '8px',
@@ -2107,27 +2124,52 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                 borderTop: '0.5px solid var(--border)',
                 display: 'flex',
                 gap: '6px',
-                alignItems: 'center',
+                alignItems: 'flex-end',
                 flexShrink: 0,
                 backgroundColor: 'var(--background)',
               }}>
-                <input
+                <textarea
                   ref={inputRef}
                   value={input}
-                  onChange={e => setInput(e.target.value)}
+                  onChange={e => {
+                    setInput(e.target.value)
+                    const el = e.target
+                    el.style.height = 'auto'
+                    el.style.height = `${Math.min(el.scrollHeight, 96)}px`
+                  }}
                   onKeyDown={handleKeyDown}
                   placeholder={isRecording ? "🎤 Écoute en cours..." : "Dis-moi ce que tu cherches..."}
                   disabled={isTyping || isRecording}
+                  rows={1}
+                  // Empêche Chrome mobile d'afficher sa barre de suggestions
+                  // (autofill / correction / "onglets") au-dessus du clavier.
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="sentences"
+                  spellCheck={false}
+                  name="adu-chat-message"
+                  enterKeyHint="send"
+                  inputMode="text"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
+                  data-gramm="false"
+                  data-gramm_editor="false"
+                  data-enable-grammarly="false"
                   style={{
                     flex: 1,
                     border: '0.5px solid var(--border)',
-                    borderRadius: '20px',
-                    padding: isMobile ? '6px 12px' : '8px 14px',
+                    borderRadius: '18px',
+                    padding: isMobile ? '7px 12px' : '9px 14px',
                     fontSize: isMobile ? '11px' : '12px',
-                    fontFamily: "'Poppins', sans-serif",
+                    fontFamily: 'inherit',
                     outline: 'none',
                     background: isRecording ? '#FFF8E1' : 'var(--surface)',
                     color: 'var(--foreground)',
+                    resize: 'none',
+                    minHeight: isMobile ? '30px' : '34px',
+                    maxHeight: '96px',
+                    lineHeight: 1.4,
+                    overflowY: 'auto',
                   }}
                 />
 
@@ -2190,16 +2232,25 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(16px); }
-          to { opacity: 1; transform: translateY(0); }
+        @keyframes chatOpen {
+          from { opacity: 0; transform: translateY(28px) scale(0.94); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes chatClose {
+          from { opacity: 1; transform: translateY(0) scale(1); }
+          to   { opacity: 0; transform: translateY(20px) scale(0.95); }
         }
         @keyframes slideIn {
           from { opacity: 0; transform: translateX(-8px); }
           to { opacity: 1; transform: translateX(0); }
         }
         .chatbot-container {
-          animation: slideUp 0.3s ease-out;
+          animation: chatOpen 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+          transform-origin: bottom center;
+        }
+        .chatbot-container-closing {
+          animation: chatClose 0.22s cubic-bezier(0.4, 0, 1, 1) both;
+          pointer-events: none;
         }
         .chat-messages {
           overscroll-behavior: contain;
@@ -2214,27 +2265,27 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           border-collapse: collapse;
           font-size: 10px;
           border: 1px solid var(--border);
-          minWidth: 300px;
+          min-width: 300px;
         }
         .chat-messages th {
           padding: 4px 6px;
           border: 1px solid var(--border);
           background: var(--surface-sunken);
-          fontWeight: 600;
-          textAlign: left;
-          fontSize: 9px;
-          textTransform: uppercase;
-          letterSpacing: 0.3px;
+          font-weight: 600;
+          text-align: left;
+          font-size: 9px;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
           color: var(--muted-foreground);
         }
         .chat-messages td {
           padding: 4px 6px;
           border: 1px solid var(--border);
-          fontSize: 9px;
-          whiteSpace: nowrap;
+          font-size: 9px;
+          white-space: nowrap;
         }
         .chat-messages tr {
-          borderBottom: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
         }
         .chat-messages div[style*="overflow-x: auto"] {
           overflow-x: auto;
