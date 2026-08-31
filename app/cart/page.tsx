@@ -114,6 +114,23 @@ function Truck({ className, style }: IconProps) {
   )
 }
 
+function Check({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M5 12.5l4.5 4.5L19 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function Lock({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <rect x="4.5" y="10.5" width="15" height="10" rx="1.8" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M7.5 10.5V7.5a4.5 4.5 0 0 1 9 0v3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 // ============================================================
 // FONCTION MOQ (copiée depuis CartContext)
 // ============================================================
@@ -526,17 +543,22 @@ export default function CartPage() {
                   Commander · {formatPrice(grandTotalUSD)}
                 </button>
 
-                {/* Réassurance — même discours que fiche produit / checkout */}
-                <div className="flex items-center justify-center gap-3 mt-3">
-                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                    <Shield className="w-3 h-3 text-accent" /> Paiement sécurisé
-                  </span>
-                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                    <Truck className="w-3 h-3 text-accent" /> Livraison suivie
-                  </span>
+                {/* Réassurance — mêmes engagements que la fiche produit et le checkout */}
+                <div className="rounded-lg p-3 bg-muted shadow-xs space-y-2 mt-3">
+                  {[
+                    { icon: Check, text: "Direct depuis l'usine, sans intermédiaire" },
+                    { icon: Check, text: "Tous les frais inclus — rien à payer en plus à la livraison" },
+                    { icon: Shield, text: "Remboursé si votre commande n'arrive pas" },
+                    { icon: Lock, text: "Paiement sécurisé — Mobile Money & carte bancaire" },
+                  ].map(({ icon: BulletIcon, text }) => (
+                    <div key={text} className="flex items-start gap-2">
+                      <BulletIcon className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
+                      <span className="text-xs text-foreground">{text}</span>
+                    </div>
+                  ))}
                 </div>
 
-                <p className="text-center mt-2 text-[11px] text-muted-foreground">
+                <p className="text-center mt-3 text-[11px] text-muted-foreground">
                   Tous les prix en {getCurrencySymbol()}
                 </p>
               </div>
