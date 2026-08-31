@@ -37,10 +37,11 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net https://*.vercel-insights.com https://vercel.live",
+              "worker-src 'self' blob:",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: blob:",
-              "font-src 'self' data:",
-              "connect-src 'self' https://api.adullamarket.com https://*.facebook.com https://vitals.vercel-insights.com",
+              "font-src 'self' data: https://fonts.cdnfonts.com",
+              "connect-src 'self' https://api.adullamarket.com https://*.facebook.com https://vitals.vercel-insights.com https://ipapi.co",
               "frame-ancestors 'self'",
               "base-uri 'self'",
               "form-action 'self'",

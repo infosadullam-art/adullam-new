@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/admin/auth-context"
-import { apiFetch } from "@/lib/api"
+import { useUnreadNotifications } from "@/hooks/useUnreadNotifications"
 
 // ════════════════════════════════════════════════════════════
 // ICÔNES — mêmes dessins maison que le header (trait 1.6,
@@ -64,7 +64,7 @@ export default function MobileNav() {
   const pathname  = usePathname()
   const router    = useRouter()
   const { user }  = useAuth()
-  const [unreadCount, setUnreadCount] = useState(0)
+  const unreadCount = useUnreadNotifications()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -81,34 +81,9 @@ export default function MobileNav() {
     })
   }, [router])
 
-  /* ── Notifications non lues ────────────────────────────────── */
-  useEffect(() => {
-    if (!user) return
-
-    const fetchUnreadCount = async () => {
-      try {
-        const token = localStorage.getItem("adullam_token")
-        const res   = await apiFetch("/api/notifications?unread=true&limit=1", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        const data = await res.json()
-
-        if (data.success && data.data?.stats) {
-          setUnreadCount(data.data.stats.unread || 0)
-        } else if (data.data?.stats) {
-          setUnreadCount(data.data.stats.unread || 0)
-        } else if (data.stats) {
-          setUnreadCount(data.stats.unread || 0)
-        }
-      } catch (error) {
-        console.error("Erreur chargement notifs:", error)
-      }
-    }
-
-    fetchUnreadCount()
-    const interval = setInterval(fetchUnreadCount, 30000)
-    return () => clearInterval(interval)
-  }, [user])
+  // Notifications non lues — via le hook partagé (voir
+  // useUnreadNotifications.ts) : une seule requête réseau réelle même
+  // si le header desktop et cette nav mobile sont montés en même temps.
 
   /* ── Onglet actif ──────────────────────────────────────────── */
   const getActiveTab = () => {

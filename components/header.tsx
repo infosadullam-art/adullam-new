@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { useCart } from "@/context/CartContext"
 import { CartDrawer } from "@/components/cart/CartDrawer"
 import { useAuth } from "@/lib/admin/auth-context"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { apiFetch } from "@/lib/api"
+import { useUnreadNotifications } from "@/hooks/useUnreadNotifications"
 
 // ════════════════════════════════════════════════════════════
 // ICÔNES — dessinées maison (fini le look "lucide par défaut")
@@ -127,7 +127,7 @@ export function Header() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const [unreadCount, setUnreadCount] = useState(0)
+  const unreadCount = useUnreadNotifications()
 
   const [suggestionIndex, setSuggestionIndex] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
@@ -165,60 +165,9 @@ export function Header() {
   }, [])
 
   // ============================================================
-  // NOTIFICATIONS - SYSTÈME AMÉLIORÉ
-  // ============================================================
-  const fetchUnreadCount = useCallback(async () => {
-    if (!user) return
-
-    try {
-      const token = localStorage.getItem("adullam_token")
-      const res = await apiFetch("/api/notifications?unread=true&limit=1", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const data = await res.json()
-
-      if (data.success && data.data?.stats) {
-        setUnreadCount(data.data.stats.unread || 0)
-      } else if (data.data?.stats) {
-        setUnreadCount(data.data.stats.unread || 0)
-      } else if (data.stats) {
-        setUnreadCount(data.stats.unread || 0)
-      }
-    } catch (error) {
-      console.error("Erreur chargement notifs:", error)
-    }
-  }, [user])
-
-  useEffect(() => {
-    if (!user) return
-
-    // Chargement initial
-    fetchUnreadCount()
-
-    // Intervalle toutes les 15 secondes
-    const interval = setInterval(fetchUnreadCount, 15000)
-
-    // Écouter l'événement de rafraîchissement
-    const handleNotificationUpdate = () => {
-      fetchUnreadCount()
-    }
-
-    // Rafraîchir quand l'onglet devient visible
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        fetchUnreadCount()
-      }
-    }
-
-    window.addEventListener('notifications-updated', handleNotificationUpdate)
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
-    return () => {
-      clearInterval(interval)
-      window.removeEventListener('notifications-updated', handleNotificationUpdate)
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [user, fetchUnreadCount])
+  // NOTIFICATIONS — via le hook partagé (voir useUnreadNotifications.ts) :
+  // une seule requête réseau réelle même si le header desktop et la nav
+  // mobile sont tous les deux montés en même temps.
 
   // ============================================================
   // SCROLL
