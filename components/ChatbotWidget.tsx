@@ -1317,7 +1317,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
             transform: 'translateY(-50%)',
             zIndex: 9999,
             width: couponExpanded ? '280px' : '44px',
-            background: couponExpanded ? '#D4372B' : 'transparent',
+            background: couponExpanded ? 'var(--accent)' : 'transparent',
             borderRadius: '12px 0 0 12px',
             padding: couponExpanded ? '16px 18px' : '0px',
             color: '#fff',
@@ -1400,7 +1400,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                 right: '0px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                background: '#D4372B',
+                background: 'var(--accent)',
                 padding: '12px 8px',
                 borderRadius: '8px 0 0 8px',
                 border: '1px solid rgba(255,255,255,0.15)',
@@ -1512,7 +1512,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                     flex: 1,
                     padding: isMobile ? '8px' : '10px',
                     background: '#fff',
-                    color: '#D4372B',
+                    color: 'var(--accent)',
                     border: 'none',
                     borderRadius: '8px',
                     fontSize: isMobile ? '11px' : '13px',
@@ -1659,7 +1659,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
               cursor: 'pointer',
               fontSize: isMobile ? '12px' : '13px',
               color: 'var(--foreground)',
-              fontFamily: "'Poppins', sans-serif",
               lineHeight: 1.4,
               border: '0.5px solid var(--border)',
               transition: 'left 0.3s cubic-bezier(0.22,1,0.36,1), right 0.3s cubic-bezier(0.22,1,0.36,1), top 0.3s cubic-bezier(0.22,1,0.36,1)',
@@ -1698,7 +1697,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            fontFamily: "'Poppins', sans-serif",
             transition: isDragging ? 'none' : 'height 0.3s ease, bottom 0.25s ease',
             touchAction: isDragging ? 'none' : 'auto',
             userSelect: isDragging ? 'none' : 'auto',
@@ -1953,7 +1951,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 padding: '0 8px',
-                                background: index === 0 ? '#D4372B' : index === 1 ? '#E67700' : '#999',
+                                background: index === 0 ? 'var(--accent)' : index === 1 ? '#E67700' : 'var(--muted-foreground)',
                                 borderRadius: '10px',
                                 color: '#fff',
                                 fontSize: '8px',
@@ -2124,7 +2122,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                     borderRadius: '20px',
                     padding: isMobile ? '6px 12px' : '8px 14px',
                     fontSize: isMobile ? '11px' : '12px',
-                    fontFamily: "'Poppins', sans-serif",
                     outline: 'none',
                     background: isRecording ? '#FFF8E1' : 'var(--surface)',
                     color: 'var(--foreground)',
@@ -2214,27 +2211,27 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           border-collapse: collapse;
           font-size: 10px;
           border: 1px solid var(--border);
-          minWidth: 300px;
+          min-width: 300px;
         }
         .chat-messages th {
           padding: 4px 6px;
           border: 1px solid var(--border);
           background: var(--surface-sunken);
-          fontWeight: 600;
-          textAlign: left;
-          fontSize: 9px;
-          textTransform: uppercase;
-          letterSpacing: 0.3px;
+          font-weight: 600;
+          text-align: left;
+          font-size: 9px;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
           color: var(--muted-foreground);
         }
         .chat-messages td {
           padding: 4px 6px;
           border: 1px solid var(--border);
-          fontSize: 9px;
-          whiteSpace: nowrap;
+          font-size: 9px;
+          white-space: nowrap;
         }
         .chat-messages tr {
-          borderBottom: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
         }
         .chat-messages div[style*="overflow-x: auto"] {
           overflow-x: auto;
