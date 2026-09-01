@@ -53,14 +53,15 @@ function MicIcon({ size = 16, color = "#fff", active = false }: { size?: number;
   if (active) {
     return (
       <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <rect x="7" y="7" width="10" height="10" rx="2" fill={color} />
+        <rect x="7" y="7" width="10" height="10" rx="2.5" fill={color} />
       </svg>
     )
   }
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="9" y="3" width="6" height="11" rx="3" stroke={color} strokeWidth="1.8" />
-      <path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+      <rect x="9" y="2.5" width="6" height="12" rx="3" fill={color} />
+      <path d="M5.5 11a6.5 6.5 0 0 0 13 0" stroke={color} strokeWidth="1.8" strokeLinecap="round" fill="none" />
+      <path d="M12 17.5v3.2" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   )
 }
@@ -1265,7 +1266,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       // fixedViewportHeight, capturée une seule fois au montage — donc
       // elle ne bouge jamais quand le clavier s'ouvre, contrairement à
       // dvh qui suit le viewport visible. Ancrée en bas, 85% de haut.
-      const fixedHeight = Math.round(fixedViewportHeight * 0.85)
+      const fixedHeight = Math.round(fixedViewportHeight * 0.92)
       positionStyle = { bottom: 0, left: 0, right: 0 }
       heightStyle = { height: `${fixedHeight}px`, maxHeight: `${fixedHeight}px` }
     }
