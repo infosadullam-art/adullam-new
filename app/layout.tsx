@@ -108,10 +108,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/apple-icon.png" />
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Adullam" />
         <meta name="theme-color" content="#0A0A0A" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
 
         {/* Meta Pixel */}
         <Script id="meta-pixel" strategy="afterInteractive">
@@ -156,7 +157,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       toastOptions={{
                         duration: 3000,
                         style: {
-                          background: '#0A0A0A',
+                          background: 'var(--brand)',
                           color: '#fff',
                           fontSize: '14px',
                           borderRadius: '8px',
@@ -168,13 +169,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                           duration: 3000,
                           icon: '✓',
                           style: {
-                            background: '#0A0A0A',
+                            background: 'var(--brand)',
                           },
                         },
                         error: {
                           duration: 4000,
                           style: {
-                            background: '#D4372B',
+                            background: 'var(--accent)',
                           },
                         },
                       }}
