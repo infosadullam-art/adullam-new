@@ -30,13 +30,10 @@ import { useLocale } from "@/context/LocaleProvider"
 function BotIcon({ size = 22, color = "#fff" }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="4" y="8" width="16" height="11" rx="4" stroke={color} strokeWidth="1.8" />
-      <path d="M12 4v4" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
-      <circle cx="12" cy="3.2" r="1.4" fill={color} />
-      <circle cx="9" cy="13.5" r="1.3" fill={color} />
-      <circle cx="15" cy="13.5" r="1.3" fill={color} />
-      <path d="M9.5 16.5h5" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M4 12H2.6M20 12h1.4" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+      <circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.6" />
+      <circle cx="9" cy="11" r="1.3" fill={color} />
+      <circle cx="15" cy="11" r="1.3" fill={color} />
+      <path d="M8.5 14.8c1 .9 2.3 1.3 3.5 1.3s2.5-.4 3.5-1.3" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   )
 }
@@ -44,7 +41,10 @@ function BotIcon({ size = 22, color = "#fff" }: { size?: number; color?: string 
 function SendIcon({ size = 16, color = "#fff" }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M4 12l16-7-7 16-2.5-6.5L4 12z" stroke={color} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
+      <path
+        d="M3.4 11.6 20.2 3.9c.9-.4 1.8.5 1.4 1.4l-7.7 16.8c-.4.9-1.7.8-2-.1l-2.1-6.4-6.4-2.1c-.9-.3-1-1.6-.1-1.9Z"
+        fill={color}
+      />
     </svg>
   )
 }
@@ -215,9 +215,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   const containerRef = useRef<HTMLDivElement>(null)
   const bubbleRef = useRef<HTMLButtonElement>(null)
 
-  const [keyboardInset, setKeyboardInset] = useState(0)
-  const [windowHeight, setWindowHeight] = useState(700)
-  const keyboardTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // ============================================================
   // MARKDOWN
@@ -312,7 +309,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
-      setWindowHeight(window.innerHeight)
     }
     checkMobile()
     window.addEventListener('resize', checkMobile)
@@ -359,36 +355,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     return () => window.removeEventListener('adullam:product-viewed', handleProductViewed)
   }, [])
 
-  useEffect(() => {
-    if (typeof window === 'undefined' || !isMobile) return
-
-    const updateInset = () => {
-      if (!window.visualViewport) return
-      const vv = window.visualViewport
-      const gap = window.innerHeight - vv.height - vv.offsetTop
-      setKeyboardInset(gap > 50 ? gap : 0)
-    }
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', updateInset)
-      window.visualViewport.addEventListener('scroll', updateInset)
-    }
-
-    const onFocus = () => setTimeout(updateInset, 120)
-    const onBlur = () => setTimeout(updateInset, 120)
-    document.addEventListener('focusin', onFocus)
-    document.addEventListener('focusout', onBlur)
-
-    return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', updateInset)
-        window.visualViewport.removeEventListener('scroll', updateInset)
-      }
-      document.removeEventListener('focusin', onFocus)
-      document.removeEventListener('focusout', onBlur)
-      if (keyboardTimeoutRef.current) clearTimeout(keyboardTimeoutRef.current)
-    }
-  }, [isMobile])
+  // La hauteur mobile utilise 100dvh (voir heightStyle plus bas) : le
+  // navigateur gère nativement l'ouverture du clavier, plus besoin de
+  // recalculer un décalage à la main avec visualViewport (c'était une
+  // source d'instabilité — la barre du navigateur qui apparaissait au-
+  // dessus du clavier).
 
   useEffect(() => {
     if (!isDraggingCoupon) return
@@ -1209,7 +1180,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   const buttonFontSize = isMobile ? 20 : 24
   const bottomPosition = isMobile ? 80 : 24
   const rightPosition = isMobile ? 12 : 24
-  const widgetWidth = isMobile ? 'calc(100vw - 24px)' : '380px'
+  const widgetWidth = isMobile ? '100dvw' : '380px'
   const widgetHeight = isMobile ? '500px' : '540px'
 
   let positionStyle: React.CSSProperties
@@ -1220,18 +1191,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       positionStyle = { bottom: bottomPosition, left: 12, right: 12 }
       heightStyle = { height: '52px', maxHeight: '52px' }
     } else {
-      positionStyle = {
-        bottom: keyboardInset > 0 ? keyboardInset + 8 : 72,
-        left: 8,
-        right: 8,
-        transition: 'bottom 0.2s ease',
-      }
-      heightStyle = {
-        height: keyboardInset > 0
-          ? `${windowHeight - keyboardInset - 80}px`
-          : 'calc(100dvh - 140px)',
-        maxHeight: 'calc(100dvh - 140px)',
-      }
+      // Plein écran façon Messenger : hauteur fixe via 100dvh (le
+      // navigateur gère l'ouverture du clavier nativement, sans JS ni
+      // saut de mise en page), largeur pleine, aucune marge.
+      positionStyle = { top: 0, left: 0, right: 0, bottom: 0 }
+      heightStyle = { height: '100dvh', maxHeight: '100dvh' }
     }
   } else if (dragPos) {
     positionStyle = { top: dragPos.y, left: dragPos.x }
@@ -1689,10 +1653,10 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
             ...positionStyle,
             ...heightStyle,
             width: widgetWidth,
-            maxWidth: 'calc(100vw - 32px)',
+            maxWidth: isMobile && !isMinimized ? '100dvw' : 'calc(100vw - 32px)',
             background: 'var(--background)',
-            borderRadius: '16px',
-            boxShadow: 'var(--shadow-lg)',
+            borderRadius: isMobile && !isMinimized ? 0 : '16px',
+            boxShadow: isMobile && !isMinimized ? 'none' : 'var(--shadow-lg)',
             zIndex: 1000,
             display: 'flex',
             flexDirection: 'column',
@@ -2004,59 +1968,84 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '8px',
-                    padding: '10px',
-                    borderRadius: '12px',
-                    background: 'var(--accent-light)',
+                    padding: '12px',
+                    borderRadius: '14px',
+                    background: 'var(--surface)',
                     animation: 'fadeIn 0.3s ease-out',
                   }}>
-                    <button
-                      onClick={() => {
-                        sendMessage(language === 'en' ? "I'll take the urgent offer, right now" : "Je prends l'offre rapide, maintenant")
-                        setOfferChoice(null)
-                      }}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '10px 14px',
-                        borderRadius: '10px',
-                        border: '1px solid var(--accent)',
-                        background: 'var(--accent)',
-                        color: 'var(--accent-foreground)',
-                        fontSize: isMobile ? '11px' : '12px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <span>⚡ -{offerChoice.urgent?.discount}%</span>
-                      <span style={{ opacity: 0.85, fontWeight: 400 }}>
-                        {offerChoice.urgent?.time_limit_minutes} min
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        sendMessage(language === 'en' ? "I'd rather take my time" : "Je préfère prendre mon temps")
-                        setOfferChoice(null)
-                      }}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '10px 14px',
-                        borderRadius: '10px',
-                        border: '1px solid var(--border)',
-                        background: 'var(--surface)',
-                        color: 'var(--foreground)',
-                        fontSize: isMobile ? '11px' : '12px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <span>🕐 -{offerChoice.patient?.discount}%</span>
-                      <span style={{ opacity: 0.7, fontWeight: 400 }}>
-                        {offerChoice.patient?.time_limit_minutes} min
-                      </span>
-                    </button>
+                    <p style={{
+                      fontSize: isMobile ? '9px' : '10px',
+                      fontWeight: 700,
+                      color: 'var(--muted-foreground)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      margin: 0,
+                    }}>
+                      Comment veux-tu procéder ?
+                    </p>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <button
+                        onClick={() => {
+                          sendMessage(language === 'en' ? "I'll take the urgent offer, right now" : "Je prends l'offre rapide, maintenant")
+                          setOfferChoice(null)
+                        }}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '14px 8px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          background: 'var(--accent)',
+                          color: '#fff',
+                          cursor: 'pointer',
+                          transition: 'transform 0.15s ease',
+                        }}
+                      >
+                        <svg width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M12.8 3.5 6 13.2h4.6L10.6 20.5 18 10.3h-4.7L12.8 3.5Z" fill="#fff" />
+                        </svg>
+                        <span style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: 800, lineHeight: 1 }}>
+                          -{offerChoice.urgent?.discount}%
+                        </span>
+                        <span style={{ fontSize: isMobile ? '9px' : '10px', opacity: 0.85, fontWeight: 500 }}>
+                          {offerChoice.urgent?.time_limit_minutes} min
+                        </span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          sendMessage(language === 'en' ? "I'd rather take my time" : "Je préfère prendre mon temps")
+                          setOfferChoice(null)
+                        }}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '14px 8px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          background: 'var(--surface-sunken)',
+                          color: 'var(--foreground)',
+                          cursor: 'pointer',
+                          transition: 'transform 0.15s ease',
+                        }}
+                      >
+                        <svg width={isMobile ? 16 : 18} height={isMobile ? 16 : 18} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <circle cx="12" cy="12" r="8.2" stroke="var(--muted-foreground)" strokeWidth="1.6" />
+                          <path d="M12 7.6V12l3 2" stroke="var(--muted-foreground)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: 800, lineHeight: 1 }}>
+                          -{offerChoice.patient?.discount}%
+                        </span>
+                        <span style={{ fontSize: isMobile ? '9px' : '10px', opacity: 0.7, fontWeight: 500 }}>
+                          {offerChoice.patient?.time_limit_minutes} min
+                        </span>
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -2116,6 +2105,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                   onKeyDown={handleKeyDown}
                   placeholder={isRecording ? "🎤 Écoute en cours..." : "Dis-moi ce que tu cherches..."}
                   disabled={isTyping || isRecording}
+                  name="adu-chat-message"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="sentences"
+                  spellCheck={false}
+                  data-1p-ignore
+                  data-lpignore="true"
+                  data-form-type="other"
                   style={{
                     flex: 1,
                     border: '0.5px solid var(--border)',
