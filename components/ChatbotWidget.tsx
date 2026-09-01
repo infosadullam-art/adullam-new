@@ -1191,11 +1191,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       positionStyle = { bottom: bottomPosition, left: 12, right: 12 }
       heightStyle = { height: '52px', maxHeight: '52px' }
     } else {
-      // Plein écran façon Messenger : hauteur fixe via 100dvh (le
-      // navigateur gère l'ouverture du clavier nativement, sans JS ni
-      // saut de mise en page), largeur pleine, aucune marge.
-      positionStyle = { top: 0, left: 0, right: 0, bottom: 0 }
-      heightStyle = { height: '100dvh', maxHeight: '100dvh' }
+      // Plein écran façon Messenger : hauteur fixe via dvh (le navigateur
+      // gère l'ouverture du clavier nativement, sans JS ni saut de mise
+      // en page). Léger décalage en haut plutôt qu'un edge-to-edge total.
+      positionStyle = { top: 12, left: 0, right: 0, bottom: 0 }
+      heightStyle = { height: 'calc(100dvh - 12px)', maxHeight: 'calc(100dvh - 12px)' }
     }
   } else if (dragPos) {
     positionStyle = { top: dragPos.y, left: dragPos.x }
@@ -1655,7 +1655,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
             width: widgetWidth,
             maxWidth: isMobile && !isMinimized ? '100dvw' : 'calc(100vw - 32px)',
             background: 'var(--background)',
-            borderRadius: isMobile && !isMinimized ? 0 : '16px',
+            borderRadius: isMobile && !isMinimized ? '16px 16px 0 0' : '16px',
             boxShadow: isMobile && !isMinimized ? 'none' : 'var(--shadow-lg)',
             zIndex: 1000,
             display: 'flex',
@@ -2098,32 +2098,39 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                 flexShrink: 0,
                 backgroundColor: 'var(--background)',
               }}>
-                <input
-                  ref={inputRef}
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={isRecording ? "🎤 Écoute en cours..." : "Dis-moi ce que tu cherches..."}
-                  disabled={isTyping || isRecording}
-                  name="adu-chat-message"
+                <form
+                  onSubmit={(e) => e.preventDefault()}
                   autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="sentences"
-                  spellCheck={false}
-                  data-1p-ignore
-                  data-lpignore="true"
-                  data-form-type="other"
-                  style={{
-                    flex: 1,
-                    border: '0.5px solid var(--border)',
-                    borderRadius: '20px',
-                    padding: isMobile ? '6px 12px' : '8px 14px',
-                    fontSize: isMobile ? '11px' : '12px',
-                    outline: 'none',
-                    background: isRecording ? '#FFF8E1' : 'var(--surface)',
-                    color: 'var(--foreground)',
-                  }}
-                />
+                  style={{ display: 'contents' }}
+                >
+                  <input
+                    ref={inputRef}
+                    type="search"
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={isRecording ? "🎤 Écoute en cours..." : "Dis-moi ce que tu cherches..."}
+                    disabled={isTyping || isRecording}
+                    name="adu-chat-message"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="sentences"
+                    spellCheck={false}
+                    data-1p-ignore
+                    data-lpignore="true"
+                    data-form-type="other"
+                    style={{
+                      flex: 1,
+                      border: '0.5px solid var(--border)',
+                      borderRadius: '20px',
+                      padding: isMobile ? '6px 12px' : '8px 14px',
+                      fontSize: isMobile ? '11px' : '12px',
+                      outline: 'none',
+                      background: isRecording ? '#FFF8E1' : 'var(--surface)',
+                      color: 'var(--foreground)',
+                    }}
+                  />
+                </form>
 
                 {voiceSupported && (
                   <button
