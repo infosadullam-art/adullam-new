@@ -166,6 +166,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   const [fixedViewportHeight] = useState(() =>
     typeof window !== 'undefined' ? window.innerHeight : 700
   )
+  // Suit en direct le viewport visuel (rétrécit quand le clavier s'ouvre).
+  // Sert uniquement de plafond pour fixedHeight ci-dessous — voir le
+  // commentaire détaillé près de l'effet qui l'alimente.
+  const [liveViewportHeight, setLiveViewportHeight] = useState(() =>
+    typeof window !== 'undefined' ? window.innerHeight : 700
+  )
   const [loadOffset, setLoadOffset] = useState(3)
 
   const [isRecording, setIsRecording] = useState(false)
@@ -422,11 +428,31 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     return () => window.removeEventListener('adullam:product-viewed', handleProductViewed)
   }, [])
 
-  // La hauteur mobile utilise 100dvh (voir heightStyle plus bas) : le
-  // navigateur gère nativement l'ouverture du clavier, plus besoin de
-  // recalculer un décalage à la main avec visualViewport (c'était une
-  // source d'instabilité — la barre du navigateur qui apparaissait au-
-  // dessus du clavier).
+  // FIX clavier Chrome mobile : sur Chrome pour Android, l'ouverture du
+  // clavier rétrécit le "visual viewport" (la zone réellement visible)
+  // mais PAS le "layout viewport" (celui auquel `position: fixed` est
+  // ancré). Chrome translate alors le bloc fixed vers le haut pour garder
+  // son bord bas au-dessus du clavier — et comme fixedViewportHeight (figée
+  // au montage) ne rétrécit pas, le haut du bloc déborde hors écran au lieu
+  // que la barre de saisie se rétracte proprement. Sur le navigateur Huawei
+  // (et d'autres), le layout viewport se redimensionne nativement, donc le
+  // bug n'apparaît pas là-bas.
+  // On suit ici window.visualViewport pour plafonner la hauteur du widget à
+  // l'espace réellement visible dès que le clavier grignote de la place,
+  // tout en gardant fixedViewportHeight comme taille de repos (clavier
+  // fermé) pour éviter tout jitter lié à l'apparition/disparition de la
+  // barre d'adresse.
+  useEffect(() => {
+    if (!isMobile) return
+    const vv = window.visualViewport
+    if (!vv) return
+
+    const handleViewportResize = () => setLiveViewportHeight(vv.height)
+    handleViewportResize()
+
+    vv.addEventListener('resize', handleViewportResize)
+    return () => vv.removeEventListener('resize', handleViewportResize)
+  }, [isMobile])
 
   useEffect(() => {
     if (!isDraggingCoupon) return
@@ -1266,7 +1292,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       // fixedViewportHeight, capturée une seule fois au montage — donc
       // elle ne bouge jamais quand le clavier s'ouvre, contrairement à
       // dvh qui suit le viewport visible. Ancrée en bas, 85% de haut.
-      const fixedHeight = Math.round(fixedViewportHeight * 0.92)
+      const restingHeight = Math.round(fixedViewportHeight * 0.92)
+      // Ne jamais dépasser l'espace réellement visible (clavier ouvert
+      // compris) : c'est ce qui fait "se rétracter" le bloc au lieu de
+      // déborder en haut d'écran quand le clavier apparaît sur Chrome.
+      const fixedHeight = Math.min(restingHeight, Math.round(liveViewportHeight * 0.92))
       positionStyle = { bottom: 0, left: 0, right: 0 }
       heightStyle = { height: `${fixedHeight}px`, maxHeight: `${fixedHeight}px` }
     }
