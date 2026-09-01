@@ -158,6 +158,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   const [proactiveMessage, setProactiveMessage] = useState<string | null>(null)
   const [isFirstOpen, setIsFirstOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
+  // Capturée UNE SEULE FOIS au montage (avant toute ouverture de clavier)
+  // et jamais recalculée ensuite — c'est ce qui garantit une hauteur
+  // vraiment fixe, comme Messenger, au lieu de suivre le viewport qui
+  // se réduit quand le clavier apparaît.
+  const [fixedViewportHeight] = useState(() =>
+    typeof window !== 'undefined' ? window.innerHeight : 700
+  )
   const [loadOffset, setLoadOffset] = useState(3)
 
   const [isRecording, setIsRecording] = useState(false)
@@ -193,12 +200,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   const pendingProductFromPageRef = useRef<any>(null)
 
   const messagesEndRef  = useRef<HTMLDivElement>(null)
-  const inputRef        = useRef<HTMLInputElement>(null)
+  const inputRef        = useRef<HTMLTextAreaElement>(null)
   const lastActionRef   = useRef<number>(Date.now())
   const triggerTimerRef = useRef<NodeJS.Timeout>()
   const viewCountRef    = useRef(0)
   const recognitionRef  = useRef<any>(null)
   const speechSynthRef  = useRef<SpeechSynthesis | null>(null)
+  const availableVoicesRef = useRef<SpeechSynthesisVoice[]>([])
 
   const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null)
   const [bubblePos, setBubblePos] = useState<{ x: number; y: number } | null>(null)
@@ -321,8 +329,66 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     setVoiceSupported(hasSpeechRecognition && hasSpeechSynthesis)
     if (window.speechSynthesis) {
       speechSynthRef.current = window.speechSynthesis
+
+      // La liste des voix arrive souvent de façon asynchrone (surtout sur
+      // Chrome/Android) — on la capture dès qu'elle est prête, pour
+      // pouvoir choisir la meilleure voix disponible plutôt que la voix
+      // robotique par défaut.
+      const loadVoices = () => {
+        availableVoicesRef.current = window.speechSynthesis.getVoices()
+      }
+      loadVoices()
+      window.speechSynthesis.addEventListener('voiceschanged', loadVoices)
+      return () => window.speechSynthesis.removeEventListener('voiceschanged', loadVoices)
     }
   }, [])
+
+  // Nettoie le texte avant lecture vocale : le markdown lu tel quel
+  // ("étoile étoile", "dièse") et certaines abréviations sont la cause
+  // la plus fréquente d'une lecture qui sonne mal — sans changer de
+  // moteur de synthèse (gratuit, celui du navigateur), on peut déjà
+  // corriger beaucoup en nettoyant ce qu'on lui donne à lire.
+  const cleanTextForSpeech = (text: string): string => {
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '$1')          // **gras**
+      .replace(/\*(.*?)\*/g, '$1')              // *italique*
+      .replace(/`([^`]*)`/g, '$1')              // `code`
+      .replace(/#{1,6}\s*/g, '')                // ## titres
+      .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')  // [texte](lien)
+      .replace(/https?:\/\/\S+/g, '')           // URLs brutes
+      .replace(/[-*•]\s+/g, '')                 // puces de liste
+      .replace(/FCFA/gi, 'francs CFA')
+      .replace(/(\d+)\s*%/g, '$1 pour cent')
+      .replace(/\bMOQ\b/gi, 'quantité minimum')
+      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '') // emoji
+      .replace(/\s{2,}/g, ' ')
+      .trim()
+  }
+
+  // Choisit la meilleure voix gratuite disponible pour la langue donnée :
+  // le navigateur propose souvent plusieurs moteurs, certains nettement
+  // moins robotiques que la voix par défaut (voix "réseau"/"naturelle"
+  // avant les voix "compact"/"basiques").
+  const pickBestVoice = (langPrefix: string): SpeechSynthesisVoice | null => {
+    const voices = availableVoicesRef.current
+    if (!voices.length) return null
+
+    const candidates = voices.filter(v => v.lang.toLowerCase().startsWith(langPrefix))
+    if (!candidates.length) return null
+
+    const scored = candidates.map(v => {
+      let score = 0
+      const name = v.name.toLowerCase()
+      if (!v.localService) score += 3 // voix réseau = généralement plus naturelles
+      if (name.includes('natural') || name.includes('neural') || name.includes('enhanced')) score += 4
+      if (name.includes('google')) score += 2
+      if (name.includes('compact') || name.includes('basic')) score -= 2
+      return { voice: v, score }
+    })
+
+    scored.sort((a, b) => b.score - a.score)
+    return scored[0].voice
+  }
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -793,10 +859,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     }
 
     if (voiceSupported && speechSynthRef.current) {
-      const utterance = new SpeechSynthesisUtterance(content)
+      const langPrefix = language === 'fr' ? 'fr' : language === 'pt' ? 'pt' : 'en'
+      const utterance = new SpeechSynthesisUtterance(cleanTextForSpeech(content))
       utterance.lang = language === 'fr' ? 'fr-FR' : language === 'pt' ? 'pt-PT' : 'en-US'
-      utterance.rate = 0.9
-      utterance.pitch = 1.1
+      const bestVoice = pickBestVoice(langPrefix)
+      if (bestVoice) utterance.voice = bestVoice
+      utterance.rate = 0.95
+      utterance.pitch = 1.05
       setIsSpeaking(true)
       utterance.onend = () => setIsSpeaking(false)
       utterance.onerror = () => setIsSpeaking(false)
@@ -974,6 +1043,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     }
     setMessages(prev => [...prev, userMsg])
     setInput('')
+    if (inputRef.current) inputRef.current.style.height = 'auto'
     setIsTyping(true)
     lastActionRef.current = Date.now()
 
@@ -1191,11 +1261,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       positionStyle = { bottom: bottomPosition, left: 12, right: 12 }
       heightStyle = { height: '52px', maxHeight: '52px' }
     } else {
-      // Plein écran façon Messenger : hauteur fixe via dvh (le navigateur
-      // gère l'ouverture du clavier nativement, sans JS ni saut de mise
-      // en page). Léger décalage en haut plutôt qu'un edge-to-edge total.
-      positionStyle = { top: 12, left: 0, right: 0, bottom: 0 }
-      heightStyle = { height: 'calc(100dvh - 12px)', maxHeight: 'calc(100dvh - 12px)' }
+      // Hauteur vraiment fixe (comme Messenger) : basée sur
+      // fixedViewportHeight, capturée une seule fois au montage — donc
+      // elle ne bouge jamais quand le clavier s'ouvre, contrairement à
+      // dvh qui suit le viewport visible. Ancrée en bas, 85% de haut.
+      const fixedHeight = Math.round(fixedViewportHeight * 0.85)
+      positionStyle = { bottom: 0, left: 0, right: 0 }
+      heightStyle = { height: `${fixedHeight}px`, maxHeight: `${fixedHeight}px` }
     }
   } else if (dragPos) {
     positionStyle = { top: dragPos.y, left: dragPos.x }
@@ -2103,11 +2175,16 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                   autoComplete="off"
                   style={{ display: 'contents' }}
                 >
-                  <input
+                  <textarea
                     ref={inputRef}
-                    type="search"
+                    rows={1}
                     value={input}
-                    onChange={e => setInput(e.target.value)}
+                    onChange={e => {
+                      setInput(e.target.value)
+                      const el = e.target
+                      el.style.height = 'auto'
+                      el.style.height = `${Math.min(el.scrollHeight, 96)}px`
+                    }}
                     onKeyDown={handleKeyDown}
                     placeholder={isRecording ? "🎤 Écoute en cours..." : "Dis-moi ce que tu cherches..."}
                     disabled={isTyping || isRecording}
@@ -2128,9 +2205,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                       outline: 'none',
                       background: isRecording ? '#FFF8E1' : 'var(--surface)',
                       color: 'var(--foreground)',
+                      resize: 'none',
+                      maxHeight: '96px',
+                      lineHeight: 1.4,
+                      fontFamily: 'inherit',
                     }}
                   />
                 </form>
+
 
                 {voiceSupported && (
                   <button
