@@ -193,7 +193,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   const pendingProductFromPageRef = useRef<any>(null)
 
   const messagesEndRef  = useRef<HTMLDivElement>(null)
-  const inputRef        = useRef<HTMLTextAreaElement>(null)
+  const inputRef        = useRef<HTMLInputElement>(null)
   const lastActionRef   = useRef<number>(Date.now())
   const triggerTimerRef = useRef<NodeJS.Timeout>()
   const viewCountRef    = useRef(0)
@@ -315,96 +315,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // ✅ Hauteur fixe (indépendante du clavier) : on capture window.innerHeight
-  // une seule fois au montage, avant toute ouverture de clavier. Le widget
-  // mobile utilisera ensuite 75% de cette valeur figée, en px — jamais un
-  // recalcul basé sur dvh/vh, qui varie quand le clavier virtuel s'ouvre.
-  const [fixedViewportHeight, setFixedViewportHeight] = useState<number | null>(null)
-  useEffect(() => {
-    if (typeof window !== 'undefined' && fixedViewportHeight === null) {
-      setFixedViewportHeight(window.innerHeight)
-    }
-  }, [fixedViewportHeight])
-
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
-
   useEffect(() => {
     const hasSpeechRecognition = !!(window.SpeechRecognition || window.webkitSpeechRecognition)
     const hasSpeechSynthesis = !!window.speechSynthesis
     setVoiceSupported(hasSpeechRecognition && hasSpeechSynthesis)
     if (window.speechSynthesis) {
       speechSynthRef.current = window.speechSynthesis
-      // La liste des voix arrive parfois de façon asynchrone (Chrome) :
-      // on la charge tout de suite, puis on réécoute le changement.
-      const loadVoices = () => setVoices(window.speechSynthesis.getVoices())
-      loadVoices()
-      window.speechSynthesis.onvoiceschanged = loadVoices
     }
   }, [])
-
-  // ============================================================
-  // VOIX — nettoyage du texte + choix de la meilleure voix gratuite
-  // ============================================================
-
-  // ✅ Nettoie le texte avant lecture vocale : markdown, symboles et
-  // abréviations e-commerce que les moteurs TTS lisent mal en français.
-  const cleanTextForSpeech = useCallback((text: string): string => {
-    return text
-      // liens markdown [texte](url) → texte
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-      // gras / italique **texte** *texte* __texte__ _texte_
-      .replace(/(\*\*|__)(.*?)\1/g, '$2')
-      .replace(/(\*|_)(.*?)\1/g, '$2')
-      // code inline `texte`
-      .replace(/`([^`]+)`/g, '$1')
-      // titres markdown (#, ##, ###...)
-      .replace(/^#{1,6}\s+/gm, '')
-      // puces de liste et numéros
-      .replace(/^[ \t]*[-*•]\s+/gm, '')
-      .replace(/^[ \t]*\d+\.\s+/gm, '')
-      // tableaux markdown
-      .replace(/\|/g, ' ')
-      .replace(/^[ \t]*-{2,}[ \t]*$/gm, '')
-      // emojis (mal ou pas du tout lus, mieux vaut les retirer)
-      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}]/gu, '')
-      // abréviations / symboles e-commerce mal lus en français
-      .replace(/\bMOQ\b/g, 'quantité minimum de commande')
-      .replace(/\bFCFA\b/gi, 'francs CFA')
-      .replace(/\bXOF\b/gi, 'francs CFA')
-      .replace(/\bUSD\b/gi, 'dollars')
-      .replace(/\bCFA\b/g, 'francs CFA')
-      .replace(/(\d)\s?%/g, '$1 pour cent')
-      .replace(/€/g, ' euros')
-      .replace(/\$/g, ' dollars')
-      .replace(/&/g, ' et ')
-      // sauts de ligne / espaces multiples → ponctuation naturelle
-      .replace(/\n{2,}/g, '. ')
-      .replace(/\n/g, ', ')
-      .replace(/\s{2,}/g, ' ')
-      .trim()
-  }, [])
-
-  // ✅ Choisit la meilleure voix gratuite disponible dans le navigateur pour
-  // une langue donnée (voix "Google"/"Natural"/"Neural" plutôt que la voix
-  // robotique par défaut du système, quand elle existe).
-  const getBestVoice = useCallback((langCode: string): SpeechSynthesisVoice | undefined => {
-    if (!voices.length) return undefined
-    const shortLang = langCode.split('-')[0].toLowerCase()
-    const candidates = voices.filter(v => v.lang.toLowerCase().startsWith(shortLang))
-    if (!candidates.length) return undefined
-
-    const score = (v: SpeechSynthesisVoice) => {
-      let s = 0
-      if (v.lang.toLowerCase() === langCode.toLowerCase()) s += 10
-      if (/google/i.test(v.name)) s += 8
-      if (/natural|neural/i.test(v.name)) s += 8
-      if (/microsoft/i.test(v.name)) s += 4
-      if (!v.localService) s += 2
-      return s
-    }
-
-    return [...candidates].sort((a, b) => score(b) - score(a))[0]
-  }, [voices])
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -875,11 +793,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     }
 
     if (voiceSupported && speechSynthRef.current) {
-      const langCode = language === 'fr' ? 'fr-FR' : language === 'pt' ? 'pt-PT' : 'en-US'
-      const utterance = new SpeechSynthesisUtterance(cleanTextForSpeech(content))
-      utterance.lang = langCode
-      const bestVoice = getBestVoice(langCode)
-      if (bestVoice) utterance.voice = bestVoice
+      const utterance = new SpeechSynthesisUtterance(content)
+      utterance.lang = language === 'fr' ? 'fr-FR' : language === 'pt' ? 'pt-PT' : 'en-US'
       utterance.rate = 0.9
       utterance.pitch = 1.1
       setIsSpeaking(true)
@@ -887,7 +802,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       utterance.onerror = () => setIsSpeaking(false)
       speechSynthRef.current.speak(utterance)
     }
-  }, [language, voiceSupported, saveMessageToHistory, cleanTextForSpeech, getBestVoice])
+  }, [language, voiceSupported, saveMessageToHistory])
 
   const openChat = useCallback(() => {
     setIsOpen(true)
@@ -1245,19 +1160,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       e.preventDefault()
       sendMessage()
     }
-    // Sinon (Maj+Entrée) : comportement par défaut du textarea, retour à la ligne
   }
-
-  // ✅ Auto-grandissement façon Messenger : le textarea grandit avec le texte
-  // (jusqu'à une limite) puis reprend sa taille de départ une fois vidé,
-  // y compris après un setInput('') programmatique dans sendMessage().
-  const MAX_INPUT_HEIGHT = isMobile ? 84 : 100
-  useEffect(() => {
-    const el = inputRef.current
-    if (!el) return
-    el.style.height = 'auto'
-    el.style.height = `${Math.min(el.scrollHeight, MAX_INPUT_HEIGHT)}px`
-  }, [input, isMobile])
 
   // ============================================================
   // FORMATAGE
@@ -1279,9 +1182,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   const rightPosition = isMobile ? 12 : 24
   const widgetWidth = isMobile ? '100dvw' : '380px'
   const widgetHeight = isMobile ? '500px' : '540px'
-  // ✅ 75% de la hauteur de viewport capturée une seule fois (avant clavier).
-  // Fallback en 75vh tant que la mesure n'est pas encore disponible.
-  const mobileFixedHeightPx = fixedViewportHeight ? Math.round(fixedViewportHeight * 0.75) : null
 
   let positionStyle: React.CSSProperties
   let heightStyle: React.CSSProperties
@@ -1291,13 +1191,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       positionStyle = { bottom: bottomPosition, left: 12, right: 12 }
       heightStyle = { height: '52px', maxHeight: '52px' }
     } else {
-      // Bottom sheet façon Messenger, hauteur FIXE à 75% de l'écran — figée
-      // en px au montage, donc jamais recalculée quand le clavier s'ouvre
-      // (contrairement à dvh/vh qui varient selon les navigateurs mobiles).
-      positionStyle = { left: 0, right: 0, bottom: 0 }
-      heightStyle = mobileFixedHeightPx
-        ? { height: `${mobileFixedHeightPx}px`, maxHeight: `${mobileFixedHeightPx}px` }
-        : { height: '75vh', maxHeight: '75vh' }
+      // Plein écran façon Messenger : hauteur fixe via dvh (le navigateur
+      // gère l'ouverture du clavier nativement, sans JS ni saut de mise
+      // en page). Léger décalage en haut plutôt qu'un edge-to-edge total.
+      positionStyle = { top: 12, left: 0, right: 0, bottom: 0 }
+      heightStyle = { height: 'calc(100dvh - 12px)', maxHeight: 'calc(100dvh - 12px)' }
     }
   } else if (dragPos) {
     positionStyle = { top: dragPos.y, left: dragPos.x }
@@ -2205,15 +2103,15 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                   autoComplete="off"
                   style={{ display: 'contents' }}
                 >
-                  <textarea
+                  <input
                     ref={inputRef}
+                    type="search"
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={isRecording ? "🎤 Écoute en cours..." : "Dis-moi ce que tu cherches..."}
                     disabled={isTyping || isRecording}
                     name="adu-chat-message"
-                    rows={1}
                     autoComplete="off"
                     autoCorrect="off"
                     autoCapitalize="sentences"
@@ -2224,17 +2122,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                     style={{
                       flex: 1,
                       border: '0.5px solid var(--border)',
-                      borderRadius: '18px',
+                      borderRadius: '20px',
                       padding: isMobile ? '6px 12px' : '8px 14px',
                       fontSize: isMobile ? '11px' : '12px',
                       outline: 'none',
                       background: isRecording ? '#FFF8E1' : 'var(--surface)',
                       color: 'var(--foreground)',
-                      resize: 'none',
-                      overflowY: 'auto',
-                      lineHeight: 1.4,
-                      fontFamily: 'inherit',
-                      maxHeight: `${MAX_INPUT_HEIGHT}px`,
                     }}
                   />
                 </form>
