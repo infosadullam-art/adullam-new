@@ -442,16 +442,29 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   // tout en gardant fixedViewportHeight comme taille de repos (clavier
   // fermé) pour éviter tout jitter lié à l'apparition/disparition de la
   // barre d'adresse.
+  // On débounce les événements 'resize' : Chrome en émet souvent plusieurs
+  // pendant l'animation d'ouverture du clavier. Si on répercute chacun
+  // directement sur le state, la transition CSS repart à chaque valeur
+  // intermédiaire → mouvement saccadé/"robotique" au lieu d'un seul
+  // glissement fluide. On ne retient que la valeur une fois les
+  // événements calmés (~40ms), sauf la toute première mesure (synchrone).
   useEffect(() => {
     if (!isMobile) return
     const vv = window.visualViewport
     if (!vv) return
 
-    const handleViewportResize = () => setLiveViewportHeight(vv.height)
-    handleViewportResize()
+    let debounceId: ReturnType<typeof setTimeout> | null = null
+    const handleViewportResize = () => {
+      if (debounceId) clearTimeout(debounceId)
+      debounceId = setTimeout(() => setLiveViewportHeight(vv.height), 40)
+    }
+    setLiveViewportHeight(vv.height) // mesure initiale immédiate
 
     vv.addEventListener('resize', handleViewportResize)
-    return () => vv.removeEventListener('resize', handleViewportResize)
+    return () => {
+      vv.removeEventListener('resize', handleViewportResize)
+      if (debounceId) clearTimeout(debounceId)
+    }
   }, [isMobile])
 
   useEffect(() => {
@@ -1293,10 +1306,16 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       // elle ne bouge jamais quand le clavier s'ouvre, contrairement à
       // dvh qui suit le viewport visible. Ancrée en bas, 85% de haut.
       const restingHeight = Math.round(fixedViewportHeight * 0.92)
-      // Ne jamais dépasser l'espace réellement visible (clavier ouvert
-      // compris) : c'est ce qui fait "se rétracter" le bloc au lieu de
-      // déborder en haut d'écran quand le clavier apparaît sur Chrome.
-      const fixedHeight = Math.min(restingHeight, Math.round(liveViewportHeight * 0.92))
+      // Seuil : un clavier mobile fait au minimum ~150-200px, contre 40-60px
+      // pour un simple repli de la barre d'adresse au scroll. En dessous du
+      // seuil, on ignore la variation — sinon le bloc "montait légèrement"
+      // à chaque petit mouvement de la barre d'adresse, sans rapport avec
+      // le clavier.
+      const KEYBOARD_HEIGHT_THRESHOLD = 150
+      const viewportShrink = fixedViewportHeight - liveViewportHeight
+      const fixedHeight = viewportShrink > KEYBOARD_HEIGHT_THRESHOLD
+        ? Math.round(liveViewportHeight * 0.92)
+        : restingHeight
       positionStyle = { bottom: 0, left: 0, right: 0 }
       heightStyle = { height: `${fixedHeight}px`, maxHeight: `${fixedHeight}px` }
     }
@@ -1764,7 +1783,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            transition: isDragging ? 'none' : 'height 0.3s ease, bottom 0.25s ease',
+            transition: isDragging ? 'none' : 'height 0.3s cubic-bezier(0.22, 1, 0.36, 1), bottom 0.25s ease',
             touchAction: isDragging ? 'none' : 'auto',
             userSelect: isDragging ? 'none' : 'auto',
             overscrollBehavior: 'contain',
