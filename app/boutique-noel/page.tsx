@@ -6,34 +6,232 @@ import { Header } from "@/components/header"
 import { MobileHeader } from "@/components/mobile-header"
 import MobileNav from "@/components/mobile-nav"
 import { Footer } from "@/components/footer"
-import { 
-  Package, 
-  Search, 
-  Filter, 
-  Calendar, 
-  DollarSign, 
-  Plus, 
-  Send,
-  Truck,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  Download,
-  Eye,
-  Edit,
-  Trash2,
-  X,
-  FileText,
-  RefreshCw,
-  Phone,
-  MessageCircle,
-  Upload,
-  Loader2,
-  LogIn,
-  UserPlus,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react"
+
+// ════════════════════════════════════════════════════════════
+// ICÔNES — dessinées maison, même trait (1.6, jonctions arrondies)
+// que le reste du site. Noms identiques aux imports lucide
+// d'origine : aucune des utilisations plus bas n'est à modifier.
+// ════════════════════════════════════════════════════════════
+type IconProps = { className?: string; style?: React.CSSProperties }
+
+function Package({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M3.6 8.4L12 4l8.4 4.4v7.2L12 20l-8.4-4.4V8.4Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M3.6 8.4L12 12.6l8.4-4.2M12 12.6V20" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function Search({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <circle cx="11" cy="11" r="6.75" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M20.2 20.2l-3.85-3.85" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function Filter({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M4 5h16M7 12h10M10.5 19h3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function Calendar({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <rect x="3.5" y="5" width="17" height="16" rx="2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M3.5 9.5h17M8 3v3.5M16 3v3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function DollarSign({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12 3v18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M16.5 7.5c0-1.4-1.6-2.5-4.2-2.5-2.9 0-4.6 1.3-4.6 3s1.7 2.5 4.3 3c2.6.5 4.5 1.3 4.5 3.1s-1.9 3-4.5 3c-2.6 0-4.5-1.1-4.5-2.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function Plus({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function Send({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M3.4 11.6 20.2 3.9c.9-.4 1.8.5 1.4 1.4l-7.7 16.8c-.4.9-1.7.8-2-.1l-2.1-6.4-6.4-2.1c-.9-.3-1-1.6-.1-1.9Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function Truck({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M3.5 7h9.5v9H3.5V7Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M13 10h3.6L20 13.2V16h-7v-6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <circle cx="7" cy="18" r="1.7" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="16.5" cy="18" r="1.7" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  )
+}
+
+function Clock({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <circle cx="12" cy="12" r="8.2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M12 7.6V12l3 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function CheckCircle({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <circle cx="12" cy="12" r="8.2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M8.7 12.3l2.1 2.1 4.3-4.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function AlertCircle({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <circle cx="12" cy="12" r="8.2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M12 7.6v5.2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <circle cx="12" cy="16.1" r="0.15" stroke="currentColor" strokeWidth="1.9" />
+    </svg>
+  )
+}
+
+function Eye({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="2.6" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  )
+}
+
+function Trash2({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M4.5 7h15M9.5 7V5a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 14.5 5v2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M6.5 7l.8 12a1.6 1.6 0 0 0 1.6 1.5h6.2a1.6 1.6 0 0 0 1.6-1.5l.8-12" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M10 11v6M14 11v6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function X({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function FileText({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M6.5 3.5h7l4 4v13a1 1 0 0 1-1 1h-10a1 1 0 0 1-1-1v-16a1 1 0 0 1 1-1Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M13.5 3.5V8h4" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M8.5 13h7M8.5 16.5h7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function RefreshCw({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M4.5 12a7.5 7.5 0 0 1 12.7-5.4L19.5 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M19.5 4v4h-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M19.5 12a7.5 7.5 0 0 1-12.7 5.4L4.5 16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M4.5 20v-4h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function Phone({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path
+        d="M6.6 3.5 9 5.9c.4.4.5 1 .2 1.5L7.9 9.7a12.5 12.5 0 0 0 6.4 6.4l2.3-1.3c.5-.3 1.1-.2 1.5.2l2.4 2.4c.5.5.5 1.4-.1 1.8-1.1.9-2.7 1.6-4.4 1.2C10.7 19.3 4.7 13.3 3.8 8c-.4-1.7.3-3.3 1.2-4.4.4-.6 1.3-.6 1.8-.1Z"
+        stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function MessageCircle({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12 20c4.7 0 8.5-3.4 8.5-7.5S16.7 5 12 5s-8.5 3.4-8.5 7.5c0 1.7.6 3.2 1.7 4.5-.2 1-.5 1.9-1 2.7 1.1-.2 2.1-.6 3-1.1 1 .5 2.1.9 3.3 1v-.6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function Upload({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12 15.5V4.5M8 8.5 12 4.5 16 8.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4.5 15v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function Loader2({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12 3.5a8.5 8.5 0 1 0 8.5 8.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function LogIn({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12.5 4.5h4a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9.8 8.3l3.7 3.7-3.7 3.7M13.3 12H3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function UserPlus({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <circle cx="9.3" cy="8.2" r="3.1" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M3.8 19.6c0-3.3 2.7-5.6 5.9-5.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M18.2 8.4v4.6M15.9 10.7h4.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function ChevronDown({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M6 9.5l6 6 6-6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function ChevronUp({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M6 14.5l6-6 6 6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 import Link from "next/link"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/admin/auth-context"
@@ -41,6 +239,7 @@ import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import { sourcingApi } from "@/lib/admin/api-client"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { useLocale } from "@/context/LocaleProvider"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -76,13 +275,13 @@ interface SourcingNeed {
   company?: string | null
 }
 
-// Couleurs de la charte - EN DEHORS du composant
-const brandColor = "#D4372B"
-const bgGray = "#FAFAFA"
-const surfaceGray = "#F4F4F4"
-const textPrimary = "#0A0A0A"
-const textSecondary = "#AAAAAA"
-const borderColor = "#ECECEC"
+// Couleurs de la charte — tokens du design system (s'adaptent au thème clair/sombre)
+const brandColor = "var(--accent)"
+const bgGray = "var(--surface)"
+const surfaceGray = "var(--surface-sunken)"
+const textPrimary = "var(--foreground)"
+const textSecondary = "var(--muted-foreground)"
+const borderColor = "var(--border)"
 
 // ✅ COMPOSANT CONTENU - avec useSearchParams
 function SourcingContent() {
@@ -100,6 +299,17 @@ function SourcingContent() {
 
   // Hook de devise dynamique
   const { formatPrice, getCurrencySymbol, convertToUSD } = useCurrencyFormatter()
+  const { country } = useLocale()
+
+  // Indicatif téléphonique dynamique selon le pays détecté de l'utilisateur
+  // (au lieu d'un +225 Côte d'Ivoire fixe pour tout le monde).
+  const callingCodes: Record<string, string> = {
+    CI: "+225", SN: "+221", CM: "+237", MA: "+212", TN: "+216", DZ: "+213",
+    BF: "+226", ML: "+223", NE: "+227", TG: "+228", BJ: "+229", GN: "+224",
+    GH: "+233", KE: "+254", TZ: "+255", UG: "+256", RW: "+250", ET: "+251",
+    ZA: "+27", CD: "+243", CG: "+242", GA: "+241", EG: "+20", US: "+1",
+  }
+  const phonePlaceholder = `${callingCodes[country] || "+225"} 00 00 00 00`
 
   const [showForm, setShowForm] = useState(false)
   const [activeTab, setActiveTab] = useState<"besoins">("besoins")
@@ -466,14 +676,14 @@ function SourcingContent() {
 
   const getStatusBadge = (status: SourcingStatus) => {
     const styles: Record<string, string> = {
-      PENDING: "bg-[#FFF8E1] text-[#F5A623]",
-      IN_REVIEW: "bg-[#FFF0F0] text-[#D4372B]",
-      QUOTED: "bg-[#E8F5E9] text-[#2E7D32]",
-      RESPONDED: "bg-[#E3F2FD] text-[#1565C0]",
-      COMMANDE: "bg-[#F3E5F5] text-[#7B1FA2]",
-      STOCK_BAS: "bg-[#FFEBEE] text-[#D32F2F]",
-      CLOSED: "bg-[#F4F4F4] text-[#AAAAAA]",
-      ARCHIVED: "bg-[#F4F4F4] text-[#AAAAAA]",
+      PENDING: "bg-[var(--accent-amber)]/15 text-[var(--accent-amber)]",
+      IN_REVIEW: "bg-accent/10 text-accent",
+      QUOTED: "bg-[#16A34A]/10 text-[#16A34A]",
+      RESPONDED: "bg-[#2563EB]/10 text-[#2563EB]",
+      COMMANDE: "bg-[#9333EA]/10 text-[#9333EA]",
+      STOCK_BAS: "bg-accent/15 text-accent",
+      CLOSED: "bg-surface-sunken text-muted-foreground",
+      ARCHIVED: "bg-surface-sunken text-muted-foreground",
     }
     const labels: Record<string, string> = {
       PENDING: "En attente",
@@ -490,10 +700,10 @@ function SourcingContent() {
 
   const getPriorityBadge = (priority: Priority) => {
     const styles = {
-      BASSE: "bg-[#F4F4F4] text-[#AAAAAA]",
-      MOYENNE: "bg-[#FFF8E1] text-[#F5A623]",
-      HAUTE: "bg-[#FFF0F0] text-[#D4372B]",
-      URGENTE: "bg-[#FFEBEE] text-[#D32F2F]"
+      BASSE: "bg-surface-sunken text-muted-foreground",
+      MOYENNE: "bg-[var(--accent-amber)]/15 text-[var(--accent-amber)]",
+      HAUTE: "bg-accent/10 text-accent",
+      URGENTE: "bg-accent/20 text-accent"
     }
     return styles[priority] || styles.MOYENNE
   }
@@ -521,18 +731,18 @@ function SourcingContent() {
             <Package className="w-10 h-10 lg:w-12 lg:h-12 mb-3 lg:mb-4" style={{ color: brandColor }} />
             <h1 
               className="text-2xl lg:text-4xl font-bold mb-2 lg:mb-4"
-              style={{ color: "#fff", fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.02em" }}
+              style={{ color: "#fff", letterSpacing: "-0.02em" }}
             >
               Gestion des approvisionnements
             </h1>
-            <p className="text-sm lg:text-base mb-6 lg:mb-8 max-w-2xl" style={{ color: textSecondary, fontFamily: "'Poppins', sans-serif" }}>
+            <p className="text-sm lg:text-base mb-6 lg:mb-8 max-w-2xl" style={{ color: textSecondary }}>
               Gérez vos besoins d'achat, suivez les devis fournisseurs et commandez pour réapprovisionner votre stock.
             </p>
             
             <button
               onClick={handleOpenForm}
               className="px-4 py-2 lg:px-6 lg:py-3 rounded-lg font-semibold transition-all hover:opacity-90 inline-flex items-center gap-2 text-sm lg:text-base"
-              style={{ background: brandColor, color: "#fff", fontFamily: "'Poppins', sans-serif" }}
+              style={{ background: brandColor, color: "#fff" }}
             >
               <Plus className="w-4 h-4 lg:w-5 lg:h-5" />
               Nouveau besoin
@@ -543,7 +753,7 @@ function SourcingContent() {
         {user ? (
           <div className="max-w-[1440px] mx-auto px-4 lg:px-6 -mt-6 lg:-mt-8">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-              <div className="rounded-lg p-4 lg:p-6 shadow-sm" style={{ background: "#fff", border: `0.5px solid ${borderColor}` }}>
+              <div className="rounded-lg p-4 lg:p-6 shadow-sm" style={{ background: 'var(--card)', border: `0.5px solid ${borderColor}` }}>
                 <div className="flex items-center justify-between mb-1 lg:mb-2">
                   <h3 className="text-xs lg:text-sm font-medium" style={{ color: textSecondary }}>Besoins en cours</h3>
                   <Clock className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: brandColor }} />
@@ -551,26 +761,26 @@ function SourcingContent() {
                 <p className="text-xl lg:text-2xl font-bold" style={{ color: textPrimary }}>{stats.besoinsEnCours}</p>
               </div>
               
-              <div className="rounded-lg p-4 lg:p-6 shadow-sm" style={{ background: "#fff", border: `0.5px solid ${borderColor}` }}>
+              <div className="rounded-lg p-4 lg:p-6 shadow-sm" style={{ background: 'var(--card)', border: `0.5px solid ${borderColor}` }}>
                 <div className="flex items-center justify-between mb-1 lg:mb-2">
                   <h3 className="text-xs lg:text-sm font-medium" style={{ color: textSecondary }}>Devis à étudier</h3>
-                  <Eye className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: "#F5A623" }} />
+                  <Eye className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: 'var(--accent-amber)' }} />
                 </div>
                 <p className="text-xl lg:text-2xl font-bold" style={{ color: textPrimary }}>{stats.devisAEtudier}</p>
               </div>
               
-              <div className="rounded-lg p-4 lg:p-6 shadow-sm" style={{ background: "#fff", border: `0.5px solid ${borderColor}` }}>
+              <div className="rounded-lg p-4 lg:p-6 shadow-sm" style={{ background: 'var(--card)', border: `0.5px solid ${borderColor}` }}>
                 <div className="flex items-center justify-between mb-1 lg:mb-2">
                   <h3 className="text-xs lg:text-sm font-medium" style={{ color: textSecondary }}>Commandes en cours</h3>
-                  <Truck className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: "#2D9CDB" }} />
+                  <Truck className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: '#3B82F6' }} />
                 </div>
                 <p className="text-xl lg:text-2xl font-bold" style={{ color: textPrimary }}>{stats.commandesEnCours}</p>
               </div>
               
-              <div className="rounded-lg p-4 lg:p-6 shadow-sm" style={{ background: "#fff", border: `0.5px solid ${borderColor}` }}>
+              <div className="rounded-lg p-4 lg:p-6 shadow-sm" style={{ background: 'var(--card)', border: `0.5px solid ${borderColor}` }}>
                 <div className="flex items-center justify-between mb-1 lg:mb-2">
                   <h3 className="text-xs lg:text-sm font-medium" style={{ color: textSecondary }}>Stock à réappro</h3>
-                  <AlertCircle className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: "#D32F2F" }} />
+                  <AlertCircle className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: 'var(--accent)' }} />
                 </div>
                 <p className="text-xl lg:text-2xl font-bold" style={{ color: textPrimary }}>{stats.stockAReappro}</p>
               </div>
@@ -578,8 +788,8 @@ function SourcingContent() {
           </div>
         ) : (
           <div className="max-w-[1440px] mx-auto px-4 lg:px-6 -mt-6 lg:-mt-8">
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6 lg:p-8 text-center border-2 border-dashed" style={{ borderColor: `${brandColor}30` }}>
-              <Package className="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-3 lg:mb-4" style={{ color: `${brandColor}80` }} />
+            <div className="bg-card/80 backdrop-blur-sm rounded-lg p-6 lg:p-8 text-center border-2 border-dashed" style={{ borderColor: 'color-mix(in oklab, var(--accent) 30%, transparent)' }}>
+              <Package className="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-3 lg:mb-4" style={{ color: 'color-mix(in oklab, var(--accent) 80%, transparent)' }} />
               <h2 className="text-xl lg:text-2xl font-bold mb-2" style={{ color: textPrimary }}>Connectez-vous pour gérer vos approvisionnements</h2>
               <p className="text-sm lg:text-base mb-6 max-w-lg mx-auto" style={{ color: textSecondary }}>
                 Créez un compte ou connectez-vous pour soumettre vos besoins d'achat et suivre vos commandes.
@@ -610,8 +820,8 @@ function SourcingContent() {
                   onClick={() => setActiveTab("besoins")}
                   className={`px-4 py-2 lg:px-6 lg:py-3 font-medium text-sm border-b-2 transition-colors ${
                     activeTab === "besoins"
-                      ? `border-[#D4372B] text-[#D4372B]`
-                      : "border-transparent text-[#AAAAAA] hover:text-[#0A0A0A]"
+                      ? `border-accent text-accent`
+                      : "border-transparent text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   Besoins d'achat
@@ -620,7 +830,7 @@ function SourcingContent() {
 
               {activeTab === "besoins" && (
                 <div className="mt-4 lg:mt-6">
-                  <div className="rounded-lg p-3 lg:p-4 border mb-4 lg:mb-6" style={{ background: "#fff", borderColor: borderColor }}>
+                  <div className="rounded-lg p-3 lg:p-4 border mb-4 lg:mb-6" style={{ background: 'var(--card)', borderColor: borderColor }}>
                     <div className="relative">
                       <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: textSecondary }} />
                       <input
@@ -653,7 +863,7 @@ function SourcingContent() {
                     <div className={`${showFilters ? 'block' : 'hidden'} lg:grid lg:grid-cols-3 gap-4 mt-3 lg:mt-4`}>
                       <select 
                         className="w-full px-3 py-2 rounded-lg text-sm"
-                        style={{ border: `0.5px solid ${borderColor}`, background: "#fff", color: textPrimary }}
+                        style={{ border: `0.5px solid ${borderColor}`, background: 'var(--card)', color: textPrimary }}
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                       >
@@ -668,7 +878,7 @@ function SourcingContent() {
                       </select>
                       <select 
                         className="w-full px-3 py-2 rounded-lg text-sm"
-                        style={{ border: `0.5px solid ${borderColor}`, background: "#fff", color: textPrimary }}
+                        style={{ border: `0.5px solid ${borderColor}`, background: 'var(--card)', color: textPrimary }}
                         value={priorityFilter}
                         onChange={(e) => setPriorityFilter(e.target.value)}
                       >
@@ -693,7 +903,7 @@ function SourcingContent() {
                         )}
                         <button 
                           onClick={loadNeeds}
-                          className="p-2 rounded-lg transition-colors hover:bg-gray-100 ml-auto"
+                          className="p-2 rounded-lg transition-colors hover:bg-muted ml-auto"
                         >
                           <RefreshCw className="w-4 h-4" style={{ color: textSecondary }} />
                         </button>
@@ -706,7 +916,7 @@ function SourcingContent() {
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: brandColor }}></div>
                     </div>
                   ) : needs.length === 0 ? (
-                    <div className="rounded-lg border p-8 lg:p-12 text-center" style={{ background: "#fff", borderColor: borderColor }}>
+                    <div className="rounded-lg border p-8 lg:p-12 text-center" style={{ background: 'var(--card)', borderColor: borderColor }}>
                       <Package className="w-12 h-12 mx-auto mb-4" style={{ color: textSecondary }} />
                       <h3 className="text-lg font-semibold mb-2" style={{ color: textPrimary }}>Aucun besoin</h3>
                       <p className="mb-4" style={{ color: textSecondary }}>
@@ -728,7 +938,7 @@ function SourcingContent() {
                         const isExpanded = expandedNeedId === need.id
                         
                         return (
-                          <div key={need.id} className="rounded-lg border overflow-hidden" style={{ background: "#fff", borderColor: borderColor }}>
+                          <div key={need.id} className="rounded-lg border overflow-hidden" style={{ background: 'var(--card)', borderColor: borderColor }}>
                             <div className="p-4 lg:p-6">
                               <div className="flex flex-col gap-3">
                                 <div className="flex flex-wrap items-center gap-2">
@@ -776,7 +986,7 @@ function SourcingContent() {
                                   <button
                                     onClick={() => handleDelete(need.id)}
                                     className="p-1.5 rounded-lg transition-colors hover:bg-red-50"
-                                    style={{ color: "#D32F2F" }}
+                                    style={{ color: 'var(--accent)' }}
                                   >
                                     <Trash2 className="w-4 h-4" />
                                   </button>
@@ -842,17 +1052,21 @@ function SourcingContent() {
 
             {showForm && (
               <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                <div className="bg-white rounded-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-                  <div className="sticky top-0 bg-white border-b p-4 lg:p-6 flex justify-between items-center" style={{ borderColor: borderColor }}>
+                <div className="rounded-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto" style={{ background: 'var(--card)' }}>
+                  <div className="sticky top-0 border-b p-4 lg:p-6 flex justify-between items-center" style={{ borderColor: borderColor, background: 'var(--card)' }}>
                     <div>
                       <h3 className="text-lg lg:text-xl font-bold" style={{ color: textPrimary }}>Nouveau besoin</h3>
                       <p className="text-xs lg:text-sm mt-0.5 lg:mt-1" style={{ color: textSecondary }}>
                         Décrivez ce que vous devez acheter
                       </p>
+                      <span className="inline-flex items-center gap-1.5 mt-2 text-xs font-semibold" style={{ color: brandColor }}>
+                        <Clock className="w-3.5 h-3.5" />
+                        Devis sous 48h
+                      </span>
                     </div>
                     <button
                       onClick={() => setShowForm(false)}
-                      className="p-2 rounded-lg transition-colors hover:bg-gray-100"
+                      className="p-2 rounded-lg transition-colors hover:bg-muted"
                     >
                       <X className="w-5 h-5" style={{ color: textSecondary }} />
                     </button>
@@ -860,7 +1074,7 @@ function SourcingContent() {
                   
                   <form onSubmit={handleSubmit} className="p-4 lg:p-6 space-y-4">
                     {submitError && (
-                      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                      <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
                         {submitError}
                       </div>
                     )}
@@ -871,7 +1085,7 @@ function SourcingContent() {
                           <span>Envoi en cours...</span>
                           <span>{uploadProgress}%</span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="w-full bg-surface-sunken rounded-full h-2">
                           <div 
                             className="h-2 rounded-full transition-all duration-300" 
                             style={{ width: `${uploadProgress}%`, background: brandColor }}
@@ -963,7 +1177,7 @@ function SourcingContent() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>
-                          Budget min ({getCurrencySymbol()})
+                          Budget min par pièce ({getCurrencySymbol()})
                         </label>
                         <input
                           type="number"
@@ -980,7 +1194,7 @@ function SourcingContent() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>
-                          Budget max ({getCurrencySymbol()})
+                          Budget max par pièce ({getCurrencySymbol()})
                         </label>
                         <input
                           type="number"
@@ -995,6 +1209,9 @@ function SourcingContent() {
                           style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
                         />
                       </div>
+                      <p className="lg:col-span-2 text-xs -mt-1" style={{ color: textSecondary }}>
+                        Le prix unitaire que vous êtes prêt à payer par pièce, pas le budget total de la commande. Ça nous aide à cibler les bons fournisseurs directement — vous évite des allers-retours inutiles.
+                      </p>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -1026,6 +1243,12 @@ function SourcingContent() {
                           <option value="HAUTE">Haute</option>
                           <option value="URGENTE">Urgente</option>
                         </select>
+                        <p className="text-xs mt-1.5" style={{ color: textSecondary }}>
+                          {formData.priority === "URGENTE" && "Traitée en priorité, réponse sous 24h — réservé aux besoins vraiment pressants."}
+                          {formData.priority === "HAUTE" && "Traitée avant les demandes standards, réponse sous 48h."}
+                          {formData.priority === "MOYENNE" && "Traitement dans l'ordre d'arrivée, réponse sous 48h."}
+                          {formData.priority === "BASSE" && "Pas de contrainte de délai particulière de votre côté — on prend le temps de bien comparer les fournisseurs."}
+                        </p>
                       </div>
                     </div>
 
@@ -1068,7 +1291,7 @@ function SourcingContent() {
                             name="phone"
                             value={formData.phone}
                             onChange={handleInputChange}
-                            placeholder="+225 07 00 00 00"
+                            placeholder={phonePlaceholder}
                             disabled={isSubmitting}
                             className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
                             style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
@@ -1091,9 +1314,12 @@ function SourcingContent() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>
+                      <label className="block text-sm font-medium mb-1" style={{ color: textPrimary }}>
                         Documents (max 10 Mo par fichier)
                       </label>
+                      <p className="text-xs mb-1.5" style={{ color: textSecondary }}>
+                        Une photo du produit recherché nous aide à identifier précisément ce que vous voulez — mais tout fichier utile est accepté : cahier des charges, plan technique, facture d'un produit similaire...
+                      </p>
                       <div className="border-2 border-dashed rounded-lg p-4 lg:p-6 text-center" style={{ borderColor: `${borderColor}` }}>
                         <input
                           type="file"
@@ -1120,7 +1346,7 @@ function SourcingContent() {
                                   type="button"
                                   onClick={() => removeFile(index)}
                                   disabled={isSubmitting}
-                                  className="text-red-500 hover:text-red-700"
+                                  className="text-accent hover:opacity-70 transition-opacity"
                                 >
                                   <X className="w-4 h-4" />
                                 </button>
@@ -1154,7 +1380,7 @@ function SourcingContent() {
                         type="button"
                         onClick={() => setShowForm(false)}
                         disabled={isSubmitting}
-                        className="px-4 py-2 lg:px-6 lg:py-2 rounded-lg hover:bg-gray-100 transition-colors text-sm"
+                        className="px-4 py-2 lg:px-6 lg:py-2 rounded-lg hover:bg-muted transition-colors text-sm"
                         style={{ border: `0.5px solid ${borderColor}`, color: textPrimary }}
                       >
                         Annuler
@@ -1191,7 +1417,7 @@ function SourcingContent() {
               <DialogTitle className="text-center text-lg" style={{ color: textPrimary }}>Connexion requise</DialogTitle>
             </DialogHeader>
             <div className="text-center py-4 lg:py-6">
-              <Package className="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-4" style={{ color: `${brandColor}80` }} />
+              <Package className="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-4" style={{ color: 'color-mix(in oklab, var(--accent) 80%, transparent)' }} />
               <p className="text-base lg:text-lg font-medium mb-2" style={{ color: textPrimary }}>Vous devez être connecté</p>
               <p className="text-sm mb-6" style={{ color: textSecondary }}>
                 Pour créer un besoin d'approvisionnement, veuillez vous connecter ou créer un compte.

@@ -15,9 +15,20 @@ export function ChatbotProvider() {
       setUserId(user.id)
       setSessionId(`user_${user.id}`)
     } else {
-      // ✅ Déconnecté : NOUVEAU sessionId (pas l'ancien !)
-      const id = crypto.randomUUID() // ← Toujours un nouveau !
-      localStorage.setItem("chat_session_id", id)
+      // ✅ FIX : on relit d'abord l'ancien chat_session_id avant d'en créer
+      // un nouveau. Avant ce fix, un nouvel UUID était généré à CHAQUE
+      // montage sans utilisateur connecté (rechargement de page, nouvel
+      // onglet, navigation qui remonte le layout) — l'identifiant Python
+      // (anon_{session_id}) changeait donc en permanence, et tout le
+      // comportement accumulé côté profile_engine (vues, hésitation,
+      // catégories consultées...) repartait de zéro à chaque fois. On ne
+      // génère un nouvel UUID que si aucun n'existe encore dans ce
+      // navigateur.
+      const existing = localStorage.getItem("chat_session_id")
+      const id = existing || crypto.randomUUID()
+      if (!existing) {
+        localStorage.setItem("chat_session_id", id)
+      }
       setSessionId(id)
       setUserId(undefined)
     }
