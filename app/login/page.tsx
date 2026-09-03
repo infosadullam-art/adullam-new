@@ -13,7 +13,51 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { useAuth } from "@/lib/admin/auth-context"
+import { useLocale } from "@/context/LocaleProvider"
 import Link from "next/link"
+
+// ============================================================
+// INDICATIFS TÉLÉPHONIQUES par pays (utilisés avec le pays
+// détecté par LocaleProvider — pas de nouvelle géolocalisation
+// ici, pour éviter un second appel réseau redondant)
+// ============================================================
+const DIAL_CODES: Record<string, string> = {
+  CI: "+225", BF: "+226", SN: "+221", ML: "+223", BJ: "+229", TG: "+228",
+  NE: "+227", GW: "+245", CM: "+237", CF: "+236", GA: "+241", CG: "+242",
+  GQ: "+240", TD: "+235", NG: "+234", GH: "+233", LR: "+231", SL: "+232",
+  GM: "+220", CV: "+238", MA: "+212", TN: "+216", DZ: "+213", LY: "+218",
+  EG: "+20", MR: "+222", KE: "+254", UG: "+256", TZ: "+255", RW: "+250",
+  BI: "+257", ET: "+251", SO: "+252", DJ: "+253", SD: "+249", SS: "+211",
+  ZA: "+27", NA: "+264", BW: "+267", ZW: "+263", MZ: "+258", AO: "+244",
+  ZM: "+260", MW: "+265", MG: "+261", MU: "+230", KM: "+269", SC: "+248",
+  US: "+1",
+}
+
+const COUNTRY_NAMES: Record<string, string> = {
+  CI: "Côte d'Ivoire", BF: "Burkina Faso", SN: "Sénégal", ML: "Mali",
+  BJ: "Bénin", TG: "Togo", NE: "Niger", GW: "Guinée-Bissau", CM: "Cameroun",
+  CF: "Centrafrique", GA: "Gabon", CG: "Congo", GQ: "Guinée équatoriale",
+  TD: "Tchad", NG: "Nigeria", GH: "Ghana", LR: "Liberia", SL: "Sierra Leone",
+  GM: "Gambie", CV: "Cap-Vert", MA: "Maroc", TN: "Tunisie", DZ: "Algérie",
+  LY: "Libye", EG: "Égypte", MR: "Mauritanie", KE: "Kenya", UG: "Ouganda",
+  TZ: "Tanzanie", RW: "Rwanda", BI: "Burundi", ET: "Éthiopie", SO: "Somalie",
+  DJ: "Djibouti", SD: "Soudan", SS: "Soudan du Sud", ZA: "Afrique du Sud",
+  NA: "Namibie", BW: "Botswana", ZW: "Zimbabwe", MZ: "Mozambique",
+  AO: "Angola", ZM: "Zambie", MW: "Malawi", MG: "Madagascar", MU: "Maurice",
+  KM: "Comores", SC: "Seychelles", US: "États-Unis",
+}
+
+const DIAL_CODE_OPTIONS = Object.keys(DIAL_CODES)
+  .map((code) => ({ code, dial: DIAL_CODES[code], name: COUNTRY_NAMES[code] }))
+  .sort((a, b) => a.name.localeCompare(b.name))
+
+const DEFAULT_DIAL_CODE = "+225"
+
+// Compose un numéro au format international à partir de l'indicatif détecté/choisi et de la saisie locale
+function toE164Phone(dial: string, raw: string): string {
+  const digits = raw.replace(/\D/g, '').replace(/^0+/, '')
+  return `${dial}${digits}`
+}
 
 // ============================================================
 // ICONES SVG MAISON
@@ -151,6 +195,11 @@ function UserLoginContent() {
   const redirect = searchParams.get('redirect') || '/account'
   
   const { login, register, user, isLoading: authLoading } = useAuth()
+  const { country } = useLocale()
+
+  // Indicatif déduit du pays détecté par LocaleProvider ; peut être corrigé manuellement par l'utilisateur
+  const [manualDial, setManualDial] = useState<string | null>(null)
+  const countryCode = manualDial ?? DIAL_CODES[country] ?? DEFAULT_DIAL_CODE
 
   // États du formulaire
   const [step, setStep] = useState<"login" | "register" | "verify">("login")
@@ -241,7 +290,7 @@ function UserLoginContent() {
       if (loginMethod === "email") {
         identifier = identifier.toLowerCase().trim()
       } else {
-        identifier = identifier.replace(/\s/g, '')
+        identifier = toE164Phone(countryCode, identifier)
       }
 
       const res = await fetch("https://api.adullamarket.com/api/auth/send-code", {
@@ -308,7 +357,7 @@ function UserLoginContent() {
         if (loginMethod === "email") {
           identifier = identifier.toLowerCase().trim()
         } else {
-          identifier = identifier.replace(/\s/g, '')
+          identifier = toE164Phone(countryCode, identifier)
         }
 
         await login(identifier, formData.password)
@@ -348,7 +397,7 @@ function UserLoginContent() {
         if (loginMethod === "email") {
           identifier = identifier.toLowerCase().trim()
         } else {
-          identifier = identifier.replace(/\s/g, '')
+          identifier = toE164Phone(countryCode, identifier)
         }
 
         const res = await fetch("https://api.adullamarket.com/api/auth/verify-code", {
@@ -496,10 +545,19 @@ function UserLoginContent() {
                 ) : (
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="text-foreground">Numéro de téléphone</Label>
-                    <div className="flex">
-                      <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-border bg-surface-sunken text-muted-foreground text-sm">
-                        +225
-                      </span>
+                    <div className="flex items-stretch rounded-md border border-border overflow-hidden bg-transparent focus-within:ring-1 focus-within:ring-ring">
+                      <select
+                        value={countryCode}
+                        onChange={(e) => setManualDial(e.target.value)}
+                        aria-label="Indicatif du pays"
+                        className="border-r border-border bg-surface-sunken text-muted-foreground text-sm px-2 focus:outline-none"
+                      >
+                        {DIAL_CODE_OPTIONS.map((c) => (
+                          <option key={c.code} value={c.dial}>
+                            {c.name} ({c.dial})
+                          </option>
+                        ))}
+                      </select>
                       <Input
                         id="phone"
                         name="phone"
@@ -507,7 +565,7 @@ function UserLoginContent() {
                         placeholder="01 23 45 67 89"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className="rounded-l-none"
+                        className="rounded-none border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                         disabled={isSubmitting}
                         required
                       />
