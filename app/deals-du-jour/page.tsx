@@ -4,20 +4,34 @@ import { Header } from "@/components/header"
 import { MobileHeader } from "@/components/mobile-header"
 import MobileNav from "@/components/mobile-nav"
 import { Footer } from "@/components/footer"
-import { TrendingUp, Star, Zap, Clock, Shield } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useState, useEffect } from "react"
 import { apiFetch } from "@/lib/api"
 
-// Couleurs de la charte
-const brandColor = "#D4372B"
-const bgGray = "#FAFAFA"
-const surfaceGray = "#F4F4F4"
-const textPrimary = "#0A0A0A"
-const textSecondary = "#AAAAAA"
-const borderColor = "#ECECEC"
+// ============================================================
+// ICONES SVG MAISON
+// (stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"
+// strokeLinejoin="round", viewBox 0 0 24 24 — cohérent avec le
+// reste du site)
+// ============================================================
+function TrendingUp({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M3 17l6-6 4 4 8-8" />
+      <path d="M15 7h6v6" />
+    </svg>
+  )
+}
+
+function Star({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M12 2l2.9 6.3 6.9.6-5.2 4.6 1.6 6.8L12 16.9 5.8 20.3l1.6-6.8L2.2 8.9l6.9-.6L12 2Z" />
+    </svg>
+  )
+}
 
 interface Product {
   id: string | number
@@ -64,31 +78,36 @@ export default function DealsDuJourPage() {
     fetchDeals()
   }, [])
 
+  // Bandeau héro — toujours sombre par choix de branding, indépendant du thème clair/sombre du site
+  const HeroBanner = () => (
+    <div className="bg-neutral-950">
+      <div className="max-w-[1440px] mx-auto px-4 lg:px-8 py-6 lg:py-10">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-accent">
+            <TrendingUp className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl lg:text-4xl font-bold mb-1 text-white tracking-tight">
+              Deals du jour
+            </h1>
+            <p className="text-sm text-neutral-400">
+              Profitez des meilleures offres sélectionnées pour vous aujourd'hui
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
   if (isLoading) {
     return (
-      <div className="min-h-screen" style={{ background: bgGray }}>
+      <div className="min-h-screen bg-background">
         <div className="hidden lg:block"><Header /></div>
         <div className="lg:hidden"><MobileHeader /></div>
         <main className="pb-20 lg:pb-8">
-          <div style={{ background: textPrimary }}>
-            <div className="max-w-[1440px] mx-auto px-4 lg:px-8 py-6 lg:py-10">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-xl" style={{ background: brandColor }}>
-                  <TrendingUp className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl lg:text-4xl font-bold mb-1" style={{ color: "#fff", fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.03em" }}>
-                    Deals du jour
-                  </h1>
-                  <p className="text-sm" style={{ color: textSecondary, fontFamily: "'Poppins', sans-serif" }}>
-                    Profitez des meilleures offres sélectionnées pour vous aujourd'hui
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <HeroBanner />
           <div className="max-w-[1440px] mx-auto px-4 lg:px-8 py-8 flex justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: brandColor }} />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" />
           </div>
         </main>
         <Footer />
@@ -99,29 +118,13 @@ export default function DealsDuJourPage() {
 
   if (products.length === 0) {
     return (
-      <div className="min-h-screen" style={{ background: bgGray }}>
+      <div className="min-h-screen bg-background">
         <div className="hidden lg:block"><Header /></div>
         <div className="lg:hidden"><MobileHeader /></div>
         <main className="pb-20 lg:pb-8">
-          <div style={{ background: textPrimary }}>
-            <div className="max-w-[1440px] mx-auto px-4 lg:px-8 py-6 lg:py-10">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-xl" style={{ background: brandColor }}>
-                  <TrendingUp className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl lg:text-4xl font-bold mb-1" style={{ color: "#fff", fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.03em" }}>
-                    Deals du jour
-                  </h1>
-                  <p className="text-sm" style={{ color: textSecondary, fontFamily: "'Poppins', sans-serif" }}>
-                    Profitez des meilleures offres sélectionnées pour vous aujourd'hui
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <HeroBanner />
           <div className="max-w-[1440px] mx-auto px-4 lg:px-8 py-8 text-center">
-            <p className="text-sm" style={{ color: textSecondary }}>Aucune offre disponible pour le moment</p>
+            <p className="text-sm text-muted-foreground">Aucune offre disponible pour le moment</p>
           </div>
         </main>
         <Footer />
@@ -131,7 +134,7 @@ export default function DealsDuJourPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: bgGray }}>
+    <div className="min-h-screen bg-background">
       <div className="hidden lg:block">
         <Header />
       </div>
@@ -141,29 +144,17 @@ export default function DealsDuJourPage() {
 
       <main className="pb-20 lg:pb-8">
         {/* Hero Banner */}
-        <div style={{ background: textPrimary }}>
+        <div className="bg-neutral-950">
           <div className="max-w-[1440px] mx-auto px-4 lg:px-8 py-6 lg:py-10">
             <div className="flex items-center gap-3 mb-3">
-              <div
-                className="flex items-center justify-center w-10 h-10 rounded-xl"
-                style={{ background: brandColor }}
-              >
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-accent">
                 <TrendingUp className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1
-                  style={{
-                    fontFamily: "'Poppins', sans-serif",
-                    fontWeight: 900,
-                    fontSize: "clamp(22px, 4vw, 36px)",
-                    color: "#fff",
-                    letterSpacing: "-0.03em",
-                    lineHeight: 1.1,
-                  }}
-                >
+                <h1 className="font-black text-white tracking-tight leading-[1.1]" style={{ fontSize: "clamp(22px, 4vw, 36px)" }}>
                   Deals du jour
                 </h1>
-                <p style={{ fontSize: "13px", color: textSecondary, fontFamily: "'Poppins', sans-serif" }}>
+                <p className="text-[13px] text-neutral-400">
                   Profitez des meilleures offres sélectionnées pour vous aujourd'hui
                 </p>
               </div>
@@ -172,21 +163,15 @@ export default function DealsDuJourPage() {
             {/* Stats pills */}
             <div className="flex items-center gap-2 mt-4 flex-wrap">
               {[
-                { label: "Offres limitées", dot: brandColor },
-                { label: "Livraison rapide", dot: "#22C55E" },
-                { label: "Paiement sécurisé", dot: "#2D9CDB" },
+                { label: "Offres limitées", dot: "bg-accent" },
+                { label: "Livraison rapide", dot: "bg-green-500" },
+                { label: "Paiement sécurisé", dot: "bg-sky-500" },
               ].map(({ label, dot }) => (
                 <span
                   key={label}
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
-                  style={{
-                    background: "rgba(255,255,255,0.07)",
-                    border: "0.5px solid rgba(255,255,255,0.12)",
-                    color: "#fff",
-                    fontFamily: "'Poppins', sans-serif",
-                  }}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-white"
                 >
-                  <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: dot, display: "inline-block", flexShrink: 0 }} />
+                  <span className={`w-[5px] h-[5px] rounded-full inline-block flex-shrink-0 ${dot}`} />
                   {label}
                 </span>
               ))}
@@ -200,18 +185,10 @@ export default function DealsDuJourPage() {
           {/* Header section */}
           <div className="flex justify-between items-center mb-5">
             <div>
-              <h2
-                style={{
-                  fontFamily: "'Poppins', sans-serif",
-                  fontWeight: 800,
-                  fontSize: "16px",
-                  color: textPrimary,
-                  letterSpacing: "-0.02em",
-                }}
-              >
+              <h2 className="font-extrabold text-[16px] text-foreground tracking-tight">
                 Offres du jour
               </h2>
-              <p style={{ fontSize: "12px", color: textSecondary, fontFamily: "'Poppins', sans-serif" }}>
+              <p className="text-[12px] text-muted-foreground">
                 {products.length} produits en promotion
               </p>
             </div>
@@ -226,17 +203,13 @@ export default function DealsDuJourPage() {
                 className="group block"
               >
                 {/* Image */}
-                <div
-                  className="relative aspect-square overflow-hidden mb-2.5 transition-all duration-200 group-hover:shadow-md"
-                  style={{ borderRadius: "12px", background: "#fff", border: `0.5px solid ${borderColor}` }}
-                >
+                <div className="relative aspect-square overflow-hidden mb-2.5 rounded-xl bg-card shadow-xs transition-all duration-200 group-hover:shadow-md">
                   {/* Rang badge — top 3 */}
                   {product.rank && product.rank <= 3 && (
                     <span
-                      className="absolute top-2 left-2 z-10 flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold text-white"
-                      style={{
-                        background: product.rank === 1 ? "#F5A623" : product.rank === 2 ? "#AAAAAA" : "#CD7F32",
-                      }}
+                      className={`absolute top-2 left-2 z-10 flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold text-white ${
+                        product.rank === 1 ? "bg-accent-amber" : product.rank === 2 ? "bg-zinc-400" : "bg-amber-700"
+                      }`}
                     >
                       {product.rank}
                     </span>
@@ -244,10 +217,7 @@ export default function DealsDuJourPage() {
                   
                   {/* Badge offre */}
                   {product.badge && (
-                    <div
-                      className="absolute top-2 right-2 z-10 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                      style={{ background: brandColor, color: "#fff" }}
-                    >
+                    <div className="absolute top-2 right-2 z-10 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-accent text-white">
                       {product.badge}
                     </div>
                   )}
@@ -262,16 +232,7 @@ export default function DealsDuJourPage() {
 
                 {/* Infos */}
                 <div className="space-y-1">
-                  <h3
-                    className="line-clamp-2"
-                    style={{
-                      fontSize: "12px",
-                      fontWeight: 500,
-                      color: textPrimary,
-                      fontFamily: "'Poppins', sans-serif",
-                      lineHeight: 1.4,
-                    }}
-                  >
+                  <h3 className="line-clamp-2 text-[12px] font-medium text-foreground leading-[1.4]">
                     {product.name}
                   </h3>
 
@@ -279,23 +240,16 @@ export default function DealsDuJourPage() {
                   <div className="flex items-center gap-1">
                     <div className="flex">
                       {[1, 2, 3, 4, 5].map((star) => (
-                        <Star key={star} className="w-3 h-3 fill-[#F5A623] text-[#F5A623]" />
+                        <Star key={star} className="w-3 h-3 fill-accent-amber text-accent-amber" />
                       ))}
                     </div>
-                    <span style={{ fontSize: "10px", color: textSecondary }}>
+                    <span className="text-[10px] text-muted-foreground">
                       ({product.reviews})
                     </span>
                   </div>
 
                   {/* Prix */}
-                  <p
-                    style={{
-                      fontSize: "13px",
-                      fontWeight: 700,
-                      color: brandColor,
-                      fontFamily: "'Poppins', sans-serif",
-                    }}
-                  >
+                  <p className="text-[13px] font-bold text-accent">
                     {formatPrice(product.price)}
                   </p>
                 </div>
