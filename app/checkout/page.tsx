@@ -513,6 +513,24 @@ export default function CheckoutPage() {
   // Redirection si non connecté
   useEffect(() => {
     if (!authLoading && !user) {
+      // ✅ Signal comportemental : ce visiteur anonyme vient de se heurter
+      // au vrai mur "compte requis pour commander" — pas juste une visite
+      // de page. Envoyé au profil marketing (customer_intelligence.py) pour
+      // que la relance proactive du chat puisse en tenir compte. Fire-and-
+      // forget, ne doit jamais retarder ni bloquer la redirection.
+      const sessionId = typeof window !== "undefined" ? localStorage.getItem("chat_session_id") : null
+      if (sessionId) {
+        apiFetch("/api/track", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sessionId,
+            productId: null,
+            type: "CHECKOUT_VISIT",
+            context: "CHECKOUT",
+          }),
+        }).catch(() => {})
+      }
       router.push("/account?mode=login&redirect=checkout");
     }
   }, [user, authLoading, router]);
