@@ -1,18 +1,81 @@
 // components/cart/CartDrawer.tsx
 
-import { X, Minus, Plus, Ship, Sparkles, Zap, ShoppingCart } from "lucide-react"
 import Image from "next/image"
 import { useCart } from "@/context/CartContext"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useLocale } from "@/context/LocaleProvider"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 interface CartDrawerProps {
   isOpen: boolean
   onClose: () => void
 }
 
-const poppins = { fontFamily: "'Poppins', sans-serif" }
+// ════════════════════════════════════════════════════════════
+// ICÔNES — mêmes dessins maison que le reste du site (trait 1.6,
+// jonctions arrondies), noms identiques aux imports lucide d'origine.
+// ════════════════════════════════════════════════════════════
+type IconProps = { className?: string; style?: React.CSSProperties }
+
+function X({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function Minus({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M5 12h14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function Plus({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function Ship({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M4 14.5l1.4 4.4c.2.7.9 1.1 1.6 1.1h10c.7 0 1.4-.4 1.6-1.1l1.4-4.4H4Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M6.5 14.5V6.8h6.7l3.3 3.4v4.3" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M9 6.8V4.5h3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function Sparkles({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12 3.5c.5 3.2 1.3 4 4.5 4.5-3.2.5-4 1.3-4.5 4.5-.5-3.2-1.3-4-4.5-4.5 3.2-.5 4-1.3 4.5-4.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+      <path d="M18.3 14.5c.3 1.5.6 1.9 2.1 2.2-1.5.3-1.8.7-2.1 2.2-.3-1.5-.6-1.9-2.1-2.2 1.5-.3 1.8-.7 2.1-2.2Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function Zap({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M12.8 3.5 6 13.2h4.6L10.6 20.5 18 10.3h-4.7L12.8 3.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function ShoppingCart({ className, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M7.2 8.2h9.6l.9 11.3a1.6 1.6 0 0 1-1.6 1.7H7.9a1.6 1.6 0 0 1-1.6-1.7l.9-11.3Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M9 8.2V6.6a3 3 0 0 1 6 0v1.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
 
 const shippingModes = [
   { id: "bateau",  icon: Ship,     label: "Mer",    title: "Maritime (35-50j)" },
@@ -29,6 +92,18 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
   const { formatPrice, getCurrencySymbol } = useCurrencyFormatter()
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+
+  // ✅ Empêche la page derrière de défiler quand le panier est ouvert —
+  // avant ça, on avait deux barres de scroll actives en même temps
+  // (celle du drawer et celle de la page principale).
+  useEffect(() => {
+    if (!isOpen) return
+    const original = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = original
+    }
+  }, [isOpen])
 
   if (!isOpen) return null
 
@@ -55,37 +130,30 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         style={{
           width: "100%",
           maxWidth: "420px",
-          background: "#fff",
-          boxShadow: "-8px 0 40px rgba(0,0,0,0.12)",
+          background: "var(--card)",
+          boxShadow: "var(--shadow-lg)",
         }}
       >
         {/* ── HEADER ──────────────────────────────────────────── */}
-        <div
-          className="flex items-center justify-between px-5 py-4 flex-shrink-0"
-          style={{ borderBottom: "0.5px solid #ECECEC" }}
-        >
+        <div className="flex items-center justify-between px-5 py-4 flex-shrink-0 border-b border-border">
           <div className="flex items-center gap-2.5">
-            <div
-              className="flex items-center justify-center w-8 h-8 rounded-lg"
-              style={{ background: "#D4372B" }}
-            >
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent">
               <ShoppingCart className="w-4 h-4 text-white" />
             </div>
             <div>
-              <span style={{ fontSize: "15px", fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.02em", ...poppins }}>
+              <span className="font-extrabold text-foreground" style={{ fontSize: "15px", letterSpacing: "-0.02em" }}>
                 Panier
               </span>
-              <span style={{ fontSize: "12px", color: "#AAAAAA", marginLeft: "6px", ...poppins }}>
+              <span className="text-muted-foreground" style={{ fontSize: "12px", marginLeft: "6px" }}>
                 {totalItems} article{totalItems > 1 ? "s" : ""}
               </span>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors focus:outline-none"
-            style={{ background: "#F4F4F4" }}
+            className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted hover:bg-surface-sunken transition-colors focus:outline-none"
           >
-            <X className="w-4 h-4" style={{ color: "#0A0A0A" }} />
+            <X className="w-4 h-4 text-foreground" />
           </button>
         </div>
 
@@ -93,22 +161,18 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
           {cart.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20">
-              <div
-                className="flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
-                style={{ background: "#FFF0F0" }}
-              >
-                <ShoppingCart className="w-7 h-7" style={{ color: "#D4372B" }} />
+              <div className="flex items-center justify-center w-16 h-16 rounded-2xl mb-4 bg-accent-light">
+                <ShoppingCart className="w-7 h-7 text-accent" />
               </div>
-              <p style={{ fontSize: "14px", fontWeight: 600, color: "#0A0A0A", marginBottom: "4px", ...poppins }}>
+              <p className="font-semibold text-foreground" style={{ fontSize: "14px", marginBottom: "4px" }}>
                 Votre panier est vide
               </p>
-              <p style={{ fontSize: "12px", color: "#AAAAAA", marginBottom: "20px", ...poppins }}>
+              <p className="text-muted-foreground" style={{ fontSize: "12px", marginBottom: "20px" }}>
                 Ajoutez des produits pour commencer
               </p>
               <button
                 onClick={onClose}
-                className="text-sm font-semibold transition-opacity hover:opacity-70"
-                style={{ color: "#D4372B", ...poppins }}
+                className="text-sm font-semibold text-accent transition-opacity hover:opacity-70"
               >
                 Continuer mes achats →
               </button>
@@ -123,18 +187,17 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               return (
                 <div
                   key={item.variantKey}
-                  className="rounded-xl p-3 transition-opacity"
+                  className="rounded-xl p-3 shadow-xs transition-opacity"
                   style={{
-                    background: "#fff",
-                    border: "0.5px solid #ECECEC",
+                    background: "var(--card)",
                     opacity: isUpdating ? 0.5 : 1,
                   }}
                 >
                   <div className="flex gap-3">
                     {/* Image */}
                     <div
-                      className="flex-shrink-0 rounded-xl overflow-hidden"
-                      style={{ width: "68px", height: "68px", background: "#FAFAFA", border: "0.5px solid #ECECEC" }}
+                      className="flex-shrink-0 rounded-xl overflow-hidden bg-surface"
+                      style={{ width: "68px", height: "68px" }}
                     >
                       <Image
                         src={item.image || "/placeholder.svg"}
@@ -148,18 +211,14 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     {/* Infos */}
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start gap-1">
-                        <h3
-                          className="truncate"
-                          style={{ fontSize: "12px", fontWeight: 600, color: "#0A0A0A", ...poppins }}
-                        >
+                        <h3 className="truncate font-semibold text-foreground" style={{ fontSize: "12px" }}>
                           {item.name || "Produit"}
                         </h3>
                         <button
                           onClick={() => removeFromCart(item.variantKey!)}
-                          className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-lg focus:outline-none transition-colors"
-                          style={{ background: "#F4F4F4" }}
+                          className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-lg bg-muted hover:bg-surface-sunken focus:outline-none transition-colors"
                         >
-                          <X className="w-3 h-3" style={{ color: "#AAAAAA" }} />
+                          <X className="w-3 h-3 text-muted-foreground" />
                         </button>
                       </div>
 
@@ -167,18 +226,12 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       {(item.color || item.eurSize) && (
                         <div className="flex gap-1 mt-1 flex-wrap">
                           {item.color && (
-                            <span
-                              className="px-1.5 py-0.5 rounded-full"
-                              style={{ fontSize: "9px", background: "#F4F4F4", color: "#555", ...poppins }}
-                            >
+                            <span className="px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground" style={{ fontSize: "9px" }}>
                               {item.color}
                             </span>
                           )}
                           {item.eurSize && (
-                            <span
-                              className="px-1.5 py-0.5 rounded-full"
-                              style={{ fontSize: "9px", background: "#F4F4F4", color: "#555", ...poppins }}
-                            >
+                            <span className="px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground" style={{ fontSize: "9px" }}>
                               Pt. {item.eurSize}
                             </span>
                           )}
@@ -186,9 +239,9 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       )}
 
                       {/* Prix unitaire */}
-                      <p style={{ fontSize: "13px", fontWeight: 700, color: "#D4372B", marginTop: "4px", ...poppins }}>
+                      <p className="font-bold text-accent" style={{ fontSize: "13px", marginTop: "4px" }}>
                         {formatPrice(item.price)}
-                        <span style={{ fontSize: "10px", fontWeight: 400, color: "#AAAAAA", marginLeft: "4px" }}>
+                        <span className="text-muted-foreground font-normal" style={{ fontSize: "10px", marginLeft: "4px" }}>
                           × {item.quantity}
                         </span>
                       </p>
@@ -197,7 +250,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
                   {/* Modes livraison */}
                   <div className="flex items-center gap-1.5 mt-3">
-                    <span style={{ fontSize: "9px", color: "#AAAAAA", ...poppins }}>Livraison :</span>
+                    <span className="text-muted-foreground" style={{ fontSize: "9px" }}>Livraison :</span>
                     {shippingModes.map(({ id, icon: Icon, label, title }) => {
                       const active = currentMode === id
                       return (
@@ -205,12 +258,9 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           key={id}
                           onClick={() => handleShippingModeChange(item.variantKey!, id)}
                           title={title}
-                          className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold transition-all focus:outline-none"
-                          style={{
-                            background: active ? "#D4372B" : "#F4F4F4",
-                            color: active ? "#fff" : "#555",
-                            ...poppins,
-                          }}
+                          className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold transition-all focus:outline-none ${
+                            active ? "bg-accent text-white" : "bg-muted text-muted-foreground hover:bg-surface-sunken"
+                          }`}
                         >
                           <Icon className="w-3 h-3" />
                           {label}
@@ -222,69 +272,55 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   {/* Quantité + sous-total */}
                   <div className="flex items-center justify-between mt-3">
                     {/* Stepper */}
-                    <div
-                      className="flex items-center rounded-xl overflow-hidden"
-                      style={{ border: "0.5px solid #ECECEC" }}
-                    >
+                    <div className="flex items-center rounded-xl overflow-hidden shadow-xs">
                       <button
                         onClick={() => updateQuantity(item.variantKey!, item.quantity - 1)}
                         disabled={item.quantity <= 1}
-                        className="flex items-center justify-center w-7 h-7 transition-colors focus:outline-none disabled:opacity-40"
-                        style={{ background: "#F4F4F4" }}
+                        className="flex items-center justify-center w-7 h-7 bg-muted hover:bg-surface-sunken transition-colors focus:outline-none disabled:opacity-40"
                       >
-                        <Minus className="w-3 h-3" style={{ color: "#0A0A0A" }} />
+                        <Minus className="w-3 h-3 text-foreground" />
                       </button>
-                      <span
-                        className="w-8 text-center"
-                        style={{ fontSize: "12px", fontWeight: 600, color: "#0A0A0A", ...poppins }}
-                      >
+                      <span className="w-8 text-center font-semibold text-foreground" style={{ fontSize: "12px" }}>
                         {item.quantity}
                       </span>
                       <button
                         onClick={() => updateQuantity(item.variantKey!, item.quantity + 1)}
-                        className="flex items-center justify-center w-7 h-7 transition-colors focus:outline-none"
-                        style={{ background: "#F4F4F4" }}
+                        className="flex items-center justify-center w-7 h-7 bg-muted hover:bg-surface-sunken transition-colors focus:outline-none"
                       >
-                        <Plus className="w-3 h-3" style={{ color: "#0A0A0A" }} />
+                        <Plus className="w-3 h-3 text-foreground" />
                       </button>
                     </div>
 
                     {/* Total ligne */}
-                    <span style={{ fontSize: "13px", fontWeight: 700, color: "#0A0A0A", ...poppins }}>
+                    <span className="font-bold text-foreground" style={{ fontSize: "13px" }}>
                       {formatPrice(itemTotalUSD)}
                     </span>
                   </div>
 
                   {/* Détail coûts */}
                   {(item.shippingCostUSD || item.portePorteCostUSD) ? (
-                    <div
-                      className="mt-2 rounded-lg px-2.5 py-2 space-y-1"
-                      style={{ background: "#FAFAFA", border: "0.5px solid #F0F0F0" }}
-                    >
+                    <div className="mt-2 rounded-lg px-2.5 py-2 space-y-1 bg-surface">
                       <div className="flex justify-between">
-                        <span style={{ fontSize: "10px", color: "#AAAAAA", ...poppins }}>Sous-total</span>
-                        <span style={{ fontSize: "10px", fontWeight: 500, color: "#0A0A0A", ...poppins }}>{formatPrice(productSubtotalUSD)}</span>
+                        <span className="text-muted-foreground" style={{ fontSize: "10px" }}>Sous-total</span>
+                        <span className="font-medium text-foreground" style={{ fontSize: "10px" }}>{formatPrice(productSubtotalUSD)}</span>
                       </div>
                       {item.shippingCostUSD ? (
                         <div className="flex justify-between">
-                          <span style={{ fontSize: "10px", color: "#AAAAAA", ...poppins }}>Livraison</span>
-                          <span style={{ fontSize: "10px", fontWeight: 500, color: "#0A0A0A", ...poppins }}>{formatPrice(item.shippingCostUSD)}</span>
+                          <span className="text-muted-foreground" style={{ fontSize: "10px" }}>Livraison</span>
+                          <span className="font-medium text-foreground" style={{ fontSize: "10px" }}>{formatPrice(item.shippingCostUSD)}</span>
                         </div>
                       ) : null}
                       {item.portePorteCostUSD ? (
                         <div className="flex justify-between">
-                          <span style={{ fontSize: "10px", color: "#AAAAAA", ...poppins }}>Porte-à-porte</span>
-                          <span style={{ fontSize: "10px", fontWeight: 500, color: "#0A0A0A", ...poppins }}>{formatPrice(item.portePorteCostUSD)}</span>
+                          <span className="text-muted-foreground" style={{ fontSize: "10px" }}>Porte-à-porte</span>
+                          <span className="font-medium text-foreground" style={{ fontSize: "10px" }}>{formatPrice(item.portePorteCostUSD)}</span>
                         </div>
                       ) : null}
                     </div>
                   ) : null}
 
                   {item.totalWeight ? (
-                    <p
-                      className="text-right mt-1"
-                      style={{ fontSize: "9px", color: "#AAAAAA", ...poppins }}
-                    >
+                    <p className="text-right mt-1 text-muted-foreground" style={{ fontSize: "9px" }}>
                       {item.totalWeight.toFixed(2)} kg
                     </p>
                   ) : null}
@@ -296,10 +332,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         {/* ── FOOTER RÉSUMÉ ───────────────────────────────────── */}
         {cart.length > 0 && (
-          <div
-            className="flex-shrink-0 px-5 pt-4 pb-5"
-            style={{ borderTop: "0.5px solid #ECECEC", background: "#fff" }}
-          >
+          <div className="flex-shrink-0 px-5 pt-4 pb-5 border-t border-border" style={{ background: "var(--card)" }}>
             {/* Lignes coûts */}
             <div className="space-y-2 mb-3">
               {[
@@ -308,23 +341,20 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 { label: "Porte-à-porte", value: totalPortePorteUSD },
               ].map(({ label, value }) => (
                 <div key={label} className="flex justify-between">
-                  <span style={{ fontSize: "12px", color: "#AAAAAA", ...poppins }}>{label}</span>
-                  <span style={{ fontSize: "12px", fontWeight: 500, color: "#0A0A0A", ...poppins }}>{formatPrice(value)}</span>
+                  <span className="text-muted-foreground" style={{ fontSize: "12px" }}>{label}</span>
+                  <span className="font-medium text-foreground" style={{ fontSize: "12px" }}>{formatPrice(value)}</span>
                 </div>
               ))}
               <div className="flex justify-between">
-                <span style={{ fontSize: "11px", color: "#AAAAAA", ...poppins }}>Poids total</span>
-                <span style={{ fontSize: "11px", color: "#AAAAAA", ...poppins }}>{totalWeight.toFixed(2)} kg</span>
+                <span className="text-muted-foreground" style={{ fontSize: "11px" }}>Poids total</span>
+                <span className="text-muted-foreground" style={{ fontSize: "11px" }}>{totalWeight.toFixed(2)} kg</span>
               </div>
             </div>
 
             {/* Total */}
-            <div
-              className="flex justify-between py-3"
-              style={{ borderTop: "0.5px solid #F0F0F0", marginBottom: "14px" }}
-            >
-              <span style={{ fontSize: "15px", fontWeight: 800, color: "#0A0A0A", ...poppins }}>Total</span>
-              <span style={{ fontSize: "16px", fontWeight: 800, color: "#D4372B", ...poppins }}>
+            <div className="flex justify-between py-3 border-t border-border" style={{ marginBottom: "14px" }}>
+              <span className="font-extrabold text-foreground" style={{ fontSize: "15px" }}>Total</span>
+              <span className="font-extrabold text-accent" style={{ fontSize: "16px" }}>
                 {formatPrice(grandTotalUSD)}
               </span>
             </div>
@@ -332,13 +362,12 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             {/* CTA */}
             <button
               onClick={() => { onClose(); window.location.href = "/checkout" }}
-              className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90 focus:outline-none"
-              style={{ background: "#D4372B", ...poppins }}
+              className="w-full py-3.5 rounded-xl text-sm font-bold text-white bg-accent transition-opacity hover:opacity-90 focus:outline-none"
             >
               Commander · {formatPrice(grandTotalUSD)}
             </button>
 
-            <p className="text-center mt-2.5" style={{ fontSize: "10px", color: "#AAAAAA", ...poppins }}>
+            <p className="text-center mt-2.5 text-muted-foreground" style={{ fontSize: "10px" }}>
               Tous les prix en {getCurrencySymbol()}
             </p>
           </div>
