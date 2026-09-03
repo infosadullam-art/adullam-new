@@ -12,10 +12,135 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Loader2, ShoppingBag, Mail, Phone, Lock, Key, Shield, AlertCircle, CheckCircle, MailCheck, Eye, EyeOff, ArrowLeft } from "lucide-react"
 import { useAuth } from "@/lib/admin/auth-context"
-import { useTheme } from "@/components/theme-provider"
 import Link from "next/link"
+
+// ============================================================
+// ICONES SVG MAISON
+// (stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"
+// strokeLinejoin="round", viewBox 0 0 24 24 — cohérent avec le
+// reste du site)
+// ============================================================
+function Loader2({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="9" opacity="0.25" />
+      <path d="M21 12a9 9 0 0 0-9-9" />
+    </svg>
+  )
+}
+
+function ShoppingBag({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M6 8h12l-1 12H7L6 8Z" />
+      <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+    </svg>
+  )
+}
+
+function Mail({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3.5 6.5 12 13l8.5-6.5" />
+    </svg>
+  )
+}
+
+function MailCheck({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect x="2" y="5" width="16" height="12" rx="2" />
+      <path d="M2.5 6.5 10 12l7.5-5.5" />
+      <path d="M15 16l2 2 4-4" />
+    </svg>
+  )
+}
+
+function Phone({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M13.4 15.6 11 18a16 16 0 0 1-6-6l2.4-2.4a1 1 0 0 0 .3-1L6.7 5a1 1 0 0 0-1-.7H3a1 1 0 0 0-1 1 16 16 0 0 0 16 16 1 1 0 0 0 1-1v-2.7a1 1 0 0 0-.7-1l-3.6-1a1 1 0 0 0-1 .3Z" />
+    </svg>
+  )
+}
+
+function Lock({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect x="4" y="10" width="16" height="10" rx="2" />
+      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+    </svg>
+  )
+}
+
+function Key({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="7" cy="15" r="4" />
+      <path d="M10.5 11.5 20 2" />
+      <path d="M16 6l2 2" />
+      <path d="M13 9l2 2" />
+    </svg>
+  )
+}
+
+function Shield({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" />
+    </svg>
+  )
+}
+
+function AlertCircle({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 8v5" />
+      <path d="M12 16h.01" />
+    </svg>
+  )
+}
+
+function CheckCircle({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M8.5 12.5l2.5 2.5 5-5" />
+    </svg>
+  )
+}
+
+function Eye({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+function EyeOff({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M3 3l18 18" />
+      <path d="M10.6 5.2A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a15.6 15.6 0 0 1-3.1 4" />
+      <path d="M6.6 6.6C4 8.3 2 12 2 12s3.5 7 10 7c1.4 0 2.7-.3 3.8-.8" />
+      <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+    </svg>
+  )
+}
+
+function ArrowLeft({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M19 12H5" />
+      <path d="M11 6l-6 6 6 6" />
+    </svg>
+  )
+}
 
 // ============================================================
 // COMPOSANT INTERNE QUI UTILISE useSearchParams
@@ -26,8 +151,6 @@ function UserLoginContent() {
   const redirect = searchParams.get('redirect') || '/account'
   
   const { login, register, user, isLoading: authLoading } = useAuth()
-  const { theme } = useTheme()
-  const isDark = theme === "dark"
 
   // États du formulaire
   const [step, setStep] = useState<"login" | "register" | "verify">("login")
@@ -255,23 +378,22 @@ function UserLoginContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: isDark ? "#0A0A0A" : "#F4F4F4" }}>
-      <Card className="w-full max-w-md" style={{ background: isDark ? "#1A1A1A" : "#fff", borderColor: isDark ? "#2A2A2A" : "#ECECEC" }}>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <Card className="w-full max-w-md bg-card shadow-xs">
         <CardHeader className="text-center">
           {/* Logo cliquable qui ramène à l'accueil */}
           <Link 
             href="/" 
-            className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full transition-transform hover:scale-105"
-            style={{ background: "#D4372B" }}
+            className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent transition-transform hover:scale-105"
           >
             <ShoppingBag className="h-6 w-6 text-white" />
           </Link>
-          <CardTitle className="text-2xl" style={{ color: isDark ? "#fff" : "#0A0A0A" }}>
+          <CardTitle className="text-2xl text-foreground">
             {step === "login" && "Connexion client"}
             {step === "register" && "Créer un compte"}
             {step === "verify" && "Vérification"}
           </CardTitle>
-          <CardDescription style={{ color: isDark ? "#AAAAAA" : "#666666" }}>
+          <CardDescription className="text-muted-foreground">
             {step === "login" && "Connectez-vous pour accéder à votre espace client"}
             {step === "register" && "Créez votre compte en quelques secondes"}
             {step === "verify" && "Entrez le code reçu"}
@@ -286,8 +408,7 @@ function UserLoginContent() {
                 setError("")
                 setSuccess("")
               }}
-              className="flex items-center gap-2 text-sm mb-4 transition-colors"
-              style={{ color: isDark ? "#AAAAAA" : "#666666" }}
+              className="flex items-center gap-2 text-sm mb-4 text-muted-foreground transition-colors hover:text-foreground"
             >
               <ArrowLeft className="w-4 h-4" />
               Retour à la connexion
@@ -295,14 +416,14 @@ function UserLoginContent() {
           )}
 
           {error && (
-            <div className="mb-4 rounded-md p-3 text-sm flex items-start gap-2" style={{ background: isDark ? "#3A0A0A" : "#FFF0F0", border: isDark ? "0.5px solid #5A1A1A" : "0.5px solid #FECACA", color: "#D4372B" }}>
+            <div className="mb-4 rounded-md p-3 text-sm flex items-start gap-2 bg-accent-light text-accent">
               <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {success && (
-            <div className="mb-4 rounded-md p-3 text-sm flex items-start gap-2" style={{ background: isDark ? "#0A2A0A" : "#F0FFF0", border: isDark ? "0.5px solid #1A5A1A" : "0.5px solid #A0E0A0", color: isDark ? "#66CC66" : "#2D7D2D" }}>
+            <div className="mb-4 rounded-md p-3 text-sm flex items-start gap-2 bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400">
               <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <span>{success}</span>
             </div>
@@ -315,10 +436,9 @@ function UserLoginContent() {
                 onClick={() => setLoginMethod("email")}
                 className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
                   loginMethod === "email"
-                    ? "text-white shadow-sm"
-                    : isDark ? "text-gray-300 hover:bg-white/5" : "text-gray-700 hover:bg-gray-100"
+                    ? "bg-accent text-white shadow-sm"
+                    : "bg-surface-sunken text-muted-foreground hover:bg-surface"
                 }`}
-                style={loginMethod === "email" ? { background: "#D4372B" } : { background: isDark ? "#0A0A0A" : "#F4F4F4" }}
               >
                 <Mail className="w-4 h-4 inline mr-2" />
                 Email
@@ -328,10 +448,9 @@ function UserLoginContent() {
                 onClick={() => setLoginMethod("phone")}
                 className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
                   loginMethod === "phone"
-                    ? "text-white shadow-sm"
-                    : isDark ? "text-gray-300 hover:bg-white/5" : "text-gray-700 hover:bg-gray-100"
+                    ? "bg-accent text-white shadow-sm"
+                    : "bg-surface-sunken text-muted-foreground hover:bg-surface"
                 }`}
-                style={loginMethod === "phone" ? { background: "#D4372B" } : { background: isDark ? "#0A0A0A" : "#F4F4F4" }}
               >
                 <Phone className="w-4 h-4 inline mr-2" />
                 Téléphone
@@ -346,7 +465,7 @@ function UserLoginContent() {
               <>
                 {step === "register" && (
                   <div className="space-y-2">
-                    <Label htmlFor="name" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>Nom complet</Label>
+                    <Label htmlFor="name" className="text-foreground">Nom complet</Label>
                     <Input
                       id="name"
                       name="name"
@@ -356,14 +475,13 @@ function UserLoginContent() {
                       onChange={handleInputChange}
                       disabled={isSubmitting}
                       required={step === "register"}
-                      className={isDark ? "bg-[#0A0A0A] border-gray-700 text-white" : ""}
                     />
                   </div>
                 )}
 
                 {loginMethod === "email" ? (
                   <div className="space-y-2">
-                    <Label htmlFor="email" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>Adresse email</Label>
+                    <Label htmlFor="email" className="text-foreground">Adresse email</Label>
                     <Input
                       id="email"
                       name="email"
@@ -373,14 +491,13 @@ function UserLoginContent() {
                       onChange={handleInputChange}
                       disabled={isSubmitting}
                       required
-                      className={isDark ? "bg-[#0A0A0A] border-gray-700 text-white" : ""}
                     />
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <Label htmlFor="phone" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>Numéro de téléphone</Label>
+                    <Label htmlFor="phone" className="text-foreground">Numéro de téléphone</Label>
                     <div className="flex">
-                      <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 text-sm" style={{ background: isDark ? "#0A0A0A" : "#F4F4F4", color: isDark ? "#AAAAAA" : "#666666", borderColor: isDark ? "#2A2A2A" : "#ECECEC" }}>
+                      <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-border bg-surface-sunken text-muted-foreground text-sm">
                         +225
                       </span>
                       <Input
@@ -390,7 +507,7 @@ function UserLoginContent() {
                         placeholder="01 23 45 67 89"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className={`rounded-l-none ${isDark ? "bg-[#0A0A0A] border-gray-700 text-white" : ""}`}
+                        className="rounded-l-none"
                         disabled={isSubmitting}
                         required
                       />
@@ -399,7 +516,7 @@ function UserLoginContent() {
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>Mot de passe</Label>
+                  <Label htmlFor="password" className="text-foreground">Mot de passe</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -410,13 +527,11 @@ function UserLoginContent() {
                       onChange={handleInputChange}
                       disabled={isSubmitting}
                       required
-                      className={isDark ? "bg-[#0A0A0A] border-gray-700 text-white" : ""}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2"
-                      style={{ color: isDark ? "#AAAAAA" : "#666666" }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -425,7 +540,7 @@ function UserLoginContent() {
 
                 {step === "register" && (
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>Confirmer le mot de passe</Label>
+                    <Label htmlFor="confirmPassword" className="text-foreground">Confirmer le mot de passe</Label>
                     <div className="relative">
                       <Input
                         id="confirmPassword"
@@ -436,13 +551,11 @@ function UserLoginContent() {
                         onChange={handleInputChange}
                         disabled={isSubmitting}
                         required
-                        className={isDark ? "bg-[#0A0A0A] border-gray-700 text-white" : ""}
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2"
-                        style={{ color: isDark ? "#AAAAAA" : "#666666" }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                       >
                         {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -452,8 +565,7 @@ function UserLoginContent() {
 
                 <Button 
                   type="submit" 
-                  className="w-full text-white"
-                  style={{ background: "#D4372B" }}
+                  className="w-full text-white bg-accent hover:bg-accent-hover"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
@@ -471,19 +583,19 @@ function UserLoginContent() {
             {step === "verify" && (
               <>
                 <div className="text-center mb-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: isDark ? "#0A2A0A" : "#F0FFF0" }}>
-                    <MailCheck className="w-6 h-6" style={{ color: isDark ? "#66CC66" : "#2D7D2D" }} />
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 bg-green-50 dark:bg-green-950/30">
+                    <MailCheck className="w-6 h-6 text-green-700 dark:text-green-400" />
                   </div>
-                  <p className="text-sm" style={{ color: isDark ? "#AAAAAA" : "#666666" }}>
+                  <p className="text-sm text-muted-foreground">
                     Nous avons envoyé un code à 6 chiffres à
                   </p>
-                  <p className="text-sm font-medium mt-1" style={{ color: isDark ? "#fff" : "#0A0A0A" }}>
+                  <p className="text-sm font-medium mt-1 text-foreground">
                     {loginMethod === "email" ? formData.email : formData.phone}
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="verificationCode" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>Code de vérification</Label>
+                  <Label htmlFor="verificationCode" className="text-foreground">Code de vérification</Label>
                   <Input
                     id="verificationCode"
                     name="verificationCode"
@@ -494,7 +606,7 @@ function UserLoginContent() {
                       const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6)
                       setFormData(prev => ({ ...prev, verificationCode: value }))
                     }}
-                    className={`text-center text-2xl tracking-[0.5em] font-mono ${isDark ? "bg-[#0A0A0A] border-gray-700 text-white" : ""}`}
+                    className="text-center text-2xl tracking-[0.5em] font-mono"
                     maxLength={6}
                     disabled={isSubmitting}
                     required
@@ -502,15 +614,14 @@ function UserLoginContent() {
                 </div>
 
                 {countdown > 0 ? (
-                  <p className="text-sm text-center" style={{ color: isDark ? "#AAAAAA" : "#666666" }}>
+                  <p className="text-sm text-center text-muted-foreground">
                     Renvoyer le code dans {countdown} secondes
                   </p>
                 ) : (
                   <button
                     type="button"
                     onClick={handleSendCode}
-                    className="w-full text-sm hover:underline"
-                    style={{ color: "#D4372B" }}
+                    className="w-full text-sm text-accent hover:underline"
                   >
                     Renvoyer le code
                   </button>
@@ -518,8 +629,7 @@ function UserLoginContent() {
 
                 <Button 
                   type="submit" 
-                  className="w-full text-white"
-                  style={{ background: "#D4372B" }}
+                  className="w-full text-white bg-accent hover:bg-accent-hover"
                   disabled={isSubmitting || formData.verificationCode.length !== 6}
                 >
                   {isSubmitting ? (
@@ -537,7 +647,7 @@ function UserLoginContent() {
 
           {step !== "verify" && (
             <div className="mt-6 text-center text-sm">
-              <span style={{ color: isDark ? "#AAAAAA" : "#666666" }}>
+              <span className="text-muted-foreground">
                 {step === "login" ? "Pas encore de compte ?" : "Déjà inscrit ?"}
               </span>{" "}
               <button
@@ -548,15 +658,14 @@ function UserLoginContent() {
                   setSuccess("")
                   setFormData(prev => ({ ...prev, verificationCode: "", password: "", confirmPassword: "" }))
                 }}
-                className="hover:underline"
-                style={{ color: "#D4372B" }}
+                className="text-accent hover:underline"
               >
                 {step === "login" ? "Inscrivez-vous" : "Connectez-vous"}
               </button>
             </div>
           )}
 
-          <div className="mt-4 text-center text-xs flex items-center justify-center gap-3" style={{ color: isDark ? "#666666" : "#999999" }}>
+          <div className="mt-4 text-center text-xs flex items-center justify-center gap-3 text-muted-foreground">
             <div className="flex items-center gap-1">
               <Lock className="w-3 h-3" />
               <span>Chiffré 256-bit</span>
@@ -580,21 +689,18 @@ function UserLoginContent() {
 // LOADING FALLBACK PENDANT LE SUSPENSE
 // ============================================================
 function LoginLoadingFallback() {
-  const { theme } = useTheme()
-  const isDark = theme === "dark"
-
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: isDark ? "#0A0A0A" : "#F4F4F4" }}>
-      <Card className="w-full max-w-md" style={{ background: isDark ? "#1A1A1A" : "#fff", borderColor: isDark ? "#2A2A2A" : "#ECECEC" }}>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <Card className="w-full max-w-md bg-card shadow-xs">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full" style={{ background: "#D4372B" }}>
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent">
             <ShoppingBag className="h-6 w-6 text-white" />
           </div>
-          <CardTitle className="text-2xl" style={{ color: isDark ? "#fff" : "#0A0A0A" }}>Adullam</CardTitle>
-          <CardDescription style={{ color: isDark ? "#AAAAAA" : "#666666" }}>Chargement...</CardDescription>
+          <CardTitle className="text-2xl text-foreground">Adullam</CardTitle>
+          <CardDescription className="text-muted-foreground">Chargement...</CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#D4372B" }} />
+          <Loader2 className="h-8 w-8 animate-spin text-accent" />
         </CardContent>
       </Card>
     </div>
