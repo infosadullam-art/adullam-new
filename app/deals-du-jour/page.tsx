@@ -149,21 +149,31 @@ export default function DealsDuJourPage() {
               </div>
             </div>
 
-            {/* Stats pills */}
-            <div className="flex items-center gap-2 mt-4 flex-wrap">
-              {[
-                { label: "Offres limitées", dot: "bg-accent" },
-                { label: "Livraison rapide", dot: "bg-green-500" },
-                { label: "Paiement sécurisé", dot: "bg-sky-500" },
-              ].map(({ label, dot }) => (
-                <span
-                  key={label}
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-white"
-                >
-                  <span className={`w-[5px] h-[5px] rounded-full inline-block flex-shrink-0 ${dot}`} />
-                  {label}
-                </span>
-              ))}
+            {/* Bande de confiance — défile en boucle, plus de badges, même sur mobile */}
+            <div className="mt-4 overflow-hidden">
+              <div className="marquee" style={{ animationDuration: "38s" }}>
+                {[0, 1].map((dup) => (
+                  <div key={dup} className="flex items-center gap-2 pr-2 shrink-0">
+                    {[
+                      { label: "Offres limitées", dot: "bg-accent" },
+                      { label: "Livraison rapide", dot: "bg-green-500" },
+                      { label: "Paiement sécurisé", dot: "bg-sky-500" },
+                      { label: "Direct usine", dot: "bg-accent" },
+                      { label: "Remboursé si non reçu", dot: "bg-green-500" },
+                      { label: "Stock limité", dot: "bg-amber-500" },
+                      { label: "Fournisseur vérifié", dot: "bg-sky-500" },
+                    ].map(({ label, dot }, i) => (
+                      <span
+                        key={i}
+                        className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-white whitespace-nowrap"
+                      >
+                        <span className={`w-[5px] h-[5px] rounded-full inline-block flex-shrink-0 ${dot}`} />
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
