@@ -18,7 +18,8 @@ devLog('🔴 [lib/api.ts] API_URL configurée:', API_URL)
 
 export async function apiFetch(
   input: RequestInfo,
-  init: RequestInit = {}
+  init: RequestInit = {},
+  _isRetry = false // garde-fou interne : évite une boucle infinie de refresh
 ): Promise<Response> {
   const token = getAccessToken()
   
@@ -44,9 +45,11 @@ export async function apiFetch(
 
   devLog(`🔍 [apiFetch] Statut réponse: ${res.status} pour ${fullUrl}`)
 
-  // Access token expiré
-  if (res.status === 401) {
-    devLog('🔄 [apiFetch] Token expiré, tentative de refresh...')
+  // Access token expiré ou refusé (le backend renvoie parfois 403
+  // au lieu de 401 pour un token expiré — voir getAuthUser) :
+  // on tente un refresh une seule fois via _isRetry.
+  if ((res.status === 401 || res.status === 403) && !_isRetry) {
+    devLog(`🔄 [apiFetch] ${res.status} reçu, tentative de refresh...`)
     const refreshed = await refreshAccessToken()
     if (!refreshed) {
       devLog('❌ [apiFetch] Refresh échoué, redirection...')
@@ -58,7 +61,7 @@ export async function apiFetch(
     }
 
     devLog('✅ [apiFetch] Refresh réussi, nouvelle tentative...')
-    return apiFetch(input, init)
+    return apiFetch(input, init, true) // _isRetry = true : plus jamais retenter après ça
   }
 
   return res
