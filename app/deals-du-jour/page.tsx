@@ -4,9 +4,7 @@ import { Header } from "@/components/header"
 import { MobileHeader } from "@/components/mobile-header"
 import MobileNav from "@/components/mobile-nav"
 import { Footer } from "@/components/footer"
-import Image from "next/image"
-import Link from "next/link"
-import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { ProductCard } from "@/components/product-card"
 import { useState, useEffect } from "react"
 import { apiFetch } from "@/lib/api"
 
@@ -25,14 +23,6 @@ function TrendingUp({ className }: { className?: string }) {
   )
 }
 
-function Star({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M12 2l2.9 6.3 6.9.6-5.2 4.6 1.6 6.8L12 16.9 5.8 20.3l1.6-6.8L2.2 8.9l6.9-.6L12 2Z" />
-    </svg>
-  )
-}
-
 interface Product {
   id: string | number
   name: string
@@ -45,7 +35,6 @@ interface Product {
 }
 
 export default function DealsDuJourPage() {
-  const { formatPrice } = useCurrencyFormatter()
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -196,64 +185,32 @@ export default function DealsDuJourPage() {
 
           {/* Grille produits */}
           <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 lg:gap-4">
-            {products.map((product, index) => (
-              <Link
-                key={product.id}
-                href={`/products/${product.id}`}
-                className="group block"
-              >
-                {/* Image */}
-                <div className="relative aspect-square overflow-hidden mb-2.5 rounded-xl bg-card shadow-xs transition-all duration-200 group-hover:shadow-md">
-                  {/* Rang badge — top 3 */}
-                  {product.rank && product.rank <= 3 && (
-                    <span
-                      className={`absolute top-2 left-2 z-10 flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold text-white ${
-                        product.rank === 1 ? "bg-accent-amber" : product.rank === 2 ? "bg-zinc-400" : "bg-amber-700"
-                      }`}
-                    >
-                      {product.rank}
-                    </span>
-                  )}
-                  
-                  {/* Badge offre */}
-                  {product.badge && (
-                    <div className="absolute top-2 right-2 z-10 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-accent text-white">
-                      {product.badge}
-                    </div>
-                  )}
-                  
-                  <Image
-                    src={product.image || "/placeholder.svg"}
-                    alt={product.name}
-                    fill
-                    className="object-contain p-3 group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
+            {products.map((product) => (
+              <div key={product.id} className="relative">
+                {/* Rang badge — top 3, par-dessus la carte partagée */}
+                {product.rank && product.rank <= 3 && (
+                  <span
+                    className={`absolute top-2 left-2 z-10 flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold text-white ${
+                      product.rank === 1 ? "bg-accent-amber" : product.rank === 2 ? "bg-zinc-400" : "bg-amber-700"
+                    }`}
+                  >
+                    {product.rank}
+                  </span>
+                )}
 
-                {/* Infos */}
-                <div className="space-y-1">
-                  <h3 className="line-clamp-2 text-[12px] font-medium text-foreground leading-[1.4]">
-                    {product.name}
-                  </h3>
-
-                  {/* Étoiles */}
-                  <div className="flex items-center gap-1">
-                    <div className="flex">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star key={star} className="w-3 h-3 fill-accent-amber text-accent-amber" />
-                      ))}
-                    </div>
-                    <span className="text-[10px] text-muted-foreground">
-                      ({product.reviews})
-                    </span>
-                  </div>
-
-                  {/* Prix */}
-                  <p className="text-[13px] font-bold text-accent">
-                    {formatPrice(product.price)}
-                  </p>
-                </div>
-              </Link>
+                <ProductCard
+                  product={{
+                    id: product.id,
+                    name: product.name,
+                    priceUSD: product.price,
+                    image: product.image,
+                    badge: product.badge,
+                    rating: product.rating,
+                    reviews: product.reviews,
+                  }}
+                  showTrust
+                />
+              </div>
             ))}
           </div>
         </div>
