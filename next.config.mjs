@@ -15,6 +15,11 @@ const nextConfig = {
 
   turbopack: { root: resolve(__dirname) },
 
+  // ✅ Retire tous les console.log en production (garde error/warn pour le debug)
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
+  },
+
   // ✅ REWRITES PROXY - Maintenant vers ton VPS
   async rewrites() {
     return [
