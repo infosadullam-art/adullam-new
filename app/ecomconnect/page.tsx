@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 
 // ════════════════════════════════════════════════════════════
 // ICÔNES — mêmes dessins maison que le reste du site
@@ -213,6 +214,16 @@ const PROFILS = [
   { icon: IconBuilding, texte: "Toute entreprise qui veut accéder au prix fabricant" },
 ]
 
+// Photos réelles de colis livrés — à placer dans public/delivery-proofs/
+const DELIVERY_PROOFS = [
+  "/delivery-proofs/proof-1.jpg",
+  "/delivery-proofs/proof-2.jpg",
+  "/delivery-proofs/proof-3.jpg",
+  "/delivery-proofs/proof-4.jpg",
+  "/delivery-proofs/proof-5.jpg",
+  "/delivery-proofs/proof-6.jpg",
+]
+
 export default function EcomConnectPage() {
   const [copied, setCopied] = useState(false)
 
@@ -398,6 +409,38 @@ export default function EcomConnectPage() {
             </p>
             <p className="text-sm font-semibold text-foreground">Emilienne Christine Essinga Mendjogo</p>
             <p className="text-xs text-muted-foreground">Ma Signature Business CM · Cameroun</p>
+          </div>
+        </section>
+
+        {/* ═══════════════ PREUVES DE LIVRAISON — carrousel horizontal ═══════════════ */}
+        <section className="py-14 lg:py-16 bg-surface">
+          <div className="max-w-3xl mx-auto px-5">
+            <h2 className="anim-fade-up text-xl lg:text-2xl font-extrabold text-foreground text-center mb-2">
+              Ils ont déjà reçu leur colis
+            </h2>
+            <p className="anim-fade-up text-sm text-muted-foreground text-center mb-9">
+              Vraies photos de commandes livrées via Adullam
+            </p>
+
+            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-1">
+              {DELIVERY_PROOFS.map((src, i) => (
+                <div
+                  key={src}
+                  className="anim-fade-up flex-shrink-0 w-[200px] snap-center rounded-xl overflow-hidden shadow-xs bg-background"
+                  style={{ animationDelay: `${i * 80}ms` }}
+                >
+                  <div className="relative w-full aspect-square">
+                    <Image
+                      src={src}
+                      alt={`Preuve de livraison ${i + 1}`}
+                      fill
+                      className="object-cover"
+                      sizes="200px"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
