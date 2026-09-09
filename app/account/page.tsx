@@ -31,6 +31,13 @@ const COUNTRY_NAMES: Record<string, string> = {
   KM: "Comores", SC: "Seychelles", US: "États-Unis",
 }
 
+// Emoji drapeau à partir du code pays ISO (ex: "CI" → 🇨🇮), aucune donnée supplémentaire à maintenir
+function flagEmoji(code: string): string {
+  return code.toUpperCase().replace(/./g, (char) =>
+    String.fromCodePoint(127397 + char.charCodeAt(0))
+  )
+}
+
 const DIAL_CODE_OPTIONS = Object.keys(DIAL_CODES)
   .map((code) => ({ code, dial: DIAL_CODES[code], name: COUNTRY_NAMES[code] }))
   .sort((a, b) => a.name.localeCompare(b.name))
@@ -824,11 +831,11 @@ export default function AccountPage() {
                             value={countryCode}
                             onChange={(e) => setManualDial(e.target.value)}
                             aria-label="Indicatif du pays"
-                            className="rounded-l-md border border-r-0 text-xs px-2"
-                            style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+                            className="flex-shrink-0 w-[90px] rounded-l-md border border-r-0 text-sm px-1.5 appearance-none"
+                            style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                           >
                             {DIAL_CODE_OPTIONS.map((c) => (
-                              <option key={c.code} value={c.dial}>{c.name} ({c.dial})</option>
+                              <option key={c.code} value={c.dial} title={c.name}>{flagEmoji(c.code)} {c.dial}</option>
                             ))}
                           </select>
                           <input
@@ -873,11 +880,11 @@ export default function AccountPage() {
                                 value={countryCode}
                                 onChange={(e) => setManualDial(e.target.value)}
                                 aria-label="Indicatif du pays"
-                                className="rounded-l-md border border-r-0 text-xs px-2"
-                                style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+                                className="flex-shrink-0 w-[90px] rounded-l-md border border-r-0 text-sm px-1.5 appearance-none"
+                                style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
                               >
                                 {DIAL_CODE_OPTIONS.map((c) => (
-                                  <option key={c.code} value={c.dial}>{c.name} ({c.dial})</option>
+                                  <option key={c.code} value={c.dial} title={c.name}>{flagEmoji(c.code)} {c.dial}</option>
                                 ))}
                               </select>
                               <input
