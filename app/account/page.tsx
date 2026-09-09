@@ -3,6 +3,47 @@
 import { useState, useEffect, useRef } from "react"
 
 // ════════════════════════════════════════════════════════════
+// INDICATIFS TÉLÉPHONIQUES — users multi-pays, +225 ne suffit pas
+// ════════════════════════════════════════════════════════════
+const DIAL_CODES: Record<string, string> = {
+  CI: "+225", BF: "+226", SN: "+221", ML: "+223", BJ: "+229", TG: "+228",
+  NE: "+227", GW: "+245", CM: "+237", CF: "+236", GA: "+241", CG: "+242",
+  GQ: "+240", TD: "+235", NG: "+234", GH: "+233", LR: "+231", SL: "+232",
+  GM: "+220", CV: "+238", MA: "+212", TN: "+216", DZ: "+213", LY: "+218",
+  EG: "+20", MR: "+222", KE: "+254", UG: "+256", TZ: "+255", RW: "+250",
+  BI: "+257", ET: "+251", SO: "+252", DJ: "+253", SD: "+249", SS: "+211",
+  ZA: "+27", NA: "+264", BW: "+267", ZW: "+263", MZ: "+258", AO: "+244",
+  ZM: "+260", MW: "+265", MG: "+261", MU: "+230", KM: "+269", SC: "+248",
+  US: "+1",
+}
+
+const COUNTRY_NAMES: Record<string, string> = {
+  CI: "Côte d'Ivoire", BF: "Burkina Faso", SN: "Sénégal", ML: "Mali",
+  BJ: "Bénin", TG: "Togo", NE: "Niger", GW: "Guinée-Bissau", CM: "Cameroun",
+  CF: "Centrafrique", GA: "Gabon", CG: "Congo", GQ: "Guinée équatoriale",
+  TD: "Tchad", NG: "Nigeria", GH: "Ghana", LR: "Liberia", SL: "Sierra Leone",
+  GM: "Gambie", CV: "Cap-Vert", MA: "Maroc", TN: "Tunisie", DZ: "Algérie",
+  LY: "Libye", EG: "Égypte", MR: "Mauritanie", KE: "Kenya", UG: "Ouganda",
+  TZ: "Tanzanie", RW: "Rwanda", BI: "Burundi", ET: "Éthiopie", SO: "Somalie",
+  DJ: "Djibouti", SD: "Soudan", SS: "Soudan du Sud", ZA: "Afrique du Sud",
+  NA: "Namibie", BW: "Botswana", ZW: "Zimbabwe", MZ: "Mozambique",
+  AO: "Angola", ZM: "Zambie", MW: "Malawi", MG: "Madagascar", MU: "Maurice",
+  KM: "Comores", SC: "Seychelles", US: "États-Unis",
+}
+
+const DIAL_CODE_OPTIONS = Object.keys(DIAL_CODES)
+  .map((code) => ({ code, dial: DIAL_CODES[code], name: COUNTRY_NAMES[code] }))
+  .sort((a, b) => a.name.localeCompare(b.name))
+
+const DEFAULT_DIAL_CODE = "+225"
+
+// Compose un numéro au format international à partir de l'indicatif choisi et de la saisie locale
+function toE164Phone(dial: string, raw: string): string {
+  const digits = raw.replace(/\D/g, '').replace(/^0+/, '')
+  return `${dial}${digits}`
+}
+
+// ════════════════════════════════════════════════════════════
 // ICÔNES — dessinées maison, même trait (1.6, jonctions arrondies)
 // que le reste du site. Noms identiques aux imports lucide
 // d'origine : aucune des utilisations plus bas n'est à modifier.
@@ -298,7 +339,9 @@ export default function AccountPage() {
   // ============================================================
   const [step, setStep] = useState<"login" | "register" | "verify">("login")
   const [loginMethod, setLoginMethod] = useState<"email" | "phone">("email")
-  
+  const [manualDial, setManualDial] = useState<string>(DEFAULT_DIAL_CODE)
+  const countryCode = manualDial
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -437,7 +480,7 @@ export default function AccountPage() {
       if (loginMethod === "email") {
         identifier = identifier.toLowerCase().trim()
       } else {
-        identifier = identifier.replace(/\s/g, '')
+        identifier = toE164Phone(countryCode, identifier)
       }
 
       const res = await fetch("https://api.adullamarket.com/api/auth/send-code", {
@@ -503,7 +546,7 @@ export default function AccountPage() {
         if (loginMethod === "email") {
           identifier = identifier.toLowerCase().trim()
         } else {
-          identifier = identifier.replace(/\s/g, '')
+          identifier = toE164Phone(countryCode, identifier)
         }
 
         await login(identifier, formData.password)
@@ -543,7 +586,7 @@ export default function AccountPage() {
         if (loginMethod === "email") {
           identifier = identifier.toLowerCase().trim()
         } else {
-          identifier = identifier.replace(/\s/g, '')
+          identifier = toE164Phone(countryCode, identifier)
         }
 
         const res = await fetch("https://api.adullamarket.com/api/auth/verify-code", {
@@ -555,7 +598,9 @@ export default function AccountPage() {
         const data = await res.json()
 
         if (data.success) {
-          await register(formData.name, identifier, formData.password)
+          // Téléphone optionnel saisi à l'inscription — normalisé en E.164, jamais confondu avec l'email
+          const phoneE164 = formData.phone.trim() ? toE164Phone(countryCode, formData.phone) : undefined
+          await register(formData.name, identifier, formData.password, phoneE164)
           setSuccess("Compte créé avec succès !")
           setTimeout(() => router.push("/account"), 2000)
         } else {
@@ -702,7 +747,7 @@ export default function AccountPage() {
 
             <div className="p-5">
               
-              {step !== "verify" && (
+              {step === "login" && (
                 <div className="flex gap-2 mb-4">
                   <button
                     onClick={() => setLoginMethod("email")}
@@ -769,31 +814,23 @@ export default function AccountPage() {
                       </div>
                     )}
 
-                    {loginMethod === "email" ? (
-                      <div>
-                        <label className="block text-xs font-medium mb-1" style={{ color: 'var(--foreground)' }}>
-                          Adresse email
-                        </label>
-                        <input
-                          type="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/20"
-                          style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
-                          placeholder="vous@exemple.com"
-                          required
-                        />
-                      </div>
-                    ) : (
+                    {step === "login" && loginMethod === "phone" ? (
                       <div>
                         <label className="block text-xs font-medium mb-1" style={{ color: 'var(--foreground)' }}>
                           Numéro de téléphone
                         </label>
                         <div className="flex">
-                          <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 text-sm" style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
-                            +225
-                          </span>
+                          <select
+                            value={countryCode}
+                            onChange={(e) => setManualDial(e.target.value)}
+                            aria-label="Indicatif du pays"
+                            className="rounded-l-md border border-r-0 text-xs px-2"
+                            style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+                          >
+                            {DIAL_CODE_OPTIONS.map((c) => (
+                              <option key={c.code} value={c.dial}>{c.name} ({c.dial})</option>
+                            ))}
+                          </select>
                           <input
                             type="tel"
                             name="phone"
@@ -806,6 +843,56 @@ export default function AccountPage() {
                           />
                         </div>
                       </div>
+                    ) : (
+                      <>
+                        {/* Inscription (et connexion par email) : email toujours obligatoire */}
+                        <div>
+                          <label className="block text-xs font-medium mb-1" style={{ color: 'var(--foreground)' }}>
+                            Adresse email
+                          </label>
+                          <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            className="w-full px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/20"
+                            style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
+                            placeholder="vous@exemple.com"
+                            required
+                          />
+                        </div>
+
+                        {/* Téléphone optionnel, uniquement à l'inscription — pour les notifications WhatsApp/SMS */}
+                        {step === "register" && (
+                          <div>
+                            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--foreground)' }}>
+                              Téléphone <span style={{ color: 'var(--muted-foreground)' }}>(optionnel — pour vos notifications WhatsApp/SMS)</span>
+                            </label>
+                            <div className="flex">
+                              <select
+                                value={countryCode}
+                                onChange={(e) => setManualDial(e.target.value)}
+                                aria-label="Indicatif du pays"
+                                className="rounded-l-md border border-r-0 text-xs px-2"
+                                style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+                              >
+                                {DIAL_CODE_OPTIONS.map((c) => (
+                                  <option key={c.code} value={c.dial}>{c.name} ({c.dial})</option>
+                                ))}
+                              </select>
+                              <input
+                                type="tel"
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleInputChange}
+                                className="flex-1 px-3 py-2 text-sm rounded-r-md focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/20"
+                                style={{ background: 'var(--background)', border: '1px solid var(--border)', borderLeft: "none", color: 'var(--foreground)' }}
+                                placeholder="01 23 45 67 89"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
 
                     <div>
@@ -981,6 +1068,7 @@ export default function AccountPage() {
                   <button
                     onClick={() => {
                       setStep(step === "login" ? "register" : "login")
+                      setLoginMethod("email") // l'inscription se fait toujours via email ; le téléphone est un champ optionnel séparé
                       setError("")
                       setSuccess("")
                     }}
