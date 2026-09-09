@@ -873,7 +873,7 @@ export default function AccountPage() {
                         {step === "register" && (
                           <div>
                             <label className="block text-xs font-medium mb-1" style={{ color: 'var(--foreground)' }}>
-                              Téléphone <span style={{ color: 'var(--muted-foreground)' }}>(optionnel — pour vos notifications WhatsApp/SMS)</span>
+                              Téléphone <span className="font-normal" style={{ color: 'var(--ink-3)' }}>(optionnel — pour vos notifications WhatsApp/SMS)</span>
                             </label>
                             <div className="flex">
                               <select
