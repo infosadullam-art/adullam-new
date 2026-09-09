@@ -64,8 +64,6 @@ const IconQuote = ({ className }: IconProps) => (
   </svg>
 )
 
-// — nouvelles icônes pour les sections ajoutées —
-
 const IconPriceUp = ({ className }: IconProps) => (
   <svg viewBox="0 0 24 24" fill="none" className={className}>
     <path d="M4 16.5 9.5 11l3.5 3.5L20 7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
@@ -158,26 +156,10 @@ const IconBuilding = ({ className }: IconProps) => (
 const SOURCING_URL = "/boutique-noel"
 const COUPON_CODE = "ECOMCONNECT"
 
-// ════════════════════════════════════════════════════════════
-// DONNÉES DES SECTIONS
-// ════════════════════════════════════════════════════════════
-
 const PROBLEMES = [
-  {
-    icon: IconPriceUp,
-    titre: "Trop cher",
-    texte: "Les intermédiaires font monter les prix de 2 à 3 fois.",
-  },
-  {
-    icon: IconShieldAlert,
-    titre: "Trop risqué",
-    texte: "Payer avant de recevoir, sans aucune garantie.",
-  },
-  {
-    icon: IconTangle,
-    titre: "Trop compliqué",
-    texte: "Fournisseurs introuvables, logistique opaque.",
-  },
+  { icon: IconPriceUp, titre: "Trop cher", texte: "Les intermédiaires font monter les prix de 2 à 3 fois." },
+  { icon: IconShieldAlert, titre: "Trop risqué", texte: "Payer avant de recevoir, sans aucune garantie." },
+  { icon: IconTangle, titre: "Trop compliqué", texte: "Fournisseurs introuvables, logistique opaque." },
 ]
 
 const SOLUTIONS = [
@@ -187,21 +169,9 @@ const SOLUTIONS = [
 ]
 
 const ETAPES = [
-  {
-    icon: IconSearchProduct,
-    titre: "Tu choisis ton produit",
-    texte: "Ou tu décris simplement ce que tu cherches.",
-  },
-  {
-    icon: IconRoute,
-    titre: "On s'occupe de tout",
-    texte: "On localise le fabricant et on gère toute la logistique.",
-  },
-  {
-    icon: IconHomeCheck,
-    titre: "Tu reçois chez toi",
-    texte: "Garanti ou remboursé.",
-  },
+  { icon: IconSearchProduct, titre: "Tu choisis ton produit", texte: "Ou tu décris simplement ce que tu cherches." },
+  { icon: IconRoute, titre: "On s'occupe de tout", texte: "On localise le fabricant et on gère toute la logistique." },
+  { icon: IconHomeCheck, titre: "Tu reçois chez toi", texte: "Garanti ou remboursé." },
 ]
 
 const DELAIS = [
@@ -232,7 +202,7 @@ const GARANTIES = [
   {
     icon: IconSmartphone,
     titre: "Mobile money natif",
-    texte: "MTN, Orange Money et carte bancaire. Vous payez dans votre devise locale.",
+    texte: "Mobile Money et carte bancaire. Vous payez dans votre devise locale.",
   },
 ]
 
@@ -254,7 +224,6 @@ export default function EcomConnectPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* la scrollbar est masquée uniquement sur les rails horizontaux dédiés */}
       <style jsx>{`
         .hide-scrollbar {
           -ms-overflow-style: none;
@@ -265,7 +234,6 @@ export default function EcomConnectPage() {
         }
       `}</style>
 
-      {/* En-tête minimal — page de conversion, on évite de distraire avec la navigation complète du site */}
       <header className="py-5 border-b border-border">
         <div className="max-w-3xl mx-auto px-5">
           <span className="font-logo text-foreground" style={{ fontSize: "20px" }}>
@@ -301,16 +269,15 @@ export default function EcomConnectPage() {
               Commander depuis la Chine ne devrait pas être compliqué
             </h2>
 
-            {/* 3 problèmes */}
             <div className="grid sm:grid-cols-3 gap-5 mb-8">
               {PROBLEMES.map(({ icon: Icon, titre, texte }, i) => (
                 <div
                   key={titre}
-                  className="anim-fade-up rounded-xl border border-border bg-background p-5 text-center"
+                  className="anim-fade-up rounded-xl bg-background p-5 text-center shadow-xs"
                   style={{ animationDelay: `${i * 100}ms` }}
                 >
                   <div className="flex items-center justify-center w-12 h-12 rounded-full bg-accent-light mx-auto mb-3">
-                    <Icon className="w-5.5 h-5.5 text-accent" />
+                    <Icon className="w-5 h-5 text-accent" />
                   </div>
                   <p className="text-sm font-bold text-foreground mb-1.5">{titre}</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">{texte}</p>
@@ -318,13 +285,11 @@ export default function EcomConnectPage() {
               ))}
             </div>
 
-            {/* séparateur vers la résolution */}
             <div className="anim-fade-up flex flex-col items-center gap-2 mb-8">
               <IconArrowDown className="w-5 h-5 text-accent" />
               <p className="text-sm font-semibold text-accent">Adullam résout les 3.</p>
             </div>
 
-            {/* rail horizontal des solutions — une seule ligne, y compris sur mobile */}
             <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-1 sm:grid sm:grid-cols-3 sm:overflow-visible">
               {SOLUTIONS.map(({ icon: Icon, text }, i) => (
                 <div
@@ -369,13 +334,9 @@ export default function EcomConnectPage() {
               ))}
             </div>
 
-            {/* délais réels */}
             <div className="anim-fade-up flex justify-center gap-3 mt-10 flex-wrap">
               {DELAIS.map((d) => (
-                <div
-                  key={d.label}
-                  className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-4 py-2"
-                >
+                <div key={d.label} className="flex items-center gap-1.5 rounded-full bg-surface px-4 py-2 shadow-xs">
                   <span className="text-xs font-semibold text-foreground">{d.label}</span>
                   <span className="text-xs text-muted-foreground">{d.valeur}</span>
                 </div>
@@ -392,11 +353,7 @@ export default function EcomConnectPage() {
             </h2>
             <ul className="space-y-4">
               {APPRENTISSAGES.map((item, i) => (
-                <li
-                  key={item}
-                  className="anim-fade-up flex items-start gap-3"
-                  style={{ animationDelay: `${i * 80}ms` }}
-                >
+                <li key={item} className="anim-fade-up flex items-start gap-3" style={{ animationDelay: `${i * 80}ms` }}>
                   <span className="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-accent mt-0.5">
                     <IconCheck className="w-3 h-3 text-white" />
                   </span>
@@ -414,12 +371,11 @@ export default function EcomConnectPage() {
               Vos achats sont protégés
             </h2>
 
-            {/* rail horizontal des garanties — une seule ligne, y compris sur mobile */}
             <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-1 sm:grid sm:grid-cols-3 sm:overflow-visible">
               {GARANTIES.map(({ icon: Icon, titre, texte }, i) => (
                 <div
                   key={titre}
-                  className="anim-fade-up flex-shrink-0 w-[250px] sm:w-auto snap-center rounded-2xl bg-white/10 border border-white/15 p-6 text-center"
+                  className="anim-fade-up flex-shrink-0 w-[250px] sm:w-auto snap-center rounded-2xl bg-white/10 p-6 text-center"
                   style={{ animationDelay: `${i * 100}ms` }}
                 >
                   <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white/15 mx-auto mb-4">
@@ -453,11 +409,7 @@ export default function EcomConnectPage() {
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
               {PROFILS.map(({ icon: Icon, texte }, i) => (
-                <div
-                  key={texte}
-                  className="anim-fade-up flex flex-col items-center text-center gap-3"
-                  style={{ animationDelay: `${i * 80}ms` }}
-                >
+                <div key={texte} className="anim-fade-up flex flex-col items-center text-center gap-3" style={{ animationDelay: `${i * 80}ms` }}>
                   <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-accent-light">
                     <Icon className="w-6 h-6 text-accent" />
                   </div>
@@ -475,7 +427,6 @@ export default function EcomConnectPage() {
               Prêt à commander à la source ?
             </h2>
 
-            {/* code exclusif — bien visible en gold */}
             <div
               className="anim-scale-in rounded-2xl p-6 lg:p-7 text-center shadow-lg mb-8"
               style={{ background: "var(--accent-amber)" }}
@@ -491,11 +442,7 @@ export default function EcomConnectPage() {
                 <span className="text-xl lg:text-2xl font-black tracking-[0.08em] text-white">
                   {COUPON_CODE}
                 </span>
-                {copied ? (
-                  <IconCheck className="w-5 h-5 text-white" />
-                ) : (
-                  <IconCopy className="w-5 h-5 text-white" />
-                )}
+                {copied ? <IconCheck className="w-5 h-5 text-white" /> : <IconCopy className="w-5 h-5 text-white" />}
               </button>
 
               <p className="text-sm lg:text-base font-medium text-white">
