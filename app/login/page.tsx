@@ -540,12 +540,13 @@ function UserLoginContent() {
                 {step === "login" && loginMethod === "phone" ? (
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="text-foreground">Numéro de téléphone</Label>
-                    <div className="flex items-stretch rounded-md border border-border overflow-hidden bg-transparent focus-within:ring-1 focus-within:ring-ring">
+                    <div className="flex items-stretch w-full min-w-0 rounded-md border border-border overflow-hidden bg-transparent focus-within:ring-1 focus-within:ring-ring">
                       <select
                         value={countryCode}
                         onChange={(e) => setManualDial(e.target.value)}
                         aria-label="Indicatif du pays"
-                        className="flex-shrink-0 w-[90px] border-r border-border bg-surface-sunken text-foreground text-sm px-1.5 focus:outline-none appearance-none"
+                        className="flex-shrink-0 w-[68px] border-r border-border bg-surface-sunken text-foreground text-xs px-1 focus:outline-none"
+                        style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                       >
                         {DIAL_CODE_OPTIONS.map((c) => (
                           <option key={c.code} value={c.dial} title={c.name}>
@@ -560,7 +561,7 @@ function UserLoginContent() {
                         placeholder="01 23 45 67 89"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className="rounded-none border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                        className="flex-1 min-w-0 rounded-none border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                         disabled={isSubmitting}
                         required
                       />
@@ -586,18 +587,14 @@ function UserLoginContent() {
                     {/* Téléphone optionnel, uniquement à l'inscription — pour les notifications WhatsApp/SMS */}
                     {step === "register" && (
                       <div className="space-y-2">
-                        <Label htmlFor="phone" className="text-foreground">
-                          Téléphone{" "}
-                          <span className="text-ink-3 text-xs font-normal">
-                            (optionnel — pour vos notifications WhatsApp/SMS)
-                          </span>
-                        </Label>
-                        <div className="flex items-stretch rounded-md border border-border overflow-hidden bg-transparent focus-within:ring-1 focus-within:ring-ring">
+                        <Label htmlFor="phone" className="text-foreground">Téléphone</Label>
+                        <div className="flex items-stretch w-full min-w-0 rounded-md border border-border overflow-hidden bg-transparent focus-within:ring-1 focus-within:ring-ring">
                           <select
                             value={countryCode}
                             onChange={(e) => setManualDial(e.target.value)}
                             aria-label="Indicatif du pays"
-                            className="flex-shrink-0 w-[90px] border-r border-border bg-surface-sunken text-foreground text-sm px-1.5 focus:outline-none appearance-none"
+                            className="flex-shrink-0 w-[68px] border-r border-border bg-surface-sunken text-foreground text-xs px-1 focus:outline-none"
+                            style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                           >
                             {DIAL_CODE_OPTIONS.map((c) => (
                               <option key={c.code} value={c.dial} title={c.name}>
@@ -612,7 +609,7 @@ function UserLoginContent() {
                             placeholder="01 23 45 67 89"
                             value={formData.phone}
                             onChange={handleInputChange}
-                            className="rounded-none border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                            className="flex-1 min-w-0 rounded-none border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                             disabled={isSubmitting}
                           />
                         </div>

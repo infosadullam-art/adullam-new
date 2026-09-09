@@ -826,13 +826,13 @@ export default function AccountPage() {
                         <label className="block text-xs font-medium mb-1" style={{ color: 'var(--foreground)' }}>
                           Numéro de téléphone
                         </label>
-                        <div className="flex">
+                        <div className="flex w-full min-w-0">
                           <select
                             value={countryCode}
                             onChange={(e) => setManualDial(e.target.value)}
                             aria-label="Indicatif du pays"
-                            className="flex-shrink-0 w-[90px] rounded-l-md border border-r-0 text-sm px-1.5 appearance-none"
-                            style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                            className="flex-shrink-0 w-[68px] rounded-l-md border border-r-0 text-xs px-1"
+                            style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--foreground)', WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                           >
                             {DIAL_CODE_OPTIONS.map((c) => (
                               <option key={c.code} value={c.dial} title={c.name}>{flagEmoji(c.code)} {c.dial}</option>
@@ -843,7 +843,7 @@ export default function AccountPage() {
                             name="phone"
                             value={formData.phone}
                             onChange={handleInputChange}
-                            className="flex-1 px-3 py-2 text-sm rounded-r-md focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/20"
+                            className="flex-1 min-w-0 px-3 py-2 text-sm rounded-r-md focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/20"
                             style={{ background: 'var(--background)', border: '1px solid var(--border)', borderLeft: "none", color: 'var(--foreground)' }}
                             placeholder="01 23 45 67 89"
                             required
@@ -873,15 +873,15 @@ export default function AccountPage() {
                         {step === "register" && (
                           <div>
                             <label className="block text-xs font-medium mb-1" style={{ color: 'var(--foreground)' }}>
-                              Téléphone <span className="font-normal" style={{ color: 'var(--ink-3)' }}>(optionnel — pour vos notifications WhatsApp/SMS)</span>
+                              Téléphone
                             </label>
-                            <div className="flex">
+                            <div className="flex w-full min-w-0">
                               <select
                                 value={countryCode}
                                 onChange={(e) => setManualDial(e.target.value)}
                                 aria-label="Indicatif du pays"
-                                className="flex-shrink-0 w-[90px] rounded-l-md border border-r-0 text-sm px-1.5 appearance-none"
-                                style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                                className="flex-shrink-0 w-[68px] rounded-l-md border border-r-0 text-xs px-1"
+                                style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--foreground)', WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                               >
                                 {DIAL_CODE_OPTIONS.map((c) => (
                                   <option key={c.code} value={c.dial} title={c.name}>{flagEmoji(c.code)} {c.dial}</option>
@@ -892,7 +892,7 @@ export default function AccountPage() {
                                 name="phone"
                                 value={formData.phone}
                                 onChange={handleInputChange}
-                                className="flex-1 px-3 py-2 text-sm rounded-r-md focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/20"
+                                className="flex-1 min-w-0 px-3 py-2 text-sm rounded-r-md focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/20"
                                 style={{ background: 'var(--background)', border: '1px solid var(--border)', borderLeft: "none", color: 'var(--foreground)' }}
                                 placeholder="01 23 45 67 89"
                               />
