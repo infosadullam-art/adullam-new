@@ -47,6 +47,13 @@ const COUNTRY_NAMES: Record<string, string> = {
   KM: "Comores", SC: "Seychelles", US: "États-Unis",
 }
 
+// Emoji drapeau à partir du code pays ISO (ex: "CI" → 🇨🇮)
+function flagEmoji(code: string): string {
+  return code.toUpperCase().replace(/./g, (char) =>
+    String.fromCodePoint(127397 + char.charCodeAt(0))
+  )
+}
+
 const DIAL_CODE_OPTIONS = Object.keys(DIAL_CODES)
   .map((code) => ({ code, dial: DIAL_CODES[code], name: COUNTRY_NAMES[code] }))
   .sort((a, b) => a.name.localeCompare(b.name))
@@ -538,11 +545,11 @@ function UserLoginContent() {
                         value={countryCode}
                         onChange={(e) => setManualDial(e.target.value)}
                         aria-label="Indicatif du pays"
-                        className="border-r border-border bg-surface-sunken text-muted-foreground text-sm px-2 focus:outline-none"
+                        className="flex-shrink-0 w-[90px] border-r border-border bg-surface-sunken text-foreground text-sm px-1.5 focus:outline-none appearance-none"
                       >
                         {DIAL_CODE_OPTIONS.map((c) => (
-                          <option key={c.code} value={c.dial}>
-                            {c.name} ({c.dial})
+                          <option key={c.code} value={c.dial} title={c.name}>
+                            {flagEmoji(c.code)} {c.dial}
                           </option>
                         ))}
                       </select>
@@ -581,7 +588,7 @@ function UserLoginContent() {
                       <div className="space-y-2">
                         <Label htmlFor="phone" className="text-foreground">
                           Téléphone{" "}
-                          <span className="text-muted-foreground text-xs">
+                          <span className="text-ink-3 text-xs font-normal">
                             (optionnel — pour vos notifications WhatsApp/SMS)
                           </span>
                         </Label>
@@ -590,11 +597,11 @@ function UserLoginContent() {
                             value={countryCode}
                             onChange={(e) => setManualDial(e.target.value)}
                             aria-label="Indicatif du pays"
-                            className="border-r border-border bg-surface-sunken text-muted-foreground text-sm px-2 focus:outline-none"
+                            className="flex-shrink-0 w-[90px] border-r border-border bg-surface-sunken text-foreground text-sm px-1.5 focus:outline-none appearance-none"
                           >
                             {DIAL_CODE_OPTIONS.map((c) => (
-                              <option key={c.code} value={c.dial}>
-                                {c.name} ({c.dial})
+                              <option key={c.code} value={c.dial} title={c.name}>
+                                {flagEmoji(c.code)} {c.dial}
                               </option>
                             ))}
                           </select>
