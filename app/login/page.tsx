@@ -409,7 +409,9 @@ function UserLoginContent() {
         const data = await res.json()
 
         if (data.success) {
-          await register(formData.name, identifier, formData.password)
+          // Téléphone optionnel saisi à l'inscription — normalisé en E.164, jamais confondu avec l'email
+          const phoneE164 = formData.phone.trim() ? toE164Phone(countryCode, formData.phone) : undefined
+          await register(formData.name, identifier, formData.password, phoneE164)
           setSuccess("Compte créé avec succès !")
           setTimeout(() => router.push(redirect), 2000)
         } else {
@@ -478,7 +480,7 @@ function UserLoginContent() {
             </div>
           )}
 
-          {step !== "verify" && (
+          {step === "login" && (
             <div className="flex gap-2 mb-6">
               <button
                 type="button"
@@ -528,21 +530,7 @@ function UserLoginContent() {
                   </div>
                 )}
 
-                {loginMethod === "email" ? (
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-foreground">Adresse email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="vous@exemple.com"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      disabled={isSubmitting}
-                      required
-                    />
-                  </div>
-                ) : (
+                {step === "login" && loginMethod === "phone" ? (
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="text-foreground">Numéro de téléphone</Label>
                     <div className="flex items-stretch rounded-md border border-border overflow-hidden bg-transparent focus-within:ring-1 focus-within:ring-ring">
@@ -571,6 +559,59 @@ function UserLoginContent() {
                       />
                     </div>
                   </div>
+                ) : (
+                  <>
+                    {/* Inscription (et connexion par email) : email toujours obligatoire */}
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-foreground">Adresse email</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="vous@exemple.com"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        disabled={isSubmitting}
+                        required
+                      />
+                    </div>
+
+                    {/* Téléphone optionnel, uniquement à l'inscription — pour les notifications WhatsApp/SMS */}
+                    {step === "register" && (
+                      <div className="space-y-2">
+                        <Label htmlFor="phone" className="text-foreground">
+                          Téléphone{" "}
+                          <span className="text-muted-foreground text-xs">
+                            (optionnel — pour vos notifications WhatsApp/SMS)
+                          </span>
+                        </Label>
+                        <div className="flex items-stretch rounded-md border border-border overflow-hidden bg-transparent focus-within:ring-1 focus-within:ring-ring">
+                          <select
+                            value={countryCode}
+                            onChange={(e) => setManualDial(e.target.value)}
+                            aria-label="Indicatif du pays"
+                            className="border-r border-border bg-surface-sunken text-muted-foreground text-sm px-2 focus:outline-none"
+                          >
+                            {DIAL_CODE_OPTIONS.map((c) => (
+                              <option key={c.code} value={c.dial}>
+                                {c.name} ({c.dial})
+                              </option>
+                            ))}
+                          </select>
+                          <Input
+                            id="phone"
+                            name="phone"
+                            type="tel"
+                            placeholder="01 23 45 67 89"
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                            className="rounded-none border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                            disabled={isSubmitting}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 <div className="space-y-2">
@@ -712,6 +753,7 @@ function UserLoginContent() {
                 type="button"
                 onClick={() => {
                   setStep(step === "login" ? "register" : "login")
+                  setLoginMethod("email") // l'inscription se fait toujours via email ; le téléphone est un champ optionnel séparé
                   setError("")
                   setSuccess("")
                   setFormData(prev => ({ ...prev, verificationCode: "", password: "", confirmPassword: "" }))
