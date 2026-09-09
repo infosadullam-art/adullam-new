@@ -22,6 +22,8 @@ import remarkGfm from 'remark-gfm'
 import { OfferBanner } from "@/components/OfferBanner"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useLocale } from "@/context/LocaleProvider"
+import { useCart } from "@/context/CartContext"
+import { toast } from "react-hot-toast"
 
 // ============================================================
 // ICÔNES
@@ -149,6 +151,11 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.adullamarke
 export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLogout }: ChatbotWidgetProps) {
   const { formatPrice } = useCurrencyFormatter()
   const { country, currency } = useLocale()
+  // ✅ Ajout réel au panier depuis le chat — Adu ne peut techniquement rien
+  // ajouter lui-même (le panier est 100% côté client), donc c'est CE widget
+  // qui exécute l'action quand le serveur confirme une variante validée
+  // (voir data.cart_action plus bas dans sendMessage).
+  const { addToCart } = useCart()
 
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
@@ -1127,6 +1134,26 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
         // en base tant que le client n'a pas cliqué un des deux boutons.
         if (data.offer_choice) {
           setOfferChoice(data.offer_choice)
+        }
+
+        // ✅ Le serveur a validé une variante réelle (couleur/taille) et le
+        // client a confirmé — on exécute l'ajout réel ici, seul endroit
+        // capable de le faire (le panier vit uniquement dans ce navigateur).
+        // Jamais de champ inventé : positionnel, exactement comme la page
+        // produit (1er attribut -> color, 2e -> eurSize, voir CartContext).
+        if (data.cart_action) {
+          const attrs = data.cart_action.attributes || {}
+          const attrValues = Object.values(attrs) as string[]
+          addToCart({
+            id: data.cart_action.id,
+            name: data.cart_action.name,
+            price: data.cart_action.price,
+            quantity: data.cart_action.quantity || 1,
+            image: data.cart_action.image,
+            color: attrValues[0],
+            eurSize: attrValues[1],
+          })
+          toast.success("Ajouté à ton panier !", { duration: 3000, position: "top-center" })
         }
 
         try {
