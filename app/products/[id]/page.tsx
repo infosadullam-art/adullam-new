@@ -1450,6 +1450,7 @@ export default function ProductPage() {
         quantity: simpleQuantity,
         shippingMode: selectedShipping,
         weight: product.weight,
+        productCategory: product.category?.name || null,
         image: images[selectedImage] || "/placeholder.svg",
         variantKey: `${product.id}`,
         minQuantity: minQuantity,
@@ -1464,6 +1465,7 @@ export default function ProductPage() {
             quantity: qty,
             shippingMode: selectedShipping,
             weight: product.weight,
+            productCategory: product.category?.name || null,
             image: attributeImages[`${simpleVariantType}:${value}`] || images[selectedImage] || "/placeholder.svg",
             variantKey: `${product.id}_${value}`,
             color: value,
@@ -1482,6 +1484,7 @@ export default function ProductPage() {
               quantity: qty,
               shippingMode: selectedShipping,
               weight: product.weight,
+              productCategory: product.category?.name || null,
               image:
                 attributeImages[`${Object.keys(attributeGroups)[0]}:${primaryValue}`] ||
                 images[selectedImage] ||

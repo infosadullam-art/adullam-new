@@ -18,6 +18,7 @@ export type CartItem = {
   quantity: number;
   image: string;
   weight?: number;
+  productCategory?: string | null;
   color?: string;
   eurSize?: string;
   variantKey?: string;
@@ -129,6 +130,7 @@ function serverCartItemToCartItem(item: any): CartItem {
     quantity: item.quantity,
     image: item.image || "/placeholder.svg",
     weight: item.weight,
+    productCategory: item.productCategory ?? null,
     color: attrs.color,
     eurSize: attrs.eurSize,
     variantKey: item.variantKey,
@@ -262,13 +264,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     quantity: number,
     productWeight: number,
     destinationCountry: string,
-    mode: ShippingMode
+    mode: ShippingMode,
+    productCategory?: string | null
   ): Promise<{ shippingCost: number; portePorte: number; totalWeight: number } | null> => {
     try {
       const params = new URLSearchParams({
         productId,
         productTitle,
         productWeight: productWeight?.toString() || '',
+        productCategory: productCategory || '',
         quantity: quantity.toString(),
         country: destinationCountry
       });
@@ -296,7 +300,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const calculateItemCosts = async (item: CartItem, mode: ShippingMode): Promise<{ shippingCost: number; portePorte: number; totalWeight: number }> => {
-    const cacheKey = `${item.id}_${item.variantKey}_${mode}_${country}_${item.quantity}`;
+    const cacheKey = `${item.id}_${item.variantKey}_${mode}_${country}_${item.quantity}_${item.productCategory || ''}`;
 
     if (cache.has(cacheKey)) {
       return cache.get(cacheKey)!;
@@ -308,7 +312,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       item.quantity,
       item.weight || 0.5,
       country,
-      mode
+      mode,
+      item.productCategory
     );
 
     if (result) {
