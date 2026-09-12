@@ -193,6 +193,20 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   // ✅ Choix à deux options (urgente/patiente) reçu du serveur — rien n'est
   // créé en base tant que le client n'a pas cliqué un des deux boutons.
   const [offerChoice, setOfferChoice] = useState<any>(null)
+  // ✅ Sélection de variantes par boutons + quantité MOQ par stepper, au lieu
+  // de texte libre à retaper — même patron que offerChoice ci-dessus.
+  const [variantOptions, setVariantOptions] = useState<{ attribute: string; options: string[] } | null>(null)
+  const [moqPrompt, setMoqPrompt] = useState<{ min_quantity: number; product_id?: string } | null>(null)
+  const [moqQuantity, setMoqQuantity] = useState<number>(1)
+
+  // ✅ Chaque nouveau prompt MOQ réinitialise le stepper sur le minimum requis
+  // pour CE produit — jamais une valeur laissée par un produit précédent.
+  useEffect(() => {
+    if (moqPrompt) {
+      setMoqQuantity(moqPrompt.min_quantity)
+    }
+  }, [moqPrompt])
+
   const [showCouponBanner, setShowCouponBanner] = useState(false)
   const [couponExpanded, setCouponExpanded] = useState(false)
   const [couponPos, setCouponPos] = useState<{ x: number; y: number } | null>(null)
@@ -1136,6 +1150,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           setOfferChoice(data.offer_choice)
         }
 
+        // ✅ Toujours réglé (y compris à null) à chaque réponse — sinon les
+        // boutons d'une étape précédente resteraient affichés après que le
+        // client ait avancé dans le flux (ex: boutons couleur encore visibles
+        // une fois la taille demandée, ou une fois l'ajout confirmé).
+        setVariantOptions(data.variant_options || null)
+        setMoqPrompt(data.moq_prompt || null)
+
         // ✅ Le serveur a validé une variante réelle (couleur/taille) et le
         // client a confirmé — on exécute l'ajout réel ici, seul endroit
         // capable de le faire (le panier vit uniquement dans ce navigateur).
@@ -1144,7 +1165,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
         if (data.cart_action) {
           const attrs = data.cart_action.attributes || {}
           const attrValues = Object.values(attrs) as string[]
-          addToCart({
+          // ✅ FIX : addToCart renvoie maintenant {success, addedCount, minQuantity}
+          // (voir CartContext.tsx) au lieu de void — avant ce fix, le toast de
+          // succès s'affichait inconditionnellement, même quand le MOQ du
+          // produit bloquait silencieusement l'ajout. Le client voyait alors
+          // "Ajouté à ton panier !" ET le message d'erreur MOQ en même temps,
+          // pour un article qui n'avait jamais été ajouté — le même genre de
+          // mensonge factuel qu'on avait déjà corrigé pour la réservation.
+          const result = addToCart({
             id: data.cart_action.id,
             name: data.cart_action.name,
             price: data.cart_action.price,
@@ -1153,7 +1181,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
             color: attrValues[0],
             eurSize: attrValues[1],
           })
-          toast.success("Ajouté à ton panier !", { duration: 3000, position: "top-center" })
+          if (result.success) {
+            toast.success("Ajouté à ton panier !", { duration: 3000, position: "top-center" })
+          }
+          // Si result.success est false, CartContext a déjà affiché son propre
+          // toast d'erreur MOQ (avec le minimum requis) — rien à ajouter ici,
+          // pour éviter deux messages contradictoires empilés.
         }
 
         try {
@@ -2193,6 +2226,143 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                         <span style={{ fontSize: isMobile ? '9px' : '10px', opacity: 0.7, fontWeight: 500 }}>
                           {offerChoice.patient?.time_limit_minutes} min
                         </span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ✅ Sélection de variante par boutons — jamais de texte à
+                    retaper : chaque bouton envoie l'option exacte, comme si
+                    le client l'avait tapée (aucun changement de la logique
+                    de correspondance côté serveur). */}
+                {variantOptions && (
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    padding: '12px',
+                    borderRadius: '14px',
+                    background: 'var(--surface)',
+                    animation: 'fadeIn 0.3s ease-out',
+                  }}>
+                    <p style={{
+                      fontSize: isMobile ? '9px' : '10px',
+                      fontWeight: 700,
+                      color: 'var(--muted-foreground)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      margin: 0,
+                    }}>
+                      {variantOptions.attribute}
+                    </p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {variantOptions.options.map((opt) => (
+                        <button
+                          key={opt}
+                          onClick={() => {
+                            sendMessage(opt)
+                            setVariantOptions(null)
+                          }}
+                          style={{
+                            padding: isMobile ? '8px 14px' : '9px 16px',
+                            borderRadius: '999px',
+                            border: '1.5px solid var(--border)',
+                            background: 'var(--surface-sunken)',
+                            color: 'var(--foreground)',
+                            fontSize: isMobile ? '12px' : '13px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'transform 0.15s ease',
+                          }}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ✅ Quantité MOQ par stepper — jamais possible de descendre
+                    sous le minimum requis pour CE produit (toutes variantes
+                    confondues, voir CartContext.tsx / get_min_quantity). */}
+                {moqPrompt && (
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    padding: '12px',
+                    borderRadius: '14px',
+                    background: 'var(--surface)',
+                    animation: 'fadeIn 0.3s ease-out',
+                  }}>
+                    <p style={{
+                      fontSize: isMobile ? '9px' : '10px',
+                      fontWeight: 700,
+                      color: 'var(--muted-foreground)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      margin: 0,
+                    }}>
+                      Quantité (minimum {moqPrompt.min_quantity})
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <button
+                          onClick={() => setMoqQuantity(q => Math.max(moqPrompt.min_quantity, q - 1))}
+                          style={{
+                            width: isMobile ? '28px' : '32px',
+                            height: isMobile ? '28px' : '32px',
+                            borderRadius: '50%',
+                            border: '1.5px solid var(--border)',
+                            background: 'var(--surface-sunken)',
+                            color: 'var(--foreground)',
+                            fontSize: '16px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            lineHeight: 1,
+                          }}
+                        >
+                          −
+                        </button>
+                        <span style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: 800, minWidth: '24px', textAlign: 'center' }}>
+                          {moqQuantity}
+                        </span>
+                        <button
+                          onClick={() => setMoqQuantity(q => q + 1)}
+                          style={{
+                            width: isMobile ? '28px' : '32px',
+                            height: isMobile ? '28px' : '32px',
+                            borderRadius: '50%',
+                            border: '1.5px solid var(--border)',
+                            background: 'var(--surface-sunken)',
+                            color: 'var(--foreground)',
+                            fontSize: '16px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            lineHeight: 1,
+                          }}
+                        >
+                          +
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => {
+                          sendMessage(language === 'en' ? `Yes, ${moqQuantity} pieces` : `Oui, ${moqQuantity} pièces`)
+                          setMoqPrompt(null)
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: isMobile ? '9px 14px' : '10px 16px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          background: 'var(--accent)',
+                          color: '#fff',
+                          fontSize: isMobile ? '13px' : '14px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Confirmer
                       </button>
                     </div>
                   </div>

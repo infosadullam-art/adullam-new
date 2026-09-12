@@ -32,11 +32,22 @@ export type CartItem = {
 };
 
 // ============================================================
+// ✅ NOUVEAU — résultat réel d'un ajout au panier, pour que l'appelant
+// (ex: ChatbotWidget) sache si l'ajout a VRAIMENT eu lieu ou si le MOQ
+// l'a bloqué, au lieu de supposer un succès aveugle après l'appel.
+// ============================================================
+export type AddToCartResult = {
+  success: boolean;
+  addedCount: number;
+  minQuantity?: number;
+};
+
+// ============================================================
 // TYPE DU CONTEXT
 // ============================================================
 type CartContextType = {
   cart: CartItem[];
-  addToCart: (item: CartItem) => void;
+  addToCart: (item: CartItem) => AddToCartResult;
   addItemsToCart: (items: CartItem[]) => { success: boolean; addedCount: number };
   removeFromCart: (variantKey: string) => void;
   updateQuantity: (variantKey: string, quantity: number) => void;
@@ -455,8 +466,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // ============================================================
   // ✅ ADD TO CART - MOQ GLOBAL + réservation synchrone (anti race-condition)
+  // ✅ MODIFIÉ : renvoie désormais {success, addedCount, minQuantity} au lieu
+  // de void — sans ça, un appelant (ex: ChatbotWidget) ne pouvait jamais
+  // savoir si l'ajout avait réellement eu lieu ou si le MOQ l'avait
+  // silencieusement bloqué, et affichait un "Ajouté au panier !" même
+  // quand rien n'avait été ajouté.
   // ============================================================
-  const addToCart = (item: CartItem) => {
+  const addToCart = (item: CartItem): AddToCartResult => {
     const variantKey = item.variantKey || `${item.id}_${item.color || ''}_${item.eurSize || ''}`;
     const minQty = item.minQuantity || getMinQuantity(item.price);
 
@@ -499,7 +515,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         duration: 4000,
         position: "top-center",
       });
-      return;
+      return { success: false, addedCount: 0, minQuantity: minQty };
     }
 
     // ✅ Réservation SYNCHRONE de la quantité (aucun await avant ce point) :
@@ -526,6 +542,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       updated[idx] = itemWithCosts;
       commitCart(updated);
     });
+
+    return { success: true, addedCount: item.quantity, minQuantity: minQty };
   };
 
   // ============================================================
