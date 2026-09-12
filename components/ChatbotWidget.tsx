@@ -17,6 +17,7 @@
 //    besoin de localStorage. Le coupon survit désormais à un F5.
 
 import { useState, useEffect, useRef, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { OfferBanner } from "@/components/OfferBanner"
@@ -156,6 +157,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   // qui exécute l'action quand le serveur confirme une variante validée
   // (voir data.cart_action plus bas dans sendMessage).
   const { addToCart } = useCart()
+  const router = useRouter()
 
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
@@ -1156,6 +1158,17 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
         // une fois la taille demandée, ou une fois l'ajout confirmé).
         setVariantOptions(data.variant_options || null)
         setMoqPrompt(data.moq_prompt || null)
+
+        // ✅ FIX : Adu prétendait "rediriger vers le paiement" sans jamais le
+        // faire réellement (mensonge factuel identifié en tout début de
+        // session). redirect_to est la seule source de vérité pour une vraie
+        // navigation — un léger délai laisse le client lire le message avant
+        // de partir de la conversation.
+        if (data.redirect_to) {
+          setTimeout(() => {
+            router.push(data.redirect_to)
+          }, 1500)
+        }
 
         // ✅ Le serveur a validé une variante réelle (couleur/taille) et le
         // client a confirmé — on exécute l'ajout réel ici, seul endroit
