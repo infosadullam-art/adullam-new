@@ -3,11 +3,20 @@
 import { useEffect, useState } from "react"
 import { ChatbotWidget } from "./ChatbotWidget"
 import { useAuth } from "@/lib/admin/auth-context"
+import { useLocale } from "@/context/LocaleProvider"
 
 export function ChatbotProvider() {
   const [sessionId, setSessionId] = useState<string>("")
   const [userId, setUserId] = useState<string | undefined>(undefined)
   const { user } = useAuth()
+  // ✅ FIX (13/09) : `language="fr"` était codé en dur ci-dessous, peu importe
+  // le pays réel du visiteur — Adu répondait toujours en français, même pour
+  // un client détecté au Nigeria, en Angola ou au Maroc. `locale` (ex:
+  // "pt-CV", "ar-LY", "en-NG") est déjà calculé dynamiquement par
+  // LocaleProvider selon le pays détecté ; on en extrait juste le préfixe de
+  // langue au lieu de l'ignorer.
+  const { locale } = useLocale()
+  const language = locale.split("-")[0]
 
   useEffect(() => {
     if (user?.id) {
@@ -36,5 +45,5 @@ export function ChatbotProvider() {
 
   if (!sessionId) return null
 
-  return <ChatbotWidget sessionId={sessionId} userId={userId} language="fr" />
+  return <ChatbotWidget sessionId={sessionId} userId={userId} language={language} />
 }
