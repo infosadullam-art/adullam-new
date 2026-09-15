@@ -475,6 +475,128 @@ export default function EcomConnectPage() {
           transform: scale(1.05);
         }
 
+        /* ─────────── Cartes problèmes : survol ─────────── */
+        .ec-card {
+          transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+            box-shadow 0.3s ease;
+        }
+        .ec-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.22);
+        }
+        .ec-card-icon {
+          transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+            background-color 0.3s ease;
+        }
+        .ec-card:hover .ec-card-icon {
+          transform: scale(1.12) rotate(-6deg);
+          background: var(--accent);
+        }
+        .ec-card:hover .ec-card-icon svg {
+          color: #fff;
+        }
+
+        /* ─────────── Tuiles (solutions / profils) : survol ─────────── */
+        .ec-tile {
+          transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .ec-tile:hover {
+          transform: translateY(-4px);
+        }
+        .ec-tile-icon {
+          transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+            background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .ec-tile:hover .ec-tile-icon {
+          transform: scale(1.1) rotate(5deg);
+          background: var(--accent);
+          box-shadow: var(--shadow-accent, 0 8px 24px -6px rgba(212, 55, 43, 0.45));
+        }
+        .ec-tile:hover .ec-tile-icon svg {
+          color: #fff;
+        }
+        .ec-tile-label {
+          transition: color 0.25s ease;
+        }
+        .ec-tile:hover .ec-tile-label {
+          color: var(--accent);
+        }
+
+        /* ─────────── Garanties (fond sombre) : survol ─────────── */
+        .ec-glass {
+          transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+            background-color 0.3s ease;
+        }
+        .ec-glass:hover {
+          transform: translateY(-5px);
+          background: rgba(255, 255, 255, 0.18);
+        }
+        @keyframes ec-icon-pop {
+          0% {
+            transform: scale(1) rotate(0deg);
+          }
+          45% {
+            transform: scale(1.18) rotate(-10deg);
+          }
+          100% {
+            transform: scale(1.1) rotate(0deg);
+          }
+        }
+        .ec-glass-icon {
+          transition: background-color 0.3s ease;
+        }
+        .ec-glass:hover .ec-glass-icon {
+          animation: ec-icon-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* ─────────── Liste "ce que vous allez découvrir" : survol ─────────── */
+        .ec-check {
+          transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .ec-check:hover {
+          transform: translateX(6px);
+        }
+        .ec-check-badge {
+          transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+            box-shadow 0.3s ease;
+        }
+        .ec-check:hover .ec-check-badge {
+          transform: scale(1.25);
+          box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 22%, transparent);
+        }
+
+        /* ─────────── Badges de délais : survol ─────────── */
+        .ec-pill {
+          transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+            background-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .ec-pill:hover {
+          transform: translateY(-3px) scale(1.04);
+          background: var(--accent-light);
+          box-shadow: 0 8px 18px -10px rgba(0, 0, 0, 0.35);
+        }
+        .ec-pill:hover span {
+          color: var(--accent);
+        }
+
+        /* ─────────── Icône citation : survol ─────────── */
+        .ec-quote {
+          transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .ec-quote:hover {
+          transform: scale(1.15) rotate(-6deg);
+        }
+
+        /* ─────────── Flèche de transition + icône copie ─────────── */
+        @keyframes ec-bounce-y {
+          0%, 100% { transform: translateY(0); }
+          50%      { transform: translateY(6px); }
+        }
+        .ec-bounce { animation: ec-bounce-y 1.8s ease-in-out infinite; }
+        .ec-copy-icon { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .ec-copy-btn:hover .ec-copy-icon { transform: scale(1.2) rotate(-8deg); }
+
         @media (prefers-reduced-motion: reduce) {
           .ec-marquee-track {
             animation: none;
@@ -524,10 +646,10 @@ export default function EcomConnectPage() {
               {PROBLEMES.map(({ icon: Icon, titre, texte }, i) => (
                 <div
                   key={titre}
-                  className="anim-fade-up rounded-xl bg-background p-5 text-center shadow-xs"
+                  className="ec-card anim-fade-up rounded-xl bg-background p-5 text-center shadow-xs"
                   style={{ animationDelay: `${i * 100}ms` }}
                 >
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-accent-light mx-auto mb-3">
+                  <div className="ec-card-icon flex items-center justify-center w-12 h-12 rounded-full bg-accent-light mx-auto mb-3">
                     <Icon className="w-5 h-5 text-accent" />
                   </div>
                   <p className="text-sm font-bold text-foreground mb-1.5">{titre}</p>
@@ -537,7 +659,7 @@ export default function EcomConnectPage() {
             </div>
 
             <div className="anim-fade-up flex flex-col items-center gap-2 mb-8">
-              <IconArrowDown className="w-5 h-5 text-accent" />
+              <IconArrowDown className="ec-bounce w-5 h-5 text-accent" />
               <p className="text-sm font-semibold text-accent">Adullam résout les 3.</p>
             </div>
 
@@ -545,13 +667,13 @@ export default function EcomConnectPage() {
               {SOLUTIONS.map(({ icon: Icon, text }, i) => (
                 <div
                   key={text}
-                  className="anim-fade-up flex-shrink-0 w-[210px] sm:w-auto snap-center flex flex-col items-center text-center gap-3"
+                  className="ec-tile anim-fade-up flex-shrink-0 w-[210px] sm:w-auto snap-center flex flex-col items-center text-center gap-3"
                   style={{ animationDelay: `${i * 100}ms` }}
                 >
-                  <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-accent-light">
+                  <div className="ec-tile-icon flex items-center justify-center w-14 h-14 rounded-xl bg-accent-light">
                     <Icon className="w-6 h-6 text-accent" />
                   </div>
-                  <p className="text-sm font-semibold text-foreground leading-snug">{text}</p>
+                  <p className="ec-tile-label text-sm font-semibold text-foreground leading-snug">{text}</p>
                 </div>
               ))}
             </div>
@@ -622,7 +744,7 @@ export default function EcomConnectPage() {
 
             <div className="anim-fade-up flex justify-center gap-3 mt-10 flex-wrap">
               {DELAIS.map((d) => (
-                <div key={d.label} className="flex items-center gap-1.5 rounded-full bg-surface px-4 py-2 shadow-xs">
+                <div key={d.label} className="ec-pill flex items-center gap-1.5 rounded-full bg-surface px-4 py-2 shadow-xs">
                   <span className="text-xs font-semibold text-foreground">{d.label}</span>
                   <span className="text-xs text-muted-foreground">{d.valeur}</span>
                 </div>
@@ -639,8 +761,8 @@ export default function EcomConnectPage() {
             </h2>
             <ul className="space-y-4">
               {APPRENTISSAGES.map((item, i) => (
-                <li key={item} className="anim-fade-up flex items-start gap-3" style={{ animationDelay: `${i * 80}ms` }}>
-                  <span className="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-accent mt-0.5">
+                <li key={item} className="ec-check anim-fade-up flex items-start gap-3" style={{ animationDelay: `${i * 80}ms` }}>
+                  <span className="ec-check-badge flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-accent mt-0.5">
                     <IconCheck className="w-3 h-3 text-white" />
                   </span>
                   <p className="text-sm lg:text-base text-foreground leading-relaxed">{item}</p>
@@ -661,10 +783,10 @@ export default function EcomConnectPage() {
               {GARANTIES.map(({ icon: Icon, titre, texte }, i) => (
                 <div
                   key={titre}
-                  className="anim-fade-up flex-shrink-0 w-[250px] sm:w-auto snap-center rounded-2xl bg-white/10 p-6 text-center"
+                  className="ec-glass anim-fade-up flex-shrink-0 w-[250px] sm:w-auto snap-center rounded-2xl bg-white/10 p-6 text-center"
                   style={{ animationDelay: `${i * 100}ms` }}
                 >
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white/15 mx-auto mb-4">
+                  <div className="ec-glass-icon flex items-center justify-center w-12 h-12 rounded-full bg-white/15 mx-auto mb-4">
                     <Icon className="w-6 h-6 text-white" />
                   </div>
                   <p className="text-sm font-bold text-white mb-2">{titre}</p>
@@ -678,7 +800,7 @@ export default function EcomConnectPage() {
         {/* ═══════════════ SECTION 5 — TÉMOIGNAGE ═══════════════ */}
         <section className="py-14 lg:py-16 bg-accent-light">
           <div className="anim-fade-up max-w-xl mx-auto px-5 text-center">
-            <IconQuote className="w-8 h-8 text-accent mx-auto mb-4" />
+            <IconQuote className="ec-quote w-8 h-8 text-accent mx-auto mb-4" />
             <p className="text-base lg:text-lg font-medium text-foreground leading-relaxed mb-5">
               &laquo;&nbsp;Avec Adullam, j&apos;ai commandé directement depuis la Chine sans stress. Livré chez moi, au bon prix.&nbsp;&raquo;
             </p>
@@ -736,11 +858,11 @@ export default function EcomConnectPage() {
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
               {PROFILS.map(({ icon: Icon, texte }, i) => (
-                <div key={texte} className="anim-fade-up flex flex-col items-center text-center gap-3" style={{ animationDelay: `${i * 80}ms` }}>
-                  <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-accent-light">
+                <div key={texte} className="ec-tile anim-fade-up flex flex-col items-center text-center gap-3" style={{ animationDelay: `${i * 80}ms` }}>
+                  <div className="ec-tile-icon flex items-center justify-center w-14 h-14 rounded-xl bg-accent-light">
                     <Icon className="w-6 h-6 text-accent" />
                   </div>
-                  <p className="text-xs sm:text-sm font-semibold text-foreground leading-snug">{texte}</p>
+                  <p className="ec-tile-label text-xs sm:text-sm font-semibold text-foreground leading-snug">{texte}</p>
                 </div>
               ))}
             </div>
@@ -764,12 +886,12 @@ export default function EcomConnectPage() {
 
               <button
                 onClick={handleCopyCode}
-                className="inline-flex items-center gap-2.5 mb-4 rounded-lg px-5 py-3 bg-white/15 hover:bg-white/25 transition-colors"
+                className="ec-copy-btn inline-flex items-center gap-2.5 mb-4 rounded-lg px-5 py-3 bg-white/15 hover:bg-white/25 transition-colors"
               >
                 <span className="text-xl lg:text-2xl font-black tracking-[0.08em] text-white">
                   {COUPON_CODE}
                 </span>
-                {copied ? <IconCheck className="w-5 h-5 text-white" /> : <IconCopy className="w-5 h-5 text-white" />}
+                {copied ? <IconCheck className="ec-copy-icon w-5 h-5 text-white" /> : <IconCopy className="ec-copy-icon w-5 h-5 text-white" />}
               </button>
 
               <p className="text-sm lg:text-base font-medium text-white">
