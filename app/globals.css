@@ -530,3 +530,73 @@
 
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Loader de navigation (adul.lam) — AJOUT LOADER ── */
+.loader-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 250ms ease;
+}
+.loader-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.loader-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(6px);
+}
+.loader-overlay.active .loader-center {
+  animation: loader-in 380ms ease forwards;
+}
+@keyframes loader-in {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.loader-logo {
+  font-family: var(--font-poppins);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--foreground);
+}
+
+.loader-bar-track {
+  position: relative;
+  width: 120px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--border);
+  margin-top: 16px;
+  overflow: hidden;
+}
+.loader-bar-fill {
+  position: absolute;
+  top: 0;
+  left: -40%;
+  height: 100%;
+  width: 40%;
+  border-radius: 999px;
+  background: var(--accent);
+  animation: loader-slide 1.3s cubic-bezier(.4,0,.2,1) infinite;
+}
+@keyframes loader-slide {
+  0%   { left: -40%; }
+  60%  { left: 100%; }
+  100% { left: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-bar-fill { animation: none; left: 0; width: 100%; opacity: .5; }
+}

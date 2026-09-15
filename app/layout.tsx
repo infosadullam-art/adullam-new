@@ -13,6 +13,8 @@ import SplashScreen from "@/components/SplashScreen"
 import { ChatbotProvider } from "@/components/chatbot-provider"
 // AJOUT REFONTE — thème clair/sombre/système (présentation uniquement)
 import { ThemeProvider, themeNoFlashScript } from "@/components/theme-provider"
+// AJOUT LOADER — overlay de chargement au clic/navigation
+import { LoadingProvider } from "@/components/LoadingProvider"
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -148,9 +150,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <AuthProvider>
                 <LocaleProvider>
                   <CartProvider>
-                    <ClientWrapper>
-                      {children}
-                    </ClientWrapper>
+                    <LoadingProvider>
+                      <ClientWrapper>
+                        {children}
+                      </ClientWrapper>
+                    </LoadingProvider>
                     <Toaster
                       position="top-center"
                       reverseOrder={false}
