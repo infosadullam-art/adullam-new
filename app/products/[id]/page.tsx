@@ -278,7 +278,7 @@ function TrustCarouselRow() {
   )
 }
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import { motion } from "framer-motion"
@@ -585,6 +585,28 @@ export default function ProductPage() {
   const [selectedShipping, setSelectedShipping] = useState<"bateau" | "avion" | "express">("bateau")
   const [isImageModalOpen, setIsImageModalOpen] = useState(false)
   const [isNavigatingToProduct, setIsNavigatingToProduct] = useState(false)
+  const navSafetyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Déclenche l'overlay de navigation, avec filet de sécurité :
+  // si la navigation échoue ou traîne, on ne reste jamais bloqué dessus.
+  const handleRelatedProductClick = useCallback((e: React.MouseEvent) => {
+    // Clic du milieu / Ctrl / Cmd / Shift = ouverture dans un nouvel onglet,
+    // la page courante ne bouge pas, donc pas d'overlay.
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return
+
+    setIsNavigatingToProduct(true)
+
+    if (navSafetyTimer.current) clearTimeout(navSafetyTimer.current)
+    navSafetyTimer.current = setTimeout(() => {
+      setIsNavigatingToProduct(false)
+    }, 8000)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (navSafetyTimer.current) clearTimeout(navSafetyTimer.current)
+    }
+  }, [])
   const [isProtectionModalOpen, setIsProtectionModalOpen] = useState(false)
 
   // ============================================================
@@ -3473,7 +3495,7 @@ export default function ProductPage() {
                       viewport={{ once: true, margin: "-40px" }}
                       transition={{ duration: 0.35, delay: Math.min(i, 6) * 0.05, ease: "easeOut" }}
                       className="transition-transform duration-200 hover:-translate-y-0.5"
-                      onClick={() => setIsNavigatingToProduct(true)}
+                      onClickCapture={handleRelatedProductClick}
                     >
                       <ProductCard
                         product={{
