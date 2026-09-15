@@ -954,7 +954,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   // VOCAL
   // ============================================================
 
-  const startVoiceRecognition = useCallback(() => {
+  const startVoiceRecognition = useCallback(async () => {
     if (isRecording) {
       if (recognitionRef.current) {
         recognitionRef.current.stop()
@@ -967,6 +967,33 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognition) {
       console.warn("Reconnaissance vocale non supportée")
+      return
+    }
+
+    // ⚠️ SpeechRecognition seul ne déclenche pas toujours de façon fiable
+    // l'invite native d'autorisation micro (surtout Chrome). On demande
+    // explicitement getUserMedia AVANT de lancer la reconnaissance : ça
+    // force une vraie invite et on obtient un message d'erreur clair et
+    // actionnable si c'est refusé, au lieu de tomber plus tard sur un
+    // "not-allowed" générique.
+    if (!window.isSecureContext) {
+      alert("La reconnaissance vocale nécessite une connexion sécurisée (HTTPS). Elle ne fonctionnera pas sur http://.")
+      return
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      // On ne fait que vérifier/obtenir la permission, on ne garde pas le flux
+      stream.getTracks().forEach(track => track.stop())
+    } catch (err: any) {
+      console.error("Permission micro refusée:", err)
+      if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError' || err?.name === 'SecurityError') {
+        alert("Le micro est bloqué pour ce site. Clique sur l'icône 🔒 à côté de l'URL dans la barre d'adresse, autorise le micro, puis réessaie.")
+      } else if (err?.name === 'NotFoundError' || err?.name === 'DevicesNotFoundError') {
+        alert("Aucun micro détecté sur cet appareil.")
+      } else {
+        alert("Impossible d'accéder au micro. Réessaie ou vérifie les réglages de ton navigateur.")
+      }
       return
     }
 
@@ -1000,7 +1027,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       recognitionRef.current = null
 
       if (event.error === 'not-allowed') {
-        alert("Veuillez autoriser l'accès au microphone pour utiliser la voix.")
+        alert("Le micro est bloqué pour ce site. Clique sur l'icône 🔒 à côté de l'URL dans la barre d'adresse, autorise le micro, puis réessaie.")
       }
     }
 
