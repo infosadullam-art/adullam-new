@@ -170,9 +170,39 @@ const SOLUTIONS = [
 ]
 
 const ETAPES = [
-  { icon: IconSearchProduct, titre: "Tu choisis ton produit", texte: "Ou tu décris simplement ce que tu cherches." },
-  { icon: IconRoute, titre: "On s'occupe de tout", texte: "On localise le fabricant et on gère toute la logistique." },
-  { icon: IconHomeCheck, titre: "Tu reçois chez toi", texte: "Garanti ou remboursé." },
+  {
+    icon: IconSearchProduct,
+    titre: "Tu choisis ton produit",
+    texte: "Ou tu décris simplement ce que tu cherches.",
+    details: [
+      "Le catalogue s'enrichit de milliers de références usine chaque jour.",
+      "Produit absent du catalogue ? Décris-le (photo, lien, quantité) — c'est le sourcing à la demande.",
+      "Adu, notre assistant IA, qualifie ta demande et te guide en français.",
+      "Prix par palier et quantité minimum (MOQ) affichés avant de commander.",
+    ],
+  },
+  {
+    icon: IconRoute,
+    titre: "On s'occupe de tout",
+    texte: "On localise le fabricant et on gère toute la logistique.",
+    details: [
+      "On identifie l'usine en Chine, Turquie, Dubaï ou USA et on négocie le prix à ta place.",
+      "Devis complet sous 48h — prix usine + fret + dédouanement, tout compris.",
+      "Tu choisis ton mode d'expédition : Express 10 j, Air 15-17 j ou Mer 45-50 j.",
+      "Paiement en Mobile Money dans ta devise locale ou par carte bancaire.",
+    ],
+  },
+  {
+    icon: IconHomeCheck,
+    titre: "Tu reçois chez toi",
+    texte: "Garanti ou remboursé.",
+    details: [
+      "Livraison porte-à-porte, jusqu'à ton adresse — pas un entrepôt à l'autre bout de la ville.",
+      "Suivi de commande notifié à chaque étape.",
+      "Hors délai annoncé ? Tu es remboursé intégralement, sans discussion.",
+      "Une équipe basée en Afrique répond dans ton fuseau horaire.",
+    ],
+  },
 ]
 
 const DELAIS = [
@@ -224,8 +254,13 @@ const DELIVERY_PROOFS = [
   "/delivery-proofs/proof-6.jpg",
 ]
 
+// Piste dupliquée : deux groupes identiques pour une boucle infinie sans saut
+const MARQUEE_GROUPS = [0, 1]
+
 export default function EcomConnectPage() {
   const [copied, setCopied] = useState(false)
+  // Étape ouverte au clic (null = toutes fermées)
+  const [etapeOuverte, setEtapeOuverte] = useState<number | null>(null)
 
   const handleCopyCode = () => {
     navigator.clipboard?.writeText(COUPON_CODE)
@@ -233,15 +268,220 @@ export default function EcomConnectPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const toggleEtape = (i: number) => setEtapeOuverte((prev) => (prev === i ? null : i))
+
   return (
     <div className="min-h-screen bg-background">
-      <style jsx>{`
+      <style jsx global>{`
         .hide-scrollbar {
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
+        }
+
+        /* ─────────── CTA sourcing : pulsation + reflet + flèche ─────────── */
+        @keyframes ec-cta-pulse {
+          0%,
+          100% {
+            box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 55%, transparent);
+          }
+          50% {
+            box-shadow: 0 0 0 14px color-mix(in oklab, var(--accent) 0%, transparent);
+          }
+        }
+        @keyframes ec-cta-breathe {
+          0%,
+          100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.035);
+          }
+        }
+        @keyframes ec-cta-shine {
+          0% {
+            transform: translateX(-130%) skewX(-18deg);
+          }
+          60%,
+          100% {
+            transform: translateX(260%) skewX(-18deg);
+          }
+        }
+        .ec-cta {
+          position: relative;
+          overflow: hidden;
+          isolation: isolate;
+          animation: ec-cta-pulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite,
+            ec-cta-breathe 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+          transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        .ec-cta::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          width: 45%;
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.38),
+            transparent
+          );
+          animation: ec-cta-shine 2.8s ease-in-out infinite;
+          pointer-events: none;
+          z-index: -1;
+        }
+        .ec-cta:hover {
+          animation-play-state: paused;
+          transform: scale(1.04);
+        }
+        .ec-cta:active {
+          transform: scale(0.96);
+        }
+        .ec-cta-arrow {
+          transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .ec-cta:hover .ec-cta-arrow {
+          transform: translateX(5px);
+        }
+
+        /* ─────────── Étapes chiffrées : survol + clic ─────────── */
+        .ec-step {
+          cursor: pointer;
+          border-radius: 16px;
+          padding: 16px 12px;
+          background: transparent;
+          border: 1px solid transparent;
+          text-align: center;
+          width: 100%;
+          transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+            background-color 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+        }
+        .ec-step:hover,
+        .ec-step:focus-visible {
+          transform: translateY(-4px);
+          background: var(--surface);
+          border-color: var(--border);
+          box-shadow: var(--shadow-sm, 0 4px 14px -6px rgba(0, 0, 0, 0.18));
+          outline: none;
+        }
+        .ec-step[data-open="true"] {
+          background: var(--surface);
+          border-color: color-mix(in oklab, var(--accent) 35%, transparent);
+        }
+        .ec-step-icon {
+          transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+            background-color 0.3s ease;
+        }
+        .ec-step:hover .ec-step-icon {
+          transform: translateY(-2px) scale(1.06);
+        }
+        .ec-step[data-open="true"] .ec-step-icon {
+          background: var(--accent);
+          transform: scale(1.06);
+        }
+        .ec-step[data-open="true"] .ec-step-icon svg {
+          color: #fff;
+        }
+        @keyframes ec-badge-ring {
+          0% {
+            box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 60%, transparent);
+          }
+          100% {
+            box-shadow: 0 0 0 12px color-mix(in oklab, var(--accent) 0%, transparent);
+          }
+        }
+        .ec-step-badge {
+          transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .ec-step:hover .ec-step-badge {
+          transform: scale(1.18) rotate(-8deg);
+        }
+        .ec-step[data-open="true"] .ec-step-badge {
+          animation: ec-badge-ring 1.4s ease-out infinite;
+        }
+        /* Dépliage fluide sans hauteur fixe */
+        .ec-step-details {
+          display: grid;
+          grid-template-rows: 0fr;
+          opacity: 0;
+          transition: grid-template-rows 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+            opacity 0.3s ease, margin-top 0.4s ease;
+          margin-top: 0;
+        }
+        .ec-step-details > div {
+          overflow: hidden;
+        }
+        .ec-step[data-open="true"] .ec-step-details {
+          grid-template-rows: 1fr;
+          opacity: 1;
+          margin-top: 14px;
+        }
+        .ec-step-hint {
+          transition: opacity 0.25s ease, color 0.25s ease;
+        }
+        .ec-step[data-open="true"] .ec-step-hint,
+        .ec-step:hover .ec-step-hint {
+          color: var(--accent);
+        }
+
+        /* ─────────── Carrousel photos : boucle infinie automatique ─────────── */
+        @keyframes ec-scroll-x {
+          from {
+            transform: translateX(0);
+          }
+          to {
+            transform: translateX(-50%);
+          }
+        }
+        .ec-marquee-viewport {
+          overflow: hidden;
+          -webkit-mask-image: linear-gradient(
+            90deg,
+            transparent 0,
+            #000 7%,
+            #000 93%,
+            transparent 100%
+          );
+          mask-image: linear-gradient(
+            90deg,
+            transparent 0,
+            #000 7%,
+            #000 93%,
+            transparent 100%
+          );
+        }
+        .ec-marquee-track {
+          display: flex;
+          width: max-content;
+          animation: ec-scroll-x 38s linear infinite;
+          will-change: transform;
+        }
+        .ec-marquee-viewport:hover .ec-marquee-track {
+          animation-play-state: paused;
+        }
+        .ec-marquee-group {
+          display: flex;
+          gap: 16px;
+          padding-right: 16px;
+        }
+        .ec-marquee-card {
+          transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .ec-marquee-card:hover {
+          transform: scale(1.05);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .ec-marquee-track {
+            animation: none;
+          }
+          .ec-marquee-viewport {
+            overflow-x: auto;
+          }
         }
       `}</style>
 
@@ -258,17 +498,17 @@ export default function EcomConnectPage() {
         <section className="py-14 lg:py-20 bg-brand">
           <div className="anim-fade-up max-w-2xl mx-auto px-5 text-center">
             <h1 className="text-2xl lg:text-4xl font-extrabold tracking-[-0.02em] text-white leading-tight mb-4">
-              Merci d&apos;avoir participé au webinaire<br className="hidden sm:block" /> ecomConnect x Adullam
+              Bienvenue dans le webinaire<br className="hidden sm:block" /> ecomConnect x Adullam
             </h1>
             <p className="text-base lg:text-lg text-white/75 mb-8 max-w-xl mx-auto">
               Commandez directement depuis les usines. On gère tout. Garanti ou remboursé.
             </p>
             <Link
               href={SOURCING_URL}
-              className="inline-flex items-center gap-2 rounded-lg px-7 py-4 text-base font-bold text-white bg-accent hover:bg-accent-hover transition-all duration-200 hover:scale-[1.03] active:scale-95"
+              className="ec-cta inline-flex items-center gap-2 rounded-lg px-7 py-4 text-base font-bold text-white bg-accent hover:bg-accent-hover"
             >
               Faire ma première demande de sourcing
-              <IconArrowRight className="w-4 h-4" />
+              <IconArrowRight className="ec-cta-arrow w-4 h-4" />
             </Link>
           </div>
         </section>
@@ -325,24 +565,59 @@ export default function EcomConnectPage() {
               Commander en 3 étapes simples
             </h2>
 
-            <div className="grid sm:grid-cols-3 gap-8">
-              {ETAPES.map(({ icon: Icon, titre, texte }, i) => (
-                <div key={titre} className="anim-fade-up relative" style={{ animationDelay: `${i * 100}ms` }}>
-                  {i < ETAPES.length - 1 && (
-                    <IconArrowRight className="hidden sm:block absolute -right-6 top-6 w-4 h-4 text-border" />
-                  )}
-                  <div className="flex flex-col items-center text-center gap-3">
-                    <div className="relative flex items-center justify-center w-14 h-14 rounded-xl bg-accent-light">
-                      <Icon className="w-6 h-6 text-accent" />
-                      <span className="absolute -top-2 -right-2 flex items-center justify-center w-6 h-6 rounded-full bg-accent text-white text-xs font-bold">
-                        {i + 1}
-                      </span>
-                    </div>
-                    <p className="text-sm font-bold text-foreground">{titre}</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed max-w-[200px]">{texte}</p>
+            <p className="anim-fade-up text-xs text-muted-foreground text-center -mt-6 mb-8">
+              Cliquez sur une étape pour voir le détail
+            </p>
+
+            <div className="grid sm:grid-cols-3 gap-6 sm:gap-8 items-start">
+              {ETAPES.map(({ icon: Icon, titre, texte, details }, i) => {
+                const ouvert = etapeOuverte === i
+                return (
+                  <div key={titre} className="anim-fade-up relative" style={{ animationDelay: `${i * 100}ms` }}>
+                    {i < ETAPES.length - 1 && (
+                      <IconArrowRight className="hidden sm:block absolute -right-5 top-10 w-4 h-4 text-border" />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => toggleEtape(i)}
+                      data-open={ouvert}
+                      aria-expanded={ouvert}
+                      aria-controls={`etape-details-${i}`}
+                      className="ec-step"
+                    >
+                      <div className="flex flex-col items-center text-center gap-3">
+                        <div className="ec-step-icon relative flex items-center justify-center w-14 h-14 rounded-xl bg-accent-light">
+                          <Icon className="w-6 h-6 text-accent" />
+                          <span className="ec-step-badge absolute -top-2 -right-2 flex items-center justify-center w-6 h-6 rounded-full bg-accent text-white text-xs font-bold">
+                            {i + 1}
+                          </span>
+                        </div>
+                        <p className="text-sm font-bold text-foreground">{titre}</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed max-w-[200px]">{texte}</p>
+                      </div>
+
+                      <div className="ec-step-details" id={`etape-details-${i}`}>
+                        <div>
+                          <ul className="space-y-2.5 text-left border-t border-border pt-4">
+                            {details.map((d) => (
+                              <li key={d} className="flex items-start gap-2">
+                                <span className="flex-shrink-0 flex items-center justify-center w-4 h-4 rounded-full bg-accent mt-0.5">
+                                  <IconCheck className="w-2.5 h-2.5 text-white" />
+                                </span>
+                                <span className="text-xs text-muted-foreground leading-relaxed">{d}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+
+                      <p className="ec-step-hint text-[11px] font-semibold text-muted-foreground mt-3">
+                        {ouvert ? "Réduire —" : "En savoir plus +"}
+                      </p>
+                    </button>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             <div className="anim-fade-up flex justify-center gap-3 mt-10 flex-wrap">
@@ -421,26 +696,35 @@ export default function EcomConnectPage() {
             <p className="anim-fade-up text-sm text-muted-foreground text-center mb-9">
               Vraies photos de commandes livrées via Adullam
             </p>
+          </div>
 
-            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-1">
-              {DELIVERY_PROOFS.map((src, i) => (
-                <div
-                  key={src}
-                  className="anim-fade-up flex-shrink-0 w-[200px] snap-center rounded-xl overflow-hidden shadow-xs bg-background"
-                  style={{ animationDelay: `${i * 80}ms` }}
-                >
-                  <div className="relative w-full aspect-square">
-                    <Image
-                      src={src}
-                      alt={`Preuve de livraison ${i + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="200px"
-                    />
-                  </div>
+          {/* Défilement automatique infini — pause au survol */}
+          <div className="anim-fade-in ec-marquee-viewport hide-scrollbar">
+            <div className="ec-marquee-track">
+              {MARQUEE_GROUPS.map((g) => (
+                <div className="ec-marquee-group" key={g} aria-hidden={g === 1}>
+                  {DELIVERY_PROOFS.map((src, i) => (
+                    <div
+                      key={`${g}-${src}`}
+                      className="ec-marquee-card flex-shrink-0 w-[200px] rounded-xl overflow-hidden shadow-xs bg-background"
+                    >
+                      <div className="relative w-full aspect-square">
+                        <Image
+                          src={src}
+                          alt={g === 0 ? `Preuve de livraison ${i + 1}` : ""}
+                          fill
+                          className="object-cover"
+                          sizes="200px"
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="max-w-3xl mx-auto px-5">
           </div>
         </section>
 
@@ -498,10 +782,10 @@ export default function EcomConnectPage() {
 
             <Link
               href={SOURCING_URL}
-              className="inline-flex items-center gap-2 rounded-lg px-7 py-4 text-base font-bold text-white bg-accent hover:bg-accent-hover transition-all duration-200 hover:scale-[1.03] active:scale-95"
+              className="ec-cta inline-flex items-center gap-2 rounded-lg px-7 py-4 text-base font-bold text-white bg-accent hover:bg-accent-hover"
             >
               Faire ma première demande de sourcing
-              <IconArrowRight className="w-4 h-4" />
+              <IconArrowRight className="ec-cta-arrow w-4 h-4" />
             </Link>
             <p className="text-xs text-white/60 mt-3">
               Réponse sous 24h pour les participants ecomConnect
