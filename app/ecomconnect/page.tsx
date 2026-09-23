@@ -805,7 +805,7 @@ export default function EcomConnectPage() {
               &laquo;&nbsp;Avec Adullam, j&apos;ai commandé directement depuis la Chine sans stress. Livré chez moi, au bon prix.&nbsp;&raquo;
             </p>
             <p className="text-sm font-semibold text-foreground">Emilienne Christine Essinga Mendjogo</p>
-            <p className="text-xs text-muted-foreground">Ma Signature Business CM · Cameroun</p>
+            <p className="text-xs text-muted-foreground">Group CM · PME Camerounaise</p>
           </div>
         </section>
 
