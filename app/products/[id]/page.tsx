@@ -509,9 +509,12 @@ function isLikelyMarkupJunk(text: string): boolean {
 // (product.description en priorité, sinon product.cleanedDesc), et retombe
 // sur un message par défaut si aucune des deux n'est exploitable.
 function getCleanDescriptionText(product: any): string {
-  const candidates = [product?.description, product?.cleanedDesc].filter(
-    (t: string | undefined) => typeof t === "string" && t.trim().length > 0
-  ) as string[]
+  const candidates = [
+    product?.descriptionFr,
+    product?.cleanedDescFr,
+    product?.description,
+    product?.cleanedDesc,
+  ].filter((t: string | undefined) => typeof t === "string" && t.trim().length > 0) as string[]
   const clean = candidates.find((t) => !isLikelyMarkupJunk(t))
   return clean || "Description non disponible"
 }
@@ -565,6 +568,32 @@ function parseDescriptionSpecs(rawText: string): {
   const extra = cutoffIndex < rawText.length ? rawText.slice(cutoffIndex).trim() : ""
 
   return { intro, specs, extra }
+}
+
+// Convertit product.attributes (objet {cle: valeur}, rempli par le pipeline Grotte)
+// en tableau {label,value}[] compatible avec l'affichage existant, uniquement
+// quand product.specifications (rempli par l'autre pipeline d'import) est vide.
+// Purement additif : un produit qui a deja product.specifications n'est jamais
+// affecte, il garde exactement le comportement actuel.
+function getProductSpecifications(product: any): { label: string; value: string }[] {
+  if (product?.specifications && product.specifications.length > 0) {
+    return product.specifications
+  }
+
+  const attrs = product?.attributes
+  if (attrs && typeof attrs === "object" && !Array.isArray(attrs)) {
+    const fromAttributes = Object.entries(attrs)
+      .filter(([, value]) => value !== null && value !== undefined && String(value).trim().length > 0)
+      .map(([label, value]) => ({ label, value: String(value) }))
+    if (fromAttributes.length > 0) return fromAttributes
+  }
+
+  return [
+    { label: "Marque", value: product?.brand || "TechPro" },
+    { label: "Modèle", value: product?.model || "Standard" },
+    { label: "Poids", value: product?.weight ? `${product.weight} kg` : "N/A" },
+    { label: "Garantie", value: "12 mois" },
+  ]
 }
 
 export default function ProductPage() {
@@ -2355,15 +2384,7 @@ export default function ProductPage() {
                   {activeTab === "specifications" && (
                     <div className="overflow-x-auto">
                       {(() => {
-                        const specs =
-                          product.specifications && product.specifications.length > 0
-                            ? product.specifications
-                            : [
-                                { label: "Marque", value: product.brand || "TechPro" },
-                                { label: "Modèle", value: product.model || "Standard" },
-                                { label: "Poids", value: product.weight ? `${product.weight} kg` : "N/A" },
-                                { label: "Garantie", value: "12 mois" },
-                              ]
+                        const specs = getProductSpecifications(product)
                         const visibleLimit = 6
                         const hasMore = specs.length > visibleLimit
                         const visibleSpecs = showAllSpecs ? specs : specs.slice(0, visibleLimit)
@@ -3205,15 +3226,7 @@ export default function ProductPage() {
                 {activeTab === "specifications" && (
                   <div className="overflow-x-auto">
                     {(() => {
-                      const specs =
-                        product.specifications && product.specifications.length > 0
-                          ? product.specifications
-                          : [
-                              { label: "Marque", value: product.brand || "TechPro" },
-                              { label: "Modèle", value: product.model || "Standard" },
-                              { label: "Poids", value: product.weight ? `${product.weight} kg` : "N/A" },
-                              { label: "Garantie", value: "12 mois" },
-                            ]
+                      const specs = getProductSpecifications(product)
                       const visibleLimit = 6
                       const hasMore = specs.length > visibleLimit
                       const visibleSpecs = showAllSpecs ? specs : specs.slice(0, visibleLimit)
