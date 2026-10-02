@@ -6,11 +6,11 @@ import MobileNav from "@/components/mobile-nav"
 import { Footer } from "@/components/footer"
 import { useCart } from "@/context/CartContext"
 import { useLocale } from "@/context/LocaleProvider"
+import { getAfricanCountries, getCountryName } from "@/lib/country-config"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { apiFetch } from "@/lib/api"
 import { toast } from "react-hot-toast"
 
 // ════════════════════════════════════════════════════════════
@@ -154,38 +154,15 @@ export default function CartPage() {
   const [openCountry, setOpenCountry] = useState(false)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
 
-  const africanCountries = [
-    { code: "CI", name: "Côte d'Ivoire" }, { code: "BF", name: "Burkina Faso" },
-    { code: "SN", name: "Sénégal" },       { code: "ML", name: "Mali" },
-    { code: "BJ", name: "Bénin" },         { code: "TG", name: "Togo" },
-    { code: "NE", name: "Niger" },         { code: "CM", name: "Cameroun" },
-    { code: "CF", name: "Rép. Centrafricaine" }, { code: "GA", name: "Gabon" },
-    { code: "CG", name: "Congo" },         { code: "CD", name: "RDC" },
-    { code: "MA", name: "Maroc" },         { code: "TN", name: "Tunisie" },
-    { code: "DZ", name: "Algérie" },       { code: "LY", name: "Libye" },
-    { code: "EG", name: "Égypte" },        { code: "ZA", name: "Afrique du Sud" },
-    { code: "KE", name: "Kenya" },         { code: "UG", name: "Ouganda" },
-    { code: "TZ", name: "Tanzanie" },      { code: "RW", name: "Rwanda" },
-    { code: "ET", name: "Éthiopie" },      { code: "AO", name: "Angola" },
-    { code: "MZ", name: "Mozambique" },    { code: "ZW", name: "Zimbabwe" },
-    { code: "ZM", name: "Zambie" },        { code: "BW", name: "Botswana" },
-    { code: "NA", name: "Namibie" },
-  ]
-
-  // ⚠️ Cette requête vers ipapi.co est bloquée par ta Content Security
-  // Policy actuelle (connect-src) — voir la console. Le .catch() évite un
-  // crash mais la détection auto du pays ne fonctionne donc jamais tant
-  // que ipapi.co n'est pas autorisé dans la CSP (ou remplacé par une
-  // détection côté serveur via les en-têtes de géolocalisation Vercel).
-  useEffect(() => {
-    apiFetch("https://ipapi.co/json/")
-      .then(res => res.json())
-      .then(data => {
-        const found = africanCountries.find(c => c.name === data.country_name)
-        if (found) setCountry(found.code)
-      })
-      .catch(() => {})
-  }, [])
+  // Pays de livraison : tous les pays africains de lib/country-config.ts (source unique).
+  // Noms en français tant que le panier n'est pas traduit (passer `language` après next-intl).
+  // La détection du pays est faite côté serveur (proxy.ts) : plus d'appel à ipapi.co ici.
+  const africanCountries = getAfricanCountries("fr")
+  // Si le pays courant n'est pas dans la liste (ex. visiteur US), on l'ajoute pour que le
+  // sélecteur reflète l'état réel au lieu d'afficher un nom vide ou le premier pays.
+  const countryOptions = africanCountries.some((c) => c.code === country)
+    ? africanCountries
+    : [{ code: country, name: getCountryName(country, "fr") }, ...africanCountries]
 
   const shippingModes = [
     { id: "bateau",  icon: Ship,     label: "Mer",    title: "Maritime (35-50j)" },
@@ -290,14 +267,14 @@ export default function CartPage() {
               <span className="text-sm font-medium text-foreground">Pays de livraison</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-accent">
-                  {africanCountries.find(c => c.code === country)?.name}
+                  {countryOptions.find(c => c.code === country)?.name}
                 </span>
                 <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${openCountry ? "rotate-180" : ""}`} />
               </div>
             </button>
             {openCountry && (
               <div className="mt-1 overflow-y-auto rounded-lg bg-popover shadow-lg" style={{ maxHeight: "220px" }}>
-                {africanCountries.map((c) => (
+                {countryOptions.map((c) => (
                   <button
                     key={c.code}
                     onClick={() => { setCountry(c.code); setOpenCountry(false) }}
@@ -473,7 +450,7 @@ export default function CartPage() {
                     onChange={(e) => setCountry(e.target.value)}
                     className="w-full mt-1 px-3 py-2.5 text-sm rounded-lg bg-muted text-foreground focus:outline-none"
                   >
-                    {africanCountries.map((c) => (
+                    {countryOptions.map((c) => (
                       <option key={c.code} value={c.code}>{c.name}</option>
                     ))}
                   </select>

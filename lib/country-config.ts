@@ -61,12 +61,17 @@ export const COUNTRY_CONFIG: Record<string, CountryConfig> = {
   TD: { currency: "XAF", locale: "fr-TD" },
 
   // Afrique de l'Ouest — hors zone CFA
+  GN: { currency: "GNF", locale: "fr-GN" },
   NG: { currency: "NGN", locale: "en-NG" },
   GH: { currency: "GHS", locale: "en-GH" },
   LR: { currency: "LRD", locale: "en-LR" },
   SL: { currency: "SLL", locale: "en-SL" },
   GM: { currency: "GMD", locale: "en-GM" },
   CV: { currency: "CVE", locale: "pt-CV" },
+
+  // Afrique centrale — hors zone CEMAC
+  CD: { currency: "CDF", locale: "fr-CD" },
+  ST: { currency: "STN", locale: "pt-ST" },
 
   // Afrique du Nord
   MA: { currency: "MAD", locale: "fr-MA" },
@@ -87,6 +92,7 @@ export const COUNTRY_CONFIG: Record<string, CountryConfig> = {
   DJ: { currency: "DJF", locale: "fr-DJ" },
   SD: { currency: "SDG", locale: "ar-SD" },
   SS: { currency: "SSP", locale: "en-SS" },
+  ER: { currency: "ERN", locale: "en-ER" },
 
   // Afrique australe
   ZA: { currency: "ZAR", locale: "en-ZA" },
@@ -97,6 +103,8 @@ export const COUNTRY_CONFIG: Record<string, CountryConfig> = {
   AO: { currency: "AOA", locale: "pt-AO" },
   ZM: { currency: "ZMW", locale: "en-ZM" },
   MW: { currency: "MWK", locale: "en-MW" },
+  SZ: { currency: "SZL", locale: "en-SZ" },
+  LS: { currency: "LSL", locale: "en-LS" },
 
   // Océan Indien
   MG: { currency: "MGA", locale: "fr-MG" },
@@ -141,4 +149,44 @@ export function resolveCountry(code: string | null | undefined): ResolvedCountry
   const country = normalizeCountry(code) ?? DEFAULT_COUNTRY
   const { currency, locale } = COUNTRY_CONFIG[country]
   return { country, currency, locale, language: getUiLanguage(locale) }
+}
+
+// ---------------------------------------------------------------------------
+// Liste des pays pour les sélecteurs (livraison, etc.)
+// ---------------------------------------------------------------------------
+
+// Pays présents dans la table uniquement pour l'affichage de la devise.
+const NON_AFRICAN_COUNTRIES = new Set(["US"])
+
+export type CountryOption = { code: string; name: string }
+
+const displayNamesCache = new Map<string, Intl.DisplayNames>()
+const africanCountriesCache = new Map<string, CountryOption[]>()
+
+/** Nom d'un pays dans la langue demandée, via Intl (aucun nom codé en dur). */
+export function getCountryName(code: string, language: string = "fr"): string {
+  try {
+    let names = displayNamesCache.get(language)
+    if (!names) {
+      names = new Intl.DisplayNames([language], { type: "region" })
+      displayNamesCache.set(language, names)
+    }
+    return names.of(code) ?? code
+  } catch {
+    return code
+  }
+}
+
+/** Tous les pays africains de COUNTRY_CONFIG, triés par nom dans la langue demandée. */
+export function getAfricanCountries(language: string = "fr"): CountryOption[] {
+  const cached = africanCountriesCache.get(language)
+  if (cached) return cached
+
+  const list = Object.keys(COUNTRY_CONFIG)
+    .filter((code) => !NON_AFRICAN_COUNTRIES.has(code))
+    .map((code) => ({ code, name: getCountryName(code, language) }))
+    .sort((a, b) => a.name.localeCompare(b.name, language))
+
+  africanCountriesCache.set(language, list)
+  return list
 }
