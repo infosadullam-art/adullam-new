@@ -14,19 +14,23 @@ import {
   DEFAULT_COUNTRY,
   LOCALE_COOKIE,
   MANUAL_COOKIE_MAX_AGE,
+  isUiLanguage,
   normalizeCountry,
   resolveCountry,
   type UiLanguage,
 } from "@/lib/country-config"
 
-// L'API publique reste celle que consomment les 19 fichiers existants
-// (country, currency, locale, setCountry, isLoading). `language` est ajouté.
+// L'API publique reste celle que consomment les fichiers existants
+// (country, currency, locale, setCountry, isLoading). `language` et `setLanguage` sont ajoutés.
+// Pays (devise, livraison) et langue d'interface sont INDÉPENDANTS : changer de pays
+// ne change jamais la langue choisie, et inversement.
 type LocaleContextType = {
   country: string
   currency: string
   locale: string // BCP-47, passé tel quel à Intl.NumberFormat (ex "fr-CI", "en-NG")
   language: UiLanguage // langue d'interface : fr | en | ar | pt
   setCountry: (country: string) => void
+  setLanguage: (language: UiLanguage) => void
   isLoading: boolean
 }
 
@@ -51,23 +55,35 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   // Rendu serveur et premier rendu client identiques (pas de mismatch d'hydratation),
   // puis lecture du cookie posé par proxy.ts juste après le montage.
   const [country, setCountryState] = useState(DEFAULT_COUNTRY)
+  // null = pas de langue connue : on dérive celle du pays (utile avant la lecture du cookie).
+  const [languageState, setLanguageState] = useState<UiLanguage | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const fromCookie = normalizeCountry(readCookie(COUNTRY_COOKIE))
-    if (fromCookie) setCountryState(fromCookie)
+    const countryFromCookie = normalizeCountry(readCookie(COUNTRY_COOKIE))
+    if (countryFromCookie) setCountryState(countryFromCookie)
+
+    const languageFromCookie = readCookie(LOCALE_COOKIE)
+    if (isUiLanguage(languageFromCookie)) setLanguageState(languageFromCookie)
+
     setIsLoading(false)
   }, [])
 
-  // Choix manuel : persiste pays + langue UI dans les cookies (1 an).
+  // Choix manuel du pays (devise + livraison) : persisté 1 an. La langue n'est PAS modifiée.
   // proxy.ts ne réécrit jamais un cookie valide, donc le choix survit aux visites suivantes.
   const setCountry = useCallback((code: string) => {
     const normalized = normalizeCountry(code)
     if (!normalized) return // pays non desservi : on ignore plutôt que de casser les prix
-    const { language } = resolveCountry(normalized)
     writeCookie(COUNTRY_COOKIE, normalized, MANUAL_COOKIE_MAX_AGE)
-    writeCookie(LOCALE_COOKIE, language, MANUAL_COOKIE_MAX_AGE)
     setCountryState(normalized)
+  }, [])
+
+  // Choix manuel de la langue : persisté 1 an. Le composant appelant recharge la page
+  // pour que les données (API) et l'interface repartent dans la nouvelle langue.
+  const setLanguage = useCallback((next: UiLanguage) => {
+    if (!isUiLanguage(next)) return
+    writeCookie(LOCALE_COOKIE, next, MANUAL_COOKIE_MAX_AGE)
+    setLanguageState(next)
   }, [])
 
   const value = useMemo<LocaleContextType>(() => {
@@ -76,11 +92,12 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
       country: resolved.country,
       currency: resolved.currency,
       locale: resolved.locale,
-      language: resolved.language,
+      language: languageState ?? resolved.language,
       setCountry,
+      setLanguage,
       isLoading,
     }
-  }, [country, setCountry, isLoading])
+  }, [country, languageState, setCountry, setLanguage, isLoading])
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
 }
