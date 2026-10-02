@@ -1,123 +1,88 @@
 // context/LocaleProvider.tsx
 "use client"
 
-import { createContext, useContext, useEffect, useState } from "react"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
+import {
+  COUNTRY_COOKIE,
+  DEFAULT_COUNTRY,
+  LOCALE_COOKIE,
+  MANUAL_COOKIE_MAX_AGE,
+  normalizeCountry,
+  resolveCountry,
+  type UiLanguage,
+} from "@/lib/country-config"
 
+// L'API publique reste celle que consomment les 19 fichiers existants
+// (country, currency, locale, setCountry, isLoading). `language` est ajouté.
 type LocaleContextType = {
   country: string
   currency: string
-  locale: string
+  locale: string // BCP-47, passé tel quel à Intl.NumberFormat (ex "fr-CI", "en-NG")
+  language: UiLanguage // langue d'interface : fr | en | ar | pt
   setCountry: (country: string) => void
   isLoading: boolean
 }
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined)
 
-const isDev = process.env.NODE_ENV === "development"
+function readCookie(name: string): string | null {
+  const entry = document.cookie.split("; ").find((row) => row.startsWith(`${name}=`))
+  if (!entry) return null
+  try {
+    return decodeURIComponent(entry.slice(name.length + 1))
+  } catch {
+    return null
+  }
+}
 
-// Mapping pays → devise + locale (garde ton mapping existant)
-const countryConfig: Record<string, { currency: string; locale: string }> = {
-  CI: { currency: "XOF", locale: "fr-CI" },
-  BF: { currency: "XOF", locale: "fr-BF" },
-  SN: { currency: "XOF", locale: "fr-SN" },
-  ML: { currency: "XOF", locale: "fr-ML" },
-  BJ: { currency: "XOF", locale: "fr-BJ" },
-  TG: { currency: "XOF", locale: "fr-TG" },
-  NE: { currency: "XOF", locale: "fr-NE" },
-  GW: { currency: "XOF", locale: "fr-GW" },
-  CM: { currency: "XAF", locale: "fr-CM" },
-  CF: { currency: "XAF", locale: "fr-CF" },
-  GA: { currency: "XAF", locale: "fr-GA" },
-  CG: { currency: "XAF", locale: "fr-CG" },
-  GQ: { currency: "XAF", locale: "fr-GQ" },
-  TD: { currency: "XAF", locale: "fr-TD" },
-  NG: { currency: "NGN", locale: "en-NG" },
-  GH: { currency: "GHS", locale: "en-GH" },
-  LR: { currency: "LRD", locale: "en-LR" },
-  SL: { currency: "SLL", locale: "en-SL" },
-  GM: { currency: "GMD", locale: "en-GM" },
-  CV: { currency: "CVE", locale: "pt-CV" },
-  MA: { currency: "MAD", locale: "fr-MA" },
-  TN: { currency: "TND", locale: "fr-TN" },
-  DZ: { currency: "DZD", locale: "fr-DZ" },
-  LY: { currency: "LYD", locale: "ar-LY" },
-  EG: { currency: "EGP", locale: "ar-EG" },
-  MR: { currency: "MRU", locale: "fr-MR" },
-  KE: { currency: "KES", locale: "en-KE" },
-  UG: { currency: "UGX", locale: "en-UG" },
-  TZ: { currency: "TZS", locale: "en-TZ" },
-  RW: { currency: "RWF", locale: "en-RW" },
-  BI: { currency: "BIF", locale: "fr-BI" },
-  ET: { currency: "ETB", locale: "am-ET" },
-  SO: { currency: "SOS", locale: "so-SO" },
-  DJ: { currency: "DJF", locale: "fr-DJ" },
-  SD: { currency: "SDG", locale: "ar-SD" },
-  SS: { currency: "SSP", locale: "en-SS" },
-  ZA: { currency: "ZAR", locale: "en-ZA" },
-  NA: { currency: "NAD", locale: "en-NA" },
-  BW: { currency: "BWP", locale: "en-BW" },
-  ZW: { currency: "ZWL", locale: "en-ZW" },
-  MZ: { currency: "MZN", locale: "pt-MZ" },
-  AO: { currency: "AOA", locale: "pt-AO" },
-  ZM: { currency: "ZMW", locale: "en-ZM" },
-  MW: { currency: "MWK", locale: "en-MW" },
-  MG: { currency: "MGA", locale: "fr-MG" },
-  MU: { currency: "MUR", locale: "en-MU" },
-  KM: { currency: "KMF", locale: "fr-KM" },
-  SC: { currency: "SCR", locale: "en-SC" },
-  US: { currency: "USD", locale: "en-US" },
-  default: { currency: "XOF", locale: "fr-CI" }
+function writeCookie(name: string, value: string, maxAge: number) {
+  const secure = window.location.protocol === "https:" ? "; Secure" : ""
+  document.cookie = `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; SameSite=Lax${secure}`
 }
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
-  const [country, setCountry] = useState("CI")
+  // Rendu serveur et premier rendu client identiques (pas de mismatch d'hydratation),
+  // puis lecture du cookie posé par proxy.ts juste après le montage.
+  const [country, setCountryState] = useState(DEFAULT_COUNTRY)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const detectCountry = async () => {
-      try {
-        if (isDev) console.log("🔵 Détection du pays...")
+    const fromCookie = normalizeCountry(readCookie(COUNTRY_COOKIE))
+    if (fromCookie) setCountryState(fromCookie)
+    setIsLoading(false)
+  }, [])
 
-        // ✅ PAS DE CACHE - Détection à chaque chargement
-        const response = await fetch("https://ipapi.co/json/")
-        const data = await response.json()
+  // Choix manuel : persiste pays + langue UI dans les cookies (1 an).
+  // proxy.ts ne réécrit jamais un cookie valide, donc le choix survit aux visites suivantes.
+  const setCountry = useCallback((code: string) => {
+    const normalized = normalizeCountry(code)
+    if (!normalized) return // pays non desservi : on ignore plutôt que de casser les prix
+    const { language } = resolveCountry(normalized)
+    writeCookie(COUNTRY_COOKIE, normalized, MANUAL_COOKIE_MAX_AGE)
+    writeCookie(LOCALE_COOKIE, language, MANUAL_COOKIE_MAX_AGE)
+    setCountryState(normalized)
+  }, [])
 
-        if (isDev) console.log("🟢 Pays détecté par IP:", data.country_code)
-
-        // Vérifier si le pays détecté est dans notre config
-        if (data.country_code && countryConfig[data.country_code]) {
-          setCountry(data.country_code)
-        } else {
-          // Si pays non supporté, utiliser CI par défaut
-          if (isDev) console.log("🟡 Pays non supporté, utilisation CI par défaut")
-          setCountry("CI")
-        }
-      } catch (error) {
-        if (isDev) console.warn("⚠️ Erreur détection pays, utilisation CI par défaut")
-        setCountry("CI")
-      } finally {
-        setIsLoading(false)
-      }
+  const value = useMemo<LocaleContextType>(() => {
+    const resolved = resolveCountry(country)
+    return {
+      country: resolved.country,
+      currency: resolved.currency,
+      locale: resolved.locale,
+      language: resolved.language,
+      setCountry,
+      isLoading,
     }
+  }, [country, setCountry, isLoading])
 
-    detectCountry()
-  }, []) // ✅ S'exécute à chaque chargement de page
-
-  const config = countryConfig[country] || countryConfig.default
-
-  return (
-    <LocaleContext.Provider
-      value={{
-        country,
-        currency: config.currency,
-        locale: config.locale,
-        setCountry,
-        isLoading
-      }}
-    >
-      {children}
-    </LocaleContext.Provider>
-  )
+  return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
 }
 
 export const useLocale = () => {
