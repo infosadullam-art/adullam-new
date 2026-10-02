@@ -239,7 +239,10 @@ const AFRICAN_COUNTRIES = [
   { code: "MW", name: "Malawi", flag: "🇲🇼", prefix: "+265" },
   { code: "MZ", name: "Mozambique", flag: "🇲🇿", prefix: "+258" },
   { code: "AO", name: "Angola", flag: "🇦🇴", prefix: "+244" },
-  { code: "BI", name: "Burundi", flag: "🇧🇮", prefix: "+257" }
+  { code: "BI", name: "Burundi", flag: "🇧🇮", prefix: "+257" },
+  { code: "LY", name: "Libye", flag: "🇱🇾", prefix: "+218" },
+  { code: "LS", name: "Lesotho", flag: "🇱🇸", prefix: "+266" },
+  { code: "SZ", name: "Eswatini", flag: "🇸🇿", prefix: "+268" }
 ];
 
 // Modes d'expédition

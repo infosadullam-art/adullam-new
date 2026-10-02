@@ -1,7 +1,7 @@
 import { useLocale } from "@/context/LocaleProvider"
 
 // ============================================
-// 💰 TAUX DE CHANGE USD → DEVISES AFRICAINES
+// TAUX DE CHANGE USD → DEVISES AFRICAINES
 // ============================================
 const EXCHANGE_RATES: Record<string, number> = {
   XOF: 615.50, XAF: 615.50,
@@ -32,39 +32,44 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 }
 
 const NO_DECIMAL_CURRENCIES = [
-  "XOF", "XAF", "CDF", "GNF", "RWF", "BIF", 
+  "XOF", "XAF", "CDF", "GNF", "RWF", "BIF",
   "MGA", "NGN", "UGX", "TZS", "KMF", "MRU"
 ]
 
 export const useCurrencyFormatter = () => {
   const { currency, locale } = useLocale()
 
-  const safeCurrency = currency || "XOF"
+  const requestedCurrency = currency || "XOF"
+
+  // Devise sans taux de change connu (ex : ETB, LRD, SLL, GMD, SOS, DJF, SDG, SSP, ZWL, ERN) :
+  // on affiche en USD plutôt que d'appliquer le taux d'une autre devise sous un faux libellé.
+  // `currency` exposé ci-dessous est la devise réellement affichée.
+  const safeCurrency = EXCHANGE_RATES[requestedCurrency] ? requestedCurrency : "USD"
   const safeLocale = locale || "fr-FR"
 
+  const rate = EXCHANGE_RATES[safeCurrency]
+
   const convertFromUSD = (usdAmount: number): number => {
-    const rate = EXCHANGE_RATES[safeCurrency] || EXCHANGE_RATES.XOF
     return usdAmount * rate
   }
 
   const convertToUSD = (localAmount: number): number => {
-    const rate = EXCHANGE_RATES[safeCurrency] || EXCHANGE_RATES.XOF
     return localAmount / rate
   }
 
-  // ✅ CORRECTION : Pour les pays CFA, on force l'affichage de "FCFA"
-  const isCFACurrency = safeCurrency === 'XOF' || safeCurrency === 'XAF'
+  // Pour les pays CFA, on force l'affichage de "FCFA"
+  const isCFACurrency = safeCurrency === "XOF" || safeCurrency === "XAF"
 
   const formatPrice = (usdAmount: any) => {
     if (usdAmount === null || usdAmount === undefined) return "—"
-    
+
     const value = Number(usdAmount)
     if (isNaN(value)) return "—"
-    
+
     const convertedValue = convertFromUSD(value)
     const fractionDigits = NO_DECIMAL_CURRENCIES.includes(safeCurrency) ? 0 : 2
 
-    // ✅ Pour les pays CFA : on formate manuellement avec "FCFA"
+    // Pour les pays CFA : on formate manuellement avec "FCFA"
     if (isCFACurrency) {
       try {
         const formattedNumber = new Intl.NumberFormat(safeLocale, {
@@ -91,7 +96,7 @@ export const useCurrencyFormatter = () => {
   }
 
   const getCurrencySymbol = () => {
-    // ✅ Pour les pays CFA, retourner "FCFA"
+    // Pour les pays CFA, retourner "FCFA"
     if (isCFACurrency) {
       return "FCFA"
     }
@@ -99,18 +104,18 @@ export const useCurrencyFormatter = () => {
   }
 
   const getCurrentRate = () => {
-    return EXCHANGE_RATES[safeCurrency] || EXCHANGE_RATES.XOF
+    return rate
   }
 
   const formatPriceWithoutSymbol = (usdAmount: any) => {
     if (usdAmount === null || usdAmount === undefined) return "—"
-    
+
     const value = Number(usdAmount)
     if (isNaN(value)) return "—"
-    
+
     const convertedValue = convertFromUSD(value)
     const fractionDigits = NO_DECIMAL_CURRENCIES.includes(safeCurrency) ? 0 : 2
-    
+
     try {
       return new Intl.NumberFormat(safeLocale, {
         minimumFractionDigits: fractionDigits,
