@@ -15,6 +15,10 @@ import { ChatbotProvider } from "@/components/chatbot-provider"
 import { ThemeProvider, themeNoFlashScript } from "@/components/theme-provider"
 // AJOUT LOADER — overlay de chargement au clic/navigation
 import { LoadingProvider } from "@/components/LoadingProvider"
+// AJOUT I18N — langue d'interface (cookie nx_locale) + messages next-intl
+import { NextIntlClientProvider } from "next-intl"
+import { getLocale, getMessages } from "next-intl/server"
+import { getDirection } from "@/lib/country-config"
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -98,10 +102,13 @@ function GlobalErrorBoundary({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale()
+  const messages = await getMessages()
+
   return (
     // suppressHydrationWarning : le thème mute la classe de <html> avant l'hydratation
-    <html lang="fr" className={`scroll-smooth ${poppins.variable} ${fraunces.variable}`} translate="no" suppressHydrationWarning>
+    <html lang={locale} dir={getDirection(locale)} className={`scroll-smooth ${poppins.variable} ${fraunces.variable}`} translate="no" suppressHydrationWarning>
       <head>
         {/* AJOUT REFONTE — script anti-flash : applique .dark avant le paint */}
         <script dangerouslySetInnerHTML={{ __html: themeNoFlashScript }} />
@@ -143,6 +150,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       {/* bg-white text-gray-900 -> tokens, indispensable pour le mode sombre */}
       <body className="antialiased bg-background text-foreground font-sans">
+        <NextIntlClientProvider locale={locale} messages={messages}>
         <ThemeProvider>
           <SplashScreen />
           <div id="main-content">
@@ -193,6 +201,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Analytics />
           </div>
         </ThemeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   )

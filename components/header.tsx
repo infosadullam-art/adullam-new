@@ -8,6 +8,8 @@ import { useAuth } from "@/lib/admin/auth-context"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useUnreadNotifications } from "@/hooks/useUnreadNotifications"
+import { useTranslations } from "next-intl"
+import { LanguageSelector } from "@/components/LanguageSelector"
 
 // ════════════════════════════════════════════════════════════
 // ICÔNES — dessinées maison (fini le look "lucide par défaut")
@@ -89,8 +91,9 @@ const IconLogOut = ({ className }: IconProps) => (
   </svg>
 )
 
+// Clés de traduction (messages "header.suggestions.*") : le texte affiché vient de next-intl.
 const searchSuggestions = [
-  "chaussure", "robe de soirée", "écouteur", "sac à main",
+  "chaussure", "robeDeSoiree", "ecouteur", "sacAMain",
   "montre", "parfum", "jean", "casquette"
 ]
 
@@ -142,6 +145,8 @@ export function Header() {
   const pathname = usePathname()
   const { cart } = useCart()
   const { user, logout, isLoading } = useAuth()
+  const t = useTranslations("header")
+  const tc = useTranslations("categories")
 
   // ============================================================
   // MOUNT
@@ -312,12 +317,12 @@ export function Header() {
   }
 
   const navItems = [
-    { label: "Deals du jour", path: "/deals-du-jour" },
-    { label: "Sourcing", path: "/boutique-noel" },
-    { label: "Offres Spéciales", path: "/offres-speciales" },
-    { label: "For You", path: "/for-you" },
-    { label: "Meilleures ventes", path: "/meilleures-ventes" },
-    { label: "Nouveautés", path: "/nouveautes" },
+    { label: t("nav.dealsDuJour"), path: "/deals-du-jour" },
+    { label: t("nav.sourcing"), path: "/boutique-noel" },
+    { label: t("nav.offresSpeciales"), path: "/offres-speciales" },
+    { label: t("nav.forYou"), path: "/for-you" },
+    { label: t("nav.meilleuresVentes"), path: "/meilleures-ventes" },
+    { label: t("nav.nouveautes"), path: "/nouveautes" },
   ]
 
   const categories = [
@@ -345,23 +350,26 @@ export function Header() {
               <div className="h-3 w-32 rounded-sm animate-pulse bg-white/15" />
             ) : user ? (
               <button onClick={goToAccount} className="link-underline text-xs font-medium text-white/70 transition-colors duration-200 hover:text-white">
-                Bonjour, {user.name || user.email?.split("@")[0]}
+                {t("hello", { name: user.name || user.email?.split("@")[0] })}
               </button>
             ) : (
               <>
                 <button onClick={goToLogin} className="link-underline flex items-center gap-1.5 text-xs text-white/70 transition-colors duration-200 hover:text-white">
-                  <IconLogIn className="w-3.5 h-3.5" /> Connexion
+                  <IconLogIn className="w-3.5 h-3.5" /> {t("login")}
                 </button>
                 <button onClick={goToRegister} className="link-underline flex items-center gap-1.5 text-xs font-medium text-white/70 transition-colors duration-200 hover:text-white">
-                  <IconUserPlus className="w-3.5 h-3.5" /> Inscription
+                  <IconUserPlus className="w-3.5 h-3.5" /> {t("register")}
                 </button>
               </>
             )}
             <button onClick={goToAccount} className="link-underline text-xs text-white/70 transition-colors duration-200 hover:text-white">
-              Compte &amp; commandes
+              {t("accountAndOrders")}
             </button>
           </div>
-          <ThemeToggle variant="switch" />
+          <div className="flex items-center gap-3">
+            <LanguageSelector className="h-7 text-xs" />
+            <ThemeToggle variant="switch" />
+          </div>
         </div>
 
         {/* BARRE PRINCIPALE */}
@@ -392,7 +400,7 @@ export function Header() {
                   onMouseLeave={handleMouseLeaveMega}
                   className="flex items-center gap-2 rounded-lg bg-surface px-4 py-2 text-sm font-medium text-foreground shadow-xs transition-all duration-200 hover:bg-surface-sunken hover:shadow-sm focus:outline-none"
                 >
-                  Catégories
+                  {t("categories")}
                   <IconChevronDown
                     className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${showMegaMenu ? "rotate-180" : ""}`}
                   />
@@ -406,7 +414,7 @@ export function Header() {
                     className="anim-scale-in absolute top-full left-0 mt-2 z-[9999] w-[900px] rounded-xl border border-border bg-popover p-5 elevate-lg"
                     style={{ transformOrigin: "top left" }}
                   >
-                    <p className="overline mb-3 text-muted-foreground">Toutes les catégories</p>
+                    <p className="overline mb-3 text-muted-foreground">{t("allCategories")}</p>
                     <div className="stagger grid grid-cols-6 gap-2 mb-2">
                       {categories.slice(0, 6).map((cat) => (
                         <button
@@ -424,7 +432,7 @@ export function Header() {
                               : "bg-surface text-foreground hover:bg-surface-sunken"
                           }`}
                         >
-                          {cat.title}
+                          {tc(generateSlug(cat.title))}
                         </button>
                       ))}
                     </div>
@@ -445,14 +453,14 @@ export function Header() {
                               : "bg-surface text-foreground hover:bg-surface-sunken"
                           }`}
                         >
-                          {cat.title}
+                          {tc(generateSlug(cat.title))}
                         </button>
                       ))}
                     </div>
 
                     {activeCategory && (
                       <div className="anim-fade-up border-t border-border pt-4">
-                        <p className="overline mb-3 text-accent">{activeCategory}</p>
+                        <p className="overline mb-3 text-accent">{tc(generateSlug(activeCategory))}</p>
                         <div className="grid grid-cols-4 gap-1.5">
                           {categories
                             .find((c) => c.title === activeCategory)
@@ -466,7 +474,7 @@ export function Header() {
                                 }}
                                 className="link-underline rounded-lg px-2 py-1.5 text-left text-xs text-ink-2 transition-colors duration-200 hover:text-accent"
                               >
-                                {item}
+                                {tc(generateSlug(item))}
                               </button>
                             ))}
                         </div>
@@ -478,7 +486,7 @@ export function Header() {
                             }}
                             className="mt-3 flex items-center gap-1 text-xs font-semibold text-accent"
                           >
-                            Voir tout <IconChevronRight className="w-3.5 h-3.5" />
+                            {t("seeAll")} <IconChevronRight className="w-3.5 h-3.5" />
                           </button>
                         )}
                       </div>
@@ -492,7 +500,7 @@ export function Header() {
                         }}
                         className="text-xs font-semibold text-accent link-underline"
                       >
-                        Voir toutes les catégories →
+                        {t("seeAllCategories")}
                       </button>
                     </div>
                   </div>
@@ -517,7 +525,7 @@ export function Header() {
                       }}
                     >
                       <span className="text-sm text-muted-foreground">
-                        Rechercher «&nbsp;{searchSuggestions[suggestionIndex]}&nbsp;»
+                        {t("searchSuggestion", { query: t(`suggestions.${searchSuggestions[suggestionIndex]}`) })}
                       </span>
                     </div>
                   </div>
@@ -538,7 +546,7 @@ export function Header() {
 
                 <button
                   onClick={handleSearch}
-                  aria-label="Rechercher"
+                  aria-label={t("searchAria")}
                   className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-accent transition-all duration-200 hover:bg-accent-hover hover:scale-105 active:scale-95 focus:outline-none"
                 >
                   <IconSearch className="w-4 h-4 text-white" />
@@ -570,9 +578,9 @@ export function Header() {
                         style={{ transformOrigin: "top right" }}
                       >
                         {[
-                          { label: "Mon compte", href: "/account" },
-                          { label: "Mes commandes", href: "/orders" },
-                          { label: "Favoris", href: "/favorites" },
+                          { label: t("myAccount"), href: "/account" },
+                          { label: t("myOrders"), href: "/orders" },
+                          { label: t("favorites"), href: "/favorites" },
                         ].map(({ label, href }) => (
                           <Link
                             key={href}
@@ -587,13 +595,13 @@ export function Header() {
                           onClick={handleLogout}
                           className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-accent transition-colors duration-200 hover:bg-accent-light"
                         >
-                          <IconLogOut className="w-4 h-4" /> Déconnexion
+                          <IconLogOut className="w-4 h-4" /> {t("logout")}
                         </button>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <IconButton onClick={goToLogin} ariaLabel="Mon compte">
+                  <IconButton onClick={goToLogin} ariaLabel={t("myAccount")}>
                     <IconUser className="w-[19px] h-[19px]" />
                   </IconButton>
                 )}
@@ -604,7 +612,7 @@ export function Header() {
                   className="relative flex items-center gap-2 rounded-full bg-accent px-4 py-2.5 text-white transition-all duration-200 hover:bg-accent-hover hover:scale-105 active:scale-95 focus:outline-none"
                 >
                   <IconBag className="w-[18px] h-[18px]" />
-                  <span className="hidden text-sm font-semibold lg:inline">Panier</span>
+                  <span className="hidden text-sm font-semibold lg:inline">{t("cart")}</span>
                   {cart.length > 0 && (
                     <span className="anim-scale-in flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-accent tabular-nums">
                       {cart.length}
@@ -613,7 +621,7 @@ export function Header() {
                 </button>
 
                 {/* 🔔 NOTIFICATIONS */}
-                <IconButton onClick={() => router.push("/notifications")} ariaLabel="Notifications">
+                <IconButton onClick={() => router.push("/notifications")} ariaLabel={t("notifications")}>
                   <IconBell className="w-[19px] h-[19px]" />
                   {unreadCount > 0 && (
                     <span
@@ -640,7 +648,7 @@ export function Header() {
               {/* Mobile menu toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label="Menu"
+                aria-label={t("menu")}
                 className="lg:hidden ml-auto flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-all duration-200 hover:bg-surface active:scale-95 focus:outline-none"
               >
                 {mobileMenuOpen ? <IconClose className="w-[19px] h-[19px]" /> : <IconMenu className="w-[19px] h-[19px]" />}
@@ -696,10 +704,11 @@ export function Header() {
                 adul<span className="text-accent">.</span>lam
               </span>
               <div className="flex items-center gap-1">
+                <LanguageSelector className="h-8 text-xs" />
                 <ThemeToggle variant="icon" />
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  aria-label="Fermer"
+                  aria-label={t("close")}
                   className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-all duration-200 hover:bg-surface active:scale-95 focus:outline-none"
                 >
                   <IconClose className="w-5 h-5" />
@@ -711,7 +720,7 @@ export function Header() {
               <div className="mb-4 h-4 w-2/5 animate-pulse rounded-sm bg-surface" />
             ) : user ? (
               <div className="mb-4 rounded-xl bg-surface p-3">
-                <p className="overline mb-1 text-muted-foreground">Connecté</p>
+                <p className="overline mb-1 text-muted-foreground">{t("connected")}</p>
                 <p className="truncate text-sm font-semibold text-foreground">{user.name || user.email}</p>
               </div>
             ) : (
@@ -723,7 +732,7 @@ export function Header() {
                   }}
                   className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-brand py-2.5 text-sm font-semibold text-white transition-transform duration-200 active:scale-95"
                 >
-                  <IconLogIn className="w-4 h-4" /> Connexion
+                  <IconLogIn className="w-4 h-4" /> {t("login")}
                 </button>
                 <button
                   onClick={() => {
@@ -732,7 +741,7 @@ export function Header() {
                   }}
                   className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-surface py-2.5 text-sm font-semibold text-foreground transition-transform duration-200 active:scale-95"
                 >
-                  <IconUserPlus className="w-4 h-4" /> S&apos;inscrire
+                  <IconUserPlus className="w-4 h-4" /> {t("signUp")}
                 </button>
               </div>
             )}
@@ -753,7 +762,7 @@ export function Header() {
               ))}
             </div>
 
-            <p className="overline mb-3 text-muted-foreground">Catégories</p>
+            <p className="overline mb-3 text-muted-foreground">{t("categories")}</p>
             {categories.map((cat) => (
               <div key={cat.title}>
                 <button
@@ -767,7 +776,7 @@ export function Header() {
                   }}
                   className="flex w-full items-center justify-between border-b border-border py-3 text-sm font-medium text-foreground"
                 >
-                  {cat.title}
+                  {tc(generateSlug(cat.title))}
                   {cat.items.length > 0 && (
                     <IconChevronDown
                       className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${
@@ -787,7 +796,7 @@ export function Header() {
                         }}
                         className="py-1.5 text-left text-sm text-ink-3 hover:text-accent"
                       >
-                        {item}
+                        {tc(generateSlug(item))}
                       </button>
                     ))}
                   </div>
@@ -797,7 +806,7 @@ export function Header() {
 
             {user && (
               <button onClick={handleLogout} className="mt-4 flex items-center gap-2 text-sm font-medium text-accent">
-                <IconLogOut className="w-4 h-4" /> Déconnexion
+                <IconLogOut className="w-4 h-4" /> {t("logout")}
               </button>
             )}
           </div>

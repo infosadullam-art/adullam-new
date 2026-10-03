@@ -18,6 +18,9 @@ export type UiLanguage = (typeof UI_LANGUAGES)[number]
 // (ex : am-ET amharique, so-SO somali → anglais).
 export const FALLBACK_UI_LANGUAGE: UiLanguage = "en"
 
+// Langues écrites de droite à gauche (appliqué sur <html dir="...">).
+export const RTL_LANGUAGES: readonly UiLanguage[] = ["ar"]
+
 // Pays par défaut (marché principal) quand la géoloc échoue ou que le pays
 // détecté n'est pas desservi.
 export const DEFAULT_COUNTRY = "CI"
@@ -135,6 +138,11 @@ export function isUiLanguage(value: string | null | undefined): value is UiLangu
 export function getUiLanguage(locale: string): UiLanguage {
   const prefix = locale.split("-")[0].toLowerCase()
   return isUiLanguage(prefix) ? prefix : FALLBACK_UI_LANGUAGE
+}
+
+/** Sens d'écriture d'une langue d'interface. */
+export function getDirection(language: string): "rtl" | "ltr" {
+  return (RTL_LANGUAGES as readonly string[]).includes(language) ? "rtl" : "ltr"
 }
 
 export type ResolvedCountry = {

@@ -1,9 +1,12 @@
 import { fileURLToPath } from "url"
 import { dirname, resolve } from "path"
 import { withSentryConfig } from "@sentry/nextjs"
+import createNextIntlPlugin from "next-intl/plugin"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
+
+const withNextIntl = createNextIntlPlugin("./i18n/request.ts")
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -46,7 +49,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: blob:",
               "font-src 'self' data: https://fonts.cdnfonts.com",
-              "connect-src 'self' https://api.adullamarket.com https://*.facebook.com https://vitals.vercel-insights.com https://ipapi.co",
+              "connect-src 'self' https://api.adullamarket.com https://*.facebook.com https://vitals.vercel-insights.com",
               "frame-ancestors 'self'",
               "base-uri 'self'",
               "form-action 'self'",
@@ -87,7 +90,7 @@ const nextConfig = {
   },
 }
 
-export default withSentryConfig(nextConfig, {
+export default withSentryConfig(withNextIntl(nextConfig), {
   org: "adullam-market",
   project: "adullam-frontend",
   silent: !process.env.CI,

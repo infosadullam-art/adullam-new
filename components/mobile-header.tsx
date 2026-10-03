@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/admin/auth-context"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useTranslations } from "next-intl"
+import { LanguageSelector } from "@/components/LanguageSelector"
 
 // ════════════════════════════════════════════════════════════
 // ICÔNES — mêmes dessins maison que le header desktop, pour une
@@ -144,9 +146,10 @@ const IconBasket = ({ className }: IconProps) => (
   </svg>
 )
 
+// Clés de traduction (messages "header.suggestions.*") : le texte affiché vient de next-intl.
 const searchSuggestions = [
-  "chaussure", "robe de soirée", "écouteur", "sac à main",
-  "montre", "parfum", "jean", "casquette", "téléphone", "basket"
+  "chaussure", "robeDeSoiree", "ecouteur", "sacAMain",
+  "montre", "parfum", "jean", "casquette", "telephone", "basket"
 ]
 
 const categoryItems = [
@@ -175,6 +178,8 @@ export function MobileHeader() {
 
   const router = useRouter()
   const { user, logout, isLoading } = useAuth()
+  const t = useTranslations("header")
+  const tc = useTranslations("categories")
 
   // Fade-in au montage
   useEffect(() => {
@@ -284,7 +289,7 @@ export function MobileHeader() {
             <button
               onClick={() => router.push("/")}
               className="font-logo transition-transform duration-200 active:scale-95 focus:outline-none"
-              aria-label="Accueil Adullam"
+              aria-label={t("homeAria")}
             >
               <span
                 className="text-foreground"
@@ -315,7 +320,7 @@ export function MobileHeader() {
               {/* Compte */}
               <button
                 onClick={goToAccount}
-                aria-label="Mon compte"
+                aria-label={t("myAccount")}
                 className="relative flex items-center justify-center rounded-full text-foreground transition-all duration-200 hover:bg-surface active:scale-90 focus:outline-none"
                 style={{
                   width:  scrolled ? "34px" : "36px",
@@ -335,7 +340,7 @@ export function MobileHeader() {
               {/* Panier */}
               <button
                 onClick={handleCartClick}
-                aria-label="Panier"
+                aria-label={t("cart")}
                 className="relative flex items-center justify-center rounded-full bg-accent text-white transition-all duration-200 hover:bg-accent-hover active:scale-90 focus:outline-none overflow-hidden"
                 style={{
                   width:  scrolled ? "34px" : "36px",
@@ -355,7 +360,7 @@ export function MobileHeader() {
               {/* Burger */}
               <button
                 onClick={() => setShowMenu(p => !p)}
-                aria-label={showMenu ? "Fermer le menu" : "Ouvrir le menu"}
+                aria-label={showMenu ? t("closeMenu") : t("openMenu")}
                 className="flex items-center justify-center rounded-full text-foreground transition-all duration-200 active:scale-90 focus:outline-none"
                 style={{
                   background: showMenu ? "var(--surface-sunken)" : "transparent",
@@ -398,7 +403,7 @@ export function MobileHeader() {
                   }}
                 >
                   <span className="text-sm text-muted-foreground">
-                    Rechercher «&nbsp;{searchSuggestions[suggestionIndex]}&nbsp;»
+                    {t("searchSuggestion", { query: t(`suggestions.${searchSuggestions[suggestionIndex]}`) })}
                   </span>
                 </div>
               </div>
@@ -456,10 +461,11 @@ export function MobileHeader() {
             adul<span className="text-accent">.</span>lam
           </span>
           <div className="flex items-center gap-1">
+            <LanguageSelector className="h-8 text-xs" />
             <ThemeToggle variant="icon" className="h-8 w-8 rounded-full border-0 bg-transparent hover:bg-surface transition-colors duration-200" />
             <button
               onClick={closeMenu}
-              aria-label="Fermer"
+              aria-label={t("close")}
               className="flex items-center justify-center w-8 h-8 rounded-full text-foreground transition-all duration-200 hover:bg-surface active:scale-90 focus:outline-none"
             >
               <IconClose className="w-4 h-4" />
@@ -476,7 +482,7 @@ export function MobileHeader() {
             </div>
           ) : user ? (
             <div className="px-5 py-4 border-b border-border">
-              <p className="overline mb-1 text-muted-foreground">Connecté en tant que</p>
+              <p className="overline mb-1 text-muted-foreground">{t("connectedAs")}</p>
               <p className="text-sm font-semibold truncate text-foreground">
                 {user.name || user.email}
               </p>
@@ -488,14 +494,14 @@ export function MobileHeader() {
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold bg-brand text-white transition-transform duration-200 active:scale-95"
               >
                 <IconLogIn className="w-4 h-4" />
-                Connexion
+                {t("login")}
               </button>
               <button
                 onClick={goToRegister}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold bg-surface text-foreground transition-colors duration-200 hover:bg-surface-sunken active:scale-95"
               >
                 <IconUserPlus className="w-4 h-4" />
-                S&apos;inscrire
+                {t("signUp")}
               </button>
             </div>
           )}
@@ -503,10 +509,10 @@ export function MobileHeader() {
           {/* Navigation */}
           <nav className="flex flex-col mt-1">
             {[
-              ...(user ? [{ label: "Mon compte", icon: IconUser, action: goToAccount }] : []),
-              { label: "Vos commandes", icon: IconPackage, action: goToOrders    },
-              { label: "Favoris",       icon: IconHeart,   action: goToFavorites },
-              { label: "Besoin d'aide", icon: IconHelp,    action: goToHelp      },
+              ...(user ? [{ label: t("myAccount"), icon: IconUser, action: goToAccount }] : []),
+              { label: t("yourOrders"), icon: IconPackage, action: goToOrders    },
+              { label: t("favorites"),       icon: IconHeart,   action: goToFavorites },
+              { label: t("help"), icon: IconHelp,    action: goToHelp      },
             ].map(({ label, icon: Icon, action }) => (
               <button
                 key={label}
@@ -527,7 +533,7 @@ export function MobileHeader() {
                 className="flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-accent transition-colors duration-200 hover:bg-accent-light"
               >
                 <IconLogOut className="w-[18px] h-[18px]" />
-                Déconnexion
+                {t("logout")}
               </button>
             )}
           </nav>
@@ -538,7 +544,7 @@ export function MobileHeader() {
           {/* Catégories */}
           <div className="px-5">
             <p className="overline mb-1.5 text-muted-foreground">
-              Catégories
+              {t("categories")}
             </p>
             <div className="flex flex-col">
               {categoryItems.map((cat) => {
@@ -551,7 +557,7 @@ export function MobileHeader() {
                   >
                     <span className="flex items-center gap-3">
                       <Icon className="w-[18px] h-[18px] text-muted-foreground" />
-                      {cat.label}
+                      {tc(cat.slug)}
                     </span>
                     <IconChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
                   </button>

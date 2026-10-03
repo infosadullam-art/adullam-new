@@ -6,6 +6,9 @@ import Link from "next/link"
 import { useLocale } from "@/context/LocaleProvider"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { ChevronRight, TrendingUp, MapPin } from "lucide-react"
+import { useTranslations } from "next-intl"
+import { getCountryName } from "@/lib/country-config"
+import { withLocale } from "@/lib/locale-client"
 
 // ════════════════════════════════════════════════════════════
 // API - Changement de produits toutes les 10h
@@ -45,59 +48,69 @@ interface CountryTrend {
   trendScore: number
 }
 
-const pays = {
-  CI: { nom: "Côte d'Ivoire", drapeau: "🇨🇮", code: "CI" },
-  SN: { nom: "Sénégal",       drapeau: "🇸🇳", code: "SN" },
-  CM: { nom: "Cameroun",      drapeau: "🇨🇲", code: "CM" },
-  MA: { nom: "Maroc",         drapeau: "🇲🇦", code: "MA" },
-  TN: { nom: "Tunisie",       drapeau: "🇹🇳", code: "TN" },
-  DZ: { nom: "Algérie",       drapeau: "🇩🇿", code: "DZ" },
-  BF: { nom: "Burkina Faso",  drapeau: "🇧🇫", code: "BF" },
-  ML: { nom: "Mali",          drapeau: "🇲🇱", code: "ML" },
-  NE: { nom: "Niger",         drapeau: "🇳🇪", code: "NE" },
-  TG: { nom: "Togo",          drapeau: "🇹🇬", code: "TG" },
-  BJ: { nom: "Bénin",         drapeau: "🇧🇯", code: "BJ" },
-  CG: { nom: "Congo",         drapeau: "🇨🇬", code: "CG" },
-  GA: { nom: "Gabon",         drapeau: "🇬🇦", code: "GA" },
+// Pays proposés dans le sélecteur de tendances (ceux pour lesquels le backend a des données).
+const TREND_COUNTRIES = ["CI", "SN", "CM", "MA", "TN", "DZ", "BF", "ML", "NE", "TG", "BJ", "CG", "GA"]
+
+// Drapeau dérivé du code pays (indicateurs régionaux Unicode) : aucune table à maintenir.
+function flagOf(code: string): string {
+  return String.fromCodePoint(...[...code.toUpperCase()].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65))
 }
 
+// Textes : clés de traduction (messages "trends.fallback.*"), résolues dans getFallback().
 const fallbackTrends: Record<string, CountryTrend> = {
-  CI: { code: "CI", name: "Côte d'Ivoire", flag: "🇨🇮", trendScore: 94, topCategory: "Électronique",
+  CI: { code: "CI", name: "Côte d'Ivoire", flag: "🇨🇮", trendScore: 94, topCategory: "electronics",
     products: [
-      { id: "1", name: "Écouteurs sans fil",  priceUSD: 9.63,  image: "/wireless-earbuds-black.jpg",  views: 1234, orders: 89, trend: 34, flag: "🇨🇳" },
-      { id: "2", name: "Montre connectée",    priceUSD: 24.52, image: "/black-smartwatch.jpg",         views: 987,  orders: 67, trend: 28, flag: "🇨🇳" },
-      { id: "3", name: "Robe africaine",      priceUSD: 22.87, image: "/colorful-african-dress.png",   views: 876,  orders: 54, trend: 45, flag: "🇨🇮" },
-      { id: "4", name: "Mixeur cuisine",      priceUSD: 15.51, image: "/kitchen-blender.png",          views: 654,  orders: 43, trend: 22, flag: "🇨🇳" },
-      { id: "5", name: "Sandales cuir",       priceUSD: 8.16,  image: "/leather-sandals-brown.jpg",    views: 543,  orders: 38, trend: 18, flag: "🇨🇮" },
-      { id: "6", name: "Parfum de luxe",      priceUSD: 32.64, image: "/essential-oils-perfume.jpg",   views: 432,  orders: 29, trend: 52, flag: "🇫🇷" },
+      { id: "1", name: "earbuds",  priceUSD: 9.63,  image: "/wireless-earbuds-black.jpg",  views: 1234, orders: 89, trend: 34, flag: "🇨🇳" },
+      { id: "2", name: "smartwatch",    priceUSD: 24.52, image: "/black-smartwatch.jpg",         views: 987,  orders: 67, trend: 28, flag: "🇨🇳" },
+      { id: "3", name: "africanDress",      priceUSD: 22.87, image: "/colorful-african-dress.png",   views: 876,  orders: 54, trend: 45, flag: "🇨🇮" },
+      { id: "4", name: "blender",      priceUSD: 15.51, image: "/kitchen-blender.png",          views: 654,  orders: 43, trend: 22, flag: "🇨🇳" },
+      { id: "5", name: "leatherSandals",       priceUSD: 8.16,  image: "/leather-sandals-brown.jpg",    views: 543,  orders: 38, trend: 18, flag: "🇨🇮" },
+      { id: "6", name: "luxuryPerfume",      priceUSD: 32.64, image: "/essential-oils-perfume.jpg",   views: 432,  orders: 29, trend: 52, flag: "🇫🇷" },
     ]
   },
-  SN: { code: "SN", name: "Sénégal", flag: "🇸🇳", trendScore: 87, topCategory: "Mode",
+  SN: { code: "SN", name: "Sénégal", flag: "🇸🇳", trendScore: 87, topCategory: "fashion",
     products: [
-      { id: "1", name: "Boubou sénégalais", priceUSD: 40.80, image: "/senegalese-boubou.jpg",       views: 1567, orders: 112, trend: 67, flag: "🇸🇳" },
-      { id: "2", name: "Montre connectée",  priceUSD: 24.52, image: "/black-smartwatch.jpg",         views: 876,  orders: 54,  trend: 23, flag: "🇨🇳" },
-      { id: "3", name: "Écouteurs sans fil",priceUSD: 9.63,  image: "/wireless-earbuds-black.jpg",  views: 765,  orders: 48,  trend: 31, flag: "🇨🇳" },
-      { id: "4", name: "Cosmétiques bio",   priceUSD: 12.25, image: "/camel-milk-skincare.jpg",      views: 654,  orders: 41,  trend: 44, flag: "🇲🇦" },
+      { id: "1", name: "boubou", priceUSD: 40.80, image: "/senegalese-boubou.jpg",       views: 1567, orders: 112, trend: 67, flag: "🇸🇳" },
+      { id: "2", name: "smartwatch",  priceUSD: 24.52, image: "/black-smartwatch.jpg",         views: 876,  orders: 54,  trend: 23, flag: "🇨🇳" },
+      { id: "3", name: "earbuds",priceUSD: 9.63,  image: "/wireless-earbuds-black.jpg",  views: 765,  orders: 48,  trend: 31, flag: "🇨🇳" },
+      { id: "4", name: "organicCosmetics",   priceUSD: 12.25, image: "/camel-milk-skincare.jpg",      views: 654,  orders: 41,  trend: 44, flag: "🇲🇦" },
     ]
   },
-  CM: { code: "CM", name: "Cameroun", flag: "🇨🇲", trendScore: 82, topCategory: "Maison",
+  CM: { code: "CM", name: "Cameroun", flag: "🇨🇲", trendScore: 82, topCategory: "home",
     products: [
-      { id: "1", name: "Ustensiles cuisine", priceUSD: 6.53,  image: "/kitchen-utensils.jpg",        views: 987, orders: 76, trend: 41, flag: "🇨🇳" },
-      { id: "2", name: "Ventilateur",        priceUSD: 32.64, image: "/fan.jpg",                     views: 876, orders: 65, trend: 38, flag: "🇨🇳" },
-      { id: "3", name: "Écouteurs sans fil", priceUSD: 9.63,  image: "/wireless-earbuds-black.jpg",  views: 765, orders: 54, trend: 27, flag: "🇨🇳" },
+      { id: "1", name: "kitchenUtensils", priceUSD: 6.53,  image: "/kitchen-utensils.jpg",        views: 987, orders: 76, trend: 41, flag: "🇨🇳" },
+      { id: "2", name: "fan",        priceUSD: 32.64, image: "/fan.jpg",                     views: 876, orders: 65, trend: 38, flag: "🇨🇳" },
+      { id: "3", name: "earbuds", priceUSD: 9.63,  image: "/wireless-earbuds-black.jpg",  views: 765, orders: 54, trend: 27, flag: "🇨🇳" },
     ]
   },
 }
 
 export function TendanceParPays() {
-  const { country } = useLocale()
+  const { country, language, locale } = useLocale()
+  const t = useTranslations("trends")
   const { formatPrice } = useCurrencyFormatter()
   const [trends, setTrends] = useState<CountryTrend | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [selectedCountry, setSelectedCountry] = useState(country)
   const [showCountrySelector, setShowCountrySelector] = useState(false)
 
-  const paysActuel = pays[selectedCountry as keyof typeof pays] || pays.CI
+  const countryOption = (code: string) => ({
+    code,
+    nom: getCountryName(code, language),
+    drapeau: flagOf(code),
+  })
+  const paysActuel = countryOption(selectedCountry)
+  const trendCountries = TREND_COUNTRIES.map(countryOption)
+
+  // Données de secours (API indisponible) traduites dans la langue du visiteur.
+  const getFallback = (code: string): CountryTrend => {
+    const base = fallbackTrends[code as keyof typeof fallbackTrends] || fallbackTrends.CI
+    return {
+      ...base,
+      topCategory: base.topCategory ? t(`fallback.categories.${base.topCategory}`) : undefined,
+      products: base.products.map((p) => ({ ...p, name: t(`fallback.products.${p.name}`) })),
+    }
+  }
 
   useEffect(() => {
     const fetchTrends = async () => {
@@ -106,7 +119,7 @@ export function TendanceParPays() {
         devLog(`📦 [TRENDS] Fetch - ${new Date().toLocaleTimeString()}`)
         
         const timestamp = Date.now()
-        const res = await fetch(`${API_BASE}/api/graph/trending?country=${selectedCountry}&limit=20&_t=${timestamp}`)
+        const res = await fetch(withLocale(`${API_BASE}/api/graph/trending?country=${selectedCountry}&limit=20&_t=${timestamp}`))
         const data = await res.json()
         
         if (data.success) {
@@ -115,12 +128,12 @@ export function TendanceParPays() {
           setTrends(trendCopy)
           devLog(`📦 [TRENDS] ${data.trend.products.length} produits récupérés, mélangés`)
         } else {
-          const fallback = fallbackTrends[selectedCountry as keyof typeof fallbackTrends] || fallbackTrends.CI
+          const fallback = getFallback(selectedCountry)
           const shuffled = [...fallback.products].sort(() => Math.random() - 0.5)
           setTrends({ ...fallback, products: shuffled })
         }
       } catch {
-        const fallback = fallbackTrends[selectedCountry as keyof typeof fallbackTrends] || fallbackTrends.CI
+        const fallback = getFallback(selectedCountry)
         const shuffled = [...fallback.products].sort(() => Math.random() - 0.5)
         setTrends({ ...fallback, products: shuffled })
       } finally {
@@ -157,7 +170,7 @@ export function TendanceParPays() {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setShowCountrySelector(false)} />
           <div className="absolute right-0 mt-2 z-50 overflow-y-auto" style={{ width: "200px", maxHeight: "280px", background: "#fff", borderRadius: "8px", border: "0.5px solid #ECECEC", boxShadow: "0 8px 30px rgba(0,0,0,0.08)", padding: "4px" }}>
-            {Object.values(pays).map((p) => (
+            {trendCountries.map((p) => (
               <button
                 key={p.code}
                 onClick={() => { setSelectedCountry(p.code); setShowCountrySelector(false) }}
@@ -223,7 +236,7 @@ export function TendanceParPays() {
           </div>
           <div>
             <p style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont }}>
-              Tendances {paysActuel.drapeau}
+              {t("title")} {paysActuel.drapeau}
             </p>
             <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>
               {trends.topCategory} · +{trends.trendScore}%
@@ -265,10 +278,10 @@ export function TendanceParPays() {
       <div className="flex items-center justify-between pt-2">
         <div className="flex items-center gap-1">
           <div className="w-1 h-1 rounded-full" style={{ background: "#D4372B" }} />
-          <span style={{ fontSize: "8px", color: "#AAAAAA", fontFamily: amazonFont }}>Mise à jour en temps réel</span>
+          <span style={{ fontSize: "8px", color: "#AAAAAA", fontFamily: amazonFont }}>{t("liveUpdate")}</span>
         </div>
         <Link href="/meilleures-ventes" className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1" style={{ color: "#D4372B", fontFamily: amazonFont }}>
-          Voir tout <ChevronRight className="w-2.5 h-2.5" />
+          {t("seeAll")} <ChevronRight className="w-2.5 h-2.5" />
         </Link>
       </div>
     </div>
@@ -283,17 +296,17 @@ export function TendanceParPays() {
           </div>
           <div>
             <h2 style={{ fontSize: "16px", fontWeight: 800, color: "#0A0A0A", fontFamily: amazonFont, letterSpacing: "-0.02em" }}>
-              Tendances · {paysActuel.nom} {paysActuel.drapeau}
+              {t("titleCountry", { country: paysActuel.nom })} {paysActuel.drapeau}
             </h2>
             <p style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: amazonFont }}>
-              Les produits les plus populaires cette semaine
+              {t("popularThisWeek")}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-2 py-1" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC", borderRadius: "6px" }}>
             <MapPin className="w-3 h-3" style={{ color: "#AAAAAA" }} />
-            <span style={{ fontSize: "12px", color: "#555", fontFamily: amazonFont }}>{trends.topCategory} en tête</span>
+            <span style={{ fontSize: "12px", color: "#555", fontFamily: amazonFont }}>{t("topCategoryLead", { category: trends.topCategory ?? "" })}</span>
             <span style={{ fontSize: "12px", fontWeight: 700, color: "#D4372B", fontFamily: amazonFont }}>+{trends.trendScore}%</span>
           </div>
           <CountrySelector />
@@ -318,7 +331,7 @@ export function TendanceParPays() {
               <p className="truncate mb-1" style={{ fontSize: "11px", fontWeight: 600, color: "#0A0A0A", fontFamily: amazonFont }}>{product.name}</p>
               <div className="flex items-center justify-between">
                 <p style={{ fontSize: "12px", fontWeight: 700, color: "#D4372B", fontFamily: amazonFont }}>{formatPrice(product.priceUSD)}</p>
-                <span style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>{product.orders} cmd</span>
+                <span style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>{t("orders", { count: product.orders })}</span>
               </div>
             </div>
           </Link>
@@ -327,12 +340,12 @@ export function TendanceParPays() {
 
       <div className="flex items-center justify-between mt-4 pt-3" style={{ borderTop: "0.5px solid #F0F0F0" }}>
         <div className="flex items-center gap-3" style={{ fontSize: "11px", color: "#AAAAAA", fontFamily: amazonFont }}>
-          <span>📊 Basé sur les 7 derniers jours</span>
+          <span>📊 {t("basedOnDays")}</span>
           <span>•</span>
-          <span>👥 {trends.products.reduce((a, p) => a + p.views, 0).toLocaleString()} vues</span>
+          <span>👥 {t("views", { count: new Intl.NumberFormat(locale).format(trends.products.reduce((a, p) => a + p.views, 0)) })}</span>
         </div>
         <Link href="/meilleures-ventes" className="flex items-center gap-1 text-xs font-semibold transition-all duration-200 hover:gap-1.5" style={{ color: "#D4372B", fontFamily: amazonFont }}>
-          Voir toutes les tendances <ChevronRight className="w-3 h-3" />
+          {t("seeAllTrends")} <ChevronRight className="w-3 h-3" />
         </Link>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { getAccessToken, setAccessToken, clearAccessToken } from "./auth"
-import { LOCALE_COOKIE, isUiLanguage } from "./country-config"
+import { withLocale } from "./locale-client"
 
 // ✅ CORRIGÉ : URL forcée vers ton VPS (sans dépendre des env vars)
 const API_URL = 'https://api.adullamarket.com'
@@ -16,30 +16,6 @@ if (!API_URL) {
 }
 
 devLog('🔴 [lib/api.ts] API_URL configurée:', API_URL)
-
-// Langue d'interface du visiteur (cookie nx_locale posé par proxy.ts ou par le sélecteur).
-// null côté serveur ou si le cookie est absent/invalide.
-function getUiLocale(): string | null {
-  if (typeof document === "undefined") return null
-  const entry = document.cookie.split("; ").find((row) => row.startsWith(`${LOCALE_COOKIE}=`))
-  if (!entry) return null
-  try {
-    const value = decodeURIComponent(entry.slice(LOCALE_COOKIE.length + 1))
-    return isUiLanguage(value) ? value : null
-  } catch {
-    return null
-  }
-}
-
-// Ajoute ?locale=xx (lu en priorité par le backend) aux requêtes de lecture (GET).
-// Les écritures ne sont jamais touchées, et un `locale=` déjà présent est respecté.
-function withLocale(path: string, method?: string): string {
-  if ((method || "GET").toUpperCase() !== "GET") return path
-  if (/[?&]locale=/.test(path)) return path
-  const locale = getUiLocale()
-  if (!locale) return path
-  return `${path}${path.includes("?") ? "&" : "?"}locale=${locale}`
-}
 
 export async function apiFetch(
   input: RequestInfo,
