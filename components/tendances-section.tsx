@@ -169,12 +169,12 @@ export function TendanceParPays() {
       {showCountrySelector && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setShowCountrySelector(false)} />
-          <div className="absolute right-0 mt-2 z-50 overflow-y-auto" style={{ width: "200px", maxHeight: "280px", background: "#fff", borderRadius: "8px", border: "0.5px solid #ECECEC", boxShadow: "0 8px 30px rgba(0,0,0,0.08)", padding: "4px" }}>
+          <div className="absolute end-0 mt-2 z-50 overflow-y-auto" style={{ width: "200px", maxHeight: "280px", background: "#fff", borderRadius: "8px", border: "0.5px solid #ECECEC", boxShadow: "0 8px 30px rgba(0,0,0,0.08)", padding: "4px" }}>
             {trendCountries.map((p) => (
               <button
                 key={p.code}
                 onClick={() => { setSelectedCountry(p.code); setShowCountrySelector(false) }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-all duration-200 hover:bg-[#FFF0F0]"
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-start transition-all duration-200 hover:bg-[#FFF0F0]"
                 style={{
                   background: selectedCountry === p.code ? "#FFF0F0" : "transparent",
                   color: selectedCountry === p.code ? "#D4372B" : "#0A0A0A",
@@ -253,12 +253,12 @@ export function TendanceParPays() {
               <div style={{ background: "#fff", borderRadius: "6px", border: "0.5px solid #ECECEC", overflow: "hidden" }}>
                 <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
                   {product.trend > 30 && (
-                    <span className="absolute top-1 left-1 z-10 text-[8px] font-bold px-1 py-0.5 text-white" style={{ background: "#D4372B", borderRadius: "3px" }}>
+                    <span className="absolute top-1 start-1 z-10 text-[8px] font-bold px-1 py-0.5 text-white" style={{ background: "#D4372B", borderRadius: "3px" }}>
                       +{product.trend}%
                     </span>
                   )}
                   {product.flag && (
-                    <span className="absolute top-1 right-1 text-xs z-10">{product.flag}</span>
+                    <span className="absolute top-1 end-1 text-xs z-10">{product.flag}</span>
                   )}
                   <Image src={product.image} alt={product.name} width={110} height={110} className="w-full h-full object-contain p-1.5 transition-transform duration-300 group-hover:scale-105" />
                 </div>
@@ -281,7 +281,7 @@ export function TendanceParPays() {
           <span style={{ fontSize: "8px", color: "#AAAAAA", fontFamily: amazonFont }}>{t("liveUpdate")}</span>
         </div>
         <Link href="/meilleures-ventes" className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1" style={{ color: "#D4372B", fontFamily: amazonFont }}>
-          {t("seeAll")} <ChevronRight className="w-2.5 h-2.5" />
+          {t("seeAll")} <ChevronRight className="w-2.5 h-2.5 rtl:rotate-180" />
         </Link>
       </div>
     </div>
@@ -318,11 +318,11 @@ export function TendanceParPays() {
           <Link key={product.id} href={`/products/${product.id}`} className="group block">
             <div style={{ background: "#fff", borderRadius: "6px", border: "0.5px solid #ECECEC", padding: "8px" }} className="transition-all duration-200 hover:shadow-sm">
               <div className="relative aspect-square mb-2" style={{ background: "#FAFAFA", borderRadius: "4px" }}>
-                <span className="absolute top-1 left-1 z-10 text-[8px] font-bold px-1 py-0.5 text-white" style={{ background: "#D4372B", borderRadius: "3px" }}>
+                <span className="absolute top-1 start-1 z-10 text-[8px] font-bold px-1 py-0.5 text-white" style={{ background: "#D4372B", borderRadius: "3px" }}>
                   +{product.trend}%
                 </span>
                 {product.flag && (
-                  <span className="absolute top-1 right-1 text-xs z-10 px-0.5 rounded" style={{ background: "rgba(255,255,255,0.8)" }}>
+                  <span className="absolute top-1 end-1 text-xs z-10 px-0.5 rounded" style={{ background: "rgba(255,255,255,0.8)" }}>
                     {product.flag}
                   </span>
                 )}
@@ -345,7 +345,7 @@ export function TendanceParPays() {
           <span>👥 {t("views", { count: new Intl.NumberFormat(locale).format(trends.products.reduce((a, p) => a + p.views, 0)) })}</span>
         </div>
         <Link href="/meilleures-ventes" className="flex items-center gap-1 text-xs font-semibold transition-all duration-200 hover:gap-1.5" style={{ color: "#D4372B", fontFamily: amazonFont }}>
-          {t("seeAllTrends")} <ChevronRight className="w-3 h-3" />
+          {t("seeAllTrends")} <ChevronRight className="w-3 h-3 rtl:rotate-180" />
         </Link>
       </div>
     </div>

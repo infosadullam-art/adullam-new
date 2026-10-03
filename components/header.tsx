@@ -367,7 +367,7 @@ export function Header() {
             </button>
           </div>
           <div className="flex items-center gap-3">
-            <LanguageSelector className="h-7 text-xs" />
+            <LanguageSelector variant="topbar" />
             <ThemeToggle variant="switch" />
           </div>
         </div>
@@ -411,7 +411,7 @@ export function Header() {
                     ref={menuRef}
                     onMouseEnter={handleMouseEnterMega}
                     onMouseLeave={handleMouseLeaveMega}
-                    className="anim-scale-in absolute top-full left-0 mt-2 z-[9999] w-[900px] rounded-xl border border-border bg-popover p-5 elevate-lg"
+                    className="anim-scale-in absolute top-full start-0 mt-2 z-[9999] w-[900px] rounded-xl border border-border bg-popover p-5 elevate-lg"
                     style={{ transformOrigin: "top left" }}
                   >
                     <p className="overline mb-3 text-muted-foreground">{t("allCategories")}</p>
@@ -472,7 +472,7 @@ export function Header() {
                                   goToCategory(item)
                                   setShowMegaMenu(false)
                                 }}
-                                className="link-underline rounded-lg px-2 py-1.5 text-left text-xs text-ink-2 transition-colors duration-200 hover:text-accent"
+                                className="link-underline rounded-lg px-2 py-1.5 text-start text-xs text-ink-2 transition-colors duration-200 hover:text-accent"
                               >
                                 {tc(generateSlug(item))}
                               </button>
@@ -486,7 +486,7 @@ export function Header() {
                             }}
                             className="mt-3 flex items-center gap-1 text-xs font-semibold text-accent"
                           >
-                            {t("seeAll")} <IconChevronRight className="w-3.5 h-3.5" />
+                            {t("seeAll")} <IconChevronRight className="w-3.5 h-3.5 rtl:rotate-180" />
                           </button>
                         )}
                       </div>
@@ -510,13 +510,13 @@ export function Header() {
               {/* Search */}
               <div className="flex-1 hidden lg:block relative">
                 <IconSearch
-                  className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-colors duration-200 z-10 ${
+                  className={`absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-colors duration-200 z-10 ${
                     searchFocused ? "text-accent" : "text-muted-foreground"
                   }`}
                 />
 
                 {!searchFocused && !searchQuery && (
-                  <div className="absolute left-10 top-1/2 -translate-y-1/2 pointer-events-none overflow-hidden" style={{ height: "20px", width: "220px" }}>
+                  <div className="absolute start-10 top-1/2 -translate-y-1/2 pointer-events-none overflow-hidden" style={{ height: "20px", width: "220px" }}>
                     <div
                       className="transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
                       style={{
@@ -539,7 +539,7 @@ export function Header() {
                   onFocus={() => setSearchFocused(true)}
                   onBlur={() => setSearchFocused(false)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  className={`w-full rounded-lg bg-surface py-2.5 pl-10 pr-14 text-sm text-foreground transition-all duration-200 focus:outline-none border ${
+                  className={`w-full rounded-lg bg-surface py-2.5 ps-10 pe-14 text-sm text-foreground transition-all duration-200 focus:outline-none border ${
                     searchFocused ? "border-accent ring-2 ring-accent/15 bg-background" : "border-transparent"
                   }`}
                 />
@@ -547,7 +547,7 @@ export function Header() {
                 <button
                   onClick={handleSearch}
                   aria-label={t("searchAria")}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-accent transition-all duration-200 hover:bg-accent-hover hover:scale-105 active:scale-95 focus:outline-none"
+                  className="absolute end-1.5 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-accent transition-all duration-200 hover:bg-accent-hover hover:scale-105 active:scale-95 focus:outline-none"
                 >
                   <IconSearch className="w-4 h-4 text-white" />
                 </button>
@@ -561,7 +561,7 @@ export function Header() {
                   <div className="relative">
                     <button
                       onClick={() => setUserMenuOpen(!userMenuOpen)}
-                      className="flex items-center gap-2 rounded-full pl-1.5 pr-3 py-1.5 transition-all duration-200 hover:bg-surface focus:outline-none"
+                      className="flex items-center gap-2 rounded-full ps-1.5 pe-3 py-1.5 transition-all duration-200 hover:bg-surface focus:outline-none"
                     >
                       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-accent">
                         <IconUser className="w-4 h-4 text-white" />
@@ -574,7 +574,7 @@ export function Header() {
 
                     {userMenuOpen && (
                       <div
-                        className="anim-scale-in absolute right-0 mt-2 z-[9999] w-[200px] rounded-xl border border-border bg-popover p-1.5 elevate-lg"
+                        className="anim-scale-in absolute end-0 mt-2 z-[9999] w-[200px] rounded-xl border border-border bg-popover p-1.5 elevate-lg"
                         style={{ transformOrigin: "top right" }}
                       >
                         {[
@@ -625,7 +625,7 @@ export function Header() {
                   <IconBell className="w-[19px] h-[19px]" />
                   {unreadCount > 0 && (
                     <span
-                      className="anim-scale-in absolute top-1 right-1 flex items-center justify-center tabular-nums"
+                      className="anim-scale-in absolute top-1 end-1 flex items-center justify-center tabular-nums"
                       style={{
                         minWidth: "16px",
                         height: "16px",
@@ -649,7 +649,7 @@ export function Header() {
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label={t("menu")}
-                className="lg:hidden ml-auto flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-all duration-200 hover:bg-surface active:scale-95 focus:outline-none"
+                className="lg:hidden ms-auto flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-all duration-200 hover:bg-surface active:scale-95 focus:outline-none"
               >
                 {mobileMenuOpen ? <IconClose className="w-[19px] h-[19px]" /> : <IconMenu className="w-[19px] h-[19px]" />}
               </button>
@@ -704,7 +704,7 @@ export function Header() {
                 adul<span className="text-accent">.</span>lam
               </span>
               <div className="flex items-center gap-1">
-                <LanguageSelector className="h-8 text-xs" />
+                <LanguageSelector variant="icon" />
                 <ThemeToggle variant="icon" />
                 <button
                   onClick={() => setMobileMenuOpen(false)}
@@ -754,10 +754,10 @@ export function Header() {
                     router.push(item.path)
                     setMobileMenuOpen(false)
                   }}
-                  className="flex items-center justify-between border-b border-border py-3.5 text-left text-sm font-medium text-foreground"
+                  className="flex items-center justify-between border-b border-border py-3.5 text-start text-sm font-medium text-foreground"
                 >
                   {item.label}
-                  <IconChevronRight className="w-4 h-4 text-muted-foreground" />
+                  <IconChevronRight className="w-4 h-4 text-muted-foreground rtl:rotate-180" />
                 </button>
               ))}
             </div>
@@ -786,7 +786,7 @@ export function Header() {
                   )}
                 </button>
                 {activeCategory === cat.title && cat.items.length > 0 && (
-                  <div className="anim-fade-up flex flex-col gap-1 py-2 pl-4">
+                  <div className="anim-fade-up flex flex-col gap-1 py-2 ps-4">
                     {cat.items.map((item, i) => (
                       <button
                         key={i}
@@ -794,7 +794,7 @@ export function Header() {
                           goToCategory(item)
                           setMobileMenuOpen(false)
                         }}
-                        className="py-1.5 text-left text-sm text-ink-3 hover:text-accent"
+                        className="py-1.5 text-start text-sm text-ink-3 hover:text-accent"
                       >
                         {tc(generateSlug(item))}
                       </button>

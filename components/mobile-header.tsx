@@ -331,7 +331,7 @@ export function MobileHeader() {
                 <IconUser className="w-[18px] h-[18px]" />
                 {user && (
                   <span
-                    className="absolute top-1 right-1 w-2 h-2 rounded-full border-2 border-background"
+                    className="absolute top-1 end-1 w-2 h-2 rounded-full border-2 border-background"
                     style={{ background: "#22C55E" }}
                   />
                 )}
@@ -388,13 +388,13 @@ export function MobileHeader() {
           {/* Row 2 : Barre de recherche AVEC CARROUSEL VERTICAL */}
           <form onSubmit={handleSearch} className="relative">
             <IconSearch
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none z-10 transition-colors duration-200"
+              className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none z-10 transition-colors duration-200"
               style={{ color: searchFocused ? "var(--accent)" : "var(--muted-foreground)" }}
             />
 
             {/* Carrousel vertical - s'affiche seulement quand pas focus et pas de texte */}
             {!searchFocused && !searchQuery && (
-              <div className="absolute left-9 top-1/2 -translate-y-1/2 pointer-events-none overflow-hidden" style={{ height: "20px", width: "220px" }}>
+              <div className="absolute start-9 top-1/2 -translate-y-1/2 pointer-events-none overflow-hidden" style={{ height: "20px", width: "220px" }}>
                 <div
                   className="transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
                   style={{
@@ -416,7 +416,7 @@ export function MobileHeader() {
               onChange={e => setSearchQuery(e.target.value)}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
-              className="w-full pl-9 pr-4 text-sm text-foreground focus:outline-none"
+              className="w-full ps-9 pe-4 text-sm text-foreground focus:outline-none"
               style={{
                 background: "var(--surface)",
                 borderRadius: "10px",
@@ -447,10 +447,10 @@ export function MobileHeader() {
 
       {/* ── DRAWER ──────────────────────────────────────────── */}
       <div
-        className="fixed top-0 left-0 h-full z-50 overflow-y-auto bg-background border-r border-border"
+        className="fixed top-0 start-0 h-full z-50 overflow-y-auto bg-background border-e border-border"
         style={{
           width: "285px",
-          transform: showMenu ? "translateX(0)" : "translateX(-100%)",
+          transform: showMenu ? "translateX(0)" : "translateX(calc(-100% * var(--dir-sign, 1)))",
           transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
           boxShadow: showMenu ? "var(--shadow-lg)" : "none",
         }}
@@ -461,7 +461,7 @@ export function MobileHeader() {
             adul<span className="text-accent">.</span>lam
           </span>
           <div className="flex items-center gap-1">
-            <LanguageSelector className="h-8 text-xs" />
+            <LanguageSelector variant="icon" size="sm" />
             <ThemeToggle variant="icon" className="h-8 w-8 rounded-full border-0 bg-transparent hover:bg-surface transition-colors duration-200" />
             <button
               onClick={closeMenu}
@@ -517,13 +517,13 @@ export function MobileHeader() {
               <button
                 key={label}
                 onClick={action}
-                className="flex items-center justify-between px-5 py-3.5 text-sm font-medium text-left text-foreground transition-colors duration-200 hover:bg-surface active:bg-surface-sunken"
+                className="flex items-center justify-between px-5 py-3.5 text-sm font-medium text-start text-foreground transition-colors duration-200 hover:bg-surface active:bg-surface-sunken"
               >
                 <span className="flex items-center gap-3">
                   <Icon className="w-[18px] h-[18px] text-muted-foreground" />
                   {label}
                 </span>
-                <IconChevronRight className="w-4 h-4 text-muted-foreground" />
+                <IconChevronRight className="w-4 h-4 text-muted-foreground rtl:rotate-180" />
               </button>
             ))}
 
@@ -553,13 +553,13 @@ export function MobileHeader() {
                   <button
                     key={cat.label}
                     onClick={() => { setShowMenu(false); router.push(`/categorie/${cat.slug}`) }}
-                    className="flex items-center justify-between py-2.5 text-sm font-medium text-left text-foreground border-b border-border transition-colors duration-200 hover:text-accent"
+                    className="flex items-center justify-between py-2.5 text-sm font-medium text-start text-foreground border-b border-border transition-colors duration-200 hover:text-accent"
                   >
                     <span className="flex items-center gap-3">
                       <Icon className="w-[18px] h-[18px] text-muted-foreground" />
                       {tc(cat.slug)}
                     </span>
-                    <IconChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                    <IconChevronRight className="w-3.5 h-3.5 text-muted-foreground rtl:rotate-180" />
                   </button>
                 )
               })}

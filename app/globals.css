@@ -600,3 +600,58 @@
 @media (prefers-reduced-motion: reduce) {
   .loader-bar-fill { animation: none; left: 0; width: 100%; opacity: .5; }
 }
+
+/* ════════════════════════════════════════════════════════════
+   AJOUT I18N — arabe (dir="rtl")
+   Poppins et Fraunces n'ont pas de glyphes arabes : polices dédiées.
+   Règles hors @layer volontairement : elles priment sur .font-sans / h1-h3.
+   ════════════════════════════════════════════════════════════ */
+:root { --dir-sign: 1; }
+[dir="rtl"] { --dir-sign: -1; }
+
+[dir="rtl"] body {
+  font-family: var(--font-cairo), "Segoe UI", Tahoma, sans-serif;
+}
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] .font-display {
+  font-family: var(--font-naskh), "Traditional Arabic", serif;
+}
+
+/* L'espacement entre lettres détruit les ligatures de l'écriture arabe. */
+[dir="rtl"] * {
+  letter-spacing: 0 !important;
+}
+
+/* Soulignement animé : part du côté de lecture */
+[dir="rtl"] .link-underline::after {
+  left: auto;
+  right: 0;
+  transform-origin: left;
+}
+[dir="rtl"] .link-underline:hover::after {
+  transform-origin: right;
+}
+
+/* Bandeau défilant : sens inversé */
+@keyframes a-marquee-rtl {
+  from { transform: translateX(0); }
+  to   { transform: translateX(50%); }
+}
+[dir="rtl"] .marquee { animation-name: a-marquee-rtl; }
+
+/* Barre du loader : glisse dans le sens de lecture */
+@keyframes loader-slide-rtl {
+  0%   { right: -40%; }
+  60%  { right: 100%; }
+  100% { right: 100%; }
+}
+[dir="rtl"] .loader-bar-fill {
+  left: auto;
+  right: -40%;
+  animation-name: loader-slide-rtl;
+}
+@media (prefers-reduced-motion: reduce) {
+  [dir="rtl"] .loader-bar-fill { animation: none; left: auto; right: 0; width: 100%; opacity: .5; }
+}

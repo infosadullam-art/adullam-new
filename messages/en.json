@@ -45,7 +45,8 @@
       "casquette": "cap",
       "telephone": "phone",
       "basket": "sneakers"
-    }
+    },
+    "language": "Language"
   },
   "categories": {
     "homme": "Men",
@@ -188,5 +189,14 @@
         "home": "Home"
       }
     }
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "label": "Theme",
+    "activateLight": "Switch to light mode",
+    "activateDark": "Switch to dark mode",
+    "modeLight": "Light mode",
+    "modeDark": "Dark mode"
   }
 }

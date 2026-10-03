@@ -10,6 +10,7 @@
 
 import { Moon, Sun } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
+import { useTranslations } from "next-intl"
 
 export function ThemeToggle({
   variant = "icon",
@@ -19,16 +20,17 @@ export function ThemeToggle({
   className?: string
 }) {
   const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme()
+  const t = useTranslations("theme")
 
   if (variant === "switch") {
     const options: { value: "light" | "dark"; icon: typeof Sun; label: string }[] = [
-      { value: "light", icon: Sun, label: "Clair" },
-      { value: "dark", icon: Moon, label: "Sombre" },
+      { value: "light", icon: Sun, label: t("light") },
+      { value: "dark", icon: Moon, label: t("dark") },
     ]
     return (
       <div
         role="radiogroup"
-        aria-label="Thème"
+        aria-label={t("label")}
         className={`inline-flex items-center gap-0.5 rounded-full border border-border bg-surface p-0.5 ${className}`}
       >
         {options.map(({ value, icon: Icon, label }) => {
@@ -58,8 +60,8 @@ export function ThemeToggle({
   return (
     <button
       onClick={toggleTheme}
-      aria-label={resolvedTheme === "dark" ? "Activer le mode clair" : "Activer le mode sombre"}
-      title={resolvedTheme === "dark" ? "Mode clair" : "Mode sombre"}
+      aria-label={resolvedTheme === "dark" ? t("activateLight") : t("activateDark")}
+      title={resolvedTheme === "dark" ? t("modeLight") : t("modeDark")}
       className={`relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-surface ${className}`}
     >
       <Sun

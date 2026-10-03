@@ -45,7 +45,8 @@
       "casquette": "boné",
       "telephone": "telemóvel",
       "basket": "sapatilhas"
-    }
+    },
+    "language": "Idioma"
   },
   "categories": {
     "homme": "Homem",
@@ -188,5 +189,14 @@
         "home": "Casa"
       }
     }
+  },
+  "theme": {
+    "light": "Claro",
+    "dark": "Escuro",
+    "label": "Tema",
+    "activateLight": "Ativar o modo claro",
+    "activateDark": "Ativar o modo escuro",
+    "modeLight": "Modo claro",
+    "modeDark": "Modo escuro"
   }
 }

@@ -45,7 +45,8 @@
       "casquette": "قبعة",
       "telephone": "هاتف",
       "basket": "حذاء رياضي"
-    }
+    },
+    "language": "اللغة"
   },
   "categories": {
     "homme": "رجال",
@@ -188,5 +189,14 @@
         "home": "المنزل"
       }
     }
+  },
+  "theme": {
+    "light": "فاتح",
+    "dark": "داكن",
+    "label": "المظهر",
+    "activateLight": "التبديل إلى الوضع الفاتح",
+    "activateDark": "التبديل إلى الوضع الداكن",
+    "modeLight": "الوضع الفاتح",
+    "modeDark": "الوضع الداكن"
   }
 }

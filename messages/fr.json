@@ -45,7 +45,8 @@
       "casquette": "casquette",
       "telephone": "téléphone",
       "basket": "basket"
-    }
+    },
+    "language": "Langue"
   },
   "categories": {
     "homme": "Homme",
@@ -188,5 +189,14 @@
         "home": "Maison"
       }
     }
+  },
+  "theme": {
+    "light": "Clair",
+    "dark": "Sombre",
+    "label": "Thème",
+    "activateLight": "Activer le mode clair",
+    "activateDark": "Activer le mode sombre",
+    "modeLight": "Mode clair",
+    "modeDark": "Mode sombre"
   }
 }
