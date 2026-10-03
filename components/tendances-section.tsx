@@ -239,7 +239,7 @@ export function TendanceParPays() {
               {t("title")} {paysActuel.drapeau}
             </p>
             <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>
-              {trends.topCategory} · +{trends.trendScore}%
+              {trends.topCategory} · <bdi dir="ltr">+{trends.trendScore}%</bdi>
             </p>
           </div>
         </div>
@@ -254,7 +254,7 @@ export function TendanceParPays() {
                 <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
                   {product.trend > 30 && (
                     <span className="absolute top-1 start-1 z-10 text-[8px] font-bold px-1 py-0.5 text-white" style={{ background: "#D4372B", borderRadius: "3px" }}>
-                      +{product.trend}%
+                      <bdi dir="ltr">+{product.trend}%</bdi>
                     </span>
                   )}
                   {product.flag && (
@@ -307,7 +307,7 @@ export function TendanceParPays() {
           <div className="flex items-center gap-2 px-2 py-1" style={{ background: "#FAFAFA", border: "0.5px solid #ECECEC", borderRadius: "6px" }}>
             <MapPin className="w-3 h-3" style={{ color: "#AAAAAA" }} />
             <span style={{ fontSize: "12px", color: "#555", fontFamily: amazonFont }}>{t("topCategoryLead", { category: trends.topCategory ?? "" })}</span>
-            <span style={{ fontSize: "12px", fontWeight: 700, color: "#D4372B", fontFamily: amazonFont }}>+{trends.trendScore}%</span>
+            <span style={{ fontSize: "12px", fontWeight: 700, color: "#D4372B", fontFamily: amazonFont }}><bdi dir="ltr">+{trends.trendScore}%</bdi></span>
           </div>
           <CountrySelector />
         </div>
@@ -319,7 +319,7 @@ export function TendanceParPays() {
             <div style={{ background: "#fff", borderRadius: "6px", border: "0.5px solid #ECECEC", padding: "8px" }} className="transition-all duration-200 hover:shadow-sm">
               <div className="relative aspect-square mb-2" style={{ background: "#FAFAFA", borderRadius: "4px" }}>
                 <span className="absolute top-1 start-1 z-10 text-[8px] font-bold px-1 py-0.5 text-white" style={{ background: "#D4372B", borderRadius: "3px" }}>
-                  +{product.trend}%
+                  <bdi dir="ltr">+{product.trend}%</bdi>
                 </span>
                 {product.flag && (
                   <span className="absolute top-1 end-1 text-xs z-10 px-0.5 rounded" style={{ background: "rgba(255,255,255,0.8)" }}>

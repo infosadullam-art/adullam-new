@@ -5,11 +5,14 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { useTranslations } from "next-intl"
+import { withLocale, readingDirectionSign } from "@/lib/locale-client"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
 const REFRESH_INTERVAL = 10 * 60 * 60 * 1000
 
-const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+// Police via variable CSS : même pile qu'avant en LTR, Cairo en arabe (voir globals.css)
+const amazonFont = "var(--font-amazon)"
 
 interface Product {
   id: string
@@ -20,6 +23,7 @@ interface Product {
 
 export function CategoriesPourVous() {
   const { formatPrice } = useCurrencyFormatter()
+  const t = useTranslations("trendingKitchen")
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isHovered, setIsHovered] = useState(false)
@@ -30,7 +34,7 @@ export function CategoriesPourVous() {
       try {
         setIsLoading(true)
         const timestamp = Date.now()
-        const res = await fetch(`${API_BASE}/api/trending/cuisine?limit=20&_t=${timestamp}`)
+        const res = await fetch(withLocale(`${API_BASE}/api/trending/cuisine?limit=20&_t=${timestamp}`))
         const data = await res.json()
         
         if (data.success && data.data) {
@@ -38,7 +42,7 @@ export function CategoriesPourVous() {
           setProducts(
             shuffled.slice(0, 8).map((p: any) => ({
               id: p.id,
-              name: p.name || p.title || "Produit",
+              name: p.name || p.title || t("product"),
               price: p.price || 0,
               image: p.image || "/placeholder.jpg",
             }))
@@ -57,14 +61,11 @@ export function CategoriesPourVous() {
     return () => clearInterval(interval)
   }, [])
 
-  const scroll = (direction: 'left' | 'right') => {
+  // précédent / suivant : le sens physique s'inverse en arabe (conteneur rtl)
+  const scroll = (direction: 'prev' | 'next') => {
     if (scrollRef.current) {
-      const amount = 200
-      if (direction === 'left') {
-        scrollRef.current.scrollBy({ left: -amount, behavior: 'smooth' })
-      } else {
-        scrollRef.current.scrollBy({ left: amount, behavior: 'smooth' })
-      }
+      const amount = 200 * readingDirectionSign()
+      scrollRef.current.scrollBy({ left: direction === 'next' ? amount : -amount, behavior: 'smooth' })
     }
   }
 
@@ -88,10 +89,10 @@ export function CategoriesPourVous() {
         <div className="flex items-center justify-between mb-3">
           <div>
             <h2 className="text-sm font-bold" style={{ color: "#0A0A0A" }}>
-              Tendances Cuisine
+              {t("title")}
             </h2>
             <p className="text-[9px]" style={{ color: "#AAAAAA" }}>
-              Les produits les plus populaires
+              {t("subtitle")}
             </p>
           </div>
           <Link
@@ -99,7 +100,7 @@ export function CategoriesPourVous() {
             className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1"
             style={{ color: "#D4372B" }}
           >
-            Voir tout <ChevronRight className="w-3 h-3" />
+            {t("seeAll")} <ChevronRight className="w-3 h-3 rtl:rotate-180" />
           </Link>
         </div>
 
@@ -113,8 +114,9 @@ export function CategoriesPourVous() {
           onMouseLeave={() => setIsHovered(false)}
         >
           <button 
-            onClick={() => scroll('left')}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hover:scale-105 hidden lg:block"
+            onClick={() => scroll('prev')}
+            aria-label={t("previous")}
+            className="absolute start-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hover:scale-105 hidden lg:block"
             style={{ 
               border: "0.5px solid rgba(255,255,255,0.15)",
               opacity: isHovered ? 1 : 0,
@@ -123,12 +125,13 @@ export function CategoriesPourVous() {
               transition: 'opacity 0.3s ease, transform 0.3s ease',
             }}
           >
-            <ChevronRight className="w-4 h-4 rotate-180" />
+            <ChevronRight className="w-4 h-4 rotate-180 rtl:rotate-0" />
           </button>
           
           <button 
-            onClick={() => scroll('right')}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hover:scale-105 hidden lg:block"
+            onClick={() => scroll('next')}
+            aria-label={t("next")}
+            className="absolute end-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hover:scale-105 hidden lg:block"
             style={{ 
               border: "0.5px solid rgba(255,255,255,0.15)",
               opacity: isHovered ? 1 : 0,
@@ -137,7 +140,7 @@ export function CategoriesPourVous() {
               transition: 'opacity 0.3s ease, transform 0.3s ease',
             }}
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4 rtl:rotate-180" />
           </button>
 
           <div className="flex-1 w-full overflow-hidden">

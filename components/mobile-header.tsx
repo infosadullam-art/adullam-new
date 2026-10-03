@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/admin/auth-context"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useTranslations } from "next-intl"
+import { useLocale } from "@/context/LocaleProvider"
+import { getDirection } from "@/lib/country-config"
 import { LanguageSelector } from "@/components/LanguageSelector"
 
 // ════════════════════════════════════════════════════════════
@@ -179,6 +181,9 @@ export function MobileHeader() {
   const router = useRouter()
   const { user, logout, isLoading } = useAuth()
   const t = useTranslations("header")
+  const { language } = useLocale()
+  // Côté d'où le tiroir arrive : à gauche en LTR, à droite en arabe (rtl)
+  const drawerClosedX = getDirection(language) === "rtl" ? "100%" : "-100%"
   const tc = useTranslations("categories")
 
   // Fade-in au montage
@@ -450,8 +455,12 @@ export function MobileHeader() {
         className="fixed top-0 start-0 h-full z-50 overflow-y-auto bg-background border-e border-border"
         style={{
           width: "285px",
-          transform: showMenu ? "translateX(0)" : "translateX(calc(-100% * var(--dir-sign, 1)))",
-          transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          transform: showMenu ? "translateX(0)" : `translateX(${drawerClosedX})`,
+          // fermé = invisible : jamais de bande de tiroir visible, quel que soit le sens de lecture
+          visibility: showMenu ? "visible" : "hidden",
+          transition: showMenu
+            ? "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s"
+            : "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.3s",
           boxShadow: showMenu ? "var(--shadow-lg)" : "none",
         }}
       >

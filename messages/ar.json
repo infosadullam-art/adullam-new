@@ -198,5 +198,186 @@
     "activateDark": "التبديل إلى الوضع الداكن",
     "modeLight": "الوضع الفاتح",
     "modeDark": "الوضع الداكن"
+  },
+  "footer": {
+    "aboutTitle": "نبذة عنا",
+    "whoWeAre": "من نحن",
+    "careers": "الوظائف",
+    "press": "الصحافة",
+    "customerService": "خدمة العملاء",
+    "contact": "اتصل بنا",
+    "help": "المساعدة",
+    "returns": "الإرجاع",
+    "legalTitle": "معلومات قانونية",
+    "legalNotice": "الإشعار القانوني",
+    "terms": "شروط البيع",
+    "privacy": "الخصوصية",
+    "cookies": "ملفات تعريف الارتباط",
+    "followUs": "تابعنا",
+    "rights": "© {year} أدولام. جميع الحقوق محفوظة."
+  },
+  "hero": {
+    "slide1Title": "اطلب مباشرة من المصنع",
+    "slide1Cta": "اطلب الآن",
+    "slide2Title": "توريد حسب الطلب",
+    "slide2Cta": "اطلب عرض سعر",
+    "slide3Title": "توصيل مضمون أو استرداد المال",
+    "slide3Cta": "اطلب بثقة",
+    "paymentLabel": "دفع آمن",
+    "paymentSub": "Mobile Money، بطاقة",
+    "deliveryLabel": "توصيل سريع",
+    "deliverySub": "من 7 إلى 45 يومًا",
+    "guaranteeLabel": "ضمان استرداد المال",
+    "guaranteeSub": "إذا لم تصل الطلبية",
+    "supplierChina": "الصين",
+    "supplierDubai": "دبي",
+    "supplierTurkey": "تركيا",
+    "supplierUsa": "أمريكا",
+    "deliveryTo": "التوصيل إلى {country}",
+    "directFrom": "مباشرة من:",
+    "headline": "هل تريد الطلب مباشرة من المصنع؟",
+    "headlineAccent": "نحن نتكفل بكل شيء.",
+    "subline": "تستلم طلبك في منزلك. وإن لم يصل — نعيد لك أموالك.",
+    "explore": "استكشف المتجر",
+    "sourcingB2B": "توريد B2B",
+    "slideAria": "عرض الشريحة {n}"
+  },
+  "dealCountdown": {
+    "tickerUpTo": "خصم يصل إلى 50%",
+    "tickerRenewal": "تجديد يومي",
+    "tickerLimitedStock": "كمية محدودة",
+    "tickerFastDelivery": "توصيل سريع",
+    "flashSale": "عرض خاطف",
+    "limited": "محدود",
+    "seeAll": "عرض الكل",
+    "endsIn": "ينتهي خلال",
+    "seeAllOffers": "عرض كل العروض",
+    "selection": "مختارات",
+    "selectionOfMoment": "مختارات اللحظة",
+    "new": "جديد",
+    "bestSellers": "الأكثر مبيعًا",
+    "bestSellersLong": "الأكثر مبيعًا",
+    "topSales": "الأعلى مبيعًا",
+    "bestSellerBadge": "الأكثر مبيعًا",
+    "loadError": "تعذر تحميل العروض",
+    "product": "منتج"
+  },
+  "forYou": {
+    "badges": {
+      "forYou": "لك",
+      "recommended": "موصى به",
+      "trend": "رائج",
+      "new": "جديد",
+      "discovery": "اكتشاف",
+      "popular": "شائع"
+    },
+    "titles": {
+      "suggestions": {
+        "main": "اقتراحات",
+        "sub": "مخصصة لك"
+      },
+      "inspirations": {
+        "main": "إلهام",
+        "sub": "خاص بك"
+      },
+      "discoveries": {
+        "main": "اكتشافات",
+        "sub": "مختارات اللحظة"
+      },
+      "recommendations": {
+        "main": "توصيات",
+        "sub": "بناءً على ذوقك"
+      },
+      "selections": {
+        "main": "مختارات",
+        "sub": "لأسلوبك"
+      }
+    },
+    "loadingRecommendations": "جارٍ تحميل التوصيات...",
+    "articlesCount": "{count} منتج · تحديث مستمر",
+    "loadError": "خطأ في التحميل — إعادة المحاولة عند التمرير التالي",
+    "loading": "جارٍ التحميل...",
+    "suggestionsCount": "{count} اقتراح",
+    "product": "منتج"
+  },
+  "bestSellers": {
+    "title": "الأكثر مبيعًا",
+    "hint": "اسحب لعرض المزيد",
+    "seeAll": "عرض الكل",
+    "swipe": "اسحب ←"
+  },
+  "machinesAgricoles": {
+    "title": "آلات زراعية",
+    "subtitle": "معدات احترافية",
+    "seeAll": "عرض الكل",
+    "product": "منتج"
+  },
+  "photoCamera": {
+    "title": "التصوير والكاميرات",
+    "subtitle": "كاميرات وإكسسوارات",
+    "seeAll": "عرض الكل",
+    "product": "منتج"
+  },
+  "recommended": {
+    "title": "موصى به لشركتك",
+    "subtitle": "منتجات شائعة للمحترفين",
+    "seeAll": "عرض الكل",
+    "quickCustom": "تخصيص سريع",
+    "quickCustomSub": "كميات مناسبة للمحترفين",
+    "previous": "السابق",
+    "next": "التالي",
+    "product": "منتج"
+  },
+  "trendingKitchen": {
+    "title": "رائج في المطبخ",
+    "subtitle": "المنتجات الأكثر شعبية",
+    "seeAll": "عرض الكل",
+    "previous": "السابق",
+    "next": "التالي",
+    "product": "منتج"
+  },
+  "categoriesMode": {
+    "title": "أزياء لكل العائلة",
+    "subtitle": "رجال • نساء • أطفال",
+    "seeAllFashion": "عرض كل الأزياء",
+    "productsCount": "{count} منتج",
+    "explore": "استكشف",
+    "trending": "رائج",
+    "men": "أزياء الرجال",
+    "menDesc": "ملابس وأحذية وإكسسوارات",
+    "women": "أزياء النساء",
+    "womenDesc": "فساتين وحقائب وأحذية",
+    "kids": "أزياء الأطفال",
+    "kidsDesc": "ملابس وأحذية وإكسسوارات",
+    "product": "منتج"
+  },
+  "mobileNav": {
+    "home": "الرئيسية",
+    "sourcing": "التوريد",
+    "feed": "آخر الأخبار",
+    "notifications": "الإشعارات",
+    "account": "الحساب"
+  },
+  "modeSection": {
+    "men": "رجال",
+    "women": "نساء",
+    "kids": "أطفال",
+    "filterAll": "كل الأزياء",
+    "filterNew": "وصل حديثًا",
+    "filterFast": "توصيل خلال 24 ساعة",
+    "flashMode": "فلاش للأزياء",
+    "flashModeSub": "مجموعات حصرية بخصم 50%",
+    "unitHours": "س",
+    "unitMinutes": "د",
+    "unitSeconds": "ث",
+    "flashSales": "عروض خاطفة",
+    "seeAll": "عرض الكل",
+    "trendFashion": "أزياء رائجة",
+    "productsCount": "{count} منتج",
+    "firstOrder": "الطلب الأول",
+    "discountOff": "خصم 10%",
+    "copy": "نسخ",
+    "couponCopied": "تم نسخ رمز الخصم! خصم 10% على طلبك الأول",
+    "product": "منتج"
   }
 }

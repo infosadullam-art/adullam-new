@@ -4,6 +4,8 @@ import { ProductCard } from "@/components/product-card"
 import { useEffect, useRef, useState, useCallback, useLayoutEffect } from "react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useApi } from "@/hooks/useApi"
+import { useTranslations } from "next-intl"
+import { withLocale } from "@/lib/locale-client"
 
 interface Product {
   id: string
@@ -21,23 +23,18 @@ interface Product {
 
 // Même langage que product-card.tsx : étiquette pleine sombre par défaut,
 // accent réservé aux signaux à caractère promotionnel.
-const badgeConfig: Record<string, { label: string; tone: "dark" | "accent" }> = {
-  session_graph: { label: "Pour vous",  tone: "dark" },
-  session:       { label: "Pour vous",  tone: "dark" },
-  als:           { label: "Recommandé", tone: "dark" },
-  trend:         { label: "Tendance",   tone: "accent" },
-  new:           { label: "Nouveau",    tone: "dark" },
-  random:        { label: "Découverte", tone: "dark" },
-  popular:       { label: "Populaire",  tone: "dark" },
+const badgeConfig: Record<string, { labelKey: string; tone: "dark" | "accent" }> = {
+  session_graph: { labelKey: "forYou",      tone: "dark" },
+  session:       { labelKey: "forYou",      tone: "dark" },
+  als:           { labelKey: "recommended", tone: "dark" },
+  trend:         { labelKey: "trend",       tone: "accent" },
+  new:           { labelKey: "new",         tone: "dark" },
+  random:        { labelKey: "discovery",   tone: "dark" },
+  popular:       { labelKey: "popular",     tone: "dark" },
 }
 
-const TITLES = [
-  { main: "Suggestions",     sub: "personnalisées pour vous" },
-  { main: "Inspirations",    sub: "rien que pour vous" },
-  { main: "Découvertes",     sub: "sélection du moment" },
-  { main: "Recommandations", sub: "basées sur vos goûts" },
-  { main: "Sélections",      sub: "pour votre style" },
-]
+// Titres rotatifs : clés de traduction (messages "forYou.titles.*")
+const TITLE_KEYS = ["suggestions", "inspirations", "discoveries", "recommendations", "selections"]
 
 const STORAGE_KEY = "foryou_state"
 
@@ -79,6 +76,10 @@ function readSavedState(sessionId: string | null): SavedState | null {
 export function ForYouSection() {
   const { formatPrice } = useCurrencyFormatter()
   const { fetchWithAuth } = useApi()
+  const t = useTranslations("forYou")
+  // t via une ref : fetchForYou garde les mêmes dépendances (pas de re-création à chaque rendu)
+  const tRef = useRef(t)
+  tRef.current = t
 
   const [sessionId] = useState<string | null>(() => getOrCreateSessionId())
   const [initialSavedState] = useState<SavedState | null>(() => readSavedState(sessionId))
@@ -163,7 +164,7 @@ export function ForYouSection() {
   }, [saveState])
 
   useEffect(() => {
-    const i = setInterval(() => setTitleIndex(p => (p + 1) % TITLES.length), 5000)
+    const i = setInterval(() => setTitleIndex(p => (p + 1) % TITLE_KEYS.length), 5000)
     return () => clearInterval(i)
   }, [])
 
@@ -231,7 +232,7 @@ export function ForYouSection() {
       let url = `/api/graph/recommendations/for-you?page=${pageRef.current}&limit=24&sessionId=${sessionId}`
       if (seenIds) url += `&seenIds=${seenIds}`
 
-      const res = await fetchWithAuth(url, { signal: abortControllerRef.current.signal })
+      const res = await fetchWithAuth(withLocale(url), { signal: abortControllerRef.current.signal })
 
       const text = await res.text()
       if (!text || text.trim() === "") {
@@ -268,7 +269,7 @@ export function ForYouSection() {
         .filter((p: any) => !existingIds.has(p.id))
         .map((p: any) => ({
           id:          p.id,
-          name:        p.name || p.title || "Produit",
+          name:        p.name || p.title || tRef.current("product"),
           priceUSD:    p.price || p.priceUSD || 0,
           image:       p.image || "/placeholder.jpg",
           status:      p.status || "active",
@@ -338,7 +339,7 @@ export function ForYouSection() {
       <section className="w-full py-8 bg-background">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-[13px] text-muted-foreground">
-            Chargement des recommandations...
+            {t("loadingRecommendations")}
           </p>
         </div>
       </section>
@@ -353,20 +354,20 @@ export function ForYouSection() {
           <div className="flex items-center gap-2 mb-1">
             <span className="inline-block w-[3px] h-[18px] rounded-sm bg-accent" />
             <h2 key={titleIndex} className="text-lg font-extrabold tracking-[-0.02em] text-foreground">
-              {TITLES[titleIndex].main}{" "}
-              <span className="text-accent">{TITLES[titleIndex].sub}</span>
+              {t(`titles.${TITLE_KEYS[titleIndex]}.main`)}{" "}
+              <span className="text-accent">{t(`titles.${TITLE_KEYS[titleIndex]}.sub`)}</span>
             </h2>
           </div>
           <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <span className="inline-block w-[5px] h-[5px] rounded-full bg-accent" />
-            {products.length} articles · mise à jour en continu
+            {t("articlesCount", { count: products.length })}
           </p>
         </div>
 
         <div className="space-y-3">
           {error && (
             <div className="text-center py-4 text-xs text-accent">
-              Erreur de chargement — réessai au prochain scroll
+              {t("loadError")}
             </div>
           )}
 
@@ -382,10 +383,10 @@ export function ForYouSection() {
                 >
                   {badge && (
                     <span
-                      className="absolute z-10 top-1.5 left-1.5 rounded-sm px-1.5 py-0.5 text-[9px] font-bold text-white"
+                      className="absolute z-10 top-1.5 start-1.5 rounded-sm px-1.5 py-0.5 text-[9px] font-bold text-white"
                       style={{ background: badge.tone === "accent" ? "var(--accent)" : "color-mix(in oklab, var(--foreground) 82%, transparent)" }}
                     >
-                      {badge.label}
+                      {t(`badges.${badge.labelKey}`)}
                     </span>
                   )}
 
@@ -408,13 +409,13 @@ export function ForYouSection() {
               <div className="flex flex-col items-center gap-1.5">
                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-border border-t-accent" />
                 <span className="text-[10px] text-muted-foreground">
-                  Chargement...
+                  {t("loading")}
                 </span>
               </div>
             )}
             {!hasMore && products.length > 0 && !isLoading && (
               <p className="text-[10px] text-muted-foreground">
-                {products.length} suggestions
+                {t("suggestionsCount", { count: products.length })}
               </p>
             )}
           </div>

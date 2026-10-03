@@ -5,13 +5,16 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight, Tractor } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { useTranslations } from "next-intl"
+import { withLocale } from "@/lib/locale-client"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
 const CATEGORY_ID = "6298cdeb-49bd-43b5-a64d-520bc2fdb6a1"
 const CATEGORY_SLUG = "machines-agricoles"
 const REFRESH_INTERVAL = 6 * 60 * 60 * 1000
 
-const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+// Police via variable CSS : même pile qu'avant en LTR, Cairo en arabe (voir globals.css)
+const amazonFont = "var(--font-amazon)"
 
 interface Product {
   id: string
@@ -22,6 +25,7 @@ interface Product {
 
 export function MachinesAgricolesSection() {
   const { formatPrice } = useCurrencyFormatter()
+  const t = useTranslations("machinesAgricoles")
   const scrollRef = useRef<HTMLDivElement>(null)
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -33,7 +37,7 @@ export function MachinesAgricolesSection() {
       try {
         const timestamp = Date.now()
         const res = await fetch(
-          `${API_BASE}/api/products?categoryId=${CATEGORY_ID}&limit=20&_t=${timestamp}`
+          withLocale(`${API_BASE}/api/products?categoryId=${CATEGORY_ID}&limit=20&_t=${timestamp}`)
         )
         const data = await res.json()
         const list: any[] = data.data || data.products || []
@@ -41,7 +45,7 @@ export function MachinesAgricolesSection() {
           const shuffled = [...list].sort(() => Math.random() - 0.5)
           setProducts(shuffled.slice(0, 10).map((p: any) => ({
             id: p.id,
-            name: p.title || p.name || "Produit",
+            name: p.title || p.name || t("product"),
             priceUSD: p.price || 0,
             image: p.images?.[0] || p.image || "/placeholder.jpg",
           })))
@@ -74,10 +78,10 @@ export function MachinesAgricolesSection() {
             </div>
             <div>
               <h2 className="text-sm font-bold" style={{ color: "#0A0A0A" }}>
-                Machines Agricoles
+                {t("title")}
               </h2>
               <p className="text-[9px]" style={{ color: "#AAAAAA" }}>
-                Équipement professionnel
+                {t("subtitle")}
               </p>
             </div>
           </div>
@@ -86,7 +90,7 @@ export function MachinesAgricolesSection() {
             className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1"
             style={{ color: "#D4372B" }}
           >
-            Voir tout <ChevronRight className="w-3 h-3" />
+            {t("seeAll")} <ChevronRight className="w-3 h-3 rtl:rotate-180" />
           </Link>
         </div>
 
@@ -171,10 +175,10 @@ export function MachinesAgricolesSection() {
             </div>
             <div>
               <p style={{ fontSize: "12px", fontWeight: 700, color: "#fff", fontFamily: amazonFont }}>
-                Machines Agricoles
+                {t("title")}
               </p>
               <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>
-                Équipement professionnel
+                {t("subtitle")}
               </p>
             </div>
           </div>
@@ -183,7 +187,7 @@ export function MachinesAgricolesSection() {
             className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1"
             style={{ color: "#D4372B", fontFamily: amazonFont }}
           >
-            Voir tout <ChevronRight className="w-3 h-3" />
+            {t("seeAll")} <ChevronRight className="w-3 h-3 rtl:rotate-180" />
           </Link>
         </div>
 

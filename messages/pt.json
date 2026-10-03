@@ -198,5 +198,186 @@
     "activateDark": "Ativar o modo escuro",
     "modeLight": "Modo claro",
     "modeDark": "Modo escuro"
+  },
+  "footer": {
+    "aboutTitle": "Sobre",
+    "whoWeAre": "Quem somos",
+    "careers": "Carreiras",
+    "press": "Imprensa",
+    "customerService": "Apoio ao cliente",
+    "contact": "Contacto",
+    "help": "Ajuda",
+    "returns": "Devoluções",
+    "legalTitle": "Informações legais",
+    "legalNotice": "Avisos legais",
+    "terms": "Condições de venda",
+    "privacy": "Privacidade",
+    "cookies": "Cookies",
+    "followUs": "Siga-nos",
+    "rights": "© {year} Adullam. Todos os direitos reservados."
+  },
+  "hero": {
+    "slide1Title": "Encomende diretamente da fábrica",
+    "slide1Cta": "Encomendar agora",
+    "slide2Title": "Sourcing à medida",
+    "slide2Cta": "Pedir orçamento",
+    "slide3Title": "Entrega garantida ou reembolso",
+    "slide3Cta": "Encomendar com confiança",
+    "paymentLabel": "Pagamento seguro",
+    "paymentSub": "Mobile Money, Cartão",
+    "deliveryLabel": "Entrega rápida",
+    "deliverySub": "7 a 45 dias",
+    "guaranteeLabel": "Garantia de reembolso",
+    "guaranteeSub": "Se não chegar",
+    "supplierChina": "China",
+    "supplierDubai": "Dubai",
+    "supplierTurkey": "Turquia",
+    "supplierUsa": "EUA",
+    "deliveryTo": "Entrega para {country}",
+    "directFrom": "Direto de:",
+    "headline": "Quer encomendar direto da fábrica?",
+    "headlineAccent": "Tratamos de tudo.",
+    "subline": "Recebe em casa. Se não chegar — reembolsamos.",
+    "explore": "Explorar a loja",
+    "sourcingB2B": "Sourcing B2B",
+    "slideAria": "Ver o slide {n}"
+  },
+  "dealCountdown": {
+    "tickerUpTo": "Até -50%",
+    "tickerRenewal": "Renovação diária",
+    "tickerLimitedStock": "Stock limitado",
+    "tickerFastDelivery": "Entrega rápida",
+    "flashSale": "VENDA RELÂMPAGO",
+    "limited": "Limitado",
+    "seeAll": "Ver tudo",
+    "endsIn": "Termina em",
+    "seeAllOffers": "Ver todas as ofertas",
+    "selection": "Seleção",
+    "selectionOfMoment": "Seleção do momento",
+    "new": "Novo",
+    "bestSellers": "Mais vendidos",
+    "bestSellersLong": "Mais vendidos",
+    "topSales": "Top vendas",
+    "bestSellerBadge": "Mais vendido",
+    "loadError": "Não foi possível carregar as ofertas",
+    "product": "Produto"
+  },
+  "forYou": {
+    "badges": {
+      "forYou": "Para si",
+      "recommended": "Recomendado",
+      "trend": "Tendência",
+      "new": "Novo",
+      "discovery": "Descoberta",
+      "popular": "Popular"
+    },
+    "titles": {
+      "suggestions": {
+        "main": "Sugestões",
+        "sub": "personalizadas para si"
+      },
+      "inspirations": {
+        "main": "Inspirações",
+        "sub": "só para si"
+      },
+      "discoveries": {
+        "main": "Descobertas",
+        "sub": "seleção do momento"
+      },
+      "recommendations": {
+        "main": "Recomendações",
+        "sub": "com base nos seus gostos"
+      },
+      "selections": {
+        "main": "Seleções",
+        "sub": "para o seu estilo"
+      }
+    },
+    "loadingRecommendations": "A carregar recomendações...",
+    "articlesCount": "{count} artigos · atualização contínua",
+    "loadError": "Erro de carregamento — nova tentativa no próximo scroll",
+    "loading": "A carregar...",
+    "suggestionsCount": "{count} sugestões",
+    "product": "Produto"
+  },
+  "bestSellers": {
+    "title": "Mais vendidos",
+    "hint": "Deslize para ver mais",
+    "seeAll": "Ver tudo",
+    "swipe": "deslize →"
+  },
+  "machinesAgricoles": {
+    "title": "Máquinas agrícolas",
+    "subtitle": "Equipamento profissional",
+    "seeAll": "Ver tudo",
+    "product": "Produto"
+  },
+  "photoCamera": {
+    "title": "Foto e Câmara",
+    "subtitle": "Câmaras e acessórios",
+    "seeAll": "Ver tudo",
+    "product": "Produto"
+  },
+  "recommended": {
+    "title": "Recomendado para a sua empresa",
+    "subtitle": "Produtos populares para profissionais",
+    "seeAll": "Ver tudo",
+    "quickCustom": "Personalização rápida",
+    "quickCustomSub": "Quantidades adaptadas a profissionais",
+    "previous": "Anterior",
+    "next": "Seguinte",
+    "product": "Produto"
+  },
+  "trendingKitchen": {
+    "title": "Tendências de cozinha",
+    "subtitle": "Os produtos mais populares",
+    "seeAll": "Ver tudo",
+    "previous": "Anterior",
+    "next": "Seguinte",
+    "product": "Produto"
+  },
+  "categoriesMode": {
+    "title": "Moda para toda a família",
+    "subtitle": "Homem • Mulher • Criança",
+    "seeAllFashion": "Ver toda a moda",
+    "productsCount": "{count} produtos",
+    "explore": "Explorar",
+    "trending": "Tendência",
+    "men": "Moda Homem",
+    "menDesc": "Roupa, calçado, acessórios",
+    "women": "Moda Mulher",
+    "womenDesc": "Vestidos, malas, calçado",
+    "kids": "Moda Criança",
+    "kidsDesc": "Roupa, calçado, acessórios",
+    "product": "Produto"
+  },
+  "mobileNav": {
+    "home": "Início",
+    "sourcing": "Sourcing",
+    "feed": "Feed",
+    "notifications": "Notificações",
+    "account": "Conta"
+  },
+  "modeSection": {
+    "men": "Homem",
+    "women": "Mulher",
+    "kids": "Criança",
+    "filterAll": "Toda a moda",
+    "filterNew": "Novidades",
+    "filterFast": "Entrega em 24h",
+    "flashMode": "Flash Moda",
+    "flashModeSub": "Coleções exclusivas -50%",
+    "unitHours": "h",
+    "unitMinutes": "m",
+    "unitSeconds": "s",
+    "flashSales": "Vendas relâmpago",
+    "seeAll": "Ver tudo",
+    "trendFashion": "Moda em tendência",
+    "productsCount": "{count} produtos",
+    "firstOrder": "Primeira encomenda",
+    "discountOff": "-10% de desconto",
+    "copy": "Copiar",
+    "couponCopied": "Código promocional copiado! -10% na sua primeira encomenda",
+    "product": "Produto"
   }
 }

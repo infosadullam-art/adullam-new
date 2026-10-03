@@ -5,6 +5,9 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight, Zap, Tag, Truck, Percent, Shirt, Footprints, Baby } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { useTranslations } from "next-intl"
+import { useLocale } from "@/context/LocaleProvider"
+import { withLocale } from "@/lib/locale-client"
 import { motion } from "framer-motion"
 
 // ════════════════════════════════════════════════════════════
@@ -16,7 +19,8 @@ const REFRESH_INTERVAL = 3 * 60 * 60 * 1000 // 3 heures
 
 // ════════════════════════════════════════════════════════════
 
-const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+// Police via variable CSS : même pile qu'avant en LTR, Cairo en arabe (voir globals.css)
+const amazonFont = "var(--font-amazon)"
 
 interface Product {
   id: string
@@ -48,6 +52,8 @@ interface ModeData {
 
 export function ModeSection() {
   const { formatPrice } = useCurrencyFormatter()
+  const t = useTranslations("modeSection")
+  const { locale } = useLocale()
   const [categories, setCategories] = useState<Category[]>([])
   const [flashProducts, setFlashProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -67,10 +73,10 @@ export function ModeSection() {
         
         const timestamp = Date.now()
 
-        const modeRes = await fetch(`${API_BASE}/api/categories/mode?_t=${timestamp}`)
+        const modeRes = await fetch(withLocale(`${API_BASE}/api/categories/mode?_t=${timestamp}`))
         const modeData = await modeRes.json()
 
-        const flashRes = await fetch(`${API_BASE}/api/products?categoryId=0ab9f059-d94f-4dca-b1b8-751ea9028c87&limit=20&_t=${timestamp}`)
+        const flashRes = await fetch(withLocale(`${API_BASE}/api/products?categoryId=0ab9f059-d94f-4dca-b1b8-751ea9028c87&limit=20&_t=${timestamp}`))
         const flashData = await flashRes.json()
 
         let flashList: any[] = flashData.data || flashData.products || []
@@ -78,7 +84,7 @@ export function ModeSection() {
         setFlashProducts(
           shuffledFlash.slice(0, 10).map((p: any) => ({
             id: p.id,
-            name: p.title || p.name || "Produit",
+            name: p.title || p.name || t("product"),
             priceUSD: p.salePrice || p.price || 0,
             originalPriceUSD: p.price || p.originalPrice || 0,
             image: p.images?.[0] || p.image || "/placeholder.jpg",
@@ -90,9 +96,9 @@ export function ModeSection() {
         if (modeData.success && modeData.data) {
           const md = modeData.data as ModeData
           setCategories([
-            { id: "men",   name: "Hommes",  slug: "mode-hommes",  image: "/categories/men-fashion.jpg",   icon: Shirt,      productCount: md.men.length   > 0 ? md.men.length   * 100 : 15000, href: "/categorie/t-shirts-homme",  products: md.men.slice(0, 2)   },
-            { id: "women", name: "Femmes",  slug: "mode-femmes",  image: "/categories/women-fashion.jpg", icon: Footprints, productCount: md.women.length > 0 ? md.women.length * 100 : 22000, href: "/categorie/robes",  products: md.women.slice(0, 2) },
-            { id: "kids",  name: "Enfants", slug: "mode-enfants", image: "/categories/kids-fashion.jpg",  icon: Baby,       productCount: md.kids.length  > 0 ? md.kids.length  * 100 : 8000,  href: "/categorie/mode-enfants", products: md.kids.slice(0, 2)  },
+            { id: "men",   name: t("men"),  slug: "mode-hommes",  image: "/categories/men-fashion.jpg",   icon: Shirt,      productCount: md.men.length   > 0 ? md.men.length   * 100 : 15000, href: "/categorie/t-shirts-homme",  products: md.men.slice(0, 2)   },
+            { id: "women", name: t("women"),  slug: "mode-femmes",  image: "/categories/women-fashion.jpg", icon: Footprints, productCount: md.women.length > 0 ? md.women.length * 100 : 22000, href: "/categorie/robes",  products: md.women.slice(0, 2) },
+            { id: "kids",  name: t("kids"), slug: "mode-enfants", image: "/categories/kids-fashion.jpg",  icon: Baby,       productCount: md.kids.length  > 0 ? md.kids.length  * 100 : 8000,  href: "/categorie/mode-enfants", products: md.kids.slice(0, 2)  },
           ])
         }
       } catch (error) {
@@ -122,14 +128,14 @@ export function ModeSection() {
 
   const copyCouponCode = () => {
     navigator.clipboard.writeText("BIENVENUE10")
-    alert("Code promo copié ! -10% sur votre première commande")
+    alert(t("couponCopied"))
   }
 
   const filters = [
-    { id: "all", label: "Toute la mode" },
+    { id: "all", label: t("filterAll") },
     { id: "promo", label: "-50%", icon: Percent },
-    { id: "new", label: "Nouveautés", icon: Tag },
-    { id: "fast", label: "Livraison 24h", icon: Truck },
+    { id: "new", label: t("filterNew"), icon: Tag },
+    { id: "fast", label: t("filterFast"), icon: Truck },
   ]
 
   if (isLoading) {
@@ -152,18 +158,18 @@ export function ModeSection() {
               <Zap className="w-3.5 h-3.5 text-white" fill="white" />
             </div>
             <div>
-              <p style={{ fontSize: "12px", fontWeight: 700, color: "#fff", fontFamily: amazonFont }}>Flash Mode</p>
-              <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>Collections exclusives -50%</p>
+              <p style={{ fontSize: "12px", fontWeight: 700, color: "#fff", fontFamily: amazonFont }}>{t("flashMode")}</p>
+              <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>{t("flashModeSub")}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-1">
-            {[{ v: h, u: "h" }, { v: m, u: "m" }, { v: s, u: "s" }].map(({ v, u }, i) => (
+          <div dir="ltr" className="flex items-center gap-1">
+            {[{ v: h, u: t("unitHours") }, { v: m, u: t("unitMinutes") }, { v: s, u: t("unitSeconds") }].map(({ v, u }, i) => (
               <div key={u} className="flex items-center gap-1">
                 {i > 0 && <span style={{ color: "#555", fontSize: "11px" }}>:</span>}
                 <div style={{ background: "#1A1A1A", borderRadius: "4px", padding: "3px 5px", minWidth: "26px", textAlign: "center" }}>
                   <span style={{ fontSize: "11px", fontWeight: 700, color: "#fff", fontFamily: amazonFont }}>{fmt(v)}</span>
-                  <span style={{ fontSize: "7px", color: "#AAAAAA", fontFamily: amazonFont, marginLeft: "1px" }}>{u}</span>
+                  <span style={{ fontSize: "7px", color: "#AAAAAA", fontFamily: amazonFont, marginInlineStart: "1px" }}>{u}</span>
                 </div>
               </div>
             ))}
@@ -194,10 +200,10 @@ export function ModeSection() {
         <div className="px-4 py-3">
           <div className="flex items-center justify-between mb-2">
             <p style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont }}>
-              ⚡ Ventes éclair
+              ⚡ {t("flashSales")}
             </p>
             <Link href="/categorie/montres" className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1" style={{ color: "#D4372B", fontFamily: amazonFont }}>
-              Voir tout <ChevronRight className="w-3 h-3" />
+              {t("seeAll")} <ChevronRight className="w-3 h-3 rtl:rotate-180" />
             </Link>
           </div>
 
@@ -206,8 +212,8 @@ export function ModeSection() {
               <Link key={product.id} href={`/products/${product.id}`} className="group block flex-shrink-0 transition-all duration-200 hover:-translate-y-0.5" style={{ width: "120px" }}>
                 <div style={{ background: "#fff", borderRadius: "6px", border: "0.5px solid #ECECEC", overflow: "hidden" }}>
                   <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
-                    <span className="absolute top-1.5 left-1.5 z-10 text-[8px] font-bold px-1.5 py-0.5 text-white" style={{ background: "#D4372B", borderRadius: "3px" }}>
-                      -{product.discount}%
+                    <span className="absolute top-1.5 start-1.5 z-10 text-[8px] font-bold px-1.5 py-0.5 text-white" style={{ background: "#D4372B", borderRadius: "3px" }}>
+                      <span dir="ltr">-{product.discount}%</span>
                     </span>
                     <Image src={product.image || "/placeholder.svg"} alt={product.name} width={120} height={120} className="w-full h-full object-contain p-1.5 transition-transform duration-300 group-hover:scale-105" />
                   </div>
@@ -230,9 +236,9 @@ export function ModeSection() {
       {categories.length > 0 && (
         <div className="px-4 pb-3" style={{ background: "#FAFAFA" }}>
           <div className="flex items-center justify-between py-2 mb-2">
-            <p style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont }}>Mode tendance</p>
+            <p style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont }}>{t("trendFashion")}</p>
             <Link href="/categorie/montres" className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1" style={{ color: "#D4372B", fontFamily: amazonFont }}>
-              Voir tout <ChevronRight className="w-3 h-3" />
+              {t("seeAll")} <ChevronRight className="w-3 h-3 rtl:rotate-180" />
             </Link>
           </div>
 
@@ -246,10 +252,10 @@ export function ModeSection() {
                     </div>
                     <div>
                       <p style={{ fontSize: "11px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont }}>{category.name}</p>
-                      <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>{category.productCount.toLocaleString()} produits</p>
+                      <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>{t("productsCount", { count: new Intl.NumberFormat(locale).format(category.productCount) })}</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-3.5 h-3.5" style={{ color: "#ECECEC" }} />
+                  <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" style={{ color: "#ECECEC" }} />
                 </Link>
 
                 <div className="grid grid-cols-2 gap-1.5">
@@ -303,10 +309,10 @@ export function ModeSection() {
             </motion.span>
             <div>
               <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                Première commande
+                {t("firstOrder")}
               </p>
               <p style={{ fontSize: "11px", fontWeight: 700, color: "#fff", fontFamily: amazonFont }}>
-                -10% de réduction
+                {t("discountOff")}
               </p>
             </div>
           </div>
@@ -322,7 +328,7 @@ export function ModeSection() {
               }}
               style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em", fontFamily: amazonFont }}
             >
-              BIENVENUE10
+              <bdi dir="ltr">BIENVENUE10</bdi>
             </motion.code>
             <motion.button
               onClick={copyCouponCode}
@@ -343,7 +349,7 @@ export function ModeSection() {
               className="text-[9px] font-bold px-2 py-0.5 transition-all duration-200"
               style={{ background: "#D4372B", color: "#fff", fontFamily: amazonFont, borderRadius: "4px" }}
             >
-              Copier
+              {t("copy")}
             </motion.button>
           </div>
         </div>

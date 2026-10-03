@@ -198,5 +198,186 @@
     "activateDark": "Switch to dark mode",
     "modeLight": "Light mode",
     "modeDark": "Dark mode"
+  },
+  "footer": {
+    "aboutTitle": "About",
+    "whoWeAre": "Who we are",
+    "careers": "Careers",
+    "press": "Press",
+    "customerService": "Customer service",
+    "contact": "Contact",
+    "help": "Help",
+    "returns": "Returns",
+    "legalTitle": "Legal information",
+    "legalNotice": "Legal notice",
+    "terms": "Terms of sale",
+    "privacy": "Privacy",
+    "cookies": "Cookies",
+    "followUs": "Follow us",
+    "rights": "© {year} Adullam. All rights reserved."
+  },
+  "hero": {
+    "slide1Title": "Order directly from the factory",
+    "slide1Cta": "Order now",
+    "slide2Title": "Custom sourcing",
+    "slide2Cta": "Request a quote",
+    "slide3Title": "Delivery guaranteed or your money back",
+    "slide3Cta": "Order with confidence",
+    "paymentLabel": "Secure payment",
+    "paymentSub": "Mobile Money, Card",
+    "deliveryLabel": "Fast delivery",
+    "deliverySub": "7 to 45 days",
+    "guaranteeLabel": "Money-back guarantee",
+    "guaranteeSub": "If it doesn't arrive",
+    "supplierChina": "China",
+    "supplierDubai": "Dubai",
+    "supplierTurkey": "Turkey",
+    "supplierUsa": "USA",
+    "deliveryTo": "Delivery to {country}",
+    "directFrom": "Direct from:",
+    "headline": "Want to order direct from the factory?",
+    "headlineAccent": "We take care of everything.",
+    "subline": "You receive it at home. If it doesn't arrive — we refund you.",
+    "explore": "Explore the shop",
+    "sourcingB2B": "B2B sourcing",
+    "slideAria": "Go to slide {n}"
+  },
+  "dealCountdown": {
+    "tickerUpTo": "Up to -50%",
+    "tickerRenewal": "Daily refresh",
+    "tickerLimitedStock": "Limited stock",
+    "tickerFastDelivery": "Fast delivery",
+    "flashSale": "FLASH SALE",
+    "limited": "Limited",
+    "seeAll": "See all",
+    "endsIn": "Ends in",
+    "seeAllOffers": "See all deals",
+    "selection": "Selection",
+    "selectionOfMoment": "Selection of the moment",
+    "new": "New",
+    "bestSellers": "Best sellers",
+    "bestSellersLong": "Best sellers",
+    "topSales": "Top sellers",
+    "bestSellerBadge": "Best seller",
+    "loadError": "Unable to load deals",
+    "product": "Product"
+  },
+  "forYou": {
+    "badges": {
+      "forYou": "For you",
+      "recommended": "Recommended",
+      "trend": "Trending",
+      "new": "New",
+      "discovery": "Discovery",
+      "popular": "Popular"
+    },
+    "titles": {
+      "suggestions": {
+        "main": "Suggestions",
+        "sub": "personalised for you"
+      },
+      "inspirations": {
+        "main": "Inspirations",
+        "sub": "just for you"
+      },
+      "discoveries": {
+        "main": "Discoveries",
+        "sub": "selection of the moment"
+      },
+      "recommendations": {
+        "main": "Recommendations",
+        "sub": "based on your tastes"
+      },
+      "selections": {
+        "main": "Selections",
+        "sub": "for your style"
+      }
+    },
+    "loadingRecommendations": "Loading recommendations...",
+    "articlesCount": "{count} items · continuously updated",
+    "loadError": "Loading error — retrying on next scroll",
+    "loading": "Loading...",
+    "suggestionsCount": "{count} suggestions",
+    "product": "Product"
+  },
+  "bestSellers": {
+    "title": "Best sellers",
+    "hint": "Swipe to see more",
+    "seeAll": "See all",
+    "swipe": "swipe →"
+  },
+  "machinesAgricoles": {
+    "title": "Agricultural machinery",
+    "subtitle": "Professional equipment",
+    "seeAll": "See all",
+    "product": "Product"
+  },
+  "photoCamera": {
+    "title": "Photo & Camera",
+    "subtitle": "Cameras & accessories",
+    "seeAll": "See all",
+    "product": "Product"
+  },
+  "recommended": {
+    "title": "Recommended for your business",
+    "subtitle": "Popular products for professionals",
+    "seeAll": "See all",
+    "quickCustom": "Quick customisation",
+    "quickCustomSub": "Quantities suited to pros",
+    "previous": "Previous",
+    "next": "Next",
+    "product": "Product"
+  },
+  "trendingKitchen": {
+    "title": "Kitchen trends",
+    "subtitle": "The most popular products",
+    "seeAll": "See all",
+    "previous": "Previous",
+    "next": "Next",
+    "product": "Product"
+  },
+  "categoriesMode": {
+    "title": "Fashion for the whole family",
+    "subtitle": "Men • Women • Kids",
+    "seeAllFashion": "See all fashion",
+    "productsCount": "{count} products",
+    "explore": "Explore",
+    "trending": "Trending",
+    "men": "Men's fashion",
+    "menDesc": "Clothing, shoes, accessories",
+    "women": "Women's fashion",
+    "womenDesc": "Dresses, bags, shoes",
+    "kids": "Kids' fashion",
+    "kidsDesc": "Clothing, shoes, accessories",
+    "product": "Product"
+  },
+  "mobileNav": {
+    "home": "Home",
+    "sourcing": "Sourcing",
+    "feed": "News feed",
+    "notifications": "Notifications",
+    "account": "Account"
+  },
+  "modeSection": {
+    "men": "Men",
+    "women": "Women",
+    "kids": "Kids",
+    "filterAll": "All fashion",
+    "filterNew": "New arrivals",
+    "filterFast": "24h delivery",
+    "flashMode": "Flash Fashion",
+    "flashModeSub": "Exclusive collections -50%",
+    "unitHours": "h",
+    "unitMinutes": "m",
+    "unitSeconds": "s",
+    "flashSales": "Flash sales",
+    "seeAll": "See all",
+    "trendFashion": "Trending fashion",
+    "productsCount": "{count} products",
+    "firstOrder": "First order",
+    "discountOff": "-10% off",
+    "copy": "Copy",
+    "couponCopied": "Promo code copied! -10% on your first order",
+    "product": "Product"
   }
 }

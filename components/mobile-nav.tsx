@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/admin/auth-context"
 import { useUnreadNotifications } from "@/hooks/useUnreadNotifications"
+import { useTranslations } from "next-intl"
 
 // ════════════════════════════════════════════════════════════
 // ICÔNES — mêmes dessins maison que le header (trait 1.6,
@@ -53,14 +54,15 @@ const IconUser = ({ className, strokeWidth = 1.6, style }: IconProps) => (
 )
 
 const navItems = [
-  { icon: IconHome,     label: "Accueil",        id: "home",          path: "/" },
-  { icon: IconSourcing, label: "Sourcing",        id: "sourcing",      path: "/boutique-noel" },
-  { icon: IconFeed,     label: "Fil d'actualité", id: "feed",          path: "/feed" },
-  { icon: IconBell,     label: "Notifications",   id: "notifications", path: "/notifications" },
-  { icon: IconUser,     label: "Compte",          id: "account",       path: "/account" },
+  { icon: IconHome,     labelKey: "home",          id: "home",          path: "/" },
+  { icon: IconSourcing, labelKey: "sourcing",      id: "sourcing",      path: "/boutique-noel" },
+  { icon: IconFeed,     labelKey: "feed",          id: "feed",          path: "/feed" },
+  { icon: IconBell,     labelKey: "notifications", id: "notifications", path: "/notifications" },
+  { icon: IconUser,     labelKey: "account",       id: "account",       path: "/account" },
 ]
 
 export default function MobileNav() {
+  const t         = useTranslations("mobileNav")
   const pathname  = usePathname()
   const router    = useRouter()
   const { user }  = useAuth()
@@ -131,7 +133,7 @@ export default function MobileNav() {
                 onClick={() => router.push(item.path)}
                 onMouseEnter={() => router.prefetch(item.path)}
                 className="relative flex flex-col items-center justify-center gap-[3px] transition-transform duration-150 active:scale-90 focus:outline-none"
-                aria-label={item.label}
+                aria-label={t(item.labelKey)}
                 aria-current={isActive ? "page" : undefined}
               >
                 {/* Indicateur actif — pilule en haut */}
@@ -157,7 +159,7 @@ export default function MobileNav() {
                       className="absolute flex items-center justify-center tabular-nums"
                       style={{
                         top: "-5px",
-                        right: "-6px",
+                        insetInlineEnd: "-6px",
                         minWidth: "16px",
                         height: "16px",
                         background: "var(--accent)",
@@ -186,7 +188,7 @@ export default function MobileNav() {
                     lineHeight: 1,
                   }}
                 >
-                  {item.label}
+                  {t(item.labelKey)}
                 </span>
               </button>
             )

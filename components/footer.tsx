@@ -1,78 +1,83 @@
+import { useTranslations } from "next-intl"
+
 export function Footer() {
+  const t = useTranslations("footer")
+  const year = new Date().getFullYear()
+
   return (
     <footer className="bg-background text-foreground border-t border-border mt-auto pb-20 lg:pb-0">
       <div className="max-w-[1440px] mx-auto px-4 py-8 lg:py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
           <div>
-            <h3 className="font-bold mb-3 lg:mb-4 text-foreground/90">À propos</h3>
+            <h3 className="font-bold mb-3 lg:mb-4 text-foreground/90">{t("aboutTitle")}</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <a href="/qui-sommes-nous" className="hover:text-foreground transition-colors duration-200">
-                  Qui sommes-nous
+                  {t("whoWeAre")}
                 </a>
               </li>
               <li>
                 <a href="/carrieres" className="hover:text-foreground transition-colors duration-200">
-                  Carrières
+                  {t("careers")}
                 </a>
               </li>
               <li>
                 <a href="/presse" className="hover:text-foreground transition-colors duration-200">
-                  Presse
+                  {t("press")}
                 </a>
               </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="font-bold mb-3 lg:mb-4 text-foreground/90">Service client</h3>
+            <h3 className="font-bold mb-3 lg:mb-4 text-foreground/90">{t("customerService")}</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <a href="/contact" className="hover:text-foreground transition-colors duration-200">
-                  Contact
+                  {t("contact")}
                 </a>
               </li>
               <li>
                 <a href="/aide" className="hover:text-foreground transition-colors duration-200">
-                  Aide
+                  {t("help")}
                 </a>
               </li>
               <li>
                 <a href="/retours" className="hover:text-foreground transition-colors duration-200">
-                  Retours
+                  {t("returns")}
                 </a>
               </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="font-bold mb-3 lg:mb-4 text-foreground/90">Informations légales</h3>
+            <h3 className="font-bold mb-3 lg:mb-4 text-foreground/90">{t("legalTitle")}</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <a href="/mentions-legales" className="hover:text-foreground transition-colors duration-200">
-                  Mentions légales
+                  {t("legalNotice")}
                 </a>
               </li>
               <li>
                 <a href="/cgv" className="hover:text-foreground transition-colors duration-200">
-                  CGV
+                  {t("terms")}
                 </a>
               </li>
               <li>
                 <a href="/confidentialite" className="hover:text-foreground transition-colors duration-200">
-                  Confidentialité
+                  {t("privacy")}
                 </a>
               </li>
               <li>
                 <a href="/cookies" className="hover:text-foreground transition-colors duration-200">
-                  Cookies
+                  {t("cookies")}
                 </a>
               </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="font-bold mb-3 lg:mb-4 text-foreground/90">Suivez-nous</h3>
+            <h3 className="font-bold mb-3 lg:mb-4 text-foreground/90">{t("followUs")}</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <a href="https://facebook.com/adullam" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors duration-200">
@@ -94,7 +99,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-border mt-8 pt-6 text-center text-sm text-muted-foreground">
-          <p>&copy; 2026 Adullam. Tous droits réservés.</p>
+          <p>{t("rights", { year })}</p>
         </div>
       </div>
     </footer>

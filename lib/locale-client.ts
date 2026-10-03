@@ -30,3 +30,11 @@ export function withLocale(url: string, method?: string): string {
   if (!locale) return url
   return `${url}${url.includes("?") ? "&" : "?"}locale=${locale}`
 }
+
+/**
+ * Sens de lecture : 1 en gauche→droite, -1 en droite→gauche (arabe).
+ * Un conteneur défilant en rtl avance avec des `left` négatifs : multiplier ses décalages par ce signe.
+ */
+export function readingDirectionSign(): 1 | -1 {
+  return typeof document !== "undefined" && document.documentElement.dir === "rtl" ? -1 : 1
+}

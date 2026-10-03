@@ -5,6 +5,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { Zap, ChevronRight } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { useTranslations } from "next-intl"
+import { withLocale, readingDirectionSign } from "@/lib/locale-client"
 
 // ════════════════════════════════════════════════════════════
 // API - Changement de produits toutes les 10h
@@ -15,7 +17,8 @@ const REFRESH_INTERVAL = 10 * 60 * 60 * 1000 // 10 heures
 
 // ════════════════════════════════════════════════════════════
 
-const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+// Police via variable CSS : même pile qu'avant en LTR, Cairo en arabe (voir globals.css)
+const amazonFont = "var(--font-amazon)"
 
 interface Product {
   id: string
@@ -26,6 +29,7 @@ interface Product {
 
 export function RecommandeEntreprise() {
   const { formatPrice } = useCurrencyFormatter()
+  const t = useTranslations("recommended")
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isHovered, setIsHovered] = useState(false)
@@ -38,7 +42,7 @@ export function RecommandeEntreprise() {
         console.log(`📦 [ENTREPRISE] Fetch - ${new Date().toLocaleTimeString()}`)
         
         const timestamp = Date.now()
-        const res = await fetch(`${API_BASE}/api/products?limit=20&sort=popular&_t=${timestamp}`)
+        const res = await fetch(withLocale(`${API_BASE}/api/products?limit=20&sort=popular&_t=${timestamp}`))
         const data = await res.json()
         
         let productsData: any[] = []
@@ -52,7 +56,7 @@ export function RecommandeEntreprise() {
           const shuffled = [...productsData].sort(() => Math.random() - 0.5)
           const formattedProducts = shuffled.slice(0, 8).map((p: any) => ({
             id: p.id,
-            name: p.title || p.name || "Produit",
+            name: p.title || p.name || t("product"),
             priceUSD: p.price || 0,
             image: p.images?.[0] || p.image || "/placeholder.jpg",
           }))
@@ -80,15 +84,11 @@ export function RecommandeEntreprise() {
     }
   }, [])
 
-  const scroll = (direction: 'left' | 'right') => {
+  // précédent / suivant : le sens physique s'inverse en arabe (conteneur rtl)
+  const scroll = (direction: 'prev' | 'next') => {
     if (scrollRef.current) {
-      const { current } = scrollRef
-      const scrollAmount = 200
-      if (direction === 'left') {
-        current.scrollBy({ left: -scrollAmount, behavior: 'smooth' })
-      } else {
-        current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
-      }
+      const amount = 200 * readingDirectionSign()
+      scrollRef.current.scrollBy({ left: direction === 'next' ? amount : -amount, behavior: 'smooth' })
     }
   }
 
@@ -115,10 +115,10 @@ export function RecommandeEntreprise() {
         <div className="flex items-center justify-between mb-3">
           <div>
             <h2 className="text-lg lg:text-xl font-semibold mb-0.5" style={{ color: "#0A0A0A", fontFamily: amazonFont, letterSpacing: "-0.02em" }}>
-              Recommandé pour votre entreprise
+              {t("title")}
             </h2>
             <p className="text-xs" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>
-              Produits populaires pour les professionnels
+              {t("subtitle")}
             </p>
           </div>
           <Link
@@ -126,8 +126,8 @@ export function RecommandeEntreprise() {
             className="text-xs flex items-center gap-1 transition-all duration-200 hover:gap-1.5 hover:opacity-70"
             style={{ color: "#D4372B", fontFamily: amazonFont }}
           >
-            Voir tout
-            <ChevronRight className="w-3 h-3" />
+            {t("seeAll")}
+            <ChevronRight className="w-3 h-3 rtl:rotate-180" />
           </Link>
         </div>
 
@@ -142,8 +142,9 @@ export function RecommandeEntreprise() {
         >
           
           <button 
-            onClick={() => scroll('left')}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hover:scale-105 hidden lg:block"
+            onClick={() => scroll('prev')}
+            aria-label={t("previous")}
+            className="absolute start-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hover:scale-105 hidden lg:block"
             style={{ 
               border: "0.5px solid rgba(255,255,255,0.15)",
               opacity: isHovered ? 1 : 0,
@@ -152,12 +153,13 @@ export function RecommandeEntreprise() {
               transition: 'opacity 0.3s ease, transform 0.3s ease',
             }}
           >
-            <ChevronRight className="w-4 h-4 rotate-180" />
+            <ChevronRight className="w-4 h-4 rotate-180 rtl:rotate-0" />
           </button>
           
           <button 
-            onClick={() => scroll('right')}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hover:scale-105 hidden lg:block"
+            onClick={() => scroll('next')}
+            aria-label={t("next")}
+            className="absolute end-2 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white p-1.5 rounded-full transition-all duration-300 hover:scale-105 hidden lg:block"
             style={{ 
               border: "0.5px solid rgba(255,255,255,0.15)",
               opacity: isHovered ? 1 : 0,
@@ -166,7 +168,7 @@ export function RecommandeEntreprise() {
               transition: 'opacity 0.3s ease, transform 0.3s ease',
             }}
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4 rtl:rotate-180" />
           </button>
 
           <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
@@ -180,10 +182,10 @@ export function RecommandeEntreprise() {
               </div>
               <div>
                 <h3 className="text-base lg:text-lg font-semibold" style={{ color: "#fff", fontFamily: amazonFont }}>
-                  Customisation rapide
+                  {t("quickCustom")}
                 </h3>
                 <p className="text-[10px] mt-0.5" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>
-                  Quantités adaptées aux pros
+                  {t("quickCustomSub")}
                 </p>
               </div>
             </div>

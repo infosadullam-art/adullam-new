@@ -5,6 +5,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight, Sparkles, Shirt, Footprints, Baby } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { useTranslations } from "next-intl"
+import { withLocale } from "@/lib/locale-client"
 
 // ════════════════════════════════════════════════════════════
 // API - Changement de produits toutes les 10h
@@ -15,7 +17,8 @@ const REFRESH_INTERVAL = 10 * 60 * 60 * 1000 // 10 heures
 
 // ════════════════════════════════════════════════════════════
 
-const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+// Police via variable CSS : même pile qu'avant en LTR, Cairo en arabe (voir globals.css)
+const amazonFont = "var(--font-amazon)"
 
 interface Product {
   id: string
@@ -47,6 +50,7 @@ interface ModeData {
 
 export function CategoriesMode() {
   const { formatPrice } = useCurrencyFormatter()
+  const t = useTranslations("categoriesMode")
   const [categories, setCategories] = useState<Category[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [visibleCards, setVisibleCards] = useState<{ [key: string]: boolean }>({})
@@ -58,7 +62,7 @@ export function CategoriesMode() {
         console.log(`📦 [CATEGORIES-MODE] Fetch - ${new Date().toLocaleTimeString()}`)
         
         const timestamp = Date.now()
-        const res = await fetch(`${API_BASE}/api/categories/mode?_t=${timestamp}`)
+        const res = await fetch(withLocale(`${API_BASE}/api/categories/mode?_t=${timestamp}`))
         const modeData = await res.json()
 
         if (modeData.success && modeData.data) {
@@ -69,7 +73,7 @@ export function CategoriesMode() {
             const shuffled = [...products].sort(() => Math.random() - 0.5)
             return shuffled.slice(0, 2).map((p: any) => ({
               id: p.id,
-              name: p.name || p.title || "Produit",
+              name: p.name || p.title || t("product"),
               priceUSD: p.priceUSD || p.price || 0,
               image: p.image || "/placeholder.jpg",
             }))
@@ -78,42 +82,42 @@ export function CategoriesMode() {
           setCategories([
             {
               id: "men",
-              name: "Mode Hommes",
+              name: t("men"),
               slug: "mode-hommes",
               image: "/categories/men-fashion.jpg",
               icon: Shirt,
               bgColor: "#F4F4F4",
               hoverColor: "#FAFAFA",
               textColor: "#0A0A0A",
-              description: "Vêtements, chaussures, accessoires",
+              description: t("menDesc"),
               productCount: md.men.length > 0 ? `${md.men.length * 100}+` : "15k+",
               href: "/categorie/t-shirts-homme",
               products: formatProducts(md.men)
             },
             {
               id: "women",
-              name: "Mode Femmes",
+              name: t("women"),
               slug: "mode-femmes",
               image: "/categories/women-fashion.jpg",
               icon: Footprints,
               bgColor: "#F4F4F4",
               hoverColor: "#FAFAFA",
               textColor: "#0A0A0A",
-              description: "Robes, sacs, chaussures",
+              description: t("womenDesc"),
               productCount: md.women.length > 0 ? `${md.women.length * 100}+` : "22k+",
               href: "/categorie/robes",
               products: formatProducts(md.women)
             },
             {
               id: "kids",
-              name: "Mode Enfants",
+              name: t("kids"),
               slug: "mode-enfants",
               image: "/categories/kids-fashion.jpg",
               icon: Baby,
               bgColor: "#F4F4F4",
               hoverColor: "#FAFAFA",
               textColor: "#0A0A0A",
-              description: "Vêtements, chaussures, accessoires",
+              description: t("kidsDesc"),
               productCount: md.kids.length > 0 ? `${md.kids.length * 100}+` : "8k+",
               href: "/categorie/chaussures",
               products: formatProducts(md.kids)
@@ -173,10 +177,10 @@ export function CategoriesMode() {
             </div>
             <div>
               <h2 className="text-sm lg:text-base font-semibold" style={{ color: "#0A0A0A", fontFamily: amazonFont }}>
-                Mode pour toute la famille
+                {t("title")}
               </h2>
               <p className="text-xs lg:text-sm" style={{ color: "#AAAAAA", fontFamily: amazonFont }}>
-                Hommes • Femmes • Enfants
+                {t("subtitle")}
               </p>
             </div>
           </div>
@@ -185,8 +189,8 @@ export function CategoriesMode() {
             className="text-xs lg:text-sm inline-flex items-center gap-1 transition-all duration-200 hover:gap-1.5 hover:opacity-70"
             style={{ color: "#AAAAAA", fontFamily: amazonFont }}
           >
-            Voir toute la mode
-            <ChevronRight className="w-3 h-3 lg:w-3.5 lg:h-3.5" />
+            {t("seeAllFashion")}
+            <ChevronRight className="w-3 h-3 lg:w-3.5 lg:h-3.5 rtl:rotate-180" />
           </Link>
         </div>
 
@@ -246,21 +250,21 @@ export function CategoriesMode() {
 
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] text-white/80" style={{ fontFamily: amazonFont }}>
-                          {category.productCount} produits
+                          {t("productsCount", { count: category.productCount })}
                         </span>
                         <span className="inline-flex items-center gap-1 text-[11px] font-medium text-white transition-all duration-200 group-hover:gap-1.5" style={{ fontFamily: amazonFont }}>
-                          Explorer
-                          <ChevronRight className="w-2.5 h-2.5" />
+                          {t("explore")}
+                          <ChevronRight className="w-2.5 h-2.5 rtl:rotate-180" />
                         </span>
                       </div>
                     </div>
 
                     {index === 1 && (
                       <div
-                        className="absolute top-2 right-2 text-[9px] font-medium px-1.5 py-0.5 rounded-full"
+                        className="absolute top-2 end-2 text-[9px] font-medium px-1.5 py-0.5 rounded-full"
                         style={{ background: "#FFF0F0", color: "#D4372B", border: "0.5px solid rgba(212,55,43,0.2)", fontFamily: amazonFont }}
                       >
-                        Tendance
+                        {t("trending")}
                       </div>
                     )}
                   </div>

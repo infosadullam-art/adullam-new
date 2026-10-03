@@ -4,6 +4,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight, Truck, Wallet, ShieldCheck } from "lucide-react"
 import { useLocale } from "@/context/LocaleProvider"
+import { useTranslations } from "next-intl"
+import { getCountryName } from "@/lib/country-config"
 import { useState, useEffect } from "react"
 import * as Flags from "country-flag-icons/react/3x2"
 
@@ -14,108 +16,53 @@ function Flag({ code, className }: { code: string; className?: string }) {
   return <Cmp className={className} title={code} />
 }
 
-const pays = {
-  CI: { nom: "Côte d'Ivoire", code: "CI" },
-  SN: { nom: "Sénégal", code: "SN" },
-  CM: { nom: "Cameroun", code: "CM" },
-  MA: { nom: "Maroc", code: "MA" },
-  TN: { nom: "Tunisie", code: "TN" },
-  DZ: { nom: "Algérie", code: "DZ" },
-  BF: { nom: "Burkina Faso", code: "BF" },
-  ML: { nom: "Mali", code: "ML" },
-  NE: { nom: "Niger", code: "NE" },
-  TG: { nom: "Togo", code: "TG" },
-  BJ: { nom: "Bénin", code: "BJ" },
-  GN: { nom: "Guinée", code: "GN" },
-  GW: { nom: "Guinée-Bissau", code: "GW" },
-  LR: { nom: "Libéria", code: "LR" },
-  SL: { nom: "Sierra Leone", code: "SL" },
-  GM: { nom: "Gambie", code: "GM" },
-  GH: { nom: "Ghana", code: "GH" },
-  CG: { nom: "Congo", code: "CG" },
-  CD: { nom: "RDC", code: "CD" },
-  GA: { nom: "Gabon", code: "GA" },
-  GQ: { nom: "Guinée équatoriale", code: "GQ" },
-  CF: { nom: "République centrafricaine", code: "CF" },
-  TD: { nom: "Tchad", code: "TD" },
-  ST: { nom: "Sao Tomé", code: "ST" },
-  KE: { nom: "Kenya", code: "KE" },
-  TZ: { nom: "Tanzanie", code: "TZ" },
-  UG: { nom: "Ouganda", code: "UG" },
-  RW: { nom: "Rwanda", code: "RW" },
-  BI: { nom: "Burundi", code: "BI" },
-  ET: { nom: "Éthiopie", code: "ET" },
-  ER: { nom: "Érythrée", code: "ER" },
-  SO: { nom: "Somalie", code: "SO" },
-  DJ: { nom: "Djibouti", code: "DJ" },
-  SS: { nom: "Soudan du Sud", code: "SS" },
-  SD: { nom: "Soudan", code: "SD" },
-  ZA: { nom: "Afrique du Sud", code: "ZA" },
-  ZM: { nom: "Zambie", code: "ZM" },
-  ZW: { nom: "Zimbabwe", code: "ZW" },
-  MZ: { nom: "Mozambique", code: "MZ" },
-  AO: { nom: "Angola", code: "AO" },
-  NA: { nom: "Namibie", code: "NA" },
-  BW: { nom: "Botswana", code: "BW" },
-  MW: { nom: "Malawi", code: "MW" },
-  MG: { nom: "Madagascar", code: "MG" },
-  MU: { nom: "Maurice", code: "MU" },
-  KM: { nom: "Comores", code: "KM" },
-  SC: { nom: "Seychelles", code: "SC" },
-  EG: { nom: "Égypte", code: "EG" },
-  LY: { nom: "Libye", code: "LY" },
-  MR: { nom: "Mauritanie", code: "MR" },
-  EH: { nom: "Sahara occidental", code: "EH" },
-  US: { nom: "États-Unis", code: "US" },
-}
-
 const heroSlides = [
   {
     id: 1,
     image: "/hero-1-direct-usine.webp",
-    title: "Commandez directement à l'usine",
-    cta: "Commander maintenant",
+    titleKey: "slide1Title",
+    ctaKey: "slide1Cta",
     href: "/for-you",
   },
   {
     id: 2,
     image: "/hero-2-sourcing-sur-mesure.webp",
-    title: "Sourcing sur mesure",
-    cta: "Demander un devis",
+    titleKey: "slide2Title",
+    ctaKey: "slide2Cta",
     href: "/boutique-noel",
   },
   {
     id: 3,
     image: "/hero-3-garantie-remboursement.webp",
-    title: "Livraison garantie ou remboursé",
-    cta: "Commander en confiance",
+    titleKey: "slide3Title",
+    ctaKey: "slide3Cta",
     href: "/for-you",
   },
 ]
 
 const trustItems = [
-  { icon: Wallet, label: "Paiement sécurisé", sub: "Mobile Money, Carte" },
-  { icon: Truck, label: "Livraison rapide", sub: "7 à 45 jours" },
-  { icon: ShieldCheck, label: "Garanti ou remboursé", sub: "Si ça n'arrive pas" },
+  { icon: Wallet, labelKey: "paymentLabel", subKey: "paymentSub" },
+  { icon: Truck, labelKey: "deliveryLabel", subKey: "deliverySub" },
+  { icon: ShieldCheck, labelKey: "guaranteeLabel", subKey: "guaranteeSub" },
 ]
 
 const suppliers = [
-  { code: "CN", label: "Chine" },
-  { code: "AE", label: "Dubaï" },
-  { code: "TR", label: "Turquie" },
-  { code: "US", label: "USA" },
+  { code: "CN", labelKey: "supplierChina" },
+  { code: "AE", labelKey: "supplierDubai" },
+  { code: "TR", labelKey: "supplierTurkey" },
+  { code: "US", labelKey: "supplierUsa" },
 ]
 
-const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+// Police via variable CSS : même pile qu'avant en LTR, Cairo en arabe (voir globals.css)
+const amazonFont = "var(--font-amazon)"
 
 export function HeroSection() {
-  const { country } = useLocale()
+  const { country, language } = useLocale()
+  const t = useTranslations("hero")
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isVisible, setIsVisible] = useState(false)
-  const [paysActuel, setPaysActuel] = useState(() => {
-    if (typeof window === "undefined") return pays.CI
-    return pays[country as keyof typeof pays] || pays.CI
-  })
+  // Pays de livraison : nom traduit via Intl (plus de table de noms en dur)
+  const paysActuel = { code: country, nom: getCountryName(country, language) }
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -123,10 +70,6 @@ export function HeroSection() {
     }, 5000)
     return () => clearInterval(timer)
   }, [])
-
-  useEffect(() => {
-    setPaysActuel(pays[country as keyof typeof pays] || pays.CI)
-  }, [country])
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100)
@@ -149,8 +92,8 @@ export function HeroSection() {
           fontFamily: amazonFont,
         }}
       >
-        {heroSlides[currentSlide].cta}
-        <ChevronRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+        {t(heroSlides[currentSlide].ctaKey)}
+        <ChevronRight className="w-3.5 h-3.5 transition-transform duration-200 ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 rtl:rotate-180" />
       </Link>
 
       <div className="flex gap-1.5">
@@ -158,7 +101,7 @@ export function HeroSection() {
           <button
             key={i}
             onClick={() => setCurrentSlide(i)}
-            aria-label={`Voir le slide ${i + 1}`}
+            aria-label={t("slideAria", { n: i + 1 })}
             style={{
               height: "6px",
               width: i === currentSlide ? "20px" : "6px",
@@ -188,7 +131,7 @@ export function HeroSection() {
       <div className="flex items-center gap-1.5 mb-2">
         <Flag code={paysActuel.code} className="w-4 h-3 rounded-[1px]" />
         <span style={{ fontSize: "11px", fontWeight: 500, color: "#555", fontFamily: amazonFont }}>
-          Livraison vers {paysActuel.nom}
+          {t("deliveryTo", { country: paysActuel.nom })}
         </span>
       </div>
 
@@ -201,7 +144,7 @@ export function HeroSection() {
           >
             <Image
               src={slide.image}
-              alt={slide.title}
+              alt={t(slide.titleKey)}
               fill
               className="object-cover"
               sizes="100vw"
@@ -241,7 +184,7 @@ export function HeroSection() {
             >
               <Flag code={paysActuel.code} className="w-4 h-3 rounded-[1px]" />
               <span style={{ fontSize: "12px", fontWeight: 500, color: "#AAAAAA", fontFamily: amazonFont }}>
-                Livraison vers {paysActuel.nom}
+                {t("deliveryTo", { country: paysActuel.nom })}
               </span>
             </div>
 
@@ -253,10 +196,10 @@ export function HeroSection() {
                 transition: "opacity 0.5s ease-out 40ms, transform 0.5s ease-out 40ms",
               }}
             >
-              <span style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: amazonFont }}>Direct depuis :</span>
+              <span style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: amazonFont }}>{t("directFrom")}</span>
               {suppliers.map((s) => (
                 <span
-                  key={s.label}
+                  key={s.labelKey}
                   style={{
                     background: "rgba(255,255,255,0.07)",
                     border: "0.5px solid rgba(255,255,255,0.12)",
@@ -269,7 +212,7 @@ export function HeroSection() {
                   className="inline-flex items-center gap-1.5 hover:bg-white/15 hover:scale-105 transition-all duration-200"
                 >
                   <Flag code={s.code} className="w-4 h-3 rounded-[1px]" />
-                  {s.label}
+                  {t(s.labelKey)}
                 </span>
               ))}
             </div>
@@ -288,10 +231,10 @@ export function HeroSection() {
                 transition: "opacity 0.5s ease-out 90ms, transform 0.5s ease-out 90ms",
               }}
             >
-              Tu veux commander direct usine ?
+              {t("headline")}
               <br />
               <span style={{ fontSize: "40px", fontWeight: 900, color: "#D4372B", fontFamily: amazonFont }}>
-                On s'occupe de tout.
+                {t("headlineAccent")}
               </span>
             </h1>
 
@@ -309,7 +252,7 @@ export function HeroSection() {
                 transition: "opacity 0.5s ease-out 180ms, transform 0.5s ease-out 180ms",
               }}
             >
-              Tu reçois chez toi. Si ça n'arrive pas — on te rembourse.
+              {t("subline")}
             </p>
 
             <div
@@ -336,8 +279,8 @@ export function HeroSection() {
                   gap: "8px",
                 }}
               >
-                Explorer la boutique
-                <ChevronRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+                {t("explore")}
+                <ChevronRight className="w-4 h-4 transition-transform duration-200 ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rtl:rotate-180" />
               </Link>
               <Link
                 href="/boutique-noel"
@@ -352,7 +295,7 @@ export function HeroSection() {
                   fontFamily: amazonFont,
                 }}
               >
-                Sourcing B2B
+                {t("sourcingB2B")}
               </Link>
             </div>
           </div>
@@ -366,7 +309,7 @@ export function HeroSection() {
                   className="absolute inset-0 transition-opacity duration-700"
                   style={{ opacity: index === currentSlide ? 1 : 0 }}
                 >
-                  <Image src={slide.image} alt={slide.title} fill className="object-cover" sizes="50vw" priority={index === 0} />
+                  <Image src={slide.image} alt={t(slide.titleKey)} fill className="object-cover" sizes="50vw" priority={index === 0} />
                 </div>
               ))}
             </div>
@@ -388,14 +331,14 @@ export function HeroSection() {
             transition: "opacity 0.5s ease-out 360ms, transform 0.5s ease-out 360ms",
           }}
         >
-          {trustItems.map(({ icon: Icon, label, sub }, i) => (
+          {trustItems.map(({ icon: Icon, labelKey, subKey }, i) => (
             <div
               key={i}
-              className="flex items-center justify-center gap-3 group transition-all duration-200 hover:translate-x-0.5"
+              className="flex items-center justify-center gap-3 group transition-all duration-200 ltr:hover:translate-x-0.5 rtl:hover:-translate-x-0.5"
               style={{
-                borderRight: i < 2 ? "0.5px solid rgba(0,0,0,0.1)" : "none",
-                paddingRight: i < 2 ? "32px" : "0",
-                paddingLeft: i > 0 ? "32px" : "0",
+                borderInlineEnd: i < 2 ? "0.5px solid rgba(0,0,0,0.1)" : "none",
+                paddingInlineEnd: i < 2 ? "32px" : "0",
+                paddingInlineStart: i > 0 ? "32px" : "0",
               }}
             >
               <div
@@ -405,8 +348,8 @@ export function HeroSection() {
                 <Icon className="w-5 h-5" style={{ color: "#0A0A0A" }} />
               </div>
               <div>
-                <p className="text-[13px] font-semibold" style={{ fontFamily: amazonFont, color: "#0A0A0A" }}>{label}</p>
-                <p className="text-[12px]" style={{ fontFamily: amazonFont, color: "#555555" }}>{sub}</p>
+                <p className="text-[13px] font-semibold" style={{ fontFamily: amazonFont, color: "#0A0A0A" }}>{t(labelKey)}</p>
+                <p className="text-[12px]" style={{ fontFamily: amazonFont, color: "#555555" }}>{t(subKey)}</p>
               </div>
             </div>
           ))}

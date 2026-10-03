@@ -5,6 +5,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight, TrendingUp } from "lucide-react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { useTranslations } from "next-intl"
+import { withLocale, readingDirectionSign } from "@/lib/locale-client"
 
 // ════════════════════════════════════════════════════════════
 // API - Changement de produits toutes les 6h
@@ -15,7 +17,8 @@ const REFRESH_INTERVAL = 6 * 60 * 60 * 1000 // 6 heures
 
 // ════════════════════════════════════════════════════════════
 
-const amazonFont = "Amazon Ember, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+// Police via variable CSS : même pile qu'avant en LTR, Cairo en arabe (voir globals.css)
+const amazonFont = "var(--font-amazon)"
 
 interface Product {
   id: string
@@ -26,6 +29,7 @@ interface Product {
 
 export function MeilleuresVentesMobile() {
   const { formatPrice } = useCurrencyFormatter()
+  const t = useTranslations("bestSellers")
   const scrollRef = useRef<HTMLDivElement>(null)
   const [hasAnimated, setHasAnimated] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
@@ -38,7 +42,7 @@ export function MeilleuresVentesMobile() {
         console.log(`📦 [BESTSELLERS] Fetch - ${new Date().toLocaleTimeString()}`)
         
         const timestamp = Date.now()
-        const res = await fetch(`${API_BASE}/api/deals/best-sellers/mobile?limit=20&_t=${timestamp}`)
+        const res = await fetch(withLocale(`${API_BASE}/api/deals/best-sellers/mobile?limit=20&_t=${timestamp}`))
         const data = await res.json()
         
         if (data.success && data.data) {
@@ -70,8 +74,9 @@ export function MeilleuresVentesMobile() {
     if (!hasAnimated && scrollRef.current && products.length > 0) {
       setHasAnimated(true)
       setTimeout(() => {
-        scrollRef.current?.scrollBy({ left: 150, behavior: "smooth" })
-        setTimeout(() => { scrollRef.current?.scrollBy({ left: -150, behavior: "smooth" }) }, 800)
+        const sign = readingDirectionSign() // inversé en arabe (défilement rtl)
+        scrollRef.current?.scrollBy({ left: 150 * sign, behavior: "smooth" })
+        setTimeout(() => { scrollRef.current?.scrollBy({ left: -150 * sign, behavior: "smooth" }) }, 800)
       }, 500)
     }
   }, [hasAnimated, products])
@@ -122,10 +127,10 @@ export function MeilleuresVentesMobile() {
             </div>
             <div>
               <h2 style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: amazonFont, lineHeight: 1.2 }}>
-                Meilleures ventes
+                {t("title")}
               </h2>
               <p style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: amazonFont }}>
-                Glissez pour voir plus
+                {t("hint")}
               </p>
             </div>
           </div>
@@ -134,7 +139,7 @@ export function MeilleuresVentesMobile() {
             className="flex items-center gap-0.5 text-[10px] font-semibold transition-all duration-200 hover:gap-1"
             style={{ color: "#D4372B", fontFamily: amazonFont }}
           >
-            Voir tout <ChevronRight className="w-3 h-3" />
+            {t("seeAll")} <ChevronRight className="w-3 h-3 rtl:rotate-180" />
           </Link>
         </div>
 
@@ -157,7 +162,7 @@ export function MeilleuresVentesMobile() {
                 <div className="relative aspect-square" style={{ background: "#FAFAFA" }}>
                   {index < 3 && (
                     <span
-                      className="absolute top-1.5 left-1.5 z-10 flex items-center justify-center w-4 h-4 rounded-full text-[8px] font-bold text-white"
+                      className="absolute top-1.5 start-1.5 z-10 flex items-center justify-center w-4 h-4 rounded-full text-[8px] font-bold text-white"
                       style={{ background: index === 0 ? "#F5A623" : index === 1 ? "#AAAAAA" : "#CD7F32" }}
                     >
                       {index + 1}
@@ -194,7 +199,7 @@ export function MeilleuresVentesMobile() {
           {[0,1,2,3].map(i => (
             <div key={i} className="rounded-full" style={{ width: i === 3 ? "12px" : "3px", height: "2px", background: i === 3 ? "#D4372B" : "#ECECEC", transition: "all 0.3s" }} />
           ))}
-          <span style={{ fontSize: "8px", color: "#AAAAAA", marginLeft: "3px", fontFamily: amazonFont }}>glissez →</span>
+          <span style={{ fontSize: "8px", color: "#AAAAAA", marginInlineStart: "3px", fontFamily: amazonFont }}>{t("swipe")}</span>
         </div>
       </div>
 

@@ -5,6 +5,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { useTranslations } from "next-intl"
+import { withLocale } from "@/lib/locale-client"
 
 // ════════════════════════════════════════════════════════════
 // ICÔNES — mêmes dessins maison que le header (trait 1.6,
@@ -54,8 +56,8 @@ const IconFlame = ({ className }: IconProps) => (
 const API_BASE = process.env.NEXT_PUBLIC_API_URL
 const REFRESH_INTERVAL = 6 * 60 * 60 * 1000 // 6 heures
 
-// Messages du bandeau défilant (façon ticker Alibaba/AliExpress)
-const tickerMessages = ["Jusqu'à -50%", "Renouvellement quotidien", "Stock limité", "Livraison rapide"]
+// Messages du bandeau défilant (façon ticker Alibaba/AliExpress) : clés de traduction "dealCountdown.ticker*"
+const tickerKeys = ["tickerUpTo", "tickerRenewal", "tickerLimitedStock", "tickerFastDelivery"]
 
 // ════════════════════════════════════════════════════════════
 // TYPES
@@ -89,14 +91,15 @@ interface FlashSaleData {
 
 // Bandeau défilant réutilisable
 function Ticker({ className }: { className?: string }) {
+  const t = useTranslations("dealCountdown")
   return (
     <div className={`overflow-hidden ${className || ""}`}>
       <div className="marquee">
         {[0, 1].map((dup) => (
-          <div key={dup} className="flex items-center gap-2 pr-6 shrink-0">
-            {tickerMessages.map((msg, i) => (
+          <div key={dup} className="flex items-center gap-2 pe-6 shrink-0">
+            {tickerKeys.map((key, i) => (
               <span key={i} className="flex items-center gap-2 text-[11px] font-medium text-muted-foreground whitespace-nowrap">
-                {msg}
+                {t(key)}
                 <span className="h-1 w-1 rounded-full bg-border-strong" />
               </span>
             ))}
@@ -134,6 +137,7 @@ export function DealCountdown() {
   const [error, setError] = useState<string | null>(null)
 
   const { formatPrice } = useCurrencyFormatter()
+  const t = useTranslations("dealCountdown")
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -145,9 +149,9 @@ export function DealCountdown() {
         const timestamp = Date.now()
 
         const [featuredRes, bestSellersRes, flashRes] = await Promise.all([
-          fetch(`${API_BASE}/api/deals/featured?limit=20&_t=${timestamp}`),
-          fetch(`${API_BASE}/api/deals/best-sellers?limit=20&_t=${timestamp}`),
-          fetch(`${API_BASE}/api/deals/flash-sales/current?_t=${timestamp}`),
+          fetch(withLocale(`${API_BASE}/api/deals/featured?limit=20&_t=${timestamp}`)),
+          fetch(withLocale(`${API_BASE}/api/deals/best-sellers?limit=20&_t=${timestamp}`)),
+          fetch(withLocale(`${API_BASE}/api/deals/flash-sales/current?_t=${timestamp}`)),
         ])
 
         const featuredData = await featuredRes.json()
@@ -176,7 +180,7 @@ export function DealCountdown() {
               name: p.title || p.name,
               price: p.price,
               image: p.image || "/placeholder.jpg",
-              badge: p.badge || (p.purchaseCount > 1000 ? "Best-seller" : undefined),
+              badge: p.badge || (p.purchaseCount > 1000 ? t("bestSellerBadge") : undefined),
             }))
           )
           console.log(`📦 [DEALS] ${bestSellersData.data.length} best-sellers récupérés, 6 affichés`)
@@ -191,7 +195,7 @@ export function DealCountdown() {
         console.log(`✅ [DEALS] Fetch terminé - ${new Date().toLocaleTimeString()}`)
       } catch (err) {
         console.error("❌ [DEALS] Erreur:", err)
-        setError("Impossible de charger les offres")
+        setError(t("loadError"))
       } finally {
         setIsLoading(false)
       }
@@ -231,13 +235,13 @@ export function DealCountdown() {
       <div className="media-zoom relative w-full aspect-square bg-surface">
         <Image
           src={product.image || "/placeholder.jpg"}
-          alt={product.name || "Produit"}
+          alt={product.name || t("product")}
           fill
           sizes="(max-width: 768px) 150px, 200px"
           className="object-contain p-1.5"
         />
         {product.badge && (
-          <span className="badge-shine absolute top-1.5 left-1.5 rounded-sm bg-accent px-1.5 py-0.5 text-[9px] font-bold text-white">
+          <span className="badge-shine absolute top-1.5 start-1.5 rounded-sm bg-accent px-1.5 py-0.5 text-[9px] font-bold text-white">
             {product.badge}
           </span>
         )}
@@ -246,7 +250,7 @@ export function DealCountdown() {
       <div className="px-2 py-2">
         {!hideName && (
           <p className="truncate mb-0.5 text-[11px] font-medium text-foreground">
-            {product.name || "Produit"}
+            {product.name || t("product")}
           </p>
         )}
         <p className="text-xs font-bold text-accent tabular-nums">
@@ -258,7 +262,7 @@ export function DealCountdown() {
 
   // Chrono unique en continu (plus de grille de 3 blocs séparés)
   const Countdown = ({ h, m, s, big = false }: { h: number; m: number; s: number; big?: boolean }) => (
-    <div className={`inline-flex items-center rounded-md bg-brand ${big ? "gap-[3px] px-4 py-2.5" : "gap-[2px] px-2.5 py-1.5"}`}>
+    <div dir="ltr" className={`inline-flex items-center rounded-md bg-brand ${big ? "gap-[3px] px-4 py-2.5" : "gap-[2px] px-2.5 py-1.5"}`}>
       <span className={`font-black text-white tabular-nums ${big ? "text-2xl" : "text-sm"}`}>{fmt(h)}</span>
       <span className={`font-black text-accent ${big ? "text-2xl" : "text-sm"}`} style={{ animation: "colonBlink 1.4s ease-in-out infinite" }}>:</span>
       <span className={`font-black text-white tabular-nums ${big ? "text-2xl" : "text-sm"}`}>{fmt(m)}</span>
@@ -311,13 +315,13 @@ export function DealCountdown() {
           <div className="flex items-center justify-between px-4 mb-1.5">
             <div className="flex items-center gap-1.5">
               <IconBolt className="h-4 w-4 text-accent" />
-              <p className="text-sm font-black tracking-tight text-foreground">FLASH SALE</p>
-              <ShineTag>Limited</ShineTag>
+              <p className="text-sm font-black tracking-tight text-foreground">{t("flashSale")}</p>
+              <ShineTag>{t("limited")}</ShineTag>
             </div>
 
             <Link href="/deals-du-jour" className="flex items-center gap-1 text-[11px] font-semibold text-accent transition-opacity duration-200 hover:opacity-70">
-              Voir tout
-              <IconArrowRight className="h-3 w-3" />
+              {t("seeAll")}
+              <IconArrowRight className="h-3 w-3 rtl:-scale-x-100" />
             </Link>
           </div>
 
@@ -325,7 +329,7 @@ export function DealCountdown() {
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <div className="flex items-center gap-1.5">
                 <IconClock className="h-3 w-3 shrink-0 text-muted-foreground" />
-                <span className="whitespace-nowrap text-[10px] font-medium text-muted-foreground">Fin dans</span>
+                <span className="whitespace-nowrap text-[10px] font-medium text-muted-foreground">{t("endsIn")}</span>
               </div>
               <Ticker className="max-w-[170px]" />
             </div>
@@ -340,10 +344,10 @@ export function DealCountdown() {
               <IconBolt className="h-6 w-6 text-accent" />
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-black tracking-[-0.03em] text-foreground">FLASH SALE</h2>
+                  <h2 className="text-xl font-black tracking-[-0.03em] text-foreground">{t("flashSale")}</h2>
                   <ShineTag>
                     <IconFlame className="h-3 w-3" />
-                    Limited
+                    {t("limited")}
                   </ShineTag>
                 </div>
                 <Ticker className="mt-0.5 max-w-[340px]" />
@@ -353,7 +357,7 @@ export function DealCountdown() {
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
                 <IconClock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-muted-foreground">Fin dans</span>
+                <span className="text-sm font-medium text-muted-foreground">{t("endsIn")}</span>
               </div>
 
               <Countdown h={timeLeft.hours} m={timeLeft.minutes} s={timeLeft.seconds} big />
@@ -362,8 +366,8 @@ export function DealCountdown() {
                 href="/deals-du-jour"
                 className="group flex items-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-bold text-white transition-colors duration-300 hover:bg-accent-hover"
               >
-                Voir toutes les offres
-                <IconArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                {t("seeAllOffers")}
+                <IconArrowRight className="h-4 w-4 transition-transform duration-300 ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rtl:-scale-x-100" />
               </Link>
             </div>
           </div>
@@ -378,9 +382,9 @@ export function DealCountdown() {
               <div className="mb-2 flex items-center justify-between">
                 <h3 className="flex items-center gap-1 text-xs font-bold text-foreground">
                   <IconSparkle className="h-3.5 w-3.5 text-accent" />
-                  Sélection
+                  {t("selection")}
                 </h3>
-                <ShineTag>Nouveau</ShineTag>
+                <ShineTag>{t("new")}</ShineTag>
               </div>
               <motion.div
                 variants={containerStagger}
@@ -403,9 +407,9 @@ export function DealCountdown() {
               <div className="mb-2 flex items-center justify-between">
                 <h3 className="flex items-center gap-1 text-xs font-bold text-foreground">
                   <IconFlame className="h-3.5 w-3.5 text-accent" />
-                  Best-sellers
+                  {t("bestSellers")}
                 </h3>
-                <ShineTag tone="dark">Top ventes</ShineTag>
+                <ShineTag tone="dark">{t("topSales")}</ShineTag>
               </div>
               <motion.div
                 variants={containerStagger}
@@ -432,9 +436,9 @@ export function DealCountdown() {
             <div className="mb-4 flex items-center justify-between">
               <h3 className="flex items-center gap-1.5 text-sm font-bold text-foreground">
                 <IconSparkle className="h-4 w-4 text-accent" />
-                Sélection du moment
+                {t("selectionOfMoment")}
               </h3>
-              <ShineTag>Nouveau</ShineTag>
+              <ShineTag>{t("new")}</ShineTag>
             </div>
             <motion.div
               variants={containerStagger}
@@ -455,9 +459,9 @@ export function DealCountdown() {
             <div className="mb-4 flex items-center justify-between">
               <h3 className="flex items-center gap-1.5 text-sm font-bold text-foreground">
                 <IconFlame className="h-4 w-4 text-accent" />
-                Meilleures ventes
+                {t("bestSellersLong")}
               </h3>
-              <ShineTag tone="dark">Top ventes</ShineTag>
+              <ShineTag tone="dark">{t("topSales")}</ShineTag>
             </div>
             <motion.div
               variants={containerStagger}
@@ -505,6 +509,21 @@ export function DealCountdown() {
           will-change: transform, opacity;
           backface-visibility: hidden;
           transform: translate3d(-130%, 0, 0) skewX(-18deg);
+        }
+
+        /* Arabe : le balayage lumineux part du côté de lecture */
+        @keyframes badge-shine-sweep-rtl {
+          0%   { transform: translate3d(130%, 0, 0) skewX(18deg); opacity: 0; }
+          6%   { opacity: 1; }
+          28%  { opacity: 1; animation-timing-function: ease-out; }
+          34%  { transform: translate3d(-220%, 0, 0) skewX(18deg); opacity: 0; }
+          100% { transform: translate3d(-220%, 0, 0) skewX(18deg); opacity: 0; }
+        }
+        [dir="rtl"] .badge-shine::after {
+          left: auto;
+          right: 0;
+          transform: translate3d(130%, 0, 0) skewX(18deg);
+          animation-name: badge-shine-sweep-rtl;
         }
 
         /* Clignotement doux des deux-points du chrono */
