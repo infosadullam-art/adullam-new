@@ -31,8 +31,14 @@ export const DEFAULT_COUNTRY = "CI"
 export const COUNTRY_COOKIE = "nx_country"
 export const LOCALE_COOKIE = "nx_locale" // contient la langue UI : fr | en | ar | pt
 
-// Valeur détectée automatiquement : durée courte, on re-détecte ensuite
-// (voyage, VPN...). Choix manuel de l'utilisateur : durée longue.
+// Marqueurs : valent "manual" quand le visiteur a CHOISI son pays / sa langue lui-même.
+// Sans marqueur, le pays est ré-détecté à chaque visite (devise dynamique, comme avant) ;
+// avec marqueur, le choix du visiteur n'est jamais écrasé par la géolocalisation.
+export const COUNTRY_SOURCE_COOKIE = "nx_country_src"
+export const LOCALE_SOURCE_COOKIE = "nx_locale_src"
+
+// Valeur détectée automatiquement : durée courte (elle est de toute façon recalculée à chaque
+// visite tant que le visiteur n'a rien choisi). Choix manuel de l'utilisateur : durée longue.
 export const AUTO_COOKIE_MAX_AGE = 60 * 60 * 24 * 30 // 30 jours
 export const MANUAL_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 // 1 an
 

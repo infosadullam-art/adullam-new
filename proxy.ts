@@ -1,24 +1,27 @@
 // proxy.ts (racine du projet, à côté de package.json — Next.js 16 : ex-middleware.ts)
 //
-// Détecte le pays du visiteur UNE fois (géoloc Vercel) et pose deux cookies :
-//   nx_country : code pays (ex "NG")
-//   nx_locale  : langue UI (fr | en | ar | pt)
+// Devise et langue DYNAMIQUES : à chaque visite, le pays est détecté par la géolocalisation
+// Vercel et deux cookies sont tenus à jour :
+//   nx_country : code pays (ex "NG")           -> devise, livraison
+//   nx_locale  : langue UI (fr | en | ar | pt)  -> interface, traductions API
 //
-// Règle : on ne touche JAMAIS à un cookie valide déjà présent, ce qui protège
-// les choix manuels (setCountry / setLanguage dans LocaleProvider).
+// Règle d'or : un choix MANUEL du visiteur (marqueurs nx_country_src / nx_locale_src = "manual",
+// posés par setCountry / setLanguage) n'est JAMAIS écrasé. Sans choix manuel, le pays suit la
+// géolocalisation de la visite en cours (voyage, VPN...), et la langue suit le pays.
+//
 // Les cookies ne sont pas httpOnly : LocaleProvider et lib/api.ts les lisent côté client.
-//
-// Première visite : on injecte aussi les cookies dans les en-têtes de la requête en cours,
-// pour que le rendu serveur (next-intl, <html lang dir>) voie déjà la bonne langue
-// au lieu d'attendre la visite suivante.
+// On les injecte aussi dans les en-têtes de la requête en cours, pour que le rendu serveur
+// (next-intl, <html lang dir>) voie déjà la bonne langue dès la première visite.
 
 import { NextResponse, type NextRequest } from "next/server"
 import { geolocation } from "@vercel/functions"
 import {
   AUTO_COOKIE_MAX_AGE,
   COUNTRY_COOKIE,
+  COUNTRY_SOURCE_COOKIE,
   DEFAULT_COUNTRY,
   LOCALE_COOKIE,
+  LOCALE_SOURCE_COOKIE,
   isUiLanguage,
   normalizeCountry,
   resolveCountry,
@@ -33,39 +36,41 @@ const cookieOptions = {
 }
 
 export function proxy(request: NextRequest) {
-  const existingCountry = normalizeCountry(request.cookies.get(COUNTRY_COOKIE)?.value)
-  const existingLocale = request.cookies.get(LOCALE_COOKIE)?.value
-  const hasLocale = isUiLanguage(existingLocale)
+  const cookieCountry = normalizeCountry(request.cookies.get(COUNTRY_COOKIE)?.value)
+  const rawLocale = request.cookies.get(LOCALE_COOKIE)?.value
+  const cookieLocale = isUiLanguage(rawLocale) ? rawLocale : null
 
-  // Tout est déjà en place : rien à faire (cas de 99 % des requêtes).
-  if (existingCountry && hasLocale) return NextResponse.next()
+  const countryIsManual =
+    !!cookieCountry && request.cookies.get(COUNTRY_SOURCE_COOKIE)?.value === "manual"
+  const localeIsManual =
+    !!cookieLocale && request.cookies.get(LOCALE_SOURCE_COOKIE)?.value === "manual"
 
-  // Pays : cookie existant valide > géoloc Vercel > pays par défaut.
-  // En local (next dev) il n'y a pas d'en-tête de géoloc → repli sur DEFAULT_COUNTRY.
-  const country =
-    existingCountry ?? normalizeCountry(geolocation(request).country) ?? DEFAULT_COUNTRY
+  // Pays : choix manuel > géolocalisation de CETTE visite > ancien cookie > pays par défaut.
+  // (En local, `next dev` n'a pas d'en-tête de géoloc : on garde le cookie ou le défaut.)
+  const country = countryIsManual
+    ? cookieCountry!
+    : (normalizeCountry(geolocation(request).country) ?? cookieCountry ?? DEFAULT_COUNTRY)
 
-  const resolved = resolveCountry(country)
-  const countryValue = existingCountry ?? resolved.country
-  const localeValue = hasLocale ? existingLocale : resolved.language
+  // Langue : choix manuel > langue du pays.
+  const language = localeIsManual ? cookieLocale! : resolveCountry(country).language
 
-  // Cookies de la requête en cours : on garde les autres tels quels (valeurs brutes)
-  // et on ajoute les nôtres.
+  const countryChanged = country !== cookieCountry
+  const languageChanged = language !== cookieLocale
+
+  // Rien à mettre à jour (cas de la plupart des requêtes) : on ne touche à rien.
+  if (!countryChanged && !languageChanged) return NextResponse.next()
+
+  // Cookies de la requête en cours : les autres restent tels quels (valeurs brutes).
   const kept = (request.headers.get("cookie") ?? "")
     .split(/;\s*/)
-    .filter(
-      (c) => c && !c.startsWith(`${COUNTRY_COOKIE}=`) && !c.startsWith(`${LOCALE_COOKIE}=`)
-    )
+    .filter((c) => c && !c.startsWith(`${COUNTRY_COOKIE}=`) && !c.startsWith(`${LOCALE_COOKIE}=`))
   const requestHeaders = new Headers(request.headers)
-  requestHeaders.set(
-    "cookie",
-    [...kept, `${COUNTRY_COOKIE}=${countryValue}`, `${LOCALE_COOKIE}=${localeValue}`].join("; ")
-  )
+  requestHeaders.set("cookie", [...kept, `${COUNTRY_COOKIE}=${country}`, `${LOCALE_COOKIE}=${language}`].join("; "))
 
   const response = NextResponse.next({ request: { headers: requestHeaders } })
 
-  if (!existingCountry) response.cookies.set(COUNTRY_COOKIE, countryValue, cookieOptions)
-  if (!hasLocale) response.cookies.set(LOCALE_COOKIE, localeValue, cookieOptions)
+  if (countryChanged) response.cookies.set(COUNTRY_COOKIE, country, cookieOptions)
+  if (languageChanged) response.cookies.set(LOCALE_COOKIE, language, cookieOptions)
 
   return response
 }

@@ -11,8 +11,10 @@ import {
 } from "react"
 import {
   COUNTRY_COOKIE,
+  COUNTRY_SOURCE_COOKIE,
   DEFAULT_COUNTRY,
   LOCALE_COOKIE,
+  LOCALE_SOURCE_COOKIE,
   MANUAL_COOKIE_MAX_AGE,
   isUiLanguage,
   normalizeCountry,
@@ -75,6 +77,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     const normalized = normalizeCountry(code)
     if (!normalized) return // pays non desservi : on ignore plutôt que de casser les prix
     writeCookie(COUNTRY_COOKIE, normalized, MANUAL_COOKIE_MAX_AGE)
+    writeCookie(COUNTRY_SOURCE_COOKIE, "manual", MANUAL_COOKIE_MAX_AGE) // proxy.ts ne ré-détecte plus ce visiteur
     setCountryState(normalized)
   }, [])
 
@@ -83,6 +86,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   const setLanguage = useCallback((next: UiLanguage) => {
     if (!isUiLanguage(next)) return
     writeCookie(LOCALE_COOKIE, next, MANUAL_COOKIE_MAX_AGE)
+    writeCookie(LOCALE_SOURCE_COOKIE, "manual", MANUAL_COOKIE_MAX_AGE)
     setLanguageState(next)
   }, [])
 
