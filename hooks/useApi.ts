@@ -11,10 +11,15 @@ if (!API_BASE && typeof window !== 'undefined') {
   console.error('❌ NEXT_PUBLIC_API_URL non définie dans les variables d\'environnement Vercel')
 }
 
+// Options de fetch + `silent` : appel d'arrière-plan (suivi d'interactions...) qui ne doit
+// JAMAIS renvoyer le visiteur vers la page de connexion quand sa session a expiré.
+type FetchOptions = RequestInit & { silent?: boolean }
+
 export function useApi() {
   const router = useRouter()
 
-  const fetchWithAuth = useCallback(async (input: RequestInfo | URL, options: RequestInit = {}) => {
+  const fetchWithAuth = useCallback(async (input: RequestInfo | URL, options: FetchOptions = {}) => {
+    const { silent = false, ...fetchOptions } = options
     let attempt = 0
     const maxAttempts = 2
 
@@ -42,12 +47,12 @@ export function useApi() {
     while (attempt < maxAttempts) {
       try {
         const res = await fetch(url, {
-          ...options,
+          ...fetchOptions,
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-            ...options.headers
+            ...fetchOptions.headers
           }
         })
 
@@ -59,7 +64,9 @@ export function useApi() {
         if (res.status === 401) {
           if (attempt === 0) {
             try {
-              const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
+              // ✅ CORRIGÉ : /api/auth/refresh (le chemin sans /api n'existe pas côté backend,
+              // le refresh échouait donc toujours et la session était perdue au bout de 15 min)
+              const refreshRes = await fetch(`${API_BASE}/api/auth/refresh`, {
                 method: 'POST',
                 credentials: 'include'
               })
@@ -77,9 +84,9 @@ export function useApi() {
               console.error('Refresh failed:', refreshError)
             }
           }
-          
-          // Redirection vers login
-          router.push('/login?reason=session_expired')
+
+          // Redirection vers login, sauf pour les appels d'arrière-plan (silent)
+          if (!silent) router.push('/login?reason=session_expired')
           throw new Error('Session expirée')
         }
 
@@ -87,7 +94,7 @@ export function useApi() {
 
       } catch (error) {
         if (attempt === maxAttempts - 1) {
-          console.error('❌ API Error:', error)
+          if (!silent) console.error('❌ API Error:', error)
           throw error
         }
         attempt++

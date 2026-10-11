@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useCallback, useLayoutEffect } from "react
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useApi } from "@/hooks/useApi"
 import { useTranslations } from "next-intl"
-import { withLocale } from "@/lib/locale-client"
+import { getUiLocale, withLocale } from "@/lib/locale-client"
 
 interface Product {
   id: string
@@ -38,6 +38,10 @@ const TITLE_KEYS = ["suggestions", "inspirations", "discoveries", "recommendatio
 
 const STORAGE_KEY = "foryou_state"
 
+// Clé de sauvegarde PAR LANGUE : sinon, après un changement de langue, la liste restaurée
+// garderait pendant 30 minutes les noms de produits de l'ancienne langue.
+const storageKey = (sessionId: string) => `${STORAGE_KEY}_${sessionId}_${getUiLocale() ?? "default"}`
+
 interface SavedState {
   products: Product[]
   page: number
@@ -59,12 +63,12 @@ function getOrCreateSessionId(): string | null {
 function readSavedState(sessionId: string | null): SavedState | null {
   if (!sessionId || typeof window === "undefined") return null
   try {
-    const saved = sessionStorage.getItem(`${STORAGE_KEY}_${sessionId}`)
+    const saved = sessionStorage.getItem(storageKey(sessionId))
     if (!saved) return null
     const state: SavedState = JSON.parse(saved)
     const age = Date.now() - state.timestamp
     if (age > 30 * 60 * 1000) {
-      sessionStorage.removeItem(`${STORAGE_KEY}_${sessionId}`)
+      sessionStorage.removeItem(storageKey(sessionId))
       return null
     }
     return state
@@ -120,7 +124,7 @@ export function ForYouSection() {
     }
 
     try {
-      sessionStorage.setItem(`${STORAGE_KEY}_${sessionId}`, JSON.stringify(state))
+      sessionStorage.setItem(storageKey(sessionId), JSON.stringify(state))
       lastSavedScrollRef.current = scrollY
     } catch (e) {
       console.error("Erreur sauvegarde état:", e)
@@ -184,6 +188,7 @@ export function ForYouSection() {
 
     try {
       await fetchWithAuth("/api/track", {
+        silent: true, // arrière-plan : une session expirée ne doit jamais renvoyer vers /login
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId, type, context: "FOR_YOU", sessionId }),
