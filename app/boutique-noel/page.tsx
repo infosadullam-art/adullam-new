@@ -236,10 +236,11 @@ import Link from "next/link"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/admin/auth-context"
 import { format } from "date-fns"
-import { fr } from "date-fns/locale"
+import { fr, enUS, ptBR, arSA } from "date-fns/locale"
 import { sourcingApi } from "@/lib/admin/api-client"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useLocale } from "@/context/LocaleProvider"
+import { useTranslations } from "next-intl"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -248,6 +249,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+
+// Locale date-fns selon la langue d'interface
+const dateLocales: Record<string, typeof fr> = { fr, en: enUS, pt: ptBR, ar: arSA }
 
 // Types
 type SourcingStatus = "PENDING" | "IN_REVIEW" | "QUOTED" | "RESPONDED" | "COMMANDE" | "STOCK_BAS" | "CLOSED" | "ARCHIVED"
@@ -285,8 +289,7 @@ const borderColor = "var(--border)"
 
 // ✅ COMPOSANT CONTENU - avec useSearchParams
 function SourcingContent() {
-  console.log("🚀🚀🚀 [SOURCING PAGE] COMPOSANT CHARGÉ - VERSION DEBUG FINALE 🚀🚀🚀")
-  
+  const t = useTranslations("sourcing")
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -299,7 +302,7 @@ function SourcingContent() {
 
   // Hook de devise dynamique
   const { formatPrice, getCurrencySymbol, convertToUSD } = useCurrencyFormatter()
-  const { country } = useLocale()
+  const { country, language } = useLocale()
 
   // Indicatif téléphonique dynamique selon le pays détecté de l'utilisateur
   // (au lieu d'un +225 Côte d'Ivoire fixe pour tout le monde).
@@ -326,7 +329,7 @@ function SourcingContent() {
   const [formData, setFormData] = useState({
     title: productParam || "",
     productType: "",
-    description: productParam ? `Je souhaite me renseigner sur le produit : ${productParam}${productIdParam ? ` (ID: ${productIdParam})` : ''}` : "",
+    description: productParam ? t("prefill", { product: productParam }) + (productIdParam ? ` (ID: ${productIdParam})` : '') : "",
     quantity: quantityParam || "",
     quantityUnit: "pièces",
     budgetMin: "",
@@ -345,7 +348,7 @@ function SourcingContent() {
         ...prev,
         title: productParam || prev.title,
         quantity: quantityParam || prev.quantity,
-        description: productParam ? `Je souhaite me renseigner sur le produit : ${productParam}${productIdParam ? ` (ID: ${productIdParam})` : ''}` : prev.description
+        description: productParam ? t("prefill", { product: productParam }) + (productIdParam ? ` (ID: ${productIdParam})` : '') : prev.description
       }))
     }
   }, [productParam, quantityParam, productIdParam])
@@ -500,11 +503,11 @@ function SourcingContent() {
       if (response.success && Array.isArray(response.data)) {
         setNeeds(response.data)
       } else {
-        toast.error(response.error || "Erreur chargement")
+        toast.error(response.error || t("loadError"))
       }
     } catch (error) {
       console.error("Erreur:", error)
-      toast.error("Erreur chargement")
+      toast.error(t("loadError"))
     } finally {
       setIsLoadingNeeds(false)
     }
@@ -522,7 +525,7 @@ function SourcingContent() {
       const invalidFiles = newFiles.filter(file => file.size > 10 * 1024 * 1024)
       
       if (invalidFiles.length > 0) {
-        toast.error(`${invalidFiles.length} fichier(s) dépassent 10 Mo`)
+        toast.error(t("filesTooBig", { count: invalidFiles.length }))
       }
       
       setFiles(prev => [...prev, ...validFiles])
@@ -535,27 +538,27 @@ function SourcingContent() {
 
   const validateForm = (): boolean => {
     if (!formData.title.trim()) {
-      setSubmitError("Le titre du besoin est requis")
+      setSubmitError(t("vTitle"))
       return false
     }
     if (!formData.productType.trim()) {
-      setSubmitError("Le type de produit est requis")
+      setSubmitError(t("vType"))
       return false
     }
     if (!formData.description.trim()) {
-      setSubmitError("La description est requise")
+      setSubmitError(t("vDesc"))
       return false
     }
     if (!formData.quantity || parseInt(formData.quantity) <= 0) {
-      setSubmitError("La quantité doit être supérieure à 0")
+      setSubmitError(t("vQty"))
       return false
     }
     if (!formData.fullName.trim()) {
-      setSubmitError("Le nom complet est requis")
+      setSubmitError(t("vName"))
       return false
     }
     if (!formData.email.trim() || !formData.email.includes('@')) {
-      setSubmitError("Email valide requis")
+      setSubmitError(t("vEmail"))
       return false
     }
     return true
@@ -613,19 +616,19 @@ function SourcingContent() {
       }
 
       if (response.success) {
-        toast.success("Besoin créé avec succès")
+        toast.success(t("created"))
         setShowForm(false)
         resetForm()
         loadNeeds()
         router.push('/boutique-noel')
       } else {
-        setSubmitError(response.error || "Erreur lors de la création")
-        toast.error(response.error || "Erreur création")
+        setSubmitError(response.error || t("createError"))
+        toast.error(response.error || t("createError"))
       }
 
     } catch (error: any) {
       console.error("❌ Erreur:", error)
-      const errorMessage = error?.message || "Erreur de connexion au serveur"
+      const errorMessage = error?.message || t("serverError")
       setSubmitError(errorMessage)
       toast.error(errorMessage)
     } finally {
@@ -657,20 +660,20 @@ function SourcingContent() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer ce besoin ?")) return
+    if (!confirm(t("confirmDelete"))) return
 
     try {
       const response = await sourcingApi.delete(id)
 
       if (response.success) {
-        toast.success("Besoin supprimé")
+        toast.success(t("deleted"))
         loadNeeds()
       } else {
-        toast.error(response.error || "Erreur suppression")
+        toast.error(response.error || t("deleteError"))
       }
     } catch (error) {
       console.error("Erreur:", error)
-      toast.error("Erreur suppression")
+      toast.error(t("deleteError"))
     }
   }
 
@@ -686,14 +689,14 @@ function SourcingContent() {
       ARCHIVED: "bg-surface-sunken text-muted-foreground",
     }
     const labels: Record<string, string> = {
-      PENDING: "En attente",
-      IN_REVIEW: "En cours",
-      QUOTED: "Devis envoyé",
-      RESPONDED: "Répondu",
-      COMMANDE: "Commandé",
-      STOCK_BAS: "Stock bas",
-      CLOSED: "Clôturé",
-      ARCHIVED: "Archivé",
+      PENDING: t("statusPending"),
+      IN_REVIEW: t("statusInReview"),
+      QUOTED: t("statusQuoted"),
+      RESPONDED: t("statusResponded"),
+      COMMANDE: t("statusOrdered"),
+      STOCK_BAS: t("statusLowStock"),
+      CLOSED: t("statusClosed"),
+      ARCHIVED: t("statusArchived"),
     }
     return { style: styles[status] || styles.PENDING, label: labels[status] || status }
   }
@@ -733,10 +736,10 @@ function SourcingContent() {
               className="text-2xl lg:text-4xl font-bold mb-2 lg:mb-4"
               style={{ color: "#fff", letterSpacing: "-0.02em" }}
             >
-              Gestion des approvisionnements
+              {t("pageTitle")}
             </h1>
             <p className="text-sm lg:text-base mb-6 lg:mb-8 max-w-2xl" style={{ color: textSecondary }}>
-              Gérez vos besoins d'achat, suivez les devis fournisseurs et commandez pour réapprovisionner votre stock.
+              {t("pageSubtitle")}
             </p>
             
             <button
@@ -745,7 +748,7 @@ function SourcingContent() {
               style={{ background: brandColor, color: "#fff" }}
             >
               <Plus className="w-4 h-4 lg:w-5 lg:h-5" />
-              Nouveau besoin
+              {t("newNeed")}
             </button>
           </div>
         </div>
@@ -755,7 +758,7 @@ function SourcingContent() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
               <div className="rounded-lg p-4 lg:p-6 shadow-sm" style={{ background: 'var(--card)', border: `0.5px solid ${borderColor}` }}>
                 <div className="flex items-center justify-between mb-1 lg:mb-2">
-                  <h3 className="text-xs lg:text-sm font-medium" style={{ color: textSecondary }}>Besoins en cours</h3>
+                  <h3 className="text-xs lg:text-sm font-medium" style={{ color: textSecondary }}>{t("statInProgress")}</h3>
                   <Clock className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: brandColor }} />
                 </div>
                 <p className="text-xl lg:text-2xl font-bold" style={{ color: textPrimary }}>{stats.besoinsEnCours}</p>
@@ -763,7 +766,7 @@ function SourcingContent() {
               
               <div className="rounded-lg p-4 lg:p-6 shadow-sm" style={{ background: 'var(--card)', border: `0.5px solid ${borderColor}` }}>
                 <div className="flex items-center justify-between mb-1 lg:mb-2">
-                  <h3 className="text-xs lg:text-sm font-medium" style={{ color: textSecondary }}>Devis à étudier</h3>
+                  <h3 className="text-xs lg:text-sm font-medium" style={{ color: textSecondary }}>{t("statQuotes")}</h3>
                   <Eye className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: 'var(--accent-amber)' }} />
                 </div>
                 <p className="text-xl lg:text-2xl font-bold" style={{ color: textPrimary }}>{stats.devisAEtudier}</p>
@@ -771,7 +774,7 @@ function SourcingContent() {
               
               <div className="rounded-lg p-4 lg:p-6 shadow-sm" style={{ background: 'var(--card)', border: `0.5px solid ${borderColor}` }}>
                 <div className="flex items-center justify-between mb-1 lg:mb-2">
-                  <h3 className="text-xs lg:text-sm font-medium" style={{ color: textSecondary }}>Commandes en cours</h3>
+                  <h3 className="text-xs lg:text-sm font-medium" style={{ color: textSecondary }}>{t("statOrders")}</h3>
                   <Truck className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: '#3B82F6' }} />
                 </div>
                 <p className="text-xl lg:text-2xl font-bold" style={{ color: textPrimary }}>{stats.commandesEnCours}</p>
@@ -779,7 +782,7 @@ function SourcingContent() {
               
               <div className="rounded-lg p-4 lg:p-6 shadow-sm" style={{ background: 'var(--card)', border: `0.5px solid ${borderColor}` }}>
                 <div className="flex items-center justify-between mb-1 lg:mb-2">
-                  <h3 className="text-xs lg:text-sm font-medium" style={{ color: textSecondary }}>Stock à réappro</h3>
+                  <h3 className="text-xs lg:text-sm font-medium" style={{ color: textSecondary }}>{t("statStock")}</h3>
                   <AlertCircle className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: 'var(--accent)' }} />
                 </div>
                 <p className="text-xl lg:text-2xl font-bold" style={{ color: textPrimary }}>{stats.stockAReappro}</p>
@@ -790,21 +793,21 @@ function SourcingContent() {
           <div className="max-w-[1440px] mx-auto px-4 lg:px-6 -mt-6 lg:-mt-8">
             <div className="bg-card/80 backdrop-blur-sm rounded-lg p-6 lg:p-8 text-center border-2 border-dashed" style={{ borderColor: 'color-mix(in oklab, var(--accent) 30%, transparent)' }}>
               <Package className="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-3 lg:mb-4" style={{ color: 'color-mix(in oklab, var(--accent) 80%, transparent)' }} />
-              <h2 className="text-xl lg:text-2xl font-bold mb-2" style={{ color: textPrimary }}>Connectez-vous pour gérer vos approvisionnements</h2>
+              <h2 className="text-xl lg:text-2xl font-bold mb-2" style={{ color: textPrimary }}>{t("loginTitle")}</h2>
               <p className="text-sm lg:text-base mb-6 max-w-lg mx-auto" style={{ color: textSecondary }}>
-                Créez un compte ou connectez-vous pour soumettre vos besoins d'achat et suivre vos commandes.
+                {t("loginText")}
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button asChild size="lg" className="gap-2" style={{ background: brandColor, color: "#fff" }}>
                   <Link href={`/account?mode=login&redirect=${encodeURIComponent('/boutique-noel')}`}>
                     <LogIn className="w-4 h-4" />
-                    Se connecter
+                    {t("logIn")}
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="gap-2">
                   <Link href={`/account?mode=register&redirect=${encodeURIComponent('/boutique-noel')}`}>
                     <UserPlus className="w-4 h-4" />
-                    Créer un compte
+                    {t("createAccount")}
                   </Link>
                 </Button>
               </div>
@@ -824,7 +827,7 @@ function SourcingContent() {
                       : "border-transparent text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  Besoins d'achat
+                  {t("tabNeeds")}
                 </button>
               </div>
 
@@ -832,13 +835,13 @@ function SourcingContent() {
                 <div className="mt-4 lg:mt-6">
                   <div className="rounded-lg p-3 lg:p-4 border mb-4 lg:mb-6" style={{ background: 'var(--card)', borderColor: borderColor }}>
                     <div className="relative">
-                      <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: textSecondary }} />
+                      <Search className="w-4 h-4 absolute start-3 top-1/2 -translate-y-1/2" style={{ color: textSecondary }} />
                       <input
                         type="text"
-                        placeholder="Rechercher un besoin..."
+                        placeholder={t("searchPlaceholder")}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 lg:py-2.5 rounded-lg text-sm"
+                        className="w-full ps-9 pe-4 py-2 lg:py-2.5 rounded-lg text-sm"
                         style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
                       />
                     </div>
@@ -850,7 +853,7 @@ function SourcingContent() {
                     >
                       <div className="flex items-center gap-2">
                         <Filter className="w-4 h-4" />
-                        <span className="text-sm font-medium">Filtres</span>
+                        <span className="text-sm font-medium">{t("filters")}</span>
                         {(statusFilter || priorityFilter) && (
                           <span className="text-white text-xs px-1.5 py-0.5 rounded-full" style={{ background: brandColor }}>
                             {(statusFilter ? 1 : 0) + (priorityFilter ? 1 : 0)}
@@ -867,14 +870,14 @@ function SourcingContent() {
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                       >
-                        <option value="">Tous les statuts</option>
-                        <option value="PENDING">En attente</option>
-                        <option value="IN_REVIEW">En cours</option>
-                        <option value="QUOTED">Devis envoyé</option>
-                        <option value="RESPONDED">Répondu</option>
-                        <option value="COMMANDE">Commandé</option>
-                        <option value="STOCK_BAS">Stock bas</option>
-                        <option value="CLOSED">Clôturé</option>
+                        <option value="">{t("allStatuses")}</option>
+                        <option value="PENDING">{t("statusPending")}</option>
+                        <option value="IN_REVIEW">{t("statusInReview")}</option>
+                        <option value="QUOTED">{t("statusQuoted")}</option>
+                        <option value="RESPONDED">{t("statusResponded")}</option>
+                        <option value="COMMANDE">{t("statusOrdered")}</option>
+                        <option value="STOCK_BAS">{t("statusLowStock")}</option>
+                        <option value="CLOSED">{t("statusClosed")}</option>
                       </select>
                       <select 
                         className="w-full px-3 py-2 rounded-lg text-sm"
@@ -882,11 +885,11 @@ function SourcingContent() {
                         value={priorityFilter}
                         onChange={(e) => setPriorityFilter(e.target.value)}
                       >
-                        <option value="">Toutes les priorités</option>
-                        <option value="URGENTE">Urgente</option>
-                        <option value="HAUTE">Haute</option>
-                        <option value="MOYENNE">Moyenne</option>
-                        <option value="BASSE">Basse</option>
+                        <option value="">{t("allPriorities")}</option>
+                        <option value="URGENTE">{t("prioUrgent")}</option>
+                        <option value="HAUTE">{t("prioHigh")}</option>
+                        <option value="MOYENNE">{t("prioMedium")}</option>
+                        <option value="BASSE">{t("prioLow")}</option>
                       </select>
                       <div className="flex gap-2">
                         {(statusFilter || priorityFilter) && (
@@ -898,12 +901,12 @@ function SourcingContent() {
                             className="px-3 py-2 text-sm hover:opacity-70"
                             style={{ color: textSecondary }}
                           >
-                            Réinitialiser
+                            {t("reset")}
                           </button>
                         )}
                         <button 
                           onClick={loadNeeds}
-                          className="p-2 rounded-lg transition-colors hover:bg-muted ml-auto"
+                          className="p-2 rounded-lg transition-colors hover:bg-muted ms-auto"
                         >
                           <RefreshCw className="w-4 h-4" style={{ color: textSecondary }} />
                         </button>
@@ -918,9 +921,9 @@ function SourcingContent() {
                   ) : needs.length === 0 ? (
                     <div className="rounded-lg border p-8 lg:p-12 text-center" style={{ background: 'var(--card)', borderColor: borderColor }}>
                       <Package className="w-12 h-12 mx-auto mb-4" style={{ color: textSecondary }} />
-                      <h3 className="text-lg font-semibold mb-2" style={{ color: textPrimary }}>Aucun besoin</h3>
+                      <h3 className="text-lg font-semibold mb-2" style={{ color: textPrimary }}>{t("noNeeds")}</h3>
                       <p className="mb-4" style={{ color: textSecondary }}>
-                        Commencez par créer votre premier besoin d'approvisionnement
+                        {t("noNeedsHint")}
                       </p>
                       <button
                         onClick={handleOpenForm}
@@ -928,7 +931,7 @@ function SourcingContent() {
                         style={{ background: brandColor, color: "#fff" }}
                       >
                         <Plus className="w-4 h-4" />
-                        Nouveau besoin
+                        {t("newNeed")}
                       </button>
                     </div>
                   ) : (
@@ -947,7 +950,7 @@ function SourcingContent() {
                                     {statusLabel}
                                   </span>
                                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPriorityBadge(need.priority)}`}>
-                                    {need.priority}
+                                    {({ BASSE: t("prioLow"), MOYENNE: t("prioMedium"), HAUTE: t("prioHigh"), URGENTE: t("prioUrgent") } as Record<string, string>)[need.priority] || need.priority}
                                   </span>
                                 </div>
                                 
@@ -960,7 +963,7 @@ function SourcingContent() {
                                   </div>
                                   <div className="flex items-center gap-1.5" style={{ color: textSecondary }}>
                                     <Calendar className="w-3.5 h-3.5" />
-                                    <span>{need.deadline ? format(new Date(need.deadline), "dd MMM", { locale: fr }) : "N/A"}</span>
+                                    <span>{need.deadline ? format(new Date(need.deadline), "dd MMM", { locale: dateLocales[language] ?? fr }) : "N/A"}</span>
                                   </div>
                                   <div className="flex items-center gap-1.5" style={{ color: textSecondary }}>
                                     <DollarSign className="w-3.5 h-3.5" />
@@ -970,7 +973,7 @@ function SourcingContent() {
                                   </div>
                                   <div className="flex items-center gap-1.5" style={{ color: textSecondary }}>
                                     <CheckCircle className="w-3.5 h-3.5" />
-                                    <span>{need.responsesCount} devis</span>
+                                    <span>{t("quotesCount", { count: need.responsesCount })}</span>
                                   </div>
                                 </div>
                                 
@@ -980,7 +983,7 @@ function SourcingContent() {
                                     className="text-sm flex items-center gap-1"
                                     style={{ color: brandColor }}
                                   >
-                                    {isExpanded ? "Voir moins" : "Voir plus"}
+                                    {isExpanded ? t("seeLess") : t("seeMore")}
                                     {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                                   </button>
                                   <button
@@ -998,12 +1001,12 @@ function SourcingContent() {
                               <div className="border-t p-4 lg:p-6" style={{ borderColor: borderColor, background: bgGray }}>
                                 <div className="space-y-4">
                                   <div>
-                                    <h4 className="text-sm font-semibold mb-2" style={{ color: textPrimary }}>Description</h4>
+                                    <h4 className="text-sm font-semibold mb-2" style={{ color: textPrimary }}>{t("descriptionLabel")}</h4>
                                     <p className="text-sm" style={{ color: textSecondary }}>{need.description}</p>
                                   </div>
                                   
                                   <div>
-                                    <h4 className="text-sm font-semibold mb-2" style={{ color: textPrimary }}>Contact</h4>
+                                    <h4 className="text-sm font-semibold mb-2" style={{ color: textPrimary }}>{t("contactLabel")}</h4>
                                     <div className="space-y-1 text-sm">
                                       <p style={{ color: textSecondary }}>{need.fullName}</p>
                                       <a href={`mailto:${need.email}`} className="hover:underline block" style={{ color: brandColor }}>
@@ -1020,14 +1023,14 @@ function SourcingContent() {
                                         </div>
                                       )}
                                       {need.company && (
-                                        <p style={{ color: textSecondary }}>Société: {need.company}</p>
+                                        <p style={{ color: textSecondary }}>{t("companyLabel")} {need.company}</p>
                                       )}
                                     </div>
                                   </div>
                                   
                                   {need.documents && Array.isArray(need.documents) && need.documents.length > 0 && (
                                     <div>
-                                      <h4 className="text-sm font-semibold mb-2" style={{ color: textPrimary }}>Documents</h4>
+                                      <h4 className="text-sm font-semibold mb-2" style={{ color: textPrimary }}>{t("documentsLabel")}</h4>
                                       <div className="space-y-1">
                                         {need.documents.map((doc, idx) => (
                                           <a key={idx} href={doc.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm hover:underline" style={{ color: brandColor }}>
@@ -1055,13 +1058,13 @@ function SourcingContent() {
                 <div className="rounded-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto" style={{ background: 'var(--card)' }}>
                   <div className="sticky top-0 border-b p-4 lg:p-6 flex justify-between items-center" style={{ borderColor: borderColor, background: 'var(--card)' }}>
                     <div>
-                      <h3 className="text-lg lg:text-xl font-bold" style={{ color: textPrimary }}>Nouveau besoin</h3>
+                      <h3 className="text-lg lg:text-xl font-bold" style={{ color: textPrimary }}>{t("newNeed")}</h3>
                       <p className="text-xs lg:text-sm mt-0.5 lg:mt-1" style={{ color: textSecondary }}>
-                        Décrivez ce que vous devez acheter
+                        {t("formSubtitle")}
                       </p>
                       <span className="inline-flex items-center gap-1.5 mt-2 text-xs font-semibold" style={{ color: brandColor }}>
                         <Clock className="w-3.5 h-3.5" />
-                        Devis sous 48h
+                        {t("quoteIn48h")}
                       </span>
                     </div>
                     <button
@@ -1082,7 +1085,7 @@ function SourcingContent() {
                     {isSubmitting && uploadProgress > 0 && (
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
-                          <span>Envoi en cours...</span>
+                          <span>{t("sendingProgress")}</span>
                           <span>{uploadProgress}%</span>
                         </div>
                         <div className="w-full bg-surface-sunken rounded-full h-2">
@@ -1096,13 +1099,13 @@ function SourcingContent() {
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Titre du besoin *</label>
+                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>{t("fTitle")}</label>
                         <input
                           type="text"
                           name="title"
                           value={formData.title}
                           onChange={handleInputChange}
-                          placeholder="ex: T-shirts premium coton bio"
+                          placeholder={t("phTitle")}
                           required
                           disabled={isSubmitting}
                           className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
@@ -1110,13 +1113,13 @@ function SourcingContent() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Type de produit *</label>
+                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>{t("fType")}</label>
                         <input
                           type="text"
                           name="productType"
                           value={formData.productType}
                           onChange={handleInputChange}
-                          placeholder="ex: Textile"
+                          placeholder={t("phType")}
                           required
                           disabled={isSubmitting}
                           className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
@@ -1126,13 +1129,13 @@ function SourcingContent() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Description détaillée *</label>
+                      <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>{t("fDescription")}</label>
                       <textarea
                         name="description"
                         rows={4}
                         value={formData.description}
                         onChange={handleInputChange}
-                        placeholder="Spécifications techniques, matériaux, finitions, etc."
+                        placeholder={t("phDescription")}
                         required
                         disabled={isSubmitting}
                         className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
@@ -1142,7 +1145,7 @@ function SourcingContent() {
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Quantité *</label>
+                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>{t("fQuantity")}</label>
                         <input
                           type="number"
                           name="quantity"
@@ -1157,7 +1160,7 @@ function SourcingContent() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Unité *</label>
+                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>{t("fUnit")}</label>
                         <select
                           name="quantityUnit"
                           value={formData.quantityUnit}
@@ -1166,10 +1169,10 @@ function SourcingContent() {
                           className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
                           style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
                         >
-                          <option>pièces</option>
+                          <option value="pièces">{t("unitPieces")}</option>
                           <option>kg</option>
-                          <option>mètres</option>
-                          <option>litres</option>
+                          <option value="mètres">{t("unitMeters")}</option>
+                          <option value="litres">{t("unitLiters")}</option>
                         </select>
                       </div>
                     </div>
@@ -1177,7 +1180,7 @@ function SourcingContent() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>
-                          Budget min par pièce ({getCurrencySymbol()})
+                          {t("budgetMin", { currency: getCurrencySymbol() })}
                         </label>
                         <input
                           type="number"
@@ -1194,7 +1197,7 @@ function SourcingContent() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>
-                          Budget max par pièce ({getCurrencySymbol()})
+                          {t("budgetMax", { currency: getCurrencySymbol() })}
                         </label>
                         <input
                           type="number"
@@ -1210,13 +1213,13 @@ function SourcingContent() {
                         />
                       </div>
                       <p className="lg:col-span-2 text-xs -mt-1" style={{ color: textSecondary }}>
-                        Le prix unitaire que vous êtes prêt à payer par pièce, pas le budget total de la commande. Ça nous aide à cibler les bons fournisseurs directement — vous évite des allers-retours inutiles.
+                        {t("budgetNote")}
                       </p>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Date limite *</label>
+                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>{t("fDeadline")}</label>
                         <input
                           type="date"
                           name="deadline"
@@ -1229,7 +1232,7 @@ function SourcingContent() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Priorité *</label>
+                        <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>{t("fPriority")}</label>
                         <select
                           name="priority"
                           value={formData.priority}
@@ -1238,16 +1241,16 @@ function SourcingContent() {
                           className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
                           style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
                         >
-                          <option value="BASSE">Basse</option>
-                          <option value="MOYENNE">Moyenne</option>
-                          <option value="HAUTE">Haute</option>
-                          <option value="URGENTE">Urgente</option>
+                          <option value="BASSE">{t("prioLow")}</option>
+                          <option value="MOYENNE">{t("prioMedium")}</option>
+                          <option value="HAUTE">{t("prioHigh")}</option>
+                          <option value="URGENTE">{t("prioUrgent")}</option>
                         </select>
                         <p className="text-xs mt-1.5" style={{ color: textSecondary }}>
-                          {formData.priority === "URGENTE" && "Traitée en priorité, réponse sous 24h — réservé aux besoins vraiment pressants."}
-                          {formData.priority === "HAUTE" && "Traitée avant les demandes standards, réponse sous 48h."}
-                          {formData.priority === "MOYENNE" && "Traitement dans l'ordre d'arrivée, réponse sous 48h."}
-                          {formData.priority === "BASSE" && "Pas de contrainte de délai particulière de votre côté — on prend le temps de bien comparer les fournisseurs."}
+                          {formData.priority === "URGENTE" && t("helpUrgent")}
+                          {formData.priority === "HAUTE" && t("helpHigh")}
+                          {formData.priority === "MOYENNE" && t("helpMedium")}
+                          {formData.priority === "BASSE" && t("helpLow")}
                         </p>
                       </div>
                     </div>
@@ -1255,11 +1258,11 @@ function SourcingContent() {
                     <div className="pt-4" style={{ borderTop: `0.5px solid ${borderColor}` }}>
                       <h4 className="font-semibold mb-3 flex items-center gap-2 text-sm lg:text-base" style={{ color: textPrimary }}>
                         <Phone className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: brandColor }} />
-                        Vos coordonnées
+                        {t("yourDetails")}
                       </h4>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Nom complet *</label>
+                          <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>{t("fFullName")}</label>
                           <input
                             type="text"
                             name="fullName"
@@ -1272,7 +1275,7 @@ function SourcingContent() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Email *</label>
+                          <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>{t("fEmail")}</label>
                           <input
                             type="email"
                             name="email"
@@ -1285,7 +1288,7 @@ function SourcingContent() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Téléphone / WhatsApp</label>
+                          <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>{t("fPhone")}</label>
                           <input
                             type="tel"
                             name="phone"
@@ -1298,13 +1301,13 @@ function SourcingContent() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>Société</label>
+                          <label className="block text-sm font-medium mb-1.5" style={{ color: textPrimary }}>{t("fCompany")}</label>
                           <input
                             type="text"
                             name="company"
                             value={formData.company}
                             onChange={handleInputChange}
-                            placeholder="Nom de votre entreprise"
+                            placeholder={t("phCompany")}
                             disabled={isSubmitting}
                             className="w-full p-2.5 lg:p-3 rounded-lg text-sm"
                             style={{ border: `0.5px solid ${borderColor}`, background: surfaceGray, color: textPrimary }}
@@ -1315,10 +1318,10 @@ function SourcingContent() {
 
                     <div>
                       <label className="block text-sm font-medium mb-1" style={{ color: textPrimary }}>
-                        Documents (max 10 Mo par fichier)
+                        {t("docsLabel")}
                       </label>
                       <p className="text-xs mb-1.5" style={{ color: textSecondary }}>
-                        Une photo du produit recherché nous aide à identifier précisément ce que vous voulez — mais tout fichier utile est accepté : cahier des charges, plan technique, facture d'un produit similaire...
+                        {t("docsHint")}
                       </p>
                       <div className="border-2 border-dashed rounded-lg p-4 lg:p-6 text-center" style={{ borderColor: `${borderColor}` }}>
                         <input
@@ -1339,7 +1342,7 @@ function SourcingContent() {
                                   <FileText className="w-4 h-4" style={{ color: textSecondary }} />
                                   <span className="text-sm truncate max-w-[150px] lg:max-w-xs" style={{ color: textPrimary }}>{file.name}</span>
                                   <span className="text-xs" style={{ color: textSecondary }}>
-                                    ({(file.size / 1024).toFixed(0)} Ko)
+                                    ({(file.size / 1024).toFixed(0)} {t("kb")})
                                   </span>
                                 </div>
                                 <button
@@ -1357,18 +1360,18 @@ function SourcingContent() {
                               className="inline-block mt-2 text-sm hover:underline cursor-pointer"
                               style={{ color: brandColor }}
                             >
-                              <Upload className="w-4 h-4 inline mr-1" style={{ color: brandColor }} />
-                              Ajouter d'autres fichiers
+                              <Upload className="w-4 h-4 inline me-1" style={{ color: brandColor }} />
+                              {t("addMoreFiles")}
                             </label>
                           </div>
                         ) : (
                           <label htmlFor="file-upload" className="cursor-pointer block">
                             <Upload className="w-8 h-8 mx-auto mb-2" style={{ color: textSecondary }} />
                             <p className="text-sm" style={{ color: textSecondary }}>
-                              Cliquez pour uploader vos fichiers
+                              {t("clickUpload")}
                             </p>
                             <p className="text-xs mt-1" style={{ color: textSecondary }}>
-                              PDF, images (max 10 Mo)
+                              {t("fileHint")}
                             </p>
                           </label>
                         )}
@@ -1383,7 +1386,7 @@ function SourcingContent() {
                         className="px-4 py-2 lg:px-6 lg:py-2 rounded-lg hover:bg-muted transition-colors text-sm"
                         style={{ border: `0.5px solid ${borderColor}`, color: textPrimary }}
                       >
-                        Annuler
+                        {t("cancel")}
                       </button>
                       <button
                         type="submit"
@@ -1394,12 +1397,12 @@ function SourcingContent() {
                         {isSubmitting ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            {uploadProgress > 0 ? `${uploadProgress}%` : "Création..."}
+                            {uploadProgress > 0 ? `${uploadProgress}%` : t("creating")}
                           </>
                         ) : (
                           <>
                             <Send className="w-4 h-4" />
-                            Créer le besoin
+                            {t("createNeed")}
                           </>
                         )}
                       </button>
@@ -1414,25 +1417,25 @@ function SourcingContent() {
         <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-center text-lg" style={{ color: textPrimary }}>Connexion requise</DialogTitle>
+              <DialogTitle className="text-center text-lg" style={{ color: textPrimary }}>{t("authRequired")}</DialogTitle>
             </DialogHeader>
             <div className="text-center py-4 lg:py-6">
               <Package className="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-4" style={{ color: 'color-mix(in oklab, var(--accent) 80%, transparent)' }} />
-              <p className="text-base lg:text-lg font-medium mb-2" style={{ color: textPrimary }}>Vous devez être connecté</p>
+              <p className="text-base lg:text-lg font-medium mb-2" style={{ color: textPrimary }}>{t("mustLogin")}</p>
               <p className="text-sm mb-6" style={{ color: textSecondary }}>
-                Pour créer un besoin d'approvisionnement, veuillez vous connecter ou créer un compte.
+                {t("mustLoginText")}
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button asChild className="gap-2" style={{ background: brandColor, color: "#fff" }}>
                   <Link href={`/account?mode=login&redirect=${encodeURIComponent('/boutique-noel')}`}>
                     <LogIn className="w-4 h-4" />
-                    Se connecter
+                    {t("logIn")}
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="gap-2">
                   <Link href={`/account?mode=register&redirect=${encodeURIComponent('/boutique-noel')}`}>
                     <UserPlus className="w-4 h-4" />
-                    Créer un compte
+                    {t("createAccount")}
                   </Link>
                 </Button>
               </div>
