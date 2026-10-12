@@ -1315,6 +1315,17 @@ export default function ProductPage() {
 
     if (!secondaryAttr) return []
 
+    // Attributs indépendants (une ligne par couleur, une ligne par taille, aucune
+    // ligne qui porte les deux) : toutes les valeurs du second attribut sont
+    // combinables avec chaque valeur du premier, dans l'ordre de l'import.
+    const hasCombinedVariants = product.variants.some(
+      (variant: any) => variant.attributes?.[primaryAttr] && variant.attributes?.[secondaryAttr],
+    )
+    if (!hasCombinedVariants) {
+      return [...(attributeGroups[secondaryAttr]?.values || [])]
+    }
+
+    // Variantes combinées (anciens imports) : comportement inchangé.
     product.variants.forEach((variant: any) => {
       const variantPrimary = variant.attributes?.[primaryAttr]
       if (variantPrimary === primaryValue && variant.attributes?.[secondaryAttr]) {
