@@ -236,27 +236,28 @@ function BadgeCheck({ className, style }: IconProps) {
 
 // Réassurance secondaire, en carrousel — volontairement différente des 4
 // points déjà affichés juste au-dessus (pas de répétition sur la page).
-const secondaryTrustPool: { label: string; icon: (p: IconProps) => JSX.Element }[] = [
-  { label: "Garantie 12 mois", icon: Shield },
-  { label: "Contrôle qualité systématique", icon: Check },
-  { label: "Retour accepté sous 5 jours", icon: RotateCcw },
-  { label: "Fournisseur vérifié", icon: BadgeCheck },
-  { label: "Suivi de colis en temps réel", icon: Truck },
+const secondaryTrustPool: { labelKey: string; icon: (p: IconProps) => JSX.Element }[] = [
+  { labelKey: "warranty12", icon: Shield },
+  { labelKey: "qualityControl", icon: Check },
+  { labelKey: "returnWithin5", icon: RotateCcw },
+  { labelKey: "supplierVerified", icon: BadgeCheck },
+  { labelKey: "trackingRealtime", icon: Truck },
 ]
 
 function TrustCarouselRow() {
+  const t = useTranslations("product")
   const [index, setIndex] = useState(0)
   const [fading, setFading] = useState(false)
 
   useEffect(() => {
-    const t = setInterval(() => {
+    const timer = setInterval(() => {
       setFading(true)
       setTimeout(() => {
         setIndex((i) => (i + 1) % secondaryTrustPool.length)
         setFading(false)
       }, 350)
     }, 2600)
-    return () => clearInterval(t)
+    return () => clearInterval(timer)
   }, [])
 
   const current = secondaryTrustPool[index]
@@ -272,7 +273,7 @@ function TrustCarouselRow() {
         className="text-xs font-medium text-foreground whitespace-nowrap truncate transition-all duration-300"
         style={{ opacity: fading ? 0 : 1, transform: fading ? "translateY(-2px)" : "translateY(0)" }}
       >
-        {current.label}
+        {t(current.labelKey)}
       </span>
     </div>
   )
@@ -291,6 +292,7 @@ import { wishlistApi } from "@/lib/admin/api-client"
 import { useAuth } from "@/lib/admin/auth-context"
 import { Loader } from "@/components/Loader"
 import { apiFetch } from "@/lib/api"
+import { useTranslations } from "next-intl"
 
 // Compteur animé (1 → cible) pour rendre le MOQ bien visible
 function CountUp({ target }: { target: number }) {
@@ -508,15 +510,14 @@ function isLikelyMarkupJunk(text: string): boolean {
 // Choisit la première source de description qui n'est pas du CSS/HTML brut
 // (product.description en priorité, sinon product.cleanedDesc), et retombe
 // sur un message par défaut si aucune des deux n'est exploitable.
-function getCleanDescriptionText(product: any): string {
-  const candidates = [
-    product?.descriptionFr,
-    product?.cleanedDescFr,
-    product?.description,
-    product?.cleanedDesc,
-  ].filter((t: string | undefined) => typeof t === "string" && t.trim().length > 0) as string[]
+function getCleanDescriptionText(product: any, language: string, fallback: string): string {
+  // Les champs *Fr ne sont prioritaires qu'en français ; sinon on prend la description renvoyée par l'API (?locale=)
+  const candidates = (language === "fr"
+    ? [product?.descriptionFr, product?.cleanedDescFr, product?.description, product?.cleanedDesc]
+    : [product?.description, product?.cleanedDesc, product?.descriptionFr, product?.cleanedDescFr]
+  ).filter((t: string | undefined) => typeof t === "string" && t.trim().length > 0) as string[]
   const clean = candidates.find((t) => !isLikelyMarkupJunk(t))
-  return clean || "Description non disponible"
+  return clean || fallback
 }
 
 function parseDescriptionSpecs(rawText: string): {
@@ -575,7 +576,10 @@ function parseDescriptionSpecs(rawText: string): {
 // quand product.specifications (rempli par l'autre pipeline d'import) est vide.
 // Purement additif : un produit qui a deja product.specifications n'est jamais
 // affecte, il garde exactement le comportement actuel.
-function getProductSpecifications(product: any): { label: string; value: string }[] {
+function getProductSpecifications(
+  product: any,
+  labels: { brand: string; model: string; weight: string; warranty: string; months12: string },
+): { label: string; value: string }[] {
   if (product?.specifications && product.specifications.length > 0) {
     return product.specifications
   }
@@ -589,14 +593,15 @@ function getProductSpecifications(product: any): { label: string; value: string 
   }
 
   return [
-    { label: "Marque", value: product?.brand || "TechPro" },
-    { label: "Modèle", value: product?.model || "Standard" },
-    { label: "Poids", value: product?.weight ? `${product.weight} kg` : "N/A" },
-    { label: "Garantie", value: "12 mois" },
+    { label: labels.brand, value: product?.brand || "TechPro" },
+    { label: labels.model, value: product?.model || "Standard" },
+    { label: labels.weight, value: product?.weight ? `${product.weight} kg` : "N/A" },
+    { label: labels.warranty, value: labels.months12 },
   ]
 }
 
 export default function ProductPage() {
+  const t = useTranslations("product")
   const { id } = useParams()
   const router = useRouter()
   const { user } = useAuth()
@@ -607,7 +612,7 @@ export default function ProductPage() {
   const [minQuantity, setMinQuantity] = useState(1)
   const [isMOQMet, setIsMOQMet] = useState(false)
   const { addToCart, addItemsToCart } = useCart()
-  const { country, currency, locale } = useLocale()
+  const { country, currency, locale, language } = useLocale()
   const thumbnailRef = useRef<HTMLDivElement>(null)
   const relatedCarouselRef = useRef<HTMLDivElement>(null)
   const [isWishlisted, setIsWishlisted] = useState(false)
@@ -872,7 +877,7 @@ export default function ProductPage() {
   // ============================================================
   const formatReviewDate = (dateString: string) => {
     const date = new Date(dateString)
-    return date.toLocaleDateString("fr-FR", {
+    return date.toLocaleDateString(language, {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -884,12 +889,12 @@ export default function ProductPage() {
   // ============================================================
   const handleSubmitReview = async () => {
     if (!newReview.comment.trim()) {
-      toast.error("Veuillez écrire un commentaire")
+      toast.error(t("reviewEmpty"))
       return
     }
 
     if (!newReview.authorName.trim()) {
-      toast.error("Veuillez entrer votre nom")
+      toast.error(t("reviewName"))
       return
     }
 
@@ -912,7 +917,7 @@ export default function ProductPage() {
       const data = await response.json()
 
       if (data.success) {
-        toast.success("Merci pour votre avis !")
+        toast.success(t("thanksReview"))
         setShowReviewForm(false)
         setNewReview({ rating: 5, comment: "", authorName: "" })
 
@@ -941,11 +946,11 @@ export default function ProductPage() {
           }
         }
       } else {
-        toast.error(data.error || "Erreur lors de l'envoi")
+        toast.error(data.error || t("sendError"))
       }
     } catch (error) {
       console.error("Erreur submission:", error)
-      toast.error("Une erreur est survenue")
+      toast.error(t("genericError"))
     } finally {
       setIsSubmittingReview(false)
     }
@@ -990,23 +995,23 @@ export default function ProductPage() {
 
         if (response.success) {
           setIsWishlisted(false)
-          toast.success("Produit retiré des favoris")
+          toast.success(t("favRemoved"))
         } else {
-          toast.error(response.error || "Erreur lors du retrait des favoris")
+          toast.error(response.error || t("favRemoveError"))
         }
       } else {
         const response = await wishlistApi.add(product.id)
 
         if (response.success) {
           setIsWishlisted(true)
-          toast.success("Produit ajouté aux favoris")
+          toast.success(t("favAdded"))
         } else {
-          toast.error(response.error || "Erreur lors de l'ajout aux favoris")
+          toast.error(response.error || t("favAddError"))
         }
       }
     } catch (error) {
       console.error("Erreur wishlist:", error)
-      toast.error("Une erreur est survenue")
+      toast.error(t("genericError"))
     }
   }
 
@@ -1031,7 +1036,7 @@ export default function ProductPage() {
       try {
         const params = new URLSearchParams({
           productId: product.id,
-          productTitle: product.title || product.name || "Produit",
+          productTitle: product.title || product.name || t("productFallback"),
           productWeight: product.weight?.toString() || "",
           quantity: totalQuantity.toString(),
           country: country,
@@ -1052,11 +1057,11 @@ export default function ProductPage() {
             }
           }
         } else {
-          setLogisticsError(data.error || "Erreur lors du calcul des frais de livraison")
+          setLogisticsError(data.error || t("logisticsCalcError"))
         }
       } catch (error) {
         console.error("Erreur API logistique:", error)
-        setLogisticsError("Impossible de calculer les frais de livraison")
+        setLogisticsError(t("logisticsUnavailable"))
       } finally {
         setIsLoadingLogistics(false)
       }
@@ -1122,16 +1127,16 @@ export default function ProductPage() {
 
     const formatAttributeName = (key: string): string => {
       const map: Record<string, string> = {
-        color: "Couleur",
-        colour: "Couleur",
-        couleur: "Couleur",
-        size: "Taille",
-        taille: "Taille",
-        pointure: "Pointure",
-        eur_size: "Pointure",
-        material: "Matière",
-        matière: "Matière",
-        matiere: "Matière",
+        color: t("attrColor"),
+        colour: t("attrColor"),
+        couleur: t("attrColor"),
+        size: t("attrSize"),
+        taille: t("attrSize"),
+        pointure: t("attrShoeSize"),
+        eur_size: t("attrShoeSize"),
+        material: t("attrMaterial"),
+        matière: t("attrMaterial"),
+        matiere: t("attrMaterial"),
       }
       return map[key.toLowerCase()] || key.charAt(0).toUpperCase() + key.slice(1)
     }
@@ -1482,13 +1487,13 @@ export default function ProductPage() {
     
     // ✅ Vérification MOQ globale (toutes variantes confondues)
     if (!product || grandTotal === 0) {
-      toast.error("Veuillez sélectionner des articles")
+      toast.error(t("selectItems"))
       return
     }
 
     // ✅ Si grandTotal < minQuantity, bloquer l'ajout
     if (grandTotal < minQuantity) {
-      toast.error(`Quantité minimum de ${minQuantity} pièces requise pour ce produit`, {
+      toast.error(t("minQtyToast", { count: minQuantity }), {
         duration: 4000,
         position: "top-center",
       })
@@ -1562,7 +1567,7 @@ export default function ProductPage() {
     }
 
     if (itemsToAdd.length === 0) {
-      toast.error("Veuillez sélectionner des articles")
+      toast.error(t("selectItems"))
       return
     }
 
@@ -1570,7 +1575,7 @@ export default function ProductPage() {
     const result = addItemsToCart(itemsToAdd)
 
     if (result.success) {
-      toast.success(`${result.addedCount} article(s) ajouté(s) au panier`, {
+      toast.success(t("addedToCart", { count: result.addedCount }), {
         duration: 3000,
         position: "top-center",
         icon: "🛒",
@@ -1585,12 +1590,12 @@ export default function ProductPage() {
     
     // ✅ Vérification MOQ globale
     if (!product || grandTotal === 0) {
-      toast.error("Veuillez sélectionner des articles")
+      toast.error(t("selectItems"))
       return
     }
 
     if (grandTotal < minQuantity) {
-      toast.error(`Quantité minimum de ${minQuantity} pièces requise pour ce produit`, {
+      toast.error(t("minQtyToast", { count: minQuantity }), {
         duration: 4000,
         position: "top-center",
       })
@@ -1607,10 +1612,10 @@ export default function ProductPage() {
     if (!product) return
 
     const grandTotal = getGrandTotal()
-    const productName = product.title || product.name || "Produit"
+    const productName = product.title || product.name || t("productFallback")
     const priceFormatted = formatPrice(product.price)
     
-    const message = `Bonjour Adu, je souhaite commander le produit : ${productName}\nQuantité : ${grandTotal} pièces\nPrix unitaire : ${priceFormatted}\nPays : ${country}\n\nJe n'atteins pas la quantité minimum (${minQuantity} pièces). Peux-tu m'aider ?`
+    const message = t("moqChatMessage", { product: productName, quantity: grandTotal, price: priceFormatted, country, min: minQuantity })
     
     const event = new CustomEvent('openChatbotWithMessage', { 
       detail: { 
@@ -1685,9 +1690,9 @@ export default function ProductPage() {
     if (!logisticsData?.shipping || !logisticsData.shipping[mode]) return ""
     const shipping = logisticsData.shipping[mode]
     if (shipping?.minDays === shipping?.maxDays) {
-      return `${shipping.minDays}j`
+      return t("daysShort", { range: String(shipping.minDays) })
     }
-    return `${shipping?.minDays || 0}-${shipping?.maxDays || 0}j`
+    return t("daysShort", { range: `${shipping?.minDays || 0}-${shipping?.maxDays || 0}` })
   }
 
   const selectedPortePorteCost = getPortePorteCost(selectedShipping)
@@ -1700,7 +1705,7 @@ export default function ProductPage() {
   }
 
   const safeImages = images.length > 0 ? images : ["/placeholder.svg"]
-  const productName = product.title || product.name || "Produit"
+  const productName = product.title || product.name || t("productFallback")
 
   const currentPrice = product.price || 0
   const grandTotal = getGrandTotal()
@@ -1709,9 +1714,9 @@ export default function ProductPage() {
   const hasComplexVariants = Object.keys(complexSelections).length > 0
 
   const SHIPPING_OPTIONS = [
-    { mode: "bateau", icon: Ship, label: "Maritime", labelShort: "Mer" },
-    { mode: "avion", icon: Sparkles, label: "Aérien", labelShort: "Air" },
-    { mode: "express", icon: Zap, label: "Express", labelShort: "Express" },
+    { mode: "bateau", icon: Ship, label: t("shipSea"), labelShort: t("shipSeaShort") },
+    { mode: "avion", icon: Sparkles, label: t("shipAir"), labelShort: t("shipAirShort") },
+    { mode: "express", icon: Zap, label: t("shipExpress"), labelShort: t("shipExpress") },
   ] as const
 
   return (
@@ -1732,11 +1737,11 @@ export default function ProductPage() {
           <div className="px-4 lg:px-8 py-3 lg:py-8">
             <div className="hidden lg:flex items-center gap-2 text-xs mb-6 text-muted-foreground">
               <a href="/" className="hover:text-foreground transition-colors">
-                Accueil
+                {t("home")}
               </a>
               {product?.category && (
                 <>
-                  <ChevronRight className="w-3 h-3" />
+                  <ChevronRight className="w-3 h-3 rtl:rotate-180" />
                   <a
                     href={`/category/${product.category.slug || product.category.id}`}
                     className="hover:text-foreground transition-colors"
@@ -1745,7 +1750,7 @@ export default function ProductPage() {
                   </a>
                 </>
               )}
-              <ChevronRight className="w-3 h-3" />
+              <ChevronRight className="w-3 h-3 rtl:rotate-180" />
               <span className="text-foreground">{productName}</span>
             </div>
 
@@ -1784,7 +1789,7 @@ export default function ProductPage() {
                       </div>
 
                       {safeImages.length > 12 && (
-                        <div className="flex items-center gap-1 pl-1.5 border-l border-border">
+                        <div className="flex items-center gap-1 ps-1.5 border-s border-border">
                           <button
                             onClick={() => setSelectedImage(Math.max(0, selectedImage - 1))}
                             className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-muted transition-colors"
@@ -1839,7 +1844,7 @@ export default function ProductPage() {
                         className="text-xs font-semibold px-2 py-0.5 rounded-md text-white"
                         style={{ background: brandColor, fontFamily: "'Poppins', sans-serif" }}
                       >
-                        Top vente
+                        {t("topSale")}
                       </span>
                       <span className="text-xs text-muted-foreground">SKU: {product.id}</span>
                     </div>
@@ -1848,7 +1853,7 @@ export default function ProductPage() {
                   <button
                     onClick={handleToggleWishlist}
                     className="p-2 -mt-1 hover:bg-muted rounded-full transition-colors"
-                    aria-label="Ajouter aux favoris"
+                    aria-label={t("addToFavorites")}
                   >
                     <Heart className={`w-5 h-5 ${isWishlisted ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
                   </button>
@@ -1864,9 +1869,9 @@ export default function ProductPage() {
                     <span className="text-muted-foreground">{reviewsStats.averageRating || 0}</span>
                   </div>
                   <span className="text-border">|</span>
-                  <span className="text-muted-foreground">{reviewsStats.totalReviews} avis</span>
+                  <span className="text-muted-foreground">{t("reviewsCount", { count: reviewsStats.totalReviews })}</span>
                   <span className="text-border">|</span>
-                  <span className="text-muted-foreground">1.2k ventes</span>
+                  <span className="text-muted-foreground">{t("salesCount", { count: "1.2k" })}</span>
                 </div>
 
                 <div className="flex items-baseline gap-2">
@@ -2072,11 +2077,11 @@ export default function ProductPage() {
                                 )}
                                 <span className="text-sm font-medium text-foreground">{primaryValue}</span>
                               </div>
-                              <div className="flex flex-wrap gap-2 pl-2">
+                              <div className="flex flex-wrap gap-2 ps-2">
                                 {nonZeroSelections.map(([secondaryValue, qty]) => (
                                   <div key={secondaryValue} className="bg-muted px-2 py-1 rounded-md text-xs">
                                     <span className="font-medium">{secondaryValue}</span>
-                                    <span className="ml-1 font-bold" style={{ color: brandColor }}>
+                                    <span className="ms-1 font-bold" style={{ color: brandColor }}>
                                       x{qty}
                                     </span>
                                   </div>
@@ -2092,7 +2097,7 @@ export default function ProductPage() {
 
                 {!hasVariants && (
                   <div className="mb-4">
-                    <h3 className="text-sm font-semibold text-foreground mb-2">Quantité</h3>
+                    <h3 className="text-sm font-semibold text-foreground mb-2">{t("quantity")}</h3>
                     <div className="flex items-center rounded-lg overflow-hidden shadow-xs w-fit">
                       <button
                         onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))}
@@ -2119,13 +2124,13 @@ export default function ProductPage() {
                   </div>
                   <div className="flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5 text-accent" />
-                    <span>{logisticsData?.recommended.days || "15-20 jours"}</span>
+                    <span>{logisticsData?.recommended.days || t("defaultDays")}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     {isLoadingLogistics ? (
                       <span className="inline-flex items-center text-muted-foreground">
-                        <span className="w-3 h-3 border-2 border-border border-t-accent rounded-full animate-spin mr-1" />
-                        Calcul...
+                        <span className="w-3 h-3 border-2 border-border border-t-accent rounded-full animate-spin me-1" />
+                        {t("calculating")}
                       </span>
                     ) : (
                       <span className="text-muted-foreground">
@@ -2137,10 +2142,10 @@ export default function ProductPage() {
 
                 <div className="space-y-2">
                   <h3 className="text-xs font-semibold text-foreground flex items-center justify-between">
-                    <span>Mode de livraison</span>
+                    <span>{t("deliveryMode")}</span>
                     {selectedPortePorteCost > 0 && (
                       <span className="text-xs font-medium text-muted-foreground">
-                        Porte-à-porte:{" "}
+                        {t("doorToDoor")}{" "}
                         <span className="font-bold text-accent">
                           {formatPrice(selectedPortePorteCost)}
                         </span>
@@ -2205,17 +2210,17 @@ export default function ProductPage() {
                           )
                         })}
                       </div>
-                      <p className="text-center text-[10px] text-muted-foreground">Frais de porte-à-porte inclus</p>
+                      <p className="text-center text-[10px] text-muted-foreground">{t("doorToDoorIncluded")}</p>
                     </>
                   )}
                 </div>
 
                 <div className="rounded-lg p-3 bg-muted shadow-xs space-y-2">
                   {[
-                    { icon: Check, text: "Direct depuis l'usine, sans intermédiaire" },
-                    { icon: Check, text: "Tous les frais inclus — rien à payer en plus à la livraison" },
-                    { icon: Shield, text: "Remboursé si votre commande n'arrive pas" },
-                    { icon: Lock, text: "Paiement sécurisé — Mobile Money & carte bancaire" },
+                    { icon: Check, text: t("trustDirect") },
+                    { icon: Check, text: t("trustAllIncluded") },
+                    { icon: Shield, text: t("trustRefund") },
+                    { icon: Lock, text: t("trustPayment") },
                   ].map(({ icon: BulletIcon, text }, i) => (
                     <motion.div
                       key={text}
@@ -2232,14 +2237,14 @@ export default function ProductPage() {
                     onClick={() => setIsProtectionModalOpen(true)}
                     className="flex items-center gap-1 text-xs font-semibold text-accent pt-1 transition-transform duration-150 active:scale-95"
                   >
-                    Voir les détails de la protection Adullam
-                    <ChevronRight className="w-3 h-3" />
+                    {t("protectionDetails")}
+                    <ChevronRight className="w-3 h-3 rtl:rotate-180" />
                   </button>
                 </div>
 
                 {!isMOQMet && grandTotal > 0 && (
                   <div className="border rounded-xl p-3 text-sm" style={{ background: `${accentColor}1a`, borderColor: `${accentColor}66`, color: accentColor }}>
-                    Quantité minimum non atteinte ({minQuantity} min). Contactez-nous pour discuter.
+                    {t("moqNotMet", { min: minQuantity })}
                   </div>
                 )}
 
@@ -2253,7 +2258,7 @@ export default function ProductPage() {
                       {isMOQMet && grandTotal > 0
                         ? <ShoppingCart className="w-4 h-4" />
                         : <MessageCircle className="w-4 h-4" />}
-                      {isMOQMet && grandTotal > 0 ? `Ajouter (${grandTotal})` : "Nous contacter"}
+                      {isMOQMet && grandTotal > 0 ? `Ajouter (${grandTotal})` : t("contactUs")}
                     </button>
                     <button
                       onClick={handleBuyNow}
@@ -2261,7 +2266,7 @@ export default function ProductPage() {
                       className="flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] text-white"
                       style={{ background: "var(--brand)", opacity: isMOQMet && grandTotal > 0 ? 1 : 0.5 }}
                     >
-                      Acheter
+                      {t("buy")}
                     </button>
                   </div>
                 </div>
@@ -2274,9 +2279,9 @@ export default function ProductPage() {
                 <div className="overflow-x-auto hide-scrollbar border-b border-border">
                   <div className="flex gap-4 min-w-max px-1">
                     {[
-                      { id: "description", label: "Description" },
-                      { id: "specifications", label: "Caractéristiques" },
-                      { id: "avis", label: `Avis (${reviewsStats.totalReviews})` },
+                      { id: "description", label: t("tabDescription") },
+                      { id: "specifications", label: t("tabSpecs") },
+                      { id: "avis", label: t("tabReviews", { count: reviewsStats.totalReviews }) },
                     ].map((tab) => (
                       <button
                         key={tab.id}
@@ -2297,7 +2302,7 @@ export default function ProductPage() {
                   {activeTab === "description" && (
                     <div className="space-y-3">
                       {(() => {
-                        const fullText = getCleanDescriptionText(product)
+                        const fullText = getCleanDescriptionText(product, language, t("descriptionUnavailable"))
                         const { intro, specs, extra } = parseDescriptionSpecs(fullText)
 
                         // Fallback : aucune paire clé/valeur détectée -> texte simple tronqué
@@ -2317,7 +2322,7 @@ export default function ProductPage() {
                                   className="text-xs font-medium flex items-center gap-1"
                                   style={{ color: brandColor }}
                                 >
-                                  {showFullDescription ? "Voir moins" : "Voir plus"}
+                                  {showFullDescription ? t("seeLess") : t("seeMore")}
                                   <ChevronDown
                                     className={`w-3.5 h-3.5 transition-transform ${showFullDescription ? "rotate-180" : ""}`}
                                   />
@@ -2339,7 +2344,7 @@ export default function ProductPage() {
                                 <tbody>
                                   {specs.map((spec, i) => (
                                     <tr key={i} className="border-b border-border last:border-b-0">
-                                      <td className="py-2.5 px-3 bg-muted/40 text-muted-foreground font-medium w-[38%] align-top border-r border-border">
+                                      <td className="py-2.5 px-3 bg-muted/40 text-muted-foreground font-medium w-[38%] align-top border-e border-border">
                                         {spec.label}
                                       </td>
                                       <td className="py-2.5 px-3 text-foreground break-words align-top">
@@ -2362,7 +2367,7 @@ export default function ProductPage() {
                                   className="text-xs font-medium flex items-center gap-1"
                                   style={{ color: brandColor }}
                                 >
-                                  {showFullDescription ? "Voir moins" : "Voir plus"}
+                                  {showFullDescription ? t("seeLess") : t("seeMore")}
                                   <ChevronDown
                                     className={`w-3.5 h-3.5 transition-transform ${showFullDescription ? "rotate-180" : ""}`}
                                   />
@@ -2374,12 +2379,12 @@ export default function ProductPage() {
                       })()}
                       {product.features && product.features.length > 0 && (
                         <div className="mt-4 overflow-x-auto">
-                          <h4 className="text-sm font-semibold text-foreground mb-2">Points forts :</h4>
+                          <h4 className="text-sm font-semibold text-foreground mb-2">{t("keyPoints")}</h4>
                           <table className="w-full text-xs border-collapse">
                             <tbody>
                               {product.features.map((feature: string, i: number) => (
                                 <tr key={i} className="border-b border-border">
-                                  <td className="py-1.5 pr-2 w-6">
+                                  <td className="py-1.5 pe-2 w-6">
                                     <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: brandColor }} />
                                   </td>
                                   <td className="py-1.5 text-muted-foreground break-words">{feature}</td>
@@ -2395,7 +2400,7 @@ export default function ProductPage() {
                   {activeTab === "specifications" && (
                     <div className="overflow-x-auto">
                       {(() => {
-                        const specs = getProductSpecifications(product)
+                        const specs = getProductSpecifications(product, { brand: t("specBrand"), model: t("specModel"), weight: t("specWeight"), warranty: t("specWarranty"), months12: t("months12") })
                         const visibleLimit = 6
                         const hasMore = specs.length > visibleLimit
                         const visibleSpecs = showAllSpecs ? specs : specs.slice(0, visibleLimit)
@@ -2406,7 +2411,7 @@ export default function ProductPage() {
                               <tbody>
                                 {visibleSpecs.map((spec: any, i: number) => (
                                   <tr key={i} className="border-b border-border last:border-b-0">
-                                    <td className="py-2.5 px-3 bg-muted/40 text-muted-foreground font-medium w-[38%] align-top border-r border-border">
+                                    <td className="py-2.5 px-3 bg-muted/40 text-muted-foreground font-medium w-[38%] align-top border-e border-border">
                                       {spec.label}
                                     </td>
                                     <td className="py-2.5 px-3 text-foreground break-words align-top">{spec.value}</td>
@@ -2420,7 +2425,7 @@ export default function ProductPage() {
                                 className="w-full mt-2 py-2 text-xs font-medium flex items-center justify-center gap-1"
                                 style={{ color: brandColor }}
                               >
-                                {showAllSpecs ? "Voir moins" : "Voir plus"}
+                                {showAllSpecs ? t("seeLess") : t("seeMore")}
                                 <ChevronDown
                                   className={`w-3.5 h-3.5 transition-transform ${showAllSpecs ? "rotate-180" : ""}`}
                                 />
@@ -2441,14 +2446,14 @@ export default function ProductPage() {
                           style={{ background: brandColor }}
                         >
                           <PenLine className="w-4 h-4" />
-                          Donner mon avis
+                          {t("writeReview")}
                         </button>
                       )}
 
                       {showReviewForm && (
                         <div className="rounded-lg p-4 space-y-4 bg-card shadow-xs">
                           <div className="flex items-center justify-between">
-                            <h4 className="font-semibold text-foreground">Votre avis</h4>
+                            <h4 className="font-semibold text-foreground">{t("yourReview")}</h4>
                             <button
                               onClick={() => setShowReviewForm(false)}
                               className="text-muted-foreground hover:text-foreground transition-colors"
@@ -2458,7 +2463,7 @@ export default function ProductPage() {
                           </div>
 
                           <div>
-                            <label className="text-sm text-muted-foreground font-medium">Note</label>
+                            <label className="text-sm text-muted-foreground font-medium">{t("rating")}</label>
                             <div className="flex gap-3 mt-2">
                               {[1, 2, 3, 4, 5].map((star) => (
                                 <button
@@ -2477,25 +2482,25 @@ export default function ProductPage() {
                           </div>
 
                           <div>
-                            <label className="text-sm text-muted-foreground font-medium">Votre nom</label>
+                            <label className="text-sm text-muted-foreground font-medium">{t("yourName")}</label>
                             <input
                               type="text"
                               value={newReview.authorName}
                               onChange={(e) => setNewReview({ ...newReview, authorName: e.target.value })}
                               className="w-full mt-1.5 p-3 bg-background border border-border rounded-lg focus:outline-none transition-all"
                               style={{ outlineColor: brandColor }}
-                              placeholder="Jean Dupont"
+                              placeholder={t("namePlaceholder")}
                             />
                           </div>
 
                           <div>
-                            <label className="text-sm text-muted-foreground font-medium">Votre commentaire</label>
+                            <label className="text-sm text-muted-foreground font-medium">{t("yourComment")}</label>
                             <textarea
                               value={newReview.comment}
                               onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
                               className="w-full mt-1.5 p-3 bg-background border border-border rounded-lg focus:outline-none resize-none"
                               rows={4}
-                              placeholder="Partagez votre expérience avec ce produit..."
+                              placeholder={t("commentPlaceholderLong")}
                             />
                           </div>
 
@@ -2504,7 +2509,7 @@ export default function ProductPage() {
                               onClick={() => setShowReviewForm(false)}
                               className="flex-1 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
                             >
-                              Annuler
+                              {t("cancel")}
                             </button>
                             <button
                               onClick={handleSubmitReview}
@@ -2512,7 +2517,7 @@ export default function ProductPage() {
                               className="flex-1 py-3 text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               style={{ background: brandColor }}
                             >
-                              {isSubmittingReview ? "Envoi..." : "Publier"}
+                              {isSubmittingReview ? t("sending") : t("publish")}
                             </button>
                           </div>
                         </div>
@@ -2541,8 +2546,8 @@ export default function ProductPage() {
                           <div className="w-16 h-16 mx-auto mb-3 bg-muted rounded-full flex items-center justify-center">
                             <Star className="w-8 h-8 text-muted-foreground/50" />
                           </div>
-                          <p className="text-muted-foreground text-sm">Aucun avis pour le moment</p>
-                          <p className="text-xs text-muted-foreground/70 mt-1">Soyez le premier à donner votre avis</p>
+                          <p className="text-muted-foreground text-sm">{t("noReviews")}</p>
+                          <p className="text-xs text-muted-foreground/70 mt-1">{t("beFirst")}</p>
                         </div>
                       ) : (
                         <>
@@ -2566,7 +2571,7 @@ export default function ProductPage() {
                                   />
                                 ))}
                               </div>
-                              <p className="text-[10px] text-muted-foreground mt-1">{reviewsStats.totalReviews} avis</p>
+                              <p className="text-[10px] text-muted-foreground mt-1">{t("reviewsCount", { count: reviewsStats.totalReviews })}</p>
                             </div>
                             <div className="flex-1 space-y-1">
                               {[5, 4, 3, 2, 1].map((rating) => {
@@ -2579,7 +2584,7 @@ export default function ProductPage() {
                                     <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                                       <div className="h-full rounded-full" style={{ width: `${percentage}%`, background: brandColor }} />
                                     </div>
-                                    <span className="w-8 text-right text-muted-foreground">{count}</span>
+                                    <span className="w-8 text-end text-muted-foreground">{count}</span>
                                   </div>
                                 )
                               })}
@@ -2597,13 +2602,13 @@ export default function ProductPage() {
                                     <span className="text-xs font-medium text-foreground">{review.authorName}</span>
                                     {review.verifiedPurchase && (
                                       <span className="text-[9px] px-1.5 py-0.5 bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 rounded-full">
-                                        Vérifié
+                                        {t("verified")}
                                       </span>
                                     )}
                                   </div>
                                   <span className="text-[10px] text-muted-foreground">{formatReviewDate(review.createdAt)}</span>
                                 </div>
-                                <div className="flex items-center gap-0.5 mb-1 ml-8">
+                                <div className="flex items-center gap-0.5 mb-1 ms-8">
                                   {[1, 2, 3, 4, 5].map((star) => (
                                     <Star
                                       key={star}
@@ -2613,7 +2618,7 @@ export default function ProductPage() {
                                     />
                                   ))}
                                 </div>
-                                <p className="text-xs text-muted-foreground leading-relaxed ml-8">{review.comment}</p>
+                                <p className="text-xs text-muted-foreground leading-relaxed ms-8">{review.comment}</p>
                               </div>
                             ))}
                           </div>
@@ -2704,7 +2709,7 @@ export default function ProductPage() {
                         className="text-xs font-semibold px-2 py-0.5 rounded-md text-white"
                         style={{ background: brandColor, fontFamily: "'Poppins', sans-serif" }}
                       >
-                        Top vente
+                        {t("topSale")}
                       </span>
                       <span className="text-xs text-muted-foreground">SKU: {product.id}</span>
                     </div>
@@ -2717,19 +2722,19 @@ export default function ProductPage() {
                             <Star key={star} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
                           ))}
                         </div>
-                        <span className="text-muted-foreground ml-1">{reviewsStats.averageRating || 0}</span>
+                        <span className="text-muted-foreground ms-1">{reviewsStats.averageRating || 0}</span>
                       </div>
                       <span className="text-border">|</span>
-                      <span className="text-muted-foreground">{reviewsStats.totalReviews} avis</span>
+                      <span className="text-muted-foreground">{t("reviewsCount", { count: reviewsStats.totalReviews })}</span>
                       <span className="text-border">|</span>
-                      <span className="text-muted-foreground">1,234+ commandes</span>
+                      <span className="text-muted-foreground">{t("ordersCount", { count: "1,234+" })}</span>
                     </div>
                   </div>
 
                   <button
                     onClick={handleToggleWishlist}
                     className="p-1.5 rounded-lg hover:bg-muted transition-colors"
-                    aria-label="Ajouter aux favoris"
+                    aria-label={t("addToFavorites")}
                   >
                     <Heart className={`w-4 h-4 ${isWishlisted ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
                   </button>
@@ -2786,7 +2791,7 @@ export default function ProductPage() {
                                   {value}
                                   {qty > 0 && (
                                     <span
-                                      className="ml-1 text-xs px-1.5 py-0.5 rounded-md border"
+                                      className="ms-1 text-xs px-1.5 py-0.5 rounded-md border"
                                       style={{ borderColor: brandColor, background: "var(--background)" }}
                                     >
                                       {qty}
@@ -2865,7 +2870,7 @@ export default function ProductPage() {
                                     {primaryValue}
                                     {total > 0 && (
                                       <span
-                                        className="ml-1 text-xs px-1.5 py-0.5 rounded-md border"
+                                        className="ms-1 text-xs px-1.5 py-0.5 rounded-md border"
                                         style={{ borderColor: brandColor, background: "var(--background)" }}
                                       >
                                         {total}
@@ -2918,7 +2923,7 @@ export default function ProductPage() {
 
                   {!hasVariants && (
                     <div className="mb-3">
-                      <div className="text-xs text-muted-foreground mb-2">Quantité</div>
+                      <div className="text-xs text-muted-foreground mb-2">{t("quantity")}</div>
                       <div className="flex items-center rounded-lg overflow-hidden shadow-xs w-fit">
                         <button
                           onClick={() => setSimpleQuantity(Math.max(1, simpleQuantity - 1))}
@@ -2940,10 +2945,10 @@ export default function ProductPage() {
 
                   <div className="flex items-center gap-2 text-xs mb-2">
                     <span className="px-2 py-0.5 rounded-md text-white font-semibold" style={{ background: brandColor }}>
-                      Prix direct usine
+                      {t("directFactoryPrice")}
                     </span>
                     <span className="text-muted-foreground">
-                      Prix en {getCurrencySymbol()} (USD ${Number(product.price).toFixed(2)})
+                      {t("priceIn", { currency: getCurrencySymbol(), usd: Number(product.price).toFixed(2) })}
                     </span>
                   </div>
 
@@ -2954,13 +2959,13 @@ export default function ProductPage() {
                     </div>
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <Clock className="w-3.5 h-3.5 text-accent" />
-                      <span>{logisticsData?.recommended.days || "15-20 jours"}</span>
+                      <span>{logisticsData?.recommended.days || t("defaultDays")}</span>
                     </div>
                     <div className="flex items-center gap-1 text-muted-foreground">
                       {isLoadingLogistics ? (
                         <span className="inline-flex items-center text-muted-foreground">
-                          <span className="w-3 h-3 border-2 border-border border-t-accent rounded-full animate-spin mr-1" />
-                          Calcul...
+                          <span className="w-3 h-3 border-2 border-border border-t-accent rounded-full animate-spin me-1" />
+                          {t("calculating")}
                         </span>
                       ) : (
                         <span className="text-muted-foreground">
@@ -2973,10 +2978,10 @@ export default function ProductPage() {
 
                 <div className="bg-muted rounded-lg p-4 mb-4 shadow-xs space-y-2.5">
                   {[
-                    { icon: Check, text: "Direct depuis l'usine, sans intermédiaire" },
-                    { icon: Check, text: "Tous les frais inclus — rien à payer en plus à la livraison" },
-                    { icon: Shield, text: "Remboursé si votre commande n'arrive pas" },
-                    { icon: Lock, text: "Paiement sécurisé — Mobile Money & carte bancaire" },
+                    { icon: Check, text: t("trustDirect") },
+                    { icon: Check, text: t("trustAllIncluded") },
+                    { icon: Shield, text: t("trustRefund") },
+                    { icon: Lock, text: t("trustPayment") },
                   ].map(({ icon: BulletIcon, text }, i) => (
                     <motion.div
                       key={text}
@@ -2993,17 +2998,17 @@ export default function ProductPage() {
                     onClick={() => setIsProtectionModalOpen(true)}
                     className="flex items-center gap-1 text-sm font-semibold text-accent pt-1 transition-transform duration-150 active:scale-95"
                   >
-                    Voir les détails de la protection Adullam
-                    <ChevronRight className="w-3.5 h-3.5" />
+                    {t("protectionDetails")}
+                    <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" />
                   </button>
                 </div>
 
                 <div className="mb-4">
                   <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center justify-between">
-                    <span>Mode de livraison</span>
+                    <span>{t("deliveryMode")}</span>
                     {selectedPortePorteCost > 0 && (
                       <span className="text-xs font-medium text-muted-foreground">
-                        Porte-à-porte:{" "}
+                        {t("doorToDoor")}{" "}
                         <span className="font-bold text-accent">
                           {formatPrice(selectedPortePorteCost)}
                         </span>
@@ -3024,7 +3029,7 @@ export default function ProductPage() {
                               <div className="w-6 h-2 bg-border rounded" />
                             </div>
                           </div>
-                          <div className="text-right">
+                          <div className="text-end">
                             <div className="w-10 h-3 bg-border rounded mb-1" />
                             <div className="w-8 h-2 bg-border rounded" />
                           </div>
@@ -3061,12 +3066,12 @@ export default function ProductPage() {
                           >
                             <div className="flex items-center gap-1.5">
                               <item.icon className={`w-3.5 h-3.5 ${isSelected ? "text-white" : "text-accent"}`} />
-                              <div className="text-left">
+                              <div className="text-start">
                                 <p className="font-semibold text-xs">{item.label}</p>
                                 <p className={`text-[10px] ${isSelected ? "text-white/75" : "text-muted-foreground"}`}>{days}</p>
                               </div>
                             </div>
-                            <div className="text-right">
+                            <div className="text-end">
                               <p className={`font-bold text-xs ${isSelected ? "text-white" : "text-accent"}`}>
                                 {formatPrice(cost)}
                               </p>
@@ -3098,7 +3103,7 @@ export default function ProductPage() {
                       {isMOQMet && grandTotal > 0
                         ? <ShoppingCart className="w-4 h-4" />
                         : <MessageCircle className="w-4 h-4" />}
-                      {isMOQMet && grandTotal > 0 ? `Ajouter (${grandTotal})` : "Nous contacter"}
+                      {isMOQMet && grandTotal > 0 ? `Ajouter (${grandTotal})` : t("contactUs")}
                     </button>
 
                     <button
@@ -3107,7 +3112,7 @@ export default function ProductPage() {
                       className="flex-1 py-2.5 text-sm text-white font-semibold rounded-xl transition-all hover:opacity-90"
                       style={{ background: "var(--brand)", opacity: isMOQMet && grandTotal > 0 ? 1 : 0.5 }}
                     >
-                      Acheter
+                      {t("buy")}
                     </button>
                   </div>
                 </div>
@@ -3121,9 +3126,9 @@ export default function ProductPage() {
               <div className="border-b border-border mb-6">
                 <div className="flex gap-6">
                   {[
-                    { id: "description", label: "Description" },
-                    { id: "specifications", label: "Caractéristiques" },
-                    { id: "avis", label: `Avis (${reviewsStats.totalReviews})` },
+                    { id: "description", label: t("tabDescription") },
+                    { id: "specifications", label: t("tabSpecs") },
+                    { id: "avis", label: t("tabReviews", { count: reviewsStats.totalReviews }) },
                   ].map((tab) => (
                     <button
                       key={tab.id}
@@ -3143,9 +3148,9 @@ export default function ProductPage() {
               <div className="text-sm">
                 {activeTab === "description" && (
                   <div>
-                    <h3 className="font-semibold mb-3 text-foreground">Description</h3>
+                    <h3 className="font-semibold mb-3 text-foreground">{t("tabDescription")}</h3>
                     {(() => {
-                      const fullText = getCleanDescriptionText(product)
+                      const fullText = getCleanDescriptionText(product, language, t("descriptionUnavailable"))
                       const { intro, specs, extra } = parseDescriptionSpecs(fullText)
 
                       // Fallback : aucune paire clé/valeur détectée -> texte simple tronqué
@@ -3163,7 +3168,7 @@ export default function ProductPage() {
                                 className="mt-2 text-sm font-medium flex items-center gap-1.5 hover:opacity-80 transition-opacity"
                                 style={{ color: brandColor }}
                               >
-                                {showFullDescription ? "Voir moins" : "Voir plus"}
+                                {showFullDescription ? t("seeLess") : t("seeMore")}
                                 <ChevronDown
                                   className={`w-4 h-4 transition-transform ${showFullDescription ? "rotate-180" : ""}`}
                                 />
@@ -3181,7 +3186,7 @@ export default function ProductPage() {
                               <tbody>
                                 {specs.map((spec, i) => (
                                   <tr key={i} className="border-b border-border last:border-b-0">
-                                    <td className="py-2.5 px-4 bg-muted/40 text-muted-foreground font-medium w-1/3 align-top border-r border-border">
+                                    <td className="py-2.5 px-4 bg-muted/40 text-muted-foreground font-medium w-1/3 align-top border-e border-border">
                                       {spec.label}
                                     </td>
                                     <td className="py-2.5 px-4 text-foreground break-words align-top">
@@ -3204,7 +3209,7 @@ export default function ProductPage() {
                                 className="mt-2 text-sm font-medium flex items-center gap-1.5 hover:opacity-80 transition-opacity"
                                 style={{ color: brandColor }}
                               >
-                                {showFullDescription ? "Voir moins" : "Voir plus"}
+                                {showFullDescription ? t("seeLess") : t("seeMore")}
                                 <ChevronDown
                                   className={`w-4 h-4 transition-transform ${showFullDescription ? "rotate-180" : ""}`}
                                 />
@@ -3216,12 +3221,12 @@ export default function ProductPage() {
                     })()}
                     {product.features && product.features.length > 0 && (
                       <div className="mt-6 overflow-x-auto">
-                        <h3 className="font-semibold mb-3 text-foreground">Caractéristiques principales</h3>
+                        <h3 className="font-semibold mb-3 text-foreground">{t("mainSpecs")}</h3>
                         <table className="w-full text-sm border-collapse">
                           <tbody>
                             {product.features.map((feature: string, i: number) => (
                               <tr key={i} className="border-b border-border">
-                                <td className="py-2 pr-3 w-8">
+                                <td className="py-2 pe-3 w-8">
                                   <Check className="w-4 h-4 flex-shrink-0" style={{ color: brandColor }} />
                                 </td>
                                 <td className="py-2 text-muted-foreground">{feature}</td>
@@ -3237,7 +3242,7 @@ export default function ProductPage() {
                 {activeTab === "specifications" && (
                   <div className="overflow-x-auto">
                     {(() => {
-                      const specs = getProductSpecifications(product)
+                      const specs = getProductSpecifications(product, { brand: t("specBrand"), model: t("specModel"), weight: t("specWeight"), warranty: t("specWarranty"), months12: t("months12") })
                       const visibleLimit = 6
                       const hasMore = specs.length > visibleLimit
                       const visibleSpecs = showAllSpecs ? specs : specs.slice(0, visibleLimit)
@@ -3248,7 +3253,7 @@ export default function ProductPage() {
                             <tbody>
                               {visibleSpecs.map((spec: any, i: number) => (
                                 <tr key={i} className="border-b border-border last:border-b-0">
-                                  <td className="py-2.5 px-4 bg-muted/40 text-muted-foreground font-medium w-1/3 align-top border-r border-border">
+                                  <td className="py-2.5 px-4 bg-muted/40 text-muted-foreground font-medium w-1/3 align-top border-e border-border">
                                     {spec.label}
                                   </td>
                                   <td className="py-2.5 px-4 text-foreground break-words align-top">{spec.value}</td>
@@ -3262,7 +3267,7 @@ export default function ProductPage() {
                               className="w-full mt-3 py-2.5 text-sm font-medium flex items-center justify-center gap-1.5 hover:opacity-80 transition-opacity"
                               style={{ color: brandColor }}
                             >
-                              {showAllSpecs ? "Voir moins" : "Voir plus"}
+                              {showAllSpecs ? t("seeLess") : t("seeMore")}
                               <ChevronDown
                                 className={`w-4 h-4 transition-transform ${showAllSpecs ? "rotate-180" : ""}`}
                               />
@@ -3283,14 +3288,14 @@ export default function ProductPage() {
                         style={{ background: brandColor }}
                       >
                         <PenLine className="w-4 h-4" />
-                        Donner mon avis
+                        {t("writeReview")}
                       </button>
                     )}
 
                     {showReviewForm && (
                       <div className="bg-background rounded-lg p-6 mb-6 shadow-xs">
                         <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-semibold text-foreground">Donnez votre avis</h3>
+                          <h3 className="font-semibold text-foreground">{t("giveReview")}</h3>
                           <button
                             onClick={() => setShowReviewForm(false)}
                             className="text-muted-foreground hover:text-foreground"
@@ -3300,7 +3305,7 @@ export default function ProductPage() {
                         </div>
 
                         <div className="mb-4">
-                          <label className="text-sm text-muted-foreground font-medium">Note</label>
+                          <label className="text-sm text-muted-foreground font-medium">{t("rating")}</label>
                           <div className="flex gap-2 mt-2">
                             {[1, 2, 3, 4, 5].map((star) => (
                               <button
@@ -3319,24 +3324,24 @@ export default function ProductPage() {
                         </div>
 
                         <div className="mb-4">
-                          <label className="text-sm text-muted-foreground font-medium">Votre nom</label>
+                          <label className="text-sm text-muted-foreground font-medium">{t("yourName")}</label>
                           <input
                             type="text"
                             value={newReview.authorName}
                             onChange={(e) => setNewReview({ ...newReview, authorName: e.target.value })}
                             className="w-full mt-1 p-2 bg-card border border-border rounded-lg focus:outline-none"
-                            placeholder="Jean Dupont"
+                            placeholder={t("namePlaceholder")}
                           />
                         </div>
 
                         <div className="mb-4">
-                          <label className="text-sm text-muted-foreground font-medium">Votre commentaire</label>
+                          <label className="text-sm text-muted-foreground font-medium">{t("yourComment")}</label>
                           <textarea
                             value={newReview.comment}
                             onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
                             className="w-full mt-1 p-2 bg-card border border-border rounded-lg focus:outline-none resize-none"
                             rows={4}
-                            placeholder="Partagez votre expérience..."
+                            placeholder={t("commentPlaceholderShort")}
                           />
                         </div>
 
@@ -3345,7 +3350,7 @@ export default function ProductPage() {
                             onClick={() => setShowReviewForm(false)}
                             className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
                           >
-                            Annuler
+                            {t("cancel")}
                           </button>
                           <button
                             onClick={handleSubmitReview}
@@ -3353,7 +3358,7 @@ export default function ProductPage() {
                             className="px-4 py-2 text-white rounded-lg text-sm font-semibold disabled:opacity-50"
                             style={{ background: brandColor }}
                           >
-                            {isSubmittingReview ? "Envoi..." : "Publier mon avis"}
+                            {isSubmittingReview ? t("sending") : t("publishMyReview")}
                           </button>
                         </div>
                       </div>
@@ -3391,12 +3396,12 @@ export default function ProductPage() {
                                 </div>
                                 <div className="h-3 bg-muted rounded w-20" />
                               </div>
-                              <div className="flex gap-1 ml-10 mb-2">
+                              <div className="flex gap-1 ms-10 mb-2">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                   <div key={star} className="w-3 h-3 bg-muted rounded" />
                                 ))}
                               </div>
-                              <div className="ml-10 space-y-1">
+                              <div className="ms-10 space-y-1">
                                 <div className="h-3 bg-muted rounded w-full" />
                                 <div className="h-3 bg-muted rounded w-3/4" />
                               </div>
@@ -3409,8 +3414,8 @@ export default function ProductPage() {
                         <div className="w-20 h-20 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
                           <Star className="w-10 h-10 text-muted-foreground/50" />
                         </div>
-                        <p className="text-muted-foreground">Aucun avis pour le moment</p>
-                        <p className="text-sm text-muted-foreground/70 mt-1">Soyez le premier à donner votre avis</p>
+                        <p className="text-muted-foreground">{t("noReviews")}</p>
+                        <p className="text-sm text-muted-foreground/70 mt-1">{t("beFirst")}</p>
                       </div>
                     ) : (
                       <>
@@ -3434,7 +3439,7 @@ export default function ProductPage() {
                                 />
                               ))}
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1">{reviewsStats.totalReviews} avis</p>
+                            <p className="text-xs text-muted-foreground mt-1">{t("reviewsCount", { count: reviewsStats.totalReviews })}</p>
                           </div>
                           <div className="flex-1 space-y-1">
                             {[5, 4, 3, 2, 1].map((rating) => {
@@ -3443,18 +3448,18 @@ export default function ProductPage() {
                               const percentage = reviewsStats.totalReviews > 0 ? (count / reviewsStats.totalReviews) * 100 : 0
                               return (
                                 <div key={rating} className="flex items-center gap-3 text-sm">
-                                  <span className="w-12 text-muted-foreground">{rating} étoiles</span>
+                                  <span className="w-12 text-muted-foreground">{t("starsLabel", { count: rating })}</span>
                                   <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                                     <div className="h-full rounded-full" style={{ width: `${percentage}%`, background: brandColor }} />
                                   </div>
-                                  <span className="w-12 text-right text-muted-foreground text-sm">{count}</span>
+                                  <span className="w-12 text-end text-muted-foreground text-sm">{count}</span>
                                 </div>
                               )
                             })}
                           </div>
                         </div>
 
-                        <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2">
+                        <div className="space-y-6 max-h-[500px] overflow-y-auto pe-2">
                           {reviews.map((review) => (
                             <div key={review.id} className="border-b border-border pb-5 last:border-0">
                               <div className="flex items-center justify-between mb-2">
@@ -3467,7 +3472,7 @@ export default function ProductPage() {
                                       <span className="text-sm font-medium text-foreground">{review.authorName}</span>
                                       {review.verifiedPurchase && (
                                         <span className="text-[10px] px-2 py-0.5 bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 rounded-full">
-                                          Achat vérifié
+                                          {t("verifiedPurchase")}
                                         </span>
                                       )}
                                     </div>
@@ -3485,7 +3490,7 @@ export default function ProductPage() {
                                 </div>
                                 <span className="text-xs text-muted-foreground">{formatReviewDate(review.createdAt)}</span>
                               </div>
-                              <p className="text-sm text-muted-foreground ml-11 leading-relaxed">{review.comment}</p>
+                              <p className="text-sm text-muted-foreground ms-11 leading-relaxed">{review.comment}</p>
                             </div>
                           ))}
                         </div>
@@ -3500,7 +3505,7 @@ export default function ProductPage() {
             <div className="mt-8 lg:mt-12">
               <div className="flex items-center gap-2 mb-4 lg:mb-6">
                 <span className="inline-block w-[3px] h-[18px] rounded-sm bg-accent" />
-                <h2 className="text-base lg:text-lg font-extrabold tracking-[-0.02em] text-foreground">Vous aimerez aussi</h2>
+                <h2 className="text-base lg:text-lg font-extrabold tracking-[-0.02em] text-foreground">{t("youMayLike")}</h2>
               </div>
 
               {isLoadingRelated ? (
@@ -3508,7 +3513,7 @@ export default function ProductPage() {
                   <div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-accent" />
                 </div>
               ) : relatedProducts.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground text-sm">Aucune recommandation pour le moment</div>
+                <div className="text-center py-8 text-muted-foreground text-sm">{t("noRecs")}</div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-2.5">
                   {relatedProducts.map((p, i) => (
@@ -3566,7 +3571,7 @@ export default function ProductPage() {
                   <h3 className="text-base font-semibold text-foreground">
                     {primaryAttrName} {selectedSimpleValue}
                   </h3>
-                  <p className="text-xs text-muted-foreground">Sélectionnez la quantité</p>
+                  <p className="text-xs text-muted-foreground">{t("selectQuantity")}</p>
                 </div>
               </div>
               <button
@@ -3579,7 +3584,7 @@ export default function ProductPage() {
 
             <div className="p-6">
               <div className="flex items-center justify-between p-4 bg-muted rounded-xl mb-4">
-                <span className="text-sm font-medium">Quantité</span>
+                <span className="text-sm font-medium">{t("quantity")}</span>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={decrementSimpleModal}
@@ -3602,8 +3607,8 @@ export default function ProductPage() {
 
               <div className="mt-4 p-3 rounded-xl" style={{ background: "var(--brand)" }}>
                 <div className="flex justify-between text-sm font-medium text-white">
-                  <span>Total sélectionné:</span>
-                  <span>{simpleModalQuantity} article(s)</span>
+                  <span>{t("totalSelected")}</span>
+                  <span>{t("itemsCount", { count: simpleModalQuantity })}</span>
                 </div>
               </div>
 
@@ -3612,14 +3617,14 @@ export default function ProductPage() {
                   onClick={() => setIsSimpleVariantModalOpen(false)}
                   className="flex-1 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted transition-all"
                 >
-                  Annuler
+                  {t("cancel")}
                 </button>
                 <button
                   onClick={confirmSimpleVariantSelection}
                   className="flex-1 py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
                   style={{ background: brandColor }}
                 >
-                  Confirmer
+                  {t("confirm")}
                 </button>
               </div>
             </div>
@@ -3658,7 +3663,7 @@ export default function ProductPage() {
                       : `${modalAttrName} ${modalPrimaryValue}`}
                   </h3>
                   <p className="text-xs text-muted-foreground">
-                    Sélectionnez les{" "}
+                    {t("selectThe")}{" "}
                     {modalMode === "primary" ? secondaryAttrName.toLowerCase() + "s" : primaryAttrName.toLowerCase() + "s"}
                   </p>
                 </div>
@@ -3693,7 +3698,7 @@ export default function ProductPage() {
 
               <div className="mt-4 p-3 rounded-xl" style={{ background: "var(--brand)" }}>
                 <div className="flex justify-between text-sm font-medium text-white">
-                  <span>Total sélectionné:</span>
+                  <span>{t("totalSelected")}</span>
                   <span>{Object.values(modalQuantities).reduce((a, b) => a + b, 0)} articles</span>
                 </div>
               </div>
@@ -3703,14 +3708,14 @@ export default function ProductPage() {
                   onClick={() => setIsVariantModalOpen(false)}
                   className="flex-1 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted transition-all"
                 >
-                  Annuler
+                  {t("cancel")}
                 </button>
                 <button
                   onClick={confirmModalSelection}
                   className="flex-1 py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
                   style={{ background: brandColor }}
                 >
-                  Confirmer
+                  {t("confirm")}
                 </button>
               </div>
             </div>
@@ -3730,7 +3735,7 @@ export default function ProductPage() {
             <div className="sticky top-0 bg-background border-b border-border p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Shield className="w-5 h-5" style={{ color: brandColor }} />
-                <h3 className="text-base font-semibold text-foreground">Protection des achats Adullam</h3>
+                <h3 className="text-base font-semibold text-foreground">{t("protectionTitle")}</h3>
               </div>
               <button
                 onClick={() => setIsProtectionModalOpen(false)}
@@ -3742,13 +3747,11 @@ export default function ProductPage() {
 
             <div className="p-6 space-y-6">
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Adullam vous connecte directement aux usines, sans intermédiaire. Chaque commande est vérifiée
-                avant expédition et couverte par nos garanties ci-dessous — c&apos;est notre engagement pour que
-                vous puissiez acheter en toute confiance.
+                {t("protectionIntro")}
               </p>
 
               <div>
-                <h4 className="text-sm font-semibold text-foreground mb-3">Moyens de paiement acceptés</h4>
+                <h4 className="text-sm font-semibold text-foreground mb-3">{t("paymentMethods")}</h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-muted rounded-xl p-3 text-center shadow-xs">
                     <Smartphone className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
@@ -3756,21 +3759,20 @@ export default function ProductPage() {
                   </div>
                   <div className="bg-muted rounded-xl p-3 text-center shadow-xs">
                     <CreditCard className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
-                    <p className="text-xs font-medium text-foreground">Carte bancaire</p>
+                    <p className="text-xs font-medium text-foreground">{t("bankCard")}</p>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-sm font-semibold text-foreground mb-3">Nos garanties, en détail</h4>
+                <h4 className="text-sm font-semibold text-foreground mb-3">{t("guaranteesDetail")}</h4>
                 <div className="space-y-3">
                   <div className="bg-muted rounded-xl p-4 flex gap-3">
                     <Lock className="w-5 h-5 text-accent shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-foreground mb-1">Paiement 100% sécurisé</p>
+                      <p className="text-sm font-medium text-foreground mb-1">{t("securePayment100")}</p>
                       <p className="text-sm text-muted-foreground">
-                        Chaque transaction est chiffrée en SSL. Vos informations de paiement ne sont jamais
-                        stockées ni partagées.
+                        {t("securePaymentText")}
                       </p>
                     </div>
                   </div>
@@ -3778,10 +3780,9 @@ export default function ProductPage() {
                   <div className="bg-muted rounded-xl p-4 flex gap-3">
                     <Truck className="w-5 h-5 text-accent shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-foreground mb-1">Remboursé si votre commande n&apos;arrive pas</p>
+                      <p className="text-sm font-medium text-foreground mb-1">{t("trustRefund")}</p>
                       <p className="text-sm text-muted-foreground">
-                        Vous êtes intégralement remboursé si votre colis n&apos;est pas expédié ou n&apos;arrive
-                        pas à destination — aucune démarche compliquée, on s&apos;en occupe.
+                        {t("refundText")}
                       </p>
                     </div>
                   </div>
@@ -3789,10 +3790,9 @@ export default function ProductPage() {
                   <div className="bg-muted rounded-xl p-4 flex gap-3">
                     <BadgeCheck className="w-5 h-5 text-accent shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-foreground mb-1">Contrôle qualité systématique</p>
+                      <p className="text-sm font-medium text-foreground mb-1">{t("qualityControl")}</p>
                       <p className="text-sm text-muted-foreground">
-                        Chaque commande est vérifiée avant son départ de l&apos;usine, pour s&apos;assurer qu&apos;elle
-                        correspond bien à ce que vous avez commandé.
+                        {t("qualityControlText")}
                       </p>
                     </div>
                   </div>
@@ -3800,10 +3800,9 @@ export default function ProductPage() {
                   <div className="bg-muted rounded-xl p-4 flex gap-3">
                     <RotateCcw className="w-5 h-5 text-accent shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-foreground mb-1">Retour accepté sous 5 jours</p>
+                      <p className="text-sm font-medium text-foreground mb-1">{t("returnWithin5")}</p>
                       <p className="text-sm text-muted-foreground">
-                        Produit non conforme à la description ? Vous avez 5 jours après réception pour nous le
-                        signaler et être remboursé ou échangé.
+                        {t("returnText")}
                       </p>
                     </div>
                   </div>
@@ -3811,10 +3810,9 @@ export default function ProductPage() {
                   <div className="bg-muted rounded-xl p-4 flex gap-3">
                     <Shield className="w-5 h-5 text-accent shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-foreground mb-1">Garantie 12 mois</p>
+                      <p className="text-sm font-medium text-foreground mb-1">{t("warranty12")}</p>
                       <p className="text-sm text-muted-foreground">
-                        En cas de défaut de fabrication constaté dans les 12 mois suivant l&apos;achat, votre
-                        produit est réparé, remplacé ou remboursé.
+                        {t("warrantyText")}
                       </p>
                     </div>
                   </div>
