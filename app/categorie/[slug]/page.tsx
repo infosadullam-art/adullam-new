@@ -11,8 +11,13 @@ import Link from "next/link"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { categoriesApi, productsApi } from "@/lib/admin/api-client"
 import { useParams } from "next/navigation"
+import { useTranslations } from "next-intl"
+import { useLocale } from "@/context/LocaleProvider"
 
 export default function CategoryPage() {
+  const t = useTranslations("categoryPage")
+  const tCat = useTranslations("categories")
+  const { language } = useLocale()
   const { formatPrice, getCurrencySymbol } = useCurrencyFormatter()
   const params = useParams()
   const slug = params.slug as string
@@ -77,7 +82,7 @@ export default function CategoryPage() {
           setCategory(foundCategory)
           console.log("✅ Catégorie trouvée:", foundCategory.name)
           
-          const productsRes = await productsApi.list({ categoryId: foundCategory.id, limit: 100 })
+          const productsRes = await productsApi.list({ categoryId: foundCategory.id, limit: 100, locale: language } as any)
           console.log("📦 productsRes:", productsRes)
           
           if (productsRes.success) {
@@ -100,7 +105,7 @@ export default function CategoryPage() {
       }
     }
     if (slug) loadData()
-  }, [slug])
+  }, [slug, language])
 
   if (loading) {
     return (
@@ -128,32 +133,35 @@ export default function CategoryPage() {
         <div className="hidden lg:block"><Header /></div>
         <div className="lg:hidden"><MobileHeader /></div>
         <div className="text-center py-16 px-4">
-          <p className="text-lg font-semibold mb-2" style={{ color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>
-            Catégorie introuvable
+          <p className="text-lg font-semibold mb-2" style={{ color: "#0A0A0A", fontFamily: "'Poppins', var(--font-amazon)" }}>
+            {t("notFound")}
           </p>
           <p className="text-sm mb-4" style={{ color: "#AAAAAA" }}>
-            Slug : {decodeURIComponent(slug)}
+            {t("slugLabel", { slug: decodeURIComponent(slug) })}
           </p>
           <Link
             href="/"
             className="text-sm font-semibold"
-            style={{ color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}
+            style={{ color: "#D4372B", fontFamily: "'Poppins', var(--font-amazon)" }}
           >
-            ← Retour à l'accueil
+            {t("backHome")}
           </Link>
         </div>
       </div>
     )
   }
 
+  const categoryName: string =
+    category.slug && !String(category.slug).includes(".") && tCat.has(category.slug) ? tCat(category.slug) : category.name
+
   const FilterContent = () => (
     <div className="space-y-5">
       <div>
         <h3
           className="flex items-center justify-between mb-3"
-          style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif", textTransform: "uppercase", letterSpacing: "0.06em" }}
+          style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', var(--font-amazon)", textTransform: "uppercase", letterSpacing: "0.06em" }}
         >
-          Prix ({getCurrencySymbol()})
+          {t("price", { currency: getCurrencySymbol() })}
           <ChevronDown className="w-4 h-4" style={{ color: "#AAAAAA" }} />
         </h3>
         <input
@@ -163,23 +171,23 @@ export default function CategoryPage() {
           className="w-full accent-[#D4372B]"
         />
         <div className="flex justify-between mt-1">
-          <span style={{ fontSize: "11px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>{formatPrice(0)}</span>
-          <span style={{ fontSize: "11px", color: "#D4372B", fontWeight: 600, fontFamily: "'Poppins', sans-serif" }}>{formatPrice(filters.priceRange[1])}</span>
+          <span style={{ fontSize: "11px", color: "#AAAAAA", fontFamily: "'Poppins', var(--font-amazon)" }}>{formatPrice(0)}</span>
+          <span style={{ fontSize: "11px", color: "#D4372B", fontWeight: 600, fontFamily: "'Poppins', var(--font-amazon)" }}>{formatPrice(filters.priceRange[1])}</span>
         </div>
       </div>
 
       <div style={{ borderTop: "0.5px solid #F0F0F0", paddingTop: "16px" }}>
         <h3
           className="flex items-center justify-between mb-3"
-          style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif", textTransform: "uppercase", letterSpacing: "0.06em" }}
+          style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', var(--font-amazon)", textTransform: "uppercase", letterSpacing: "0.06em" }}
         >
-          Marque <ChevronDown className="w-4 h-4" style={{ color: "#AAAAAA" }} />
+          {t("brand")} <ChevronDown className="w-4 h-4" style={{ color: "#AAAAAA" }} />
         </h3>
         <div className="space-y-2">
           {["Samsung", "Apple", "Xiaomi", "Huawei", "Sony"].map((brand) => (
             <label key={brand} className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" className="rounded accent-[#D4372B]" />
-              <span style={{ fontSize: "13px", color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>{brand}</span>
+              <span style={{ fontSize: "13px", color: "#0A0A0A", fontFamily: "'Poppins', var(--font-amazon)" }}>{brand}</span>
             </label>
           ))}
         </div>
@@ -188,9 +196,9 @@ export default function CategoryPage() {
       <div style={{ borderTop: "0.5px solid #F0F0F0", paddingTop: "16px" }}>
         <h3
           className="flex items-center justify-between mb-3"
-          style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif", textTransform: "uppercase", letterSpacing: "0.06em" }}
+          style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', var(--font-amazon)", textTransform: "uppercase", letterSpacing: "0.06em" }}
         >
-          Note <ChevronDown className="w-4 h-4" style={{ color: "#AAAAAA" }} />
+          {t("rating")} <ChevronDown className="w-4 h-4" style={{ color: "#AAAAAA" }} />
         </h3>
         <div className="space-y-2">
           {[4, 3, 2, 1].map((rating) => (
@@ -200,7 +208,7 @@ export default function CategoryPage() {
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star key={i} className={`w-3.5 h-3.5 ${i < rating ? "fill-[#F5A623] text-[#F5A623]" : "text-[#ECECEC]"}`} />
                 ))}
-                <span style={{ fontSize: "11px", color: "#AAAAAA", marginLeft: "3px", fontFamily: "'Poppins', sans-serif" }}>& plus</span>
+                <span style={{ fontSize: "11px", color: "#AAAAAA", marginInlineStart: "3px", fontFamily: "'Poppins', var(--font-amazon)" }}>{t("andMore")}</span>
               </div>
             </label>
           ))}
@@ -210,15 +218,15 @@ export default function CategoryPage() {
       <div style={{ borderTop: "0.5px solid #F0F0F0", paddingTop: "16px" }}>
         <h3
           className="flex items-center justify-between mb-3"
-          style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif", textTransform: "uppercase", letterSpacing: "0.06em" }}
+          style={{ fontSize: "12px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', var(--font-amazon)", textTransform: "uppercase", letterSpacing: "0.06em" }}
         >
-          Origine <ChevronDown className="w-4 h-4" style={{ color: "#AAAAAA" }} />
+          {t("origin")} <ChevronDown className="w-4 h-4" style={{ color: "#AAAAAA" }} />
         </h3>
         <div className="space-y-2">
-          {["Import local", "Import Chine", "Import USA", "Import Europe"].map((origin) => (
+          {[t("originLocal"), t("originChina"), t("originUSA"), t("originEurope")].map((origin) => (
             <label key={origin} className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" className="rounded accent-[#D4372B]" />
-              <span style={{ fontSize: "13px", color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>{origin}</span>
+              <span style={{ fontSize: "13px", color: "#0A0A0A", fontFamily: "'Poppins', var(--font-amazon)" }}>{origin}</span>
             </label>
           ))}
         </div>
@@ -226,9 +234,9 @@ export default function CategoryPage() {
 
       <button
         className="w-full py-2.5 text-sm font-bold text-white rounded-xl transition-colors"
-        style={{ background: "#D4372B", fontFamily: "'Poppins', sans-serif" }}
+        style={{ background: "#D4372B", fontFamily: "'Poppins', var(--font-amazon)" }}
       >
-        Appliquer les filtres
+        {t("applyFilters")}
       </button>
     </div>
   )
@@ -245,7 +253,7 @@ export default function CategoryPage() {
           onClick={() => setShowFilters(false)}
         >
           <div
-            className="absolute right-0 top-0 h-full overflow-y-auto"
+            className="absolute end-0 top-0 h-full overflow-y-auto"
             style={{ width: "85%", maxWidth: "360px", background: "#fff" }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -253,8 +261,8 @@ export default function CategoryPage() {
               className="sticky top-0 flex items-center justify-between px-5 py-4"
               style={{ background: "#fff", borderBottom: "0.5px solid #F0F0F0" }}
             >
-              <p style={{ fontSize: "15px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}>
-                Filtres
+              <p style={{ fontSize: "15px", fontWeight: 700, color: "#0A0A0A", fontFamily: "'Poppins', var(--font-amazon)" }}>
+                {t("filters")}
               </p>
               <button
                 onClick={() => setShowFilters(false)}
@@ -275,27 +283,27 @@ export default function CategoryPage() {
         <div className="max-w-[1440px] mx-auto px-4 lg:px-8 py-4 lg:py-6">
 
           <div className="hidden lg:flex items-center gap-1.5 text-xs mb-4" style={{ color: "#AAAAAA" }}>
-            <Link href="/" className="hover:text-[#D4372B] transition-colors" style={{ fontFamily: "'Poppins', sans-serif" }}>
-              Accueil
+            <Link href="/" className="hover:text-[#D4372B] transition-colors" style={{ fontFamily: "'Poppins', var(--font-amazon)" }}>
+              {t("home")}
             </Link>
-            <ChevronRight className="w-3 h-3" />
-            <span style={{ color: "#0A0A0A", fontWeight: 500, fontFamily: "'Poppins', sans-serif" }}>{category.name}</span>
+            <ChevronRight className="w-3 h-3 rtl:rotate-180" />
+            <span style={{ color: "#0A0A0A", fontWeight: 500, fontFamily: "'Poppins', var(--font-amazon)" }}>{categoryName}</span>
           </div>
 
           <div className="mb-4 lg:mb-5">
             <h1
               style={{
-                fontFamily: "'Poppins', sans-serif",
+                fontFamily: "'Poppins', var(--font-amazon)",
                 fontWeight: 800,
                 fontSize: "clamp(18px, 3vw, 28px)",
                 color: "#0A0A0A",
                 letterSpacing: "-0.02em",
               }}
             >
-              {category.name}
+              {categoryName}
             </h1>
-            <p style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif", marginTop: "2px" }}>
-              {products.length} produit{products.length > 1 ? "s" : ""} disponible{products.length > 1 ? "s" : ""}
+            <p style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: "'Poppins', var(--font-amazon)", marginTop: "2px" }}>
+              {t("productsAvailable", { count: products.length })}
             </p>
           </div>
 
@@ -303,10 +311,10 @@ export default function CategoryPage() {
             <button
               onClick={() => setShowFilters(true)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold focus:outline-none"
-              style={{ background: "#fff", border: "0.5px solid #ECECEC", color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}
+              style={{ background: "#fff", border: "0.5px solid #ECECEC", color: "#0A0A0A", fontFamily: "'Poppins', var(--font-amazon)" }}
             >
               <SlidersHorizontal className="w-4 h-4" />
-              Filtres
+              {t("filters")}
             </button>
             <select
               value={sortBy}
@@ -317,14 +325,14 @@ export default function CategoryPage() {
                 border: "0.5px solid #ECECEC",
                 borderRadius: "10px",
                 color: "#0A0A0A",
-                fontFamily: "'Poppins', sans-serif",
+                fontFamily: "'Poppins', var(--font-amazon)",
               }}
             >
-              <option value="popular">Populaire</option>
-              <option value="price-asc">Prix ↑</option>
-              <option value="price-desc">Prix ↓</option>
-              <option value="newest">Nouveautés</option>
-              <option value="rating">Notes</option>
+              <option value="popular">{t("sortPopularShort")}</option>
+              <option value="price-asc">{t("sortPriceAscShort")}</option>
+              <option value="price-desc">{t("sortPriceDescShort")}</option>
+              <option value="newest">{t("sortNewest")}</option>
+              <option value="rating">{t("sortRatingShort")}</option>
             </select>
           </div>
 
@@ -333,7 +341,7 @@ export default function CategoryPage() {
             style={{ background: "#fff", border: "0.5px solid #ECECEC" }}
           >
             <div className="flex items-center gap-3">
-              <span style={{ fontSize: "13px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>Trier par :</span>
+              <span style={{ fontSize: "13px", color: "#AAAAAA", fontFamily: "'Poppins', var(--font-amazon)" }}>{t("sortBy")}</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
@@ -343,15 +351,15 @@ export default function CategoryPage() {
                   borderRadius: "8px",
                   border: "none",
                   color: "#0A0A0A",
-                  fontFamily: "'Poppins', sans-serif",
+                  fontFamily: "'Poppins', var(--font-amazon)",
                   fontWeight: 500,
                 }}
               >
-                <option value="popular">Plus populaire</option>
-                <option value="price-asc">Prix croissant</option>
-                <option value="price-desc">Prix décroissant</option>
-                <option value="newest">Nouveautés</option>
-                <option value="rating">Meilleures notes</option>
+                <option value="popular">{t("sortPopular")}</option>
+                <option value="price-asc">{t("sortPriceAsc")}</option>
+                <option value="price-desc">{t("sortPriceDesc")}</option>
+                <option value="newest">{t("sortNewest")}</option>
+                <option value="rating">{t("sortRating")}</option>
               </select>
             </div>
             <div className="flex items-center gap-1">
@@ -386,8 +394,8 @@ export default function CategoryPage() {
                   className="flex flex-col items-center justify-center py-16 rounded-xl"
                   style={{ background: "#fff", border: "0.5px solid #ECECEC" }}
                 >
-                  <p style={{ fontSize: "14px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
-                    Aucun produit dans cette catégorie
+                  <p style={{ fontSize: "14px", color: "#AAAAAA", fontFamily: "'Poppins', var(--font-amazon)" }}>
+                    {t("emptyCategory")}
                   </p>
                 </div>
               ) : (
@@ -415,19 +423,19 @@ export default function CategoryPage() {
                             />
                             {product.featured && (
                               <span
-                                className="absolute top-2 left-2 text-[9px] font-bold px-1.5 py-0.5 rounded-md text-white"
+                                className="absolute top-2 start-2 text-[9px] font-bold px-1.5 py-0.5 rounded-md text-white"
                                 style={{ background: "#D4372B" }}
                               >
-                                Nouveauté
+                                {t("newBadge")}
                               </span>
                             )}
                             {!inStock && (
                               <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.45)" }}>
                                 <span
                                   className="px-2 py-0.5 rounded text-[10px] font-bold"
-                                  style={{ background: "#fff", color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}
+                                  style={{ background: "#fff", color: "#0A0A0A", fontFamily: "'Poppins', var(--font-amazon)" }}
                                 >
-                                  Rupture
+                                  {t("outOfStock")}
                                 </span>
                               </div>
                             )}
@@ -436,7 +444,7 @@ export default function CategoryPage() {
                           <div className="p-2.5">
                             <h3
                               className="line-clamp-2 mb-1"
-                              style={{ fontSize: "11px", fontWeight: 500, color: "#0A0A0A", fontFamily: "'Poppins', sans-serif", lineHeight: 1.4 }}
+                              style={{ fontSize: "11px", fontWeight: 500, color: "#0A0A0A", fontFamily: "'Poppins', var(--font-amazon)", lineHeight: 1.4 }}
                             >
                               {product.title}
                             </h3>
@@ -448,20 +456,20 @@ export default function CategoryPage() {
                                   className={`w-2.5 h-2.5 ${i < Math.floor(product.avgRating || 4.5) ? "fill-[#F5A623] text-[#F5A623]" : "text-[#ECECEC]"}`}
                                 />
                               ))}
-                              <span style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
+                              <span style={{ fontSize: "9px", color: "#AAAAAA", fontFamily: "'Poppins', var(--font-amazon)" }}>
                                 ({product.purchaseCount || 0})
                               </span>
                             </div>
 
                             <div className="flex items-baseline gap-1 flex-wrap">
                               <span
-                                style={{ fontSize: "13px", fontWeight: 700, color: "#D4372B", fontFamily: "'Poppins', sans-serif" }}
+                                style={{ fontSize: "13px", fontWeight: 700, color: "#D4372B", fontFamily: "'Poppins', var(--font-amazon)" }}
                               >
                                 {formatPrice(product.price)}
                               </span>
                               {product.oldPrice && product.oldPrice > product.price && (
                                 <span
-                                  style={{ fontSize: "10px", color: "#AAAAAA", textDecoration: "line-through", fontFamily: "'Poppins', sans-serif" }}
+                                  style={{ fontSize: "10px", color: "#AAAAAA", textDecoration: "line-through", fontFamily: "'Poppins', var(--font-amazon)" }}
                                 >
                                   {formatPrice(product.oldPrice)}
                                 </span>
