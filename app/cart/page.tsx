@@ -9,6 +9,7 @@ import { useLocale } from "@/context/LocaleProvider"
 import { getAfricanCountries, getCountryName } from "@/lib/country-config"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import Image from "next/image"
 import Link from "next/link"
 import { toast } from "react-hot-toast"
@@ -143,31 +144,32 @@ function getMinQuantity(price: number): number {
 }
 
 export default function CartPage() {
+  const t = useTranslations("cart")
   const {
     cart, removeFromCart, updateQuantity, updateShippingMode,
     totalUSD, totalItems, totalShippingUSD, totalPortePorteUSD,
     grandTotalUSD, shippingMode: defaultShippingMode, setShippingMode: setDefaultShippingMode
   } = useCart()
 
-  const { country, setCountry, currency } = useLocale()
+  const { country, setCountry, currency, language } = useLocale()
   const { formatPrice, getCurrencySymbol } = useCurrencyFormatter()
   const [openCountry, setOpenCountry] = useState(false)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
 
   // Pays de livraison : tous les pays africains de lib/country-config.ts (source unique).
-  // Noms en français tant que le panier n'est pas traduit (passer `language` après next-intl).
+  // Noms des pays dans la langue de l'interface.
   // La détection du pays est faite côté serveur (proxy.ts) : plus d'appel à ipapi.co ici.
-  const africanCountries = getAfricanCountries("fr")
+  const africanCountries = getAfricanCountries(language)
   // Si le pays courant n'est pas dans la liste (ex. visiteur US), on l'ajoute pour que le
   // sélecteur reflète l'état réel au lieu d'afficher un nom vide ou le premier pays.
   const countryOptions = africanCountries.some((c) => c.code === country)
     ? africanCountries
-    : [{ code: country, name: getCountryName(country, "fr") }, ...africanCountries]
+    : [{ code: country, name: getCountryName(country, language) }, ...africanCountries]
 
   const shippingModes = [
-    { id: "bateau",  icon: Ship,     label: "Mer",    title: "Maritime (35-50j)" },
-    { id: "avion",   icon: Sparkles, label: "Air",    title: "Aérien (15-20j)" },
-    { id: "express", icon: Zap,      label: "Express",title: "Express (7-10j)" },
+    { id: "bateau",  icon: Ship,     label: t("shipSeaShort"),  title: t("shipSeaTitle", { range: "35-50" }) },
+    { id: "avion",   icon: Sparkles, label: t("shipAirShort"),  title: t("shipAirTitle", { range: "15-20" }) },
+    { id: "express", icon: Zap,      label: t("shipExpress"),   title: t("shipExpressTitle", { range: "7-10" }) },
   ] as const
 
   const handleShippingModeChange = async (variantKey: string, mode: "bateau" | "avion" | "express") => {
@@ -197,7 +199,7 @@ export default function CartPage() {
   }
 
   const truncateTitle = (title: string, max = 60) => {
-    if (!title) return "Produit"
+    if (!title) return t("productFallback")
     return title.length <= max ? title : title.substring(0, max) + "..."
   }
 
@@ -209,7 +211,7 @@ export default function CartPage() {
     cart.forEach(item => {
       const minQty = item.minQuantity || getMinQuantity(item.price);
       if (!productTotals.has(item.id)) {
-        productTotals.set(item.id, { total: 0, name: item.name || "Produit", minQty });
+        productTotals.set(item.id, { total: 0, name: item.name || t("productFallback"), minQty });
       }
       productTotals.get(item.id)!.total += item.quantity;
     });
@@ -219,7 +221,7 @@ export default function CartPage() {
       .map(([id, data]) => data.name);
 
     if (invalidProducts.length > 0) {
-      toast.error(`Quantité minimum non atteinte pour : ${invalidProducts.join(", ")}`, {
+      toast.error(t("minQtyNotMet", { products: invalidProducts.join(", ") }), {
         duration: 5000,
         position: "top-center",
       });
@@ -240,9 +242,9 @@ export default function CartPage() {
 
           {/* Breadcrumb desktop */}
           <div className="hidden lg:flex items-center gap-1.5 text-xs mb-6 text-muted-foreground">
-            <Link href="/" className="hover:text-accent transition-colors">Accueil</Link>
-            <ChevronRight className="w-3 h-3" />
-            <span className="font-medium text-foreground">Panier</span>
+            <Link href="/" className="hover:text-accent transition-colors">{t("home")}</Link>
+            <ChevronRight className="w-3 h-3 rtl:rotate-180" />
+            <span className="font-medium text-foreground">{t("cart")}</span>
           </div>
 
           {/* Titre */}
@@ -251,9 +253,9 @@ export default function CartPage() {
               <ShoppingCart className="w-4 h-4 text-white" />
             </div>
             <h1 className="text-xl font-extrabold tracking-[-0.02em] text-foreground">
-              Panier
-              <span className="text-sm font-medium text-muted-foreground ml-2">
-                ({totalItems} article{totalItems > 1 ? "s" : ""})
+              {t("cart")}
+              <span className="text-sm font-medium text-muted-foreground ms-2">
+                ({t("itemsCount", { count: totalItems })})
               </span>
             </h1>
           </div>
@@ -264,7 +266,7 @@ export default function CartPage() {
               onClick={() => setOpenCountry(!openCountry)}
               className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-background shadow-xs transition-colors focus:outline-none"
             >
-              <span className="text-sm font-medium text-foreground">Pays de livraison</span>
+              <span className="text-sm font-medium text-foreground">{t("deliveryCountry")}</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-accent">
                   {countryOptions.find(c => c.code === country)?.name}
@@ -278,7 +280,7 @@ export default function CartPage() {
                   <button
                     key={c.code}
                     onClick={() => { setCountry(c.code); setOpenCountry(false) }}
-                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                    className={`w-full text-start px-4 py-2.5 text-sm transition-colors ${
                       country === c.code ? "bg-accent-light font-semibold text-accent" : "text-foreground hover:bg-muted"
                     }`}
                   >
@@ -315,7 +317,7 @@ export default function CartPage() {
                         <div className="flex-shrink-0 rounded-lg overflow-hidden bg-surface" style={{ width: "76px", height: "76px" }}>
                           <Image
                             src={item.image || "/placeholder.svg"}
-                            alt={item.name || "Produit"}
+                            alt={item.name || t("productFallback")}
                             width={76}
                             height={76}
                             className="w-full h-full object-contain p-1"
@@ -326,7 +328,7 @@ export default function CartPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-start gap-2">
                             <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
-                              {truncateTitle(item.name || "Produit", 60)}
+                              {truncateTitle(item.name || t("productFallback"), 60)}
                             </h3>
                             <button
                               onClick={() => removeFromCart(item.variantKey!)}
@@ -346,7 +348,7 @@ export default function CartPage() {
                               )}
                               {item.eurSize && (
                                 <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-muted-foreground">
-                                  Pointure {item.eurSize}
+                                  {t("shoeSize", { size: item.eurSize })}
                                 </span>
                               )}
                             </div>
@@ -361,14 +363,14 @@ export default function CartPage() {
                           {isBelowMOQ && (
                             <div className="mt-1.5 px-2 py-1 rounded-md inline-flex items-center gap-1.5 bg-accent-light">
                               <span className="text-[9px] font-bold text-accent">
-                                MOQ : {minQty} min (total produit)
+                                {t("moqBadge", { min: minQty })}
                               </span>
                             </div>
                           )}
 
                           {/* Modes livraison */}
                           <div className="flex items-center gap-1.5 mt-2.5">
-                            <span className="text-[10px] text-muted-foreground">Livraison :</span>
+                            <span className="text-[10px] text-muted-foreground">{t("shippingLabel")}</span>
                             {shippingModes.map(({ id, icon: Icon, label, title }) => {
                               const active = currentMode === id
                               return (
@@ -413,18 +415,18 @@ export default function CartPage() {
                             </div>
 
                             {/* Total ligne */}
-                            <div className="text-right">
+                            <div className="text-end">
                               <p className="text-sm font-bold text-foreground">
                                 {formatPrice(item.price * item.quantity)}
                               </p>
                               {item.shippingCostUSD ? (
                                 <p className="text-[10px] text-muted-foreground">
-                                  + {formatPrice(item.shippingCostUSD)} livraison
+                                  {t("plusShipping", { price: formatPrice(item.shippingCostUSD) })}
                                 </p>
                               ) : null}
                               {item.portePorteCostUSD ? (
                                 <p className="text-[10px] text-muted-foreground">
-                                  + {formatPrice(item.portePorteCostUSD)} porte-à-porte
+                                  {t("plusDoorToDoor", { price: formatPrice(item.portePorteCostUSD) })}
                                 </p>
                               ) : null}
                             </div>
@@ -439,12 +441,12 @@ export default function CartPage() {
               {/* ── RÉSUMÉ ────────────────────────────────────── */}
               <div className="h-fit rounded-lg p-5 sticky top-20 bg-background shadow-xs">
                 <h2 className="text-base font-extrabold tracking-[-0.02em] text-foreground mb-4">
-                  Résumé
+                  {t("summary")}
                 </h2>
 
                 {/* Pays desktop */}
                 <div className="hidden lg:block mb-4">
-                  <label className="text-[11px] text-muted-foreground">Pays de livraison</label>
+                  <label className="text-[11px] text-muted-foreground">{t("deliveryCountry")}</label>
                   <select
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
@@ -459,9 +461,9 @@ export default function CartPage() {
                 {/* Lignes coûts */}
                 <div className="space-y-2.5 pt-4 border-t border-border">
                   {[
-                    { label: "Sous-total",    value: totalUSD },
-                    { label: "Livraison",     value: totalShippingUSD },
-                    { label: "Porte-à-porte", value: totalPortePorteUSD },
+                    { label: t("subtotal"),    value: totalUSD },
+                    { label: t("shipping"),     value: totalShippingUSD },
+                    { label: t("doorToDoor"), value: totalPortePorteUSD },
                   ].map(({ label, value }) => (
                     <div key={label} className="flex justify-between">
                       <span className="text-[13px] text-muted-foreground">{label}</span>
@@ -471,14 +473,14 @@ export default function CartPage() {
 
                   {totalWeight > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-[11px] text-muted-foreground">Poids total</span>
+                      <span className="text-[11px] text-muted-foreground">{t("totalWeight")}</span>
                       <span className="text-[11px] text-muted-foreground">{totalWeight.toFixed(2)} kg</span>
                     </div>
                   )}
 
                   {/* Total */}
                   <div className="flex justify-between pt-3 mt-1 border-t border-border">
-                    <span className="text-[15px] font-extrabold text-foreground">Total</span>
+                    <span className="text-[15px] font-extrabold text-foreground">{t("total")}</span>
                     <span className="text-base font-extrabold text-accent">
                       {formatPrice(grandTotalUSD)}
                     </span>
@@ -487,7 +489,7 @@ export default function CartPage() {
                   {/* Récap articles */}
                   <div className="rounded-lg p-3 mt-2 bg-surface">
                     <p className="text-[11px] font-bold text-foreground mb-2">
-                      Récapitulatif
+                      {t("recap")}
                     </p>
                     {cart.map((item) => {
                       const minQty = item.minQuantity || getMinQuantity(item.price);
@@ -495,12 +497,12 @@ export default function CartPage() {
                       return (
                         <div key={item.variantKey} className="flex justify-between py-1">
                           <span className={`truncate text-[10px] ${isBelowMOQ ? "text-accent" : "text-muted-foreground"}`} style={{ maxWidth: "160px" }}>
-                            {truncateTitle(item.name || "Produit", 35)}
+                            {truncateTitle(item.name || t("productFallback"), 35)}
                             {item.color && ` - ${item.color}`}
                             {item.eurSize && ` (${item.eurSize})`}
-                            <span className="ml-1">x{item.quantity}</span>
+                            <span className="ms-1">x{item.quantity}</span>
                             {isBelowMOQ && (
-                              <span className="ml-1 text-[8px] font-bold text-accent">MOQ</span>
+                              <span className="ms-1 text-[8px] font-bold text-accent">MOQ</span>
                             )}
                           </span>
                           <span className="text-[10px] font-semibold text-foreground">
@@ -517,16 +519,16 @@ export default function CartPage() {
                   onClick={handleCheckout}
                   className="block w-full mt-5 text-center py-3.5 rounded-lg font-bold text-sm text-white bg-accent transition-all hover:bg-accent-hover active:scale-[0.98]"
                 >
-                  Commander · {formatPrice(grandTotalUSD)}
+                  {t("checkout", { price: formatPrice(grandTotalUSD) })}
                 </button>
 
                 {/* Réassurance — mêmes engagements que la fiche produit et le checkout */}
                 <div className="rounded-lg p-3 bg-muted shadow-xs space-y-2 mt-3">
                   {[
-                    { icon: Check, text: "Direct depuis l'usine, sans intermédiaire" },
-                    { icon: Check, text: "Tous les frais inclus — rien à payer en plus à la livraison" },
-                    { icon: Shield, text: "Remboursé si votre commande n'arrive pas" },
-                    { icon: Lock, text: "Paiement sécurisé — Mobile Money & carte bancaire" },
+                    { icon: Check, text: t("trustDirect") },
+                    { icon: Check, text: t("trustAllIncluded") },
+                    { icon: Shield, text: t("trustRefund") },
+                    { icon: Lock, text: t("trustPayment") },
                   ].map(({ icon: BulletIcon, text }) => (
                     <div key={text} className="flex items-start gap-2">
                       <BulletIcon className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
@@ -536,7 +538,7 @@ export default function CartPage() {
                 </div>
 
                 <p className="text-center mt-3 text-[11px] text-muted-foreground">
-                  Tous les prix en {getCurrencySymbol()}
+                  {t("allPricesIn", { currency: getCurrencySymbol() })}
                 </p>
               </div>
             </div>
@@ -548,16 +550,16 @@ export default function CartPage() {
                 <ShoppingCart className="w-9 h-9 text-accent" />
               </div>
               <h2 className="text-lg font-extrabold tracking-[-0.02em] text-foreground mb-2">
-                Votre panier est vide
+                {t("emptyTitle")}
               </h2>
               <p className="text-[13px] text-muted-foreground mb-6">
-                Ajoutez des produits pour commencer vos achats
+                {t("emptyText")}
               </p>
               <Link
                 href="/"
                 className="px-8 py-3 text-sm font-bold text-white rounded-lg bg-accent transition-colors hover:bg-accent-hover"
               >
-                Continuer mes achats
+                {t("continueShopping")}
               </Link>
             </div>
           )}
