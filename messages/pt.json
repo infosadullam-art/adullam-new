@@ -732,5 +732,19 @@
     "serverError": "Erro de ligação ao servidor",
     "processing": "A processar...",
     "pay": "Pagar"
+  },
+  "deals": {
+    "title": "Ofertas do dia",
+    "subtitle": "Aproveite as melhores ofertas selecionadas para si hoje",
+    "empty": "Sem ofertas disponíveis de momento",
+    "sectionTitle": "Ofertas do dia",
+    "productsOnSale": "{count, plural, one {# produto em promoção} other {# produtos em promoção}}",
+    "limitedOffers": "Ofertas limitadas",
+    "fastDelivery": "Entrega rápida",
+    "securePayment": "Pagamento seguro",
+    "directFactory": "Direto da fábrica",
+    "refundIfNotReceived": "Reembolsado se não receber",
+    "limitedStock": "Stock limitado",
+    "supplierVerified": "Fornecedor verificado"
   }
 }

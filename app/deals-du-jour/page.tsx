@@ -7,6 +7,7 @@ import { Footer } from "@/components/footer"
 import { ProductCard } from "@/components/product-card"
 import { useState, useEffect } from "react"
 import { apiFetch } from "@/lib/api"
+import { useTranslations } from "next-intl"
 
 // ============================================================
 // ICONES SVG MAISON
@@ -35,6 +36,7 @@ interface Product {
 }
 
 export default function DealsDuJourPage() {
+  const t = useTranslations("deals")
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -77,10 +79,10 @@ export default function DealsDuJourPage() {
           </div>
           <div>
             <h1 className="text-2xl lg:text-4xl font-bold mb-1 text-white tracking-tight">
-              Deals du jour
+              {t("title")}
             </h1>
             <p className="text-sm text-neutral-400">
-              Profitez des meilleures offres sélectionnées pour vous aujourd'hui
+              {t("subtitle")}
             </p>
           </div>
         </div>
@@ -113,7 +115,7 @@ export default function DealsDuJourPage() {
         <main className="pb-20 lg:pb-8">
           <HeroBanner />
           <div className="max-w-[1440px] mx-auto px-4 lg:px-8 py-8 text-center">
-            <p className="text-sm text-muted-foreground">Aucune offre disponible pour le moment</p>
+            <p className="text-sm text-muted-foreground">{t("empty")}</p>
           </div>
         </main>
         <Footer />
@@ -141,10 +143,10 @@ export default function DealsDuJourPage() {
               </div>
               <div>
                 <h1 className="font-black text-white tracking-tight leading-[1.1]" style={{ fontSize: "clamp(22px, 4vw, 36px)" }}>
-                  Deals du jour
+                  {t("title")}
                 </h1>
                 <p className="text-[13px] text-neutral-400">
-                  Profitez des meilleures offres sélectionnées pour vous aujourd'hui
+                  {t("subtitle")}
                 </p>
               </div>
             </div>
@@ -153,15 +155,15 @@ export default function DealsDuJourPage() {
             <div className="mt-4 overflow-hidden">
               <div className="marquee" style={{ animationDuration: "38s" }}>
                 {[0, 1].map((dup) => (
-                  <div key={dup} className="flex items-center gap-2 pr-2 shrink-0">
+                  <div key={dup} className="flex items-center gap-2 pe-2 shrink-0">
                     {[
-                      { label: "Offres limitées", dot: "bg-accent" },
-                      { label: "Livraison rapide", dot: "bg-green-500" },
-                      { label: "Paiement sécurisé", dot: "bg-sky-500" },
-                      { label: "Direct usine", dot: "bg-accent" },
-                      { label: "Remboursé si non reçu", dot: "bg-green-500" },
-                      { label: "Stock limité", dot: "bg-amber-500" },
-                      { label: "Fournisseur vérifié", dot: "bg-sky-500" },
+                      { label: t("limitedOffers"), dot: "bg-accent" },
+                      { label: t("fastDelivery"), dot: "bg-green-500" },
+                      { label: t("securePayment"), dot: "bg-sky-500" },
+                      { label: t("directFactory"), dot: "bg-accent" },
+                      { label: t("refundIfNotReceived"), dot: "bg-green-500" },
+                      { label: t("limitedStock"), dot: "bg-amber-500" },
+                      { label: t("supplierVerified"), dot: "bg-sky-500" },
                     ].map(({ label, dot }, i) => (
                       <span
                         key={i}
@@ -185,10 +187,10 @@ export default function DealsDuJourPage() {
           <div className="flex justify-between items-center mb-5">
             <div>
               <h2 className="font-extrabold text-[16px] text-foreground tracking-tight">
-                Offres du jour
+                {t("sectionTitle")}
               </h2>
               <p className="text-[12px] text-muted-foreground">
-                {products.length} produits en promotion
+                {t("productsOnSale", { count: products.length })}
               </p>
             </div>
           </div>
@@ -200,7 +202,7 @@ export default function DealsDuJourPage() {
                 {/* Rang badge — top 3, par-dessus la carte partagée */}
                 {product.rank && product.rank <= 3 && (
                   <span
-                    className={`absolute top-2 left-2 z-10 flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold text-white ${
+                    className={`absolute top-2 start-2 z-10 flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold text-white ${
                       product.rank === 1 ? "bg-accent-amber" : product.rank === 2 ? "bg-zinc-400" : "bg-amber-700"
                     }`}
                   >

@@ -712,5 +712,39 @@
     "shoeSize": "Pointure {size}",
     "qtyLabel": "Quantité : {count}",
     "qtyShort": "Qté : {count}"
+  },
+  "coupon": {
+    "label": "Code promo",
+    "placeholder": "EX: PROMO50",
+    "apply": "Appliquer",
+    "removeAria": "Retirer le code",
+    "enterCode": "Veuillez entrer un code promo",
+    "invalid": "Code promo invalide",
+    "verifyError": "Erreur lors de la vérification",
+    "appliedPercent": "✅ {value}% de réduction appliqué !",
+    "applied": "✅ Réduction appliquée !",
+    "fixedBadge": "FIXE",
+    "percentOff": "{value}% de réduction",
+    "amountOff": "{price} de réduction"
+  },
+  "payment": {
+    "initError": "Erreur d'initialisation du paiement",
+    "serverError": "Erreur de connexion au serveur",
+    "processing": "Traitement...",
+    "pay": "Payer"
+  },
+  "deals": {
+    "title": "Deals du jour",
+    "subtitle": "Profitez des meilleures offres sélectionnées pour vous aujourd'hui",
+    "empty": "Aucune offre disponible pour le moment",
+    "sectionTitle": "Offres du jour",
+    "productsOnSale": "{count, plural, one {# produit en promotion} other {# produits en promotion}}",
+    "limitedOffers": "Offres limitées",
+    "fastDelivery": "Livraison rapide",
+    "securePayment": "Paiement sécurisé",
+    "directFactory": "Direct usine",
+    "refundIfNotReceived": "Remboursé si non reçu",
+    "limitedStock": "Stock limité",
+    "supplierVerified": "Fournisseur vérifié"
   }
 }

@@ -732,5 +732,19 @@
     "serverError": "Server connection error",
     "processing": "Processing...",
     "pay": "Pay"
+  },
+  "deals": {
+    "title": "Deals of the day",
+    "subtitle": "Enjoy the best offers selected for you today",
+    "empty": "No offers available right now",
+    "sectionTitle": "Offers of the day",
+    "productsOnSale": "{count, plural, one {# product on sale} other {# products on sale}}",
+    "limitedOffers": "Limited offers",
+    "fastDelivery": "Fast delivery",
+    "securePayment": "Secure payment",
+    "directFactory": "Direct from factory",
+    "refundIfNotReceived": "Refunded if not received",
+    "limitedStock": "Limited stock",
+    "supplierVerified": "Verified supplier"
   }
 }

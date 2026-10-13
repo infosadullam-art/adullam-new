@@ -732,5 +732,19 @@
     "serverError": "خطأ في الاتصال بالخادم",
     "processing": "جارٍ المعالجة...",
     "pay": "ادفع"
+  },
+  "deals": {
+    "title": "عروض اليوم",
+    "subtitle": "استفد من أفضل العروض المختارة لك اليوم",
+    "empty": "لا توجد عروض متاحة حاليًا",
+    "sectionTitle": "عروض اليوم",
+    "productsOnSale": "{count} منتج مخفّض",
+    "limitedOffers": "عروض محدودة",
+    "fastDelivery": "توصيل سريع",
+    "securePayment": "دفع آمن",
+    "directFactory": "مباشرة من المصنع",
+    "refundIfNotReceived": "استرداد المبلغ إذا لم يصل",
+    "limitedStock": "كمية محدودة",
+    "supplierVerified": "مورّد موثّق"
   }
 }
