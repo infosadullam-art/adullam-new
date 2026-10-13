@@ -712,5 +712,25 @@
     "shoeSize": "المقاس {size}",
     "qtyLabel": "الكمية: {count}",
     "qtyShort": "الكمية: {count}"
+  },
+  "coupon": {
+    "label": "رمز الخصم",
+    "placeholder": "مثال: PROMO50",
+    "apply": "تطبيق",
+    "removeAria": "إزالة الرمز",
+    "enterCode": "يرجى إدخال رمز الخصم",
+    "invalid": "رمز الخصم غير صالح",
+    "verifyError": "حدث خطأ أثناء التحقق",
+    "appliedPercent": "✅ تم تطبيق خصم {value}%!",
+    "applied": "✅ تم تطبيق الخصم!",
+    "fixedBadge": "ثابت",
+    "percentOff": "خصم {value}%",
+    "amountOff": "خصم {price}"
+  },
+  "payment": {
+    "initError": "خطأ في بدء الدفع",
+    "serverError": "خطأ في الاتصال بالخادم",
+    "processing": "جارٍ المعالجة...",
+    "pay": "ادفع"
   }
 }

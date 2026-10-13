@@ -712,5 +712,25 @@
     "shoeSize": "Size {size}",
     "qtyLabel": "Quantity: {count}",
     "qtyShort": "Qty: {count}"
+  },
+  "coupon": {
+    "label": "Promo code",
+    "placeholder": "E.G. PROMO50",
+    "apply": "Apply",
+    "removeAria": "Remove code",
+    "enterCode": "Please enter a promo code",
+    "invalid": "Invalid promo code",
+    "verifyError": "Error while verifying",
+    "appliedPercent": "✅ {value}% discount applied!",
+    "applied": "✅ Discount applied!",
+    "fixedBadge": "FIXED",
+    "percentOff": "{value}% off",
+    "amountOff": "{price} off"
+  },
+  "payment": {
+    "initError": "Payment initialization error",
+    "serverError": "Server connection error",
+    "processing": "Processing...",
+    "pay": "Pay"
   }
 }

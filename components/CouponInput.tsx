@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { Gift, X, Check, Loader2, Tag, Sparkles } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
+import { useTranslations } from "next-intl";
+import { useLocale } from "@/context/LocaleProvider";
+import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter";
 
 interface CouponInputProps {
   onApply: (coupon: {
@@ -33,6 +36,9 @@ export function CouponInput({
   cartTotal, 
   userId 
 }: CouponInputProps) {
+  const t = useTranslations("coupon");
+  const { language } = useLocale();
+  const { formatPrice } = useCurrencyFormatter();
   const { theme } = useTheme();
   const isDark = theme === "dark";
   
@@ -45,7 +51,7 @@ export function CouponInput({
 
   const handleApply = async () => {
     if (!code.trim()) {
-      setError("Veuillez entrer un code promo");
+      setError(t("enterCode"));
       return;
     }
 
@@ -62,7 +68,8 @@ export function CouponInput({
         body: JSON.stringify({ 
           code: code.trim(), 
           userId, 
-          cartTotal 
+          cartTotal,
+          locale: language
         }),
       });
 
@@ -81,33 +88,24 @@ export function CouponInput({
         const finalCoupon = { ...coupon, discountAmount: computedDiscount };
         
         if (coupon.type === 'PERCENTAGE') {
-          setSuccess(`✅ ${coupon.value}% de réduction appliqué !`);
+          setSuccess(t("appliedPercent", { value: coupon.value }));
         } else {
-          setSuccess(`✅ Réduction appliquée !`);
+          setSuccess(t("applied"));
         }
         onApply(finalCoupon);
         setCode("");
         setTimeout(() => setSuccess(""), 3000);
       } else {
-        setError(data.error || "Code promo invalide");
+        setError(data.error || t("invalid"));
         setTimeout(() => setError(""), 3000);
       }
     } catch (err) {
       console.error("Erreur coupon:", err);
-      setError("Erreur lors de la vérification");
+      setError(t("verifyError"));
       setTimeout(() => setError(""), 3000);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const formatPrice = (value: number) => {
-    return new Intl.NumberFormat('fr-FR', { 
-      style: 'currency', 
-      currency: 'XOF',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
   };
 
   // Coupon appliqué
@@ -144,13 +142,13 @@ export function CouponInput({
                   color: isDark ? '#86EFAC' : '#16A34A',
                 }}
               >
-                {appliedCoupon.type === 'PERCENTAGE' ? `${appliedCoupon.value}%` : 'FIXE'}
+                {appliedCoupon.type === 'PERCENTAGE' ? `${appliedCoupon.value}%` : t("fixedBadge")}
               </span>
             </div>
             <p className={`text-xs ${isDark ? 'text-green-300/70' : 'text-green-600'}`}>
               {appliedCoupon.discountDescription || (appliedCoupon.type === 'PERCENTAGE' 
-                ? `${appliedCoupon.value}% de réduction` 
-                : `${formatPrice(appliedCoupon.value)} de réduction`)}
+                ? t("percentOff", { value: appliedCoupon.value }) 
+                : t("amountOff", { price: formatPrice(appliedCoupon.value) }))}
             </p>
           </div>
         </div>
@@ -161,7 +159,7 @@ export function CouponInput({
             background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
             color: isDark ? '#86EFAC' : '#16A34A',
           }}
-          aria-label="Retirer le code"
+          aria-label={t("removeAria")}
         >
           <X className="w-4 h-4" />
         </button>
@@ -173,19 +171,19 @@ export function CouponInput({
   return (
     <div className="space-y-2">
       <label className={`block text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-        Code promo
+        {t("label")}
       </label>
       <div className="flex gap-2">
         <div className="flex-1 relative">
           <Gift 
-            className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isDark ? 'text-gray-500' : 'text-gray-400'}`} 
+            className={`absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isDark ? 'text-gray-500' : 'text-gray-400'}`} 
           />
           <input
             type="text"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
-            placeholder="EX: PROMO50"
-            className={`w-full pl-9 pr-3 py-2.5 text-sm rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 ${
+            placeholder={t("placeholder")}
+            className={`w-full ps-9 pe-3 py-2.5 text-sm rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 ${
               isDark 
                 ? 'bg-[#1A1A1A] text-white border border-gray-700 focus:border-[#D4372B] focus:ring-[#D4372B]/20 placeholder:text-gray-600' 
                 : 'bg-white text-gray-900 border border-gray-200 focus:border-[#D4372B] focus:ring-[#D4372B]/20 placeholder:text-gray-400'
@@ -198,7 +196,7 @@ export function CouponInput({
           {code && !isLoading && (
             <button
               onClick={() => setCode("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute end-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -217,7 +215,7 @@ export function CouponInput({
           ) : (
             <>
               <Check className="w-4 h-4" />
-              Appliquer
+              {t("apply")}
             </>
           )}
         </button>

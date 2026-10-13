@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { useLocale } from '@/context/LocaleProvider';
+import { useTranslations } from 'next-intl';
 
 interface PaymentButtonProps {
   email: string;
@@ -13,6 +14,7 @@ interface PaymentButtonProps {
   couponDiscount?: number; // USD
   onSuccess?: () => void;
   onError?: (error: string) => void;
+  beforePayment?: () => boolean | Promise<boolean>; // ex. vérification MOQ ; retourne false pour bloquer le paiement
   children?: React.ReactNode;
 }
 
@@ -24,12 +26,16 @@ export function PaymentButton({
   couponDiscount = 0,
   onSuccess, 
   onError, 
+  beforePayment,
   children 
 }: PaymentButtonProps) {
   const [loading, setLoading] = useState(false);
   const { currency } = useLocale();
+  const t = useTranslations('payment');
 
   const handlePayment = async () => {
+    if (beforePayment && !(await beforePayment())) return;
+
     console.log("💳 PaymentButton - Devise:", currency);
     console.log("💳 PaymentButton - Montant USD:", amount);
     
@@ -59,11 +65,11 @@ export function PaymentButton({
       if (data.success && data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       } else {
-        onError?.(data.error || 'Erreur d\'initialisation du paiement');
+        onError?.(data.error || t('initError'));
       }
     } catch (error) {
       console.error("💳 Erreur:", error);
-      onError?.('Erreur de connexion au serveur');
+      onError?.(t('serverError'));
     } finally {
       setLoading(false);
     }
@@ -79,10 +85,10 @@ export function PaymentButton({
       {loading ? (
         <>
           <Loader2 className="w-4 h-4 animate-spin" />
-          Traitement...
+          {t('processing')}
         </>
       ) : (
-        children || 'Payer'
+        children || t('pay')
       )}
     </button>
   );
