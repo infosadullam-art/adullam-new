@@ -165,6 +165,8 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { getCountryName } from "@/lib/country-config";
 import { PaymentButton } from "@/components/PaymentButton";
 import { CouponInput } from "@/components/CouponInput";
 import { apiFetch } from "@/lib/api";
@@ -247,17 +249,17 @@ const AFRICAN_COUNTRIES = [
 
 // Modes d'expédition
 const SHIPPING_METHODS = [
-  { id: "bateau", name: "Maritime", icon: Ship, days: "35-50j", badge: "Économique", label: "Mer" },
-  { id: "avion", name: "Aérien", icon: Zap, days: "15-20j", badge: "Rapide", label: "Air" },
-  { id: "express", name: "Express", icon: Zap, days: "7-10j", badge: "Prioritaire", label: "Express" }
+  { id: "bateau", icon: Ship, days: "35-50", labelKey: "shipSeaShort" },
+  { id: "avion", icon: Zap, days: "15-20", labelKey: "shipAirShort" },
+  { id: "express", icon: Zap, days: "7-10", labelKey: "shipExpress" }
 ];
 
 // Fonction pour obtenir le libellé du mode d'expédition
-const getShippingLabel = (mode: string): string => {
+const getShippingLabel = (mode: string, t: (key: string, values?: Record<string, any>) => string): string => {
   const labels: Record<string, string> = {
-    'bateau': 'Maritime (35-50j)',
-    'avion': 'Aérien (15-20j)',
-    'express': 'Express (7-10j)'
+    'bateau': t("shipSeaTitle", { range: "35-50" }),
+    'avion': t("shipAirTitle", { range: "15-20" }),
+    'express': t("shipExpressTitle", { range: "7-10" })
   };
   return labels[mode] || mode;
 };
@@ -265,14 +267,14 @@ const getShippingLabel = (mode: string): string => {
 // ============================================================
 // VÉRIFICATION DU PANIER AVANT PAIEMENT (MOQ GLOBAL)
 // ============================================================
-function validateCartMOQ(cart: any[]): { valid: boolean; invalidProducts: string[] } {
+function validateCartMOQ(cart: any[], fallbackName = t("productFallback")): { valid: boolean; invalidProducts: string[] } {
   // ✅ Vérifier MOQ global par produit (toutes variantes confondues)
   const productTotals = new Map<string, { total: number; name: string; minQty: number }>();
   
   cart.forEach(item => {
     const minQty = item.minQuantity || getMinQuantity(item.price);
     if (!productTotals.has(item.id)) {
-      productTotals.set(item.id, { total: 0, name: item.name || "Produit", minQty });
+      productTotals.set(item.id, { total: 0, name: item.name || fallbackName, minQty });
     }
     productTotals.get(item.id)!.total += item.quantity;
   });
@@ -301,6 +303,7 @@ function getProductMOQTotals(cart: any[]): Map<string, { total: number; minQty: 
 }
 
 export default function CheckoutPage() {
+  const t = useTranslations("checkout");
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
   
@@ -317,7 +320,7 @@ export default function CheckoutPage() {
     setShippingMode: setDefaultShippingMode
   } = useCart();
   
-  const { country: userCountry, currency } = useLocale();
+  const { country: userCountry, currency, language } = useLocale();
   const { formatPrice, getCurrencySymbol } = useCurrencyFormatter();
 
   // ✅ Map des totaux MOQ agrégés par produit, recalculée à chaque rendu du
@@ -486,7 +489,7 @@ export default function CheckoutPage() {
           },
           defaultShippingMode,
           deviceType: 'web',
-          locale: 'fr',
+          locale: language,
           currency,
         }),
       });
@@ -501,12 +504,12 @@ export default function CheckoutPage() {
         return data.data.orderId;
       } else {
         console.error('❌ Échec création commande:', data.error);
-        setError(data.error || 'Erreur lors de la création de la commande');
+        setError(data.error || t("createOrderError"));
         return null;
       }
     } catch (err) {
       console.error('❌ Erreur création commande:', err);
-      setError('Erreur de connexion au serveur');
+      setError(t("serverError"));
       return null;
     }
   };
@@ -725,10 +728,10 @@ export default function CheckoutPage() {
 
   // ✅ VÉRIFICATION MOQ GLOBALE AVANT PAIEMENT
   const validateMOQBeforePayment = (): boolean => {
-    const { valid, invalidProducts } = validateCartMOQ(cart);
+    const { valid, invalidProducts } = validateCartMOQ(cart, t("productFallback"));
     
     if (!valid) {
-      const errorMsg = `Quantité minimum non atteinte pour : ${invalidProducts.join(", ")}`;
+      const errorMsg = t("minQtyNotMet", { products: invalidProducts.join(", ") });
       setError(errorMsg);
       toast.error(errorMsg, {
         duration: 5000,
@@ -776,30 +779,30 @@ export default function CheckoutPage() {
         <div className="max-w-6xl mx-auto px-4">
           
           <div className="hidden lg:flex items-center gap-2 text-xs mb-6">
-            <Link href="/" className="text-muted-foreground hover:text-foreground">Accueil</Link>
-            <ChevronRight className="w-3 h-3 text-border-strong" />
-            <Link href="/cart" className="text-muted-foreground hover:text-foreground">Panier</Link>
-            <ChevronRight className="w-3 h-3 text-border-strong" />
-            <span className="text-muted-foreground">Checkout</span>
+            <Link href="/" className="text-muted-foreground hover:text-foreground">{t("home")}</Link>
+            <ChevronRight className="w-3 h-3 text-border-strong rtl:rotate-180" />
+            <Link href="/cart" className="text-muted-foreground hover:text-foreground">{t("cart")}</Link>
+            <ChevronRight className="w-3 h-3 text-border-strong rtl:rotate-180" />
+            <span className="text-muted-foreground">{t("checkoutCrumb")}</span>
           </div>
 
           <div className="flex items-center gap-3 mb-4 lg:hidden">
             <button
               onClick={() => router.back()}
-              className={`p-2 -ml-2 rounded-lg transition-colors hover:bg-muted`}
+              className={`p-2 -ms-2 rounded-lg transition-colors hover:bg-muted`}
             >
-              <ArrowLeft className={`w-5 h-5 text-muted-foreground`} />
+              <ArrowLeft className={`w-5 h-5 text-muted-foreground rtl:rotate-180`} />
             </button>
-            <h1 className={`text-lg font-medium text-foreground`}>Finaliser la commande</h1>
+            <h1 className={`text-lg font-medium text-foreground`}>{t("finalizeOrder")}</h1>
           </div>
 
-          <h1 className={`hidden lg:block text-2xl font-medium mb-6 text-foreground`}>Finaliser la commande</h1>
+          <h1 className={`hidden lg:block text-2xl font-medium mb-6 text-foreground`}>{t("finalizeOrder")}</h1>
 
           <div className="flex items-center justify-between mb-4 max-w-2xl">
             {[
-              { step: 1, label: "Livraison" },
-              { step: 2, label: "Expédition" },
-              { step: 3, label: "Confirmation" }
+              { step: 1, label: t("delivery") },
+              { step: 2, label: t("shipping") },
+              { step: 3, label: t("confirmation") }
             ].map((item, index) => (
               <div key={item.step} className="flex items-center">
                 <div className="flex flex-col items-center">
@@ -833,7 +836,7 @@ export default function CheckoutPage() {
                 {index < 2 && (
                   <div className={`w-8 lg:w-12 h-0.5 mx-1 lg:mx-2 relative overflow-hidden rounded-full bg-border`}>
                     <motion.div
-                      className="absolute inset-y-0 left-0 bg-accent rounded-full"
+                      className="absolute inset-y-0 start-0 bg-accent rounded-full"
                       initial={{ width: "0%" }}
                       animate={{ width: step > item.step ? "100%" : "0%" }}
                       transition={{ duration: 0.4, ease: "easeOut" }}
@@ -848,13 +851,13 @@ export default function CheckoutPage() {
           <div className="mb-4 max-w-2xl overflow-hidden">
             <div className="marquee">
               {[0, 1].map((dup) => (
-                <div key={dup} className="flex items-center gap-6 pr-6 shrink-0">
+                <div key={dup} className="flex items-center gap-6 pe-6 shrink-0">
                   {[
-                    { icon: Shield, text: "Paiement sécurisé" },
-                    { icon: Truck, text: "Livraison suivie" },
-                    { icon: Lock, text: "Données protégées" },
-                    { icon: Check, text: "Fournisseur vérifié" },
-                    { icon: CreditCard, text: "Mobile Money & carte bancaire" },
+                    { icon: Shield, text: t("securePayment") },
+                    { icon: Truck, text: t("trackedDelivery") },
+                    { icon: Lock, text: t("dataProtected") },
+                    { icon: Check, text: t("supplierVerified") },
+                    { icon: CreditCard, text: t("mobileMoneyCard") },
                   ].map(({ icon: TrustIcon, text }, i) => (
                     <span key={i} className="flex items-center gap-1.5 text-[11px] lg:text-xs text-muted-foreground whitespace-nowrap">
                       <TrustIcon className="w-3.5 h-3.5 text-accent shrink-0" />
@@ -869,10 +872,10 @@ export default function CheckoutPage() {
           {/* Protection Adullam — mêmes engagements que sur la fiche produit, aucune surprise au moment de payer */}
           <div className="rounded-lg p-3 bg-muted shadow-xs space-y-2 mb-6 lg:mb-8 max-w-2xl">
             {[
-              { icon: Check, text: "Direct depuis l'usine, sans intermédiaire" },
-              { icon: Check, text: "Tous les frais inclus — rien à payer en plus à la livraison" },
-              { icon: Shield, text: "Remboursé si votre commande n'arrive pas" },
-              { icon: Lock, text: "Paiement sécurisé — Mobile Money & carte bancaire" },
+              { icon: Check, text: t("trustDirect") },
+              { icon: Check, text: t("trustAllIncluded") },
+              { icon: Shield, text: t("trustRefund") },
+              { icon: Lock, text: t("trustPayment") },
             ].map(({ icon: BulletIcon, text }, i) => (
               <motion.div
                 key={text}
@@ -905,11 +908,11 @@ export default function CheckoutPage() {
                   <div className={`rounded-xl border-0 p-4 lg:p-6 bg-card`}>
                     <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2 text-foreground`}>
                       <MapPin className="w-4 h-4" style={{ color: 'var(--accent)' }} />
-                      Adresse de livraison
+                      {t("deliveryAddress")}
                     </h2>
 
                     <div className="mb-3 lg:mb-4">
-                      <label className={`block text-xs mb-1 text-muted-foreground`}>Pays</label>
+                      <label className={`block text-xs mb-1 text-muted-foreground`}>{t("country")}</label>
                       <div className="relative" ref={countryDropdownRef}>
                         <button
                           type="button"
@@ -918,7 +921,7 @@ export default function CheckoutPage() {
                         >
                           <div className="flex items-center gap-2 truncate">
                             <span>{selectedCountry.flag}</span>
-                            <span className="truncate">{selectedCountry.name}</span>
+                            <span className="truncate">{getCountryName(selectedCountry.code, language)}</span>
                             <span className={`text-xs text-muted-foreground hidden sm:inline`}>{selectedCountry.prefix}</span>
                           </div>
                           <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform flex-shrink-0 ${isCountryDropdownOpen ? 'rotate-90' : ''}`} />
@@ -930,10 +933,10 @@ export default function CheckoutPage() {
                               <button
                                 key={country.code}
                                 onClick={() => handleCountryChange(country)}
-                                className={`w-full px-3 py-2 text-left flex items-center gap-2 text-sm border-b last:border-0 hover:bg-muted text-foreground border-border`}
+                                className={`w-full px-3 py-2 text-start flex items-center gap-2 text-sm border-b last:border-0 hover:bg-muted text-foreground border-border`}
                               >
                                 <span>{country.flag}</span>
-                                <span className="flex-1 truncate">{country.name}</span>
+                                <span className="flex-1 truncate">{getCountryName(country.code, language)}</span>
                                 <span className={`text-xs text-muted-foreground`}>{country.prefix}</span>
                               </button>
                             ))}
@@ -944,15 +947,15 @@ export default function CheckoutPage() {
 
                     {addresses.length > 0 && !showNewAddressForm && (
                       <div className="mb-3 lg:mb-4">
-                        <label className={`block text-xs mb-2 text-muted-foreground`}>Adresse existante</label>
-                        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                        <label className={`block text-xs mb-2 text-muted-foreground`}>{t("existingAddress")}</label>
+                        <div className="space-y-2 max-h-48 overflow-y-auto pe-1">
                           {addresses
                             .filter(a => a.country === selectedCountry.code)
                             .map((addr) => (
                             <button
                               key={addr.id}
                               onClick={() => selectAddress(addr)}
-                              className={`w-full p-3 border rounded-lg text-left transition-all ${
+                              className={`w-full p-3 border rounded-lg text-start transition-all ${
                                 selectedAddressId === addr.id
                                   ? 'border-accent bg-accent/5'
                                   : 'border-border hover:border-foreground/20'
@@ -984,7 +987,7 @@ export default function CheckoutPage() {
                             <div className={`w-full border-t border-border`}></div>
                           </div>
                           <div className="relative flex justify-center text-xs">
-                            <span className={`px-2 bg-card text-muted-foreground`}>ou</span>
+                            <span className={`px-2 bg-card text-muted-foreground`}>{t("or")}</span>
                           </div>
                         </div>
 
@@ -993,7 +996,7 @@ export default function CheckoutPage() {
                           className={`w-full py-2 border border-dashed rounded-lg text-xs transition flex items-center justify-center gap-1 border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground`}
                         >
                           <Plus className="w-3 h-3" />
-                          Nouvelle adresse
+                          {t("newAddress")}
                         </button>
                       </div>
                     )}
@@ -1002,31 +1005,31 @@ export default function CheckoutPage() {
                       <div className="space-y-3">
                         <div className="grid grid-cols-2 gap-2 lg:gap-3">
                           <div>
-                            <label className={`block text-xs mb-1 text-muted-foreground`}>Prénom</label>
+                            <label className={`block text-xs mb-1 text-muted-foreground`}>{t("firstName")}</label>
                             <input
                               type="text"
                               name="firstName"
                               value={showNewAddressForm ? newAddress.firstName : shippingInfo.firstName}
                               onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
                               className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg bg-muted text-foreground border-0`}
-                              placeholder="Jean"
+                              placeholder={t("phFirst")}
                             />
                           </div>
                           <div>
-                            <label className={`block text-xs mb-1 text-muted-foreground`}>Nom</label>
+                            <label className={`block text-xs mb-1 text-muted-foreground`}>{t("lastName")}</label>
                             <input
                               type="text"
                               name="lastName"
                               value={showNewAddressForm ? newAddress.lastName : shippingInfo.lastName}
                               onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
                               className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg bg-muted text-foreground border-0`}
-                              placeholder="Dupont"
+                              placeholder={t("phLast")}
                             />
                           </div>
                         </div>
 
                         <div>
-                          <label className={`block text-xs mb-1 text-muted-foreground`}>Email</label>
+                          <label className={`block text-xs mb-1 text-muted-foreground`}>{t("email")}</label>
                           <input
                             type="email"
                             name="email"
@@ -1034,12 +1037,12 @@ export default function CheckoutPage() {
                             onChange={handleInputChange}
                             disabled={!showNewAddressForm}
                             className={`w-full px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/20 bg-muted text-foreground border-0`}
-                            placeholder="jean@exemple.com"
+                            placeholder={t("phEmail")}
                           />
                         </div>
 
                         <div>
-                          <label className={`block text-xs mb-1 text-muted-foreground`}>Téléphone</label>
+                          <label className={`block text-xs mb-1 text-muted-foreground`}>{t("phone")}</label>
                           <div className="flex">
                             <span className={`inline-flex items-center px-3 rounded-l-lg text-xs bg-muted text-muted-foreground`}>
                               {selectedCountry.prefix}
@@ -1056,50 +1059,50 @@ export default function CheckoutPage() {
                         </div>
 
                         <div>
-                          <label className={`block text-xs mb-1 text-muted-foreground`}>Adresse</label>
+                          <label className={`block text-xs mb-1 text-muted-foreground`}>{t("address")}</label>
                           <input
                             type="text"
                             name="address"
                             value={showNewAddressForm ? newAddress.address : shippingInfo.address}
                             onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
                             className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg bg-muted text-foreground border-0`}
-                            placeholder="Rue, numéro"
+                            placeholder={t("phStreet")}
                           />
                         </div>
 
                         <div>
-                          <label className={`block text-xs mb-1 text-muted-foreground`}>Quartier</label>
+                          <label className={`block text-xs mb-1 text-muted-foreground`}>{t("quartier")}</label>
                           <input
                             type="text"
                             name="quartier"
                             value={showNewAddressForm ? newAddress.quartier : shippingInfo.quartier}
                             onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
                             className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg bg-muted text-foreground border-0`}
-                            placeholder="Quartier / Zone"
+                            placeholder={t("phQuartier")}
                           />
                         </div>
 
                         <div className="grid grid-cols-2 gap-2 lg:gap-3">
                           <div>
-                            <label className={`block text-xs mb-1 text-muted-foreground`}>Ville</label>
+                            <label className={`block text-xs mb-1 text-muted-foreground`}>{t("city")}</label>
                             <input
                               type="text"
                               name="city"
                               value={showNewAddressForm ? newAddress.city : shippingInfo.city}
                               onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
                               className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg bg-muted text-foreground border-0`}
-                              placeholder="Ville"
+                              placeholder={t("city")}
                             />
                           </div>
                           <div>
-                            <label className={`block text-xs mb-1 text-muted-foreground`}>Code postal</label>
+                            <label className={`block text-xs mb-1 text-muted-foreground`}>{t("postalCode")}</label>
                             <input
                               type="text"
                               name="postalCode"
                               value={showNewAddressForm ? newAddress.postalCode : shippingInfo.postalCode}
                               onChange={showNewAddressForm ? handleNewAddressChange : handleInputChange}
                               className={`w-full px-3 py-2.5 text-sm focus:outline-none transition-all rounded-lg bg-muted text-foreground border-0`}
-                              placeholder="BP"
+                              placeholder={t("phPostal")}
                             />
                           </div>
                         </div>
@@ -1114,7 +1117,7 @@ export default function CheckoutPage() {
                                 onChange={handleNewAddressChange}
                                 className="w-3 h-3 rounded border-gray-300"
                               />
-                              <span className="text-xs">Par défaut</span>
+                              <span className="text-xs">{t("setDefault")}</span>
                             </label>
 
                             <div className="flex gap-2 pt-2">
@@ -1123,13 +1126,13 @@ export default function CheckoutPage() {
                                 className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-lg transition-colors"
                                 style={{ background: 'var(--accent)' }}
                               >
-                                Enregistrer
+                                {t("save")}
                               </button>
                               <button
                                 onClick={() => setShowNewAddressForm(false)}
                                 className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors border border-border text-foreground hover:bg-muted`}
                               >
-                                Annuler
+                                {t("cancel")}
                               </button>
                             </div>
                           </>
@@ -1144,7 +1147,7 @@ export default function CheckoutPage() {
                         className="w-full mt-4 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-all disabled:opacity-50"
                         style={{ background: 'var(--accent)' }}
                       >
-                        Continuer
+                        {t("continue")}
                       </button>
                     )}
                   </div>
@@ -1164,11 +1167,11 @@ export default function CheckoutPage() {
                   <div className={`rounded-xl border-0 p-4 lg:p-6 bg-card`}>
                     <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 flex items-center gap-2 text-foreground`}>
                       <Truck className="w-4 h-4" style={{ color: 'var(--accent)' }} />
-                      Mode d'expédition par produit
+                      {t("shippingPerProduct")}
                     </h2>
                     
                     <p className={`text-xs mb-4 text-muted-foreground`}>
-                      Choisissez le mode d'expédition pour chaque article.
+                      {t("shippingPerProductHint")}
                     </p>
 
                     <div className="space-y-4">
@@ -1188,7 +1191,7 @@ export default function CheckoutPage() {
                               <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border bg-card border-border`}>
                                 <Image
                                   src={item.image || "/placeholder.svg"}
-                                  alt={item.name || "Produit"}
+                                  alt={item.name || t("productFallback")}
                                   width={48}
                                   height={48}
                                   className="w-full h-full object-contain p-1"
@@ -1196,19 +1199,19 @@ export default function CheckoutPage() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className={`text-sm font-medium break-words leading-tight text-foreground`}>
-                                  {item.name || "Produit"}
+                                  {item.name || t("productFallback")}
                                 </p>
                                 {(item.color || item.eurSize) && (
                                   <p className={`text-xs mt-0.5 text-muted-foreground`}>
-                                    {item.color} {item.eurSize && `• Pointure ${item.eurSize}`}
+                                    {item.color} {item.eurSize && `• ${t("shoeSize", { size: item.eurSize })}`}
                                   </p>
                                 )}
-                                <p className={`text-xs mt-1 text-muted-foreground`}>Quantité: {item.quantity}</p>
+                                <p className={`text-xs mt-1 text-muted-foreground`}>{t("qtyLabel", { count: item.quantity })}</p>
                                 {isBelowMOQ && (
-                                  <span className="text-xs text-red-500 font-medium">⚠️ MOQ: {minQty} min</span>
+                                  <span className="text-xs text-red-500 font-medium">{t("moqShort", { min: minQty })}</span>
                                 )}
                               </div>
-                              <div className="text-right flex-shrink-0">
+                              <div className="text-end flex-shrink-0">
                                 <p className="text-sm font-bold whitespace-nowrap" style={{ color: 'var(--accent)' }}>
                                   {formatPrice(item.price * item.quantity)}
                                 </p>
@@ -1216,7 +1219,7 @@ export default function CheckoutPage() {
                             </div>
 
                             <div className="mt-3 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
-                              <span className={`text-xs mr-2 text-muted-foreground`}>Expédition:</span>
+                              <span className={`text-xs me-2 text-muted-foreground`}>{t("shippingColon")}</span>
                               <div className="flex gap-2 mt-1 flex-wrap">
                                 {SHIPPING_METHODS.map((method) => (
                                   <button
@@ -1229,7 +1232,7 @@ export default function CheckoutPage() {
                                     }`}
                                     style={currentMode === method.id ? { background: 'var(--accent)' } : {}}
                                   >
-                                    {method.label}
+                                    {t(method.labelKey)}
                                   </button>
                                 ))}
                               </div>
@@ -1240,7 +1243,7 @@ export default function CheckoutPage() {
                     </div>
 
                     <div className="mt-4 pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
-                      <p className={`text-xs mb-2 text-muted-foreground`}>Appliquer le même mode à tous les articles:</p>
+                      <p className={`text-xs mb-2 text-muted-foreground`}>{t("applyAllLong")}</p>
                       <div className="flex gap-2 flex-wrap">
                         {SHIPPING_METHODS.map((method) => (
                           <button
@@ -1248,7 +1251,7 @@ export default function CheckoutPage() {
                             onClick={() => handleGlobalShippingChange(method.id as any)}
                             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors bg-muted text-foreground hover:bg-surface-sunken`}
                           >
-                            {method.label}
+                            {t(method.labelKey)}
                           </button>
                         ))}
                       </div>
@@ -1259,7 +1262,7 @@ export default function CheckoutPage() {
                         onClick={() => setStep(1)}
                         className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors border border-border text-foreground hover:bg-muted`}
                       >
-                        Retour
+                        {t("back")}
                       </button>
                       <button
                         onClick={async () => {
@@ -1270,7 +1273,7 @@ export default function CheckoutPage() {
                         className="flex-1 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
                         style={{ background: 'var(--accent)' }}
                       >
-                        Continuer
+                        {t("continue")}
                       </button>
                     </div>
                   </div>
@@ -1288,7 +1291,7 @@ export default function CheckoutPage() {
                 >
                   {/* ÉTAPE 3 - CONFIRMATION Desktop */}
                   <div className={`rounded-xl border-0 p-4 lg:p-6 bg-card`}>
-                    <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 text-foreground`}>Confirmation</h2>
+                    <h2 className={`text-sm lg:text-base font-medium mb-3 lg:mb-4 text-foreground`}>{t("confirmation")}</h2>
 
                     {error && (
                       <div className="mb-4 p-3 rounded-xl flex items-center gap-2 text-xs" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
@@ -1301,7 +1304,7 @@ export default function CheckoutPage() {
                       <div className={`p-3 rounded-lg bg-muted`}>
                         <div className="flex items-center gap-1 mb-2">
                           <Home className="w-3 h-3" style={{ color: 'var(--accent)' }} />
-                          <span className={`text-xs font-medium text-foreground`}>Livraison</span>
+                          <span className={`text-xs font-medium text-foreground`}>{t("delivery")}</span>
                         </div>
                         <p className={`text-xs leading-relaxed break-words text-muted-foreground`}>
                           {shippingInfo.firstName} {shippingInfo.lastName}<br />
@@ -1315,25 +1318,25 @@ export default function CheckoutPage() {
                       <div className={`p-3 rounded-lg bg-muted`}>
                         <div className="space-y-1.5 text-xs">
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Sous-total</span>
+                            <span className="text-muted-foreground">{t("subtotal")}</span>
                             <span className="text-foreground">{formatPrice(totalUSD)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Expédition</span>
+                            <span className="text-muted-foreground">{t("shipping")}</span>
                             <span className="text-foreground">{formatPrice(totalShippingUSD)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Porte-à-porte</span>
+                            <span className="text-muted-foreground">{t("doorToDoor")}</span>
                             <span className="text-foreground">{formatPrice(totalPortePorteUSD)}</span>
                           </div>
                           {discountAmount > 0 && (
                             <div className="flex justify-between text-green-600">
-                              <span>Réduction</span>
+                              <span>{t("discount")}</span>
                               <span>- {formatPrice(discountAmount)}</span>
                             </div>
                           )}
                           <div className={`border-t pt-1.5 mt-1.5 flex justify-between font-medium border-border`}>
-                            <span className="text-foreground">Total</span>
+                            <span className="text-foreground">{t("total")}</span>
                             <span style={{ color: 'var(--accent)' }}>{formatPrice(finalTotal)}</span>
                           </div>
                         </div>
@@ -1352,7 +1355,7 @@ export default function CheckoutPage() {
                           onClick={() => setStep(2)}
                           className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-xl transition-colors border border-border text-foreground hover:bg-muted`}
                         >
-                          Retour
+                          {t("back")}
                         </button>
                         <PaymentButton
                           email={shippingInfo.email || user?.email || ""}
@@ -1363,7 +1366,7 @@ export default function CheckoutPage() {
                           onError={handlePaymentError}
                           beforePayment={validateMOQBeforePayment}
                         >
-                          Payer {formatPrice(finalTotal)}
+                          {t("pay", { price: formatPrice(finalTotal) })}
                         </PaymentButton>
                       </div>
                     </div>
@@ -1377,14 +1380,14 @@ export default function CheckoutPage() {
               <div className={`rounded-xl border-0 p-4 lg:p-5 sticky lg:top-24 bg-card`}>
                 <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 text-foreground`}>
                   <Truck className="w-4 h-4" style={{ color: 'var(--accent)' }} />
-                  Commande ({totalItems})
+                  {t("orderTitle", { count: totalItems })}
                 </h2>
 
-                <div className="space-y-2 max-h-80 lg:max-h-96 overflow-y-auto pr-1">
+                <div className="space-y-2 max-h-80 lg:max-h-96 overflow-y-auto pe-1">
                   {cart.map((item) => {
                     const truncatedTitle = item.name && item.name.length > 40 
                       ? item.name.substring(0, 40) + "..." 
-                      : item.name || "Produit";
+                      : item.name || t("productFallback");
                     const shippingMode = item.shippingMode || defaultShippingMode;
                     const minQty = item.minQuantity || getMinQuantity(item.price);
                     const isBelowMOQ = isProductBelowMOQ(item);
@@ -1394,7 +1397,7 @@ export default function CheckoutPage() {
                         <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border-0 bg-muted`}>
                           <Image
                             src={item.image || "/placeholder.svg"}
-                            alt={item.name || "Produit"}
+                            alt={item.name || t("productFallback")}
                             width={48}
                             height={48}
                             className="w-full h-full object-contain p-1"
@@ -1404,7 +1407,7 @@ export default function CheckoutPage() {
                           <p className={`text-xs font-medium break-words leading-tight text-foreground`}>
                             {truncatedTitle}
                             {isBelowMOQ && (
-                              <span className="ml-1 text-xs text-red-500">⚠️ MOQ</span>
+                              <span className="ms-1 text-xs text-red-500">⚠️ MOQ</span>
                             )}
                           </p>
                           {(item.color || item.eurSize) && (
@@ -1414,7 +1417,7 @@ export default function CheckoutPage() {
                           )}
                           <div className="mt-1">
                             <span className={`text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground`}>
-                              {getShippingLabel(shippingMode)}
+                              {getShippingLabel(shippingMode, t)}
                             </span>
                           </div>
                           <div className="flex justify-between items-center mt-1">
@@ -1431,25 +1434,25 @@ export default function CheckoutPage() {
 
                 <div className={`border-t mt-3 pt-3 space-y-1.5 border-border`}>
                   <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Sous-total</span>
+                    <span className="text-muted-foreground">{t("subtotal")}</span>
                     <span className={`font-medium text-foreground`}>{formatPrice(totalUSD)}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Expédition</span>
+                    <span className="text-muted-foreground">{t("shipping")}</span>
                     <span className={`font-medium text-foreground`}>{formatPrice(totalShippingUSD)}</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Porte-à-porte</span>
+                    <span className="text-muted-foreground">{t("doorToDoor")}</span>
                     <span className={`font-medium text-foreground`}>{formatPrice(totalPortePorteUSD)}</span>
                   </div>
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-xs text-green-600">
-                      <span>Réduction</span>
+                      <span>{t("discount")}</span>
                       <span>- {formatPrice(discountAmount)}</span>
                     </div>
                   )}
                   <div className={`flex justify-between text-xs font-medium pt-1.5 border-t border-border`}>
-                    <span className="text-foreground">Total</span>
+                    <span className="text-foreground">{t("total")}</span>
                     <span style={{ color: 'var(--accent)' }}>{formatPrice(finalTotal)}</span>
                   </div>
                 </div>
@@ -1457,7 +1460,7 @@ export default function CheckoutPage() {
                 <div className="mt-3 pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
                   <div className={`flex items-center gap-1.5 text-[10px] text-muted-foreground`}>
                     <Lock className="w-3 h-3" />
-                    <span>Paiement sécurisé</span>
+                    <span>{t("securePayment")}</span>
                   </div>
                 </div>
               </div>
@@ -1479,11 +1482,11 @@ export default function CheckoutPage() {
                   <div className={`rounded-xl border-0 p-4 bg-card`}>
                     <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 text-foreground`}>
                       <MapPin className="w-4 h-4" style={{ color: 'var(--accent)' }} />
-                      Adresse de livraison
+                      {t("deliveryAddress")}
                     </h2>
 
                     <div className="mb-3">
-                      <label className={`block text-xs mb-1 text-muted-foreground`}>Pays</label>
+                      <label className={`block text-xs mb-1 text-muted-foreground`}>{t("country")}</label>
                       <div className="relative" ref={countryDropdownRef}>
                         <button
                           type="button"
@@ -1492,7 +1495,7 @@ export default function CheckoutPage() {
                         >
                           <div className="flex items-center gap-2">
                             <span>{selectedCountry.flag}</span>
-                            <span>{selectedCountry.name}</span>
+                            <span>{getCountryName(selectedCountry.code, language)}</span>
                           </div>
                           <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${isCountryDropdownOpen ? 'rotate-90' : ''}`} />
                         </button>
@@ -1502,10 +1505,10 @@ export default function CheckoutPage() {
                               <button
                                 key={country.code}
                                 onClick={() => handleCountryChange(country)}
-                                className={`w-full px-3 py-2 text-left flex items-center gap-2 text-sm border-b hover:bg-muted text-foreground border-border`}
+                                className={`w-full px-3 py-2 text-start flex items-center gap-2 text-sm border-b hover:bg-muted text-foreground border-border`}
                               >
                                 <span>{country.flag}</span>
-                                <span>{country.name}</span>
+                                <span>{getCountryName(country.code, language)}</span>
                               </button>
                             ))}
                           </div>
@@ -1515,7 +1518,7 @@ export default function CheckoutPage() {
 
                     {addresses.length > 0 && !showNewAddressForm ? (
                       <div>
-                        <label className={`block text-xs mb-2 text-muted-foreground`}>Adresse existante</label>
+                        <label className={`block text-xs mb-2 text-muted-foreground`}>{t("existingAddress")}</label>
                         <div className="space-y-2 max-h-48 overflow-y-auto">
                           {addresses
                             .filter(a => a.country === selectedCountry.code)
@@ -1523,7 +1526,7 @@ export default function CheckoutPage() {
                               <button
                                 key={addr.id}
                                 onClick={() => selectAddress(addr)}
-                                className={`w-full p-3 border rounded-lg text-left transition-all ${
+                                className={`w-full p-3 border rounded-lg text-start transition-all ${
                                   selectedAddressId === addr.id
                                     ? 'border-accent bg-accent/5'
                                     : 'border-border'
@@ -1550,22 +1553,22 @@ export default function CheckoutPage() {
                           onClick={() => setShowNewAddressForm(true)}
                           className={`w-full mt-3 py-2 border border-dashed rounded-lg text-xs flex items-center justify-center gap-1 border-border text-muted-foreground hover:border-foreground/30`}
                         >
-                          <Plus className="w-3 h-3" /> Nouvelle adresse
+                          <Plus className="w-3 h-3" /> {t("newAddress")}
                         </button>
                       </div>
                     ) : (
                       <div className="space-y-3">
                         <div className="grid grid-cols-2 gap-2">
-                          <input type="text" name="firstName" value={shippingInfo.firstName} onChange={handleInputChange} placeholder="Prénom" className={`px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
-                          <input type="text" name="lastName" value={shippingInfo.lastName} onChange={handleInputChange} placeholder="Nom" className={`px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
+                          <input type="text" name="firstName" value={shippingInfo.firstName} onChange={handleInputChange} placeholder={t("firstName")} className={`px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
+                          <input type="text" name="lastName" value={shippingInfo.lastName} onChange={handleInputChange} placeholder={t("lastName")} className={`px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
                         </div>
-                        <input type="email" name="email" value={shippingInfo.email} onChange={handleInputChange} placeholder="Email" className={`w-full px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
-                        <input type="tel" name="phone" value={shippingInfo.phone} onChange={handleInputChange} placeholder="Téléphone" className={`w-full px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
-                        <input type="text" name="address" value={shippingInfo.address} onChange={handleInputChange} placeholder="Adresse" className={`w-full px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
-                        <input type="text" name="quartier" value={shippingInfo.quartier} onChange={handleInputChange} placeholder="Quartier" className={`w-full px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
+                        <input type="email" name="email" value={shippingInfo.email} onChange={handleInputChange} placeholder={t("email")} className={`w-full px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
+                        <input type="tel" name="phone" value={shippingInfo.phone} onChange={handleInputChange} placeholder={t("phone")} className={`w-full px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
+                        <input type="text" name="address" value={shippingInfo.address} onChange={handleInputChange} placeholder={t("address")} className={`w-full px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
+                        <input type="text" name="quartier" value={shippingInfo.quartier} onChange={handleInputChange} placeholder={t("quartier")} className={`w-full px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
                         <div className="grid grid-cols-2 gap-2">
-                          <input type="text" name="city" value={shippingInfo.city} onChange={handleInputChange} placeholder="Ville" className={`px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
-                          <input type="text" name="postalCode" value={shippingInfo.postalCode} onChange={handleInputChange} placeholder="Code postal" className={`px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
+                          <input type="text" name="city" value={shippingInfo.city} onChange={handleInputChange} placeholder={t("city")} className={`px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
+                          <input type="text" name="postalCode" value={shippingInfo.postalCode} onChange={handleInputChange} placeholder={t("postalCode")} className={`px-3 py-2 text-sm border rounded-lg bg-card text-foreground border-border`} />
                         </div>
                       </div>
                     )}
@@ -1576,7 +1579,7 @@ export default function CheckoutPage() {
                       className="w-full mt-4 py-2.5 text-sm font-medium text-white rounded-lg disabled:opacity-50"
                       style={{ background: 'var(--accent)' }}
                     >
-                      Continuer
+                      {t("continue")}
                     </button>
                   </div>
                 </motion.div>
@@ -1594,11 +1597,11 @@ export default function CheckoutPage() {
                   <div className={`rounded-xl border-0 p-4 bg-card`}>
                     <h2 className={`text-sm font-medium mb-3 flex items-center gap-2 text-foreground`}>
                       <Truck className="w-4 h-4" style={{ color: 'var(--accent)' }} />
-                      Mode d'expédition par produit
+                      {t("shippingPerProduct")}
                     </h2>
                     
                     <p className={`text-xs mb-4 text-muted-foreground`}>
-                      Choisissez le mode d'expédition pour chaque article.
+                      {t("shippingPerProductHint")}
                     </p>
 
                     <div className="space-y-4">
@@ -1613,30 +1616,30 @@ export default function CheckoutPage() {
                           style={isBelowMOQ ? { border: '1px solid var(--accent)' } : {}}>
                             <div className="flex gap-3">
                               <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border bg-card border-border`}>
-                                <Image src={item.image || "/placeholder.svg"} alt={item.name || "Produit"} width={48} height={48} className="w-full h-full object-contain p-1" />
+                                <Image src={item.image || "/placeholder.svg"} alt={item.name || t("productFallback")} width={48} height={48} className="w-full h-full object-contain p-1" />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className={`text-sm font-medium break-words leading-tight text-foreground`}>
-                                  {item.name || "Produit"}
+                                  {item.name || t("productFallback")}
                                 </p>
                                 {(item.color || item.eurSize) && (
                                   <p className={`text-xs mt-0.5 text-muted-foreground`}>
                                     {item.color} {item.eurSize && `• ${item.eurSize}`}
                                   </p>
                                 )}
-                                <p className={`text-xs mt-1 text-muted-foreground`}>Qté: {item.quantity}</p>
+                                <p className={`text-xs mt-1 text-muted-foreground`}>{t("qtyShort", { count: item.quantity })}</p>
                                 {isBelowMOQ && (
-                                  <span className="text-xs text-red-500 font-medium">⚠️ MOQ: {minQty} min</span>
+                                  <span className="text-xs text-red-500 font-medium">{t("moqShort", { min: minQty })}</span>
                                 )}
                               </div>
-                              <div className="text-right flex-shrink-0">
+                              <div className="text-end flex-shrink-0">
                                 <p className="text-sm font-bold whitespace-nowrap" style={{ color: 'var(--accent)' }}>
                                   {formatPrice(item.price * item.quantity)}
                                 </p>
                               </div>
                             </div>
                             <div className="mt-3 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
-                              <span className={`text-xs mr-2 text-muted-foreground`}>Expédition:</span>
+                              <span className={`text-xs me-2 text-muted-foreground`}>{t("shippingColon")}</span>
                               <div className="flex gap-2 mt-1 flex-wrap">
                                 {SHIPPING_METHODS.map((method) => (
                                   <button
@@ -1649,7 +1652,7 @@ export default function CheckoutPage() {
                                     }`}
                                     style={currentMode === method.id ? { background: 'var(--accent)' } : {}}
                                   >
-                                    {method.label}
+                                    {t(method.labelKey)}
                                   </button>
                                 ))}
                               </div>
@@ -1660,7 +1663,7 @@ export default function CheckoutPage() {
                     </div>
 
                     <div className="mt-4 pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
-                      <p className={`text-xs mb-2 text-muted-foreground`}>Appliquer à tous:</p>
+                      <p className={`text-xs mb-2 text-muted-foreground`}>{t("applyAllShort")}</p>
                       <div className="flex gap-2 flex-wrap">
                         {SHIPPING_METHODS.map((method) => (
                           <button
@@ -1668,7 +1671,7 @@ export default function CheckoutPage() {
                             onClick={() => handleGlobalShippingChange(method.id as any)}
                             className={`px-3 py-1.5 rounded-lg text-xs font-medium bg-muted text-muted-foreground`}
                           >
-                            {method.label}
+                            {t(method.labelKey)}
                           </button>
                         ))}
                       </div>
@@ -1679,7 +1682,7 @@ export default function CheckoutPage() {
                         onClick={() => setStep(1)}
                         className={`flex-1 py-2.5 text-sm rounded-lg transition-colors border border-border text-foreground hover:bg-muted`}
                       >
-                        Retour
+                        {t("back")}
                       </button>
                       <button
                         onClick={async () => {
@@ -1690,7 +1693,7 @@ export default function CheckoutPage() {
                         className="flex-1 py-2.5 text-sm font-medium text-white rounded-lg transition-colors"
                         style={{ background: 'var(--accent)' }}
                       >
-                        Continuer
+                        {t("continue")}
                       </button>
                     </div>
                   </div>
@@ -1707,7 +1710,7 @@ export default function CheckoutPage() {
                 >
                   {/* ÉTAPE 3 - CONFIRMATION Mobile */}
                   <div className={`rounded-xl border-0 p-4 bg-card`}>
-                    <h2 className={`text-sm font-medium mb-3 text-foreground`}>Confirmation</h2>
+                    <h2 className={`text-sm font-medium mb-3 text-foreground`}>{t("confirmation")}</h2>
                     
                     {error && <div className={`mb-3 p-2 rounded-lg text-xs bg-accent-light text-accent`}>{error}</div>}
                     
@@ -1725,25 +1728,25 @@ export default function CheckoutPage() {
                       <div className={`p-3 rounded-lg bg-muted`}>
                         <div className="space-y-1.5 text-xs">
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Sous-total</span>
+                            <span className="text-muted-foreground">{t("subtotal")}</span>
                             <span className="text-foreground">{formatPrice(totalUSD)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Expédition</span>
+                            <span className="text-muted-foreground">{t("shipping")}</span>
                             <span className="text-foreground">{formatPrice(totalShippingUSD)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Porte-à-porte</span>
+                            <span className="text-muted-foreground">{t("doorToDoor")}</span>
                             <span className="text-foreground">{formatPrice(totalPortePorteUSD)}</span>
                           </div>
                           {discountAmount > 0 && (
                             <div className="flex justify-between text-xs text-green-600">
-                              <span>Réduction</span>
+                              <span>{t("discount")}</span>
                               <span>- {formatPrice(discountAmount)}</span>
                             </div>
                           )}
                           <div className={`flex justify-between font-bold pt-1 border-t border-border`}>
-                            <span className="text-foreground">Total</span>
+                            <span className="text-foreground">{t("total")}</span>
                             <span style={{ color: 'var(--accent)' }}>{formatPrice(finalTotal)}</span>
                           </div>
                         </div>
@@ -1758,7 +1761,7 @@ export default function CheckoutPage() {
                       />
 
                       <div className="flex gap-2 pt-2">
-                        <button onClick={() => setStep(2)} className={`flex-1 py-2 text-sm rounded-lg border border-border text-foreground hover:bg-muted`}>Retour</button>
+                        <button onClick={() => setStep(2)} className={`flex-1 py-2 text-sm rounded-lg border border-border text-foreground hover:bg-muted`}>{t("back")}</button>
                         <PaymentButton
                           email={shippingInfo.email || user?.email || ""}
                           amount={finalTotal}
@@ -1768,7 +1771,7 @@ export default function CheckoutPage() {
                           onError={handlePaymentError}
                           beforePayment={validateMOQBeforePayment}
                         >
-                          Payer {formatPrice(finalTotal)}
+                          {t("pay", { price: formatPrice(finalTotal) })}
                         </PaymentButton>
                       </div>
                     </div>
