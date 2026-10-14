@@ -810,9 +810,9 @@
     "s4": "4. Valide a encomenda e avance para o pagamento",
     "q2": "Quais são os modos de entrega?",
     "seaName": "Marítimo (barco)",
-    "seaInfo": " : 45-50 dias - Económico",
+    "seaInfo": " : 35-50 dias - Económico",
     "airName": "Aéreo (avião)",
-    "airInfo": " : 15-17 dias - Rápido",
+    "airInfo": " : 15-20 dias - Rápido",
     "expressName": "Expresso",
     "expressInfo": " : 7-10 dias - Muito rápido",
     "q3": "Posso acompanhar a minha encomenda?",
@@ -841,13 +841,15 @@
     "usedTitle": "Cookies utilizados",
     "used1": "Cookies essenciais (carrinho, sessão)",
     "used2": "Cookies de sessão",
-    "used3": "Cookies de análise (melhoria do site)",
+    "used3": "Medição de audiência (Vercel Analytics): visualizações de página e desempenho do site",
     "manageTitle": "Gestão de cookies",
-    "manageText": "Pode configurar o seu navegador para recusar cookies."
+    "manageText": "Pode configurar o seu navegador para recusar cookies.",
+    "used4": "Publicidade (Meta Pixel): medição da eficácia dos nossos anúncios no Facebook e no Instagram",
+    "manageText2": "Pode também gerir as suas preferências de publicidade nas definições da sua conta Facebook ou Instagram."
   },
   "pageConfidentialite": {
     "title": "Política de privacidade",
-    "updated": "Última atualização: 6 de maio de 2026",
+    "updated": "Última atualização: 14 de outubro de 2026",
     "s1Title": "1. Recolha de dados",
     "s1Text": "Recolhemos as informações necessárias para processar as suas encomendas (nome, email, morada, telefone).",
     "s2Title": "2. Utilização dos dados",
@@ -858,7 +860,13 @@
     "s3Title": "3. Segurança",
     "s3Text": "Implementamos medidas de segurança para proteger os seus dados.",
     "s4Title": "4. Os seus direitos",
-    "s4Text": "Pode aceder, alterar ou eliminar os seus dados contactando-nos através de contact@adullamarket.com."
+    "s4Text": "Pode aceder, alterar ou eliminar os seus dados contactando-nos através de contact@adullamarket.com.",
+    "l4": "Medir a audiência do site e a eficácia dos nossos anúncios (ver secção 5)",
+    "s5Title": "5. Serviços de terceiros e medição de audiência",
+    "s5Intro": "Utilizamos ferramentas de terceiros para medir a audiência do site e a eficácia dos nossos anúncios:",
+    "s5l1": "Meta Pixel (Meta Platforms): regista as suas visitas e certas ações (visualizações de página, início do pagamento) para medir os nossos anúncios no Facebook e no Instagram. Estes dados são transmitidos à Meta.",
+    "s5l2": "Vercel Analytics (Vercel Inc.): medição de audiência agregada (visualizações de página, desempenho do site).",
+    "s5Outro": "Estas ferramentas podem colocar cookies ou usar identificadores semelhantes. Pode recusar cookies no seu navegador (ver a nossa página <link>Cookies</link>)."
   },
   "pageMentions": {
     "title": "Aviso legal",
@@ -883,8 +891,8 @@
   },
   "pageRetours": {
     "title": "Política de devoluções",
-    "withdrawTitle": "Prazo de livre resolução",
-    "withdrawText": "Dispõe de 14 dias a contar da receção da sua encomenda para exercer o direito de livre resolução.",
+    "withdrawTitle": "Prazo de devolução",
+    "withdrawText": "Dispõe de 5 dias a contar da receção da encomenda para nos comunicar um produto não conforme com a descrição e obter reembolso ou troca.",
     "eligTitle": "Condições de elegibilidade",
     "e1": "Produto não utilizado, na embalagem original",
     "e2": "Etiquetas e acessórios intactos",

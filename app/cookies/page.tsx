@@ -18,12 +18,14 @@ export default async function CookiesPage() {
             <li>{t("used1")}</li>
             <li>{t("used2")}</li>
             <li>{t("used3")}</li>
+            <li>{t("used4")}</li>
           </ul>
         </section>
 
         <section>
           <h2 className="text-xl font-semibold mb-2">{t("manageTitle")}</h2>
           <p>{t("manageText")}</p>
+          <p className="mt-2">{t("manageText2")}</p>
         </section>
       </div>
     </div>

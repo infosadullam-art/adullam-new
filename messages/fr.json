@@ -810,9 +810,9 @@
     "s4": "4. Validez votre commande et procédez au paiement",
     "q2": "Quels sont les modes de livraison ?",
     "seaName": "Maritime (bateau)",
-    "seaInfo": " : 45-50 jours - Économique",
+    "seaInfo": " : 35-50 jours - Économique",
     "airName": "Aérien (avion)",
-    "airInfo": " : 15-17 jours - Rapide",
+    "airInfo": " : 15-20 jours - Rapide",
     "expressName": "Express",
     "expressInfo": " : 7-10 jours - Très rapide",
     "q3": "Puis-je suivre ma commande ?",
@@ -841,13 +841,15 @@
     "usedTitle": "Cookies utilisés",
     "used1": "Cookies essentiels (panier, connexion)",
     "used2": "Cookies de session",
-    "used3": "Cookies d'analyse (amélioration du site)",
+    "used3": "Mesure d'audience (Vercel Analytics) : pages vues et performances du site",
     "manageTitle": "Gestion des cookies",
-    "manageText": "Vous pouvez configurer votre navigateur pour refuser les cookies."
+    "manageText": "Vous pouvez configurer votre navigateur pour refuser les cookies.",
+    "used4": "Publicité (Meta Pixel) : mesure de l'efficacité de nos publicités sur Facebook et Instagram",
+    "manageText2": "Vous pouvez aussi gérer vos préférences publicitaires depuis les paramètres de votre compte Facebook ou Instagram."
   },
   "pageConfidentialite": {
     "title": "Politique de confidentialité",
-    "updated": "Dernière mise à jour : 6 mai 2026",
+    "updated": "Dernière mise à jour : 14 octobre 2026",
     "s1Title": "1. Collecte des données",
     "s1Text": "Nous collectons les informations nécessaires au traitement de vos commandes (nom, email, adresse, téléphone).",
     "s2Title": "2. Utilisation des données",
@@ -858,7 +860,13 @@
     "s3Title": "3. Sécurité",
     "s3Text": "Nous mettons en œuvre des mesures de sécurité pour protéger vos données.",
     "s4Title": "4. Vos droits",
-    "s4Text": "Vous pouvez accéder, modifier ou supprimer vos données en nous contactant à contact@adullamarket.com."
+    "s4Text": "Vous pouvez accéder, modifier ou supprimer vos données en nous contactant à contact@adullamarket.com.",
+    "l4": "Mesurer l'audience du site et l'efficacité de nos publicités (voir la section 5)",
+    "s5Title": "5. Services tiers et mesure d'audience",
+    "s5Intro": "Nous utilisons des outils tiers pour mesurer l'audience du site et l'efficacité de nos publicités :",
+    "s5l1": "Meta Pixel (Meta Platforms) : enregistre vos visites et certaines actions (pages vues, début de paiement) afin de mesurer nos publicités sur Facebook et Instagram. Ces données sont transmises à Meta.",
+    "s5l2": "Vercel Analytics (Vercel Inc.) : mesure d'audience agrégée (pages vues, performances du site).",
+    "s5Outro": "Ces outils peuvent déposer des cookies ou utiliser des identifiants similaires. Vous pouvez refuser les cookies depuis votre navigateur (voir notre page <link>Cookies</link>)."
   },
   "pageMentions": {
     "title": "Mentions légales",
@@ -883,8 +891,8 @@
   },
   "pageRetours": {
     "title": "Politique de retours",
-    "withdrawTitle": "Délai de rétractation",
-    "withdrawText": "Vous disposez de 14 jours à compter de la réception de votre commande pour exercer votre droit de rétractation.",
+    "withdrawTitle": "Délai de retour",
+    "withdrawText": "Vous disposez de 5 jours à compter de la réception de votre commande pour nous signaler un produit non conforme à la description et obtenir un remboursement ou un échange.",
     "eligTitle": "Conditions d'éligibilité",
     "e1": "Produit non utilisé, dans son emballage d'origine",
     "e2": "Étiquettes et accessoires intacts",

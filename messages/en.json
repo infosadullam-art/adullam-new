@@ -810,9 +810,9 @@
     "s4": "4. Confirm your order and proceed to payment",
     "q2": "What are the delivery methods?",
     "seaName": "Sea (ship)",
-    "seaInfo": " : 45-50 days - Economical",
+    "seaInfo": " : 35-50 days - Economical",
     "airName": "Air (plane)",
-    "airInfo": " : 15-17 days - Fast",
+    "airInfo": " : 15-20 days - Fast",
     "expressName": "Express",
     "expressInfo": " : 7-10 days - Very fast",
     "q3": "Can I track my order?",
@@ -841,13 +841,15 @@
     "usedTitle": "Cookies used",
     "used1": "Essential cookies (cart, login)",
     "used2": "Session cookies",
-    "used3": "Analytics cookies (site improvement)",
+    "used3": "Audience measurement (Vercel Analytics): page views and site performance",
     "manageTitle": "Managing cookies",
-    "manageText": "You can configure your browser to refuse cookies."
+    "manageText": "You can configure your browser to refuse cookies.",
+    "used4": "Advertising (Meta Pixel): measuring the effectiveness of our ads on Facebook and Instagram",
+    "manageText2": "You can also manage your advertising preferences from the settings of your Facebook or Instagram account."
   },
   "pageConfidentialite": {
     "title": "Privacy policy",
-    "updated": "Last updated: May 6, 2026",
+    "updated": "Last updated: October 14, 2026",
     "s1Title": "1. Data collection",
     "s1Text": "We collect the information needed to process your orders (name, email, address, phone).",
     "s2Title": "2. Use of data",
@@ -858,7 +860,13 @@
     "s3Title": "3. Security",
     "s3Text": "We implement security measures to protect your data.",
     "s4Title": "4. Your rights",
-    "s4Text": "You can access, modify or delete your data by contacting us at contact@adullamarket.com."
+    "s4Text": "You can access, modify or delete your data by contacting us at contact@adullamarket.com.",
+    "l4": "Measure site audience and the effectiveness of our ads (see section 5)",
+    "s5Title": "5. Third-party services and audience measurement",
+    "s5Intro": "We use third-party tools to measure site audience and the effectiveness of our ads:",
+    "s5l1": "Meta Pixel (Meta Platforms): records your visits and certain actions (page views, checkout start) to measure our ads on Facebook and Instagram. This data is sent to Meta.",
+    "s5l2": "Vercel Analytics (Vercel Inc.): aggregated audience measurement (page views, site performance).",
+    "s5Outro": "These tools may set cookies or use similar identifiers. You can refuse cookies from your browser (see our <link>Cookies</link> page)."
   },
   "pageMentions": {
     "title": "Legal notice",
@@ -883,8 +891,8 @@
   },
   "pageRetours": {
     "title": "Returns policy",
-    "withdrawTitle": "Withdrawal period",
-    "withdrawText": "You have 14 days from receipt of your order to exercise your right of withdrawal.",
+    "withdrawTitle": "Return period",
+    "withdrawText": "You have 5 days from receipt of your order to report a product that does not match its description and get a refund or exchange.",
     "eligTitle": "Eligibility conditions",
     "e1": "Unused product, in its original packaging",
     "e2": "Labels and accessories intact",

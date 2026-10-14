@@ -20,6 +20,7 @@ export default async function ConfidentialitePage() {
             <li>{t("l1")}</li>
             <li>{t("l2")}</li>
             <li>{t("l3")}</li>
+            <li>{t("l4")}</li>
           </ul>
         </section>
 
@@ -31,6 +32,20 @@ export default async function ConfidentialitePage() {
         <section>
           <h2 className="text-xl font-semibold mb-2">{t("s4Title")}</h2>
           <p>{t("s4Text")}</p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-semibold mb-2">{t("s5Title")}</h2>
+          <p>{t("s5Intro")}</p>
+          <ul className="list-disc list-inside mt-2 space-y-1">
+            <li>{t("s5l1")}</li>
+            <li>{t("s5l2")}</li>
+          </ul>
+          <p className="mt-2">
+            {t.rich("s5Outro", {
+              link: (chunks) => <a href="/cookies" className="underline">{chunks}</a>,
+            })}
+          </p>
         </section>
       </div>
     </div>
