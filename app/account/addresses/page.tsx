@@ -4,6 +4,9 @@ import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/admin/auth-context"
 import { MapPin, Plus, Edit2, Trash2, Check, X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useTranslations } from "next-intl"
+import { useLocale } from "@/context/LocaleProvider"
+import { getCountryName } from "@/lib/country-config"
 import { addressesApi } from "@/lib/admin/api-client"  // ✅ AJOUTÉ
 
 interface Address {
@@ -22,6 +25,8 @@ interface Address {
 }
 
 export default function AddressesPage() {
+  const t = useTranslations("addresses")
+  const { language } = useLocale()
   const { user } = useAuth()
   const [addresses, setAddresses] = useState<Address[]>([])
   const [loading, setLoading] = useState(true)
@@ -85,7 +90,7 @@ export default function AddressesPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Voulez-vous supprimer cette adresse ?")) return
+    if (!confirm(t("confirmDelete"))) return
 
     try {
       // ✅ CORRIGÉ : suppression d'une adresse
@@ -134,13 +139,13 @@ export default function AddressesPage() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Mes adresses</h1>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
         <button
           onClick={() => setShowForm(true)}
           className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand-hover"
         >
           <Plus className="w-4 h-4" />
-          Ajouter une adresse
+          {t("add")}
         </button>
       </div>
 
@@ -154,13 +159,13 @@ export default function AddressesPage() {
             className="bg-white rounded-lg shadow-sm p-6 mb-6"
           >
             <h2 className="text-lg font-semibold mb-4">
-              {editingId ? "Modifier l'adresse" : "Nouvelle adresse"}
+              {editingId ? t("editTitle") : t("newTitle")}
             </h2>
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Prénom</label>
+                  <label className="block text-sm font-medium mb-1">{t("firstName")}</label>
                   <input
                     type="text"
                     value={formData.firstName}
@@ -170,7 +175,7 @@ export default function AddressesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Nom</label>
+                  <label className="block text-sm font-medium mb-1">{t("lastName")}</label>
                   <input
                     type="text"
                     value={formData.lastName}
@@ -182,7 +187,7 @@ export default function AddressesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Entreprise (optionnel)</label>
+                <label className="block text-sm font-medium mb-1">{t("companyOpt")}</label>
                 <input
                   type="text"
                   value={formData.company}
@@ -192,7 +197,7 @@ export default function AddressesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Adresse</label>
+                <label className="block text-sm font-medium mb-1">{t("address")}</label>
                 <input
                   type="text"
                   value={formData.address}
@@ -203,7 +208,7 @@ export default function AddressesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Complément (optionnel)</label>
+                <label className="block text-sm font-medium mb-1">{t("complementOpt")}</label>
                 <input
                   type="text"
                   value={formData.complement}
@@ -214,7 +219,7 @@ export default function AddressesPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Ville</label>
+                  <label className="block text-sm font-medium mb-1">{t("city")}</label>
                   <input
                     type="text"
                     value={formData.city}
@@ -224,7 +229,7 @@ export default function AddressesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Code postal</label>
+                  <label className="block text-sm font-medium mb-1">{t("postalCode")}</label>
                   <input
                     type="text"
                     value={formData.postalCode}
@@ -235,7 +240,7 @@ export default function AddressesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Téléphone</label>
+                <label className="block text-sm font-medium mb-1">{t("phone")}</label>
                 <input
                   type="tel"
                   value={formData.phone}
@@ -252,7 +257,7 @@ export default function AddressesPage() {
                   onChange={(e) => setFormData({...formData, isDefault: e.target.checked})}
                   className="rounded border-gray-300"
                 />
-                <span className="text-sm">Définir comme adresse par défaut</span>
+                <span className="text-sm">{t("setDefault")}</span>
               </label>
 
               <div className="flex gap-3 pt-4">
@@ -260,14 +265,14 @@ export default function AddressesPage() {
                   type="submit"
                   className="px-6 py-2 bg-brand text-white rounded-lg hover:bg-brand-hover"
                 >
-                  {editingId ? "Mettre à jour" : "Ajouter"}
+                  {editingId ? t("update") : t("addBtn")}
                 </button>
                 <button
                   type="button"
                   onClick={resetForm}
                   className="px-6 py-2 border rounded-lg hover:bg-gray-50"
                 >
-                  Annuler
+                  {t("cancel")}
                 </button>
               </div>
             </form>
@@ -279,12 +284,12 @@ export default function AddressesPage() {
       {addresses.length === 0 && !showForm ? (
         <div className="text-center py-12 bg-white rounded-lg">
           <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-          <p className="text-gray-600">Aucune adresse enregistrée</p>
+          <p className="text-gray-600">{t("empty")}</p>
           <button
             onClick={() => setShowForm(true)}
             className="mt-4 text-brand font-medium hover:underline"
           >
-            Ajouter une adresse
+            {t("add")}
           </button>
         </div>
       ) : (
@@ -297,8 +302,8 @@ export default function AddressesPage() {
               className="bg-white rounded-lg shadow-sm p-6 relative"
             >
               {address.isDefault && (
-                <span className="absolute top-4 right-4 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                  Par défaut
+                <span className="absolute top-4 end-4 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                  {t("default")}
                 </span>
               )}
               
@@ -314,9 +319,9 @@ export default function AddressesPage() {
                     <p className="text-sm text-gray-600">{address.complement}</p>
                   )}
                   <p className="text-sm text-gray-600">
-                    {address.city}, {address.country}
+                    {address.city}, {getCountryName(address.country, language)}
                   </p>
-                  <p className="text-sm text-gray-600">{address.phone}</p>
+                  <p className="text-sm text-gray-600" dir="ltr">{address.phone}</p>
                 </div>
               </div>
 
@@ -326,14 +331,14 @@ export default function AddressesPage() {
                   className="flex items-center gap-1 text-sm text-brand hover:underline"
                 >
                   <Edit2 className="w-4 h-4" />
-                  Modifier
+                  {t("edit")}
                 </button>
                 <button
                   onClick={() => handleDelete(address.id)}
                   className="flex items-center gap-1 text-sm text-red-600 hover:underline"
                 >
                   <Trash2 className="w-4 h-4" />
-                  Supprimer
+                  {t("delete")}
                 </button>
               </div>
             </motion.div>

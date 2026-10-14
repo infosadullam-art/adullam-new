@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
+import { useTranslations } from "next-intl"
+import { useLocale } from "@/context/LocaleProvider"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
 interface WishlistItem {
@@ -26,6 +28,8 @@ interface WishlistItem {
 }
 
 export default function WishlistPage() {
+  const t = useTranslations("wishlist")
+  const { language } = useLocale()
   const { user } = useAuth()
   const router = useRouter()
   const { formatPrice } = useCurrencyFormatter()
@@ -58,7 +62,7 @@ export default function WishlistPage() {
   }
 
   const handleRemove = async (id: string) => {
-    if (!confirm("Voulez-vous retirer ce produit de votre liste de souhaits ?")) return
+    if (!confirm(t("confirmRemove"))) return
     
     setRemovingId(id)
     try {
@@ -101,11 +105,11 @@ export default function WishlistPage() {
               onClick={() => router.back()}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-5 h-5 rtl:rotate-180" />
             </button>
             <div className="flex items-center gap-2">
               <Heart className="w-6 h-6" style={{ color: brandColor }} />
-              <h1 className="text-2xl font-bold text-gray-900">Ma liste de souhaits</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
             </div>
           </div>
         </div>
@@ -116,16 +120,16 @@ export default function WishlistPage() {
         {wishlist.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg shadow-sm">
             <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Liste de souhaits vide</h2>
+            <h2 className="text-xl font-semibold mb-2">{t("emptyTitle")}</h2>
             <p className="text-gray-600 mb-6">
-              Vous n'avez pas encore ajouté de produits à votre liste de souhaits.
+              {t("emptyText")}
             </p>
             <Link
               href="/"
               className="inline-block px-6 py-3 text-white rounded-lg transition-colors hover:shadow-lg"
               style={{ background: brandGradient }}
             >
-              Découvrir nos produits
+              {t("discover")}
             </Link>
           </div>
         ) : (
@@ -134,7 +138,7 @@ export default function WishlistPage() {
               {wishlist.map((item) => {
                 // ✅ Utiliser l'ID du produit directement
                 const productId = item.product?.id || item.productId
-                const productName = item.product?.title || item.product?.name || "Produit"
+                const productName = item.product?.title || item.product?.name || t("productFallback")
                 const productImage = item.product?.images?.[0] || "/placeholder.jpg"
                 const productPrice = item.product?.price || 0
                 const productStock = item.product?.stock || 0
@@ -173,11 +177,11 @@ export default function WishlistPage() {
                         </span>
                         {productStock > 0 ? (
                           <span className="text-xs px-2 py-1 rounded" style={{ background: brandLight, color: brandColor }}>
-                            En stock
+                            {t("inStock")}
                           </span>
                         ) : (
                           <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded">
-                            Rupture
+                            {t("outOfStock")}
                           </span>
                         )}
                       </div>
@@ -195,7 +199,7 @@ export default function WishlistPage() {
                           style={productStock > 0 ? { background: brandGradient } : {}}
                         >
                           <ShoppingBag className="w-4 h-4" />
-                          Ajouter au panier
+                          {t("addToCart")}
                         </button>
                         <button
                           onClick={() => handleRemove(item.id)}
@@ -212,7 +216,7 @@ export default function WishlistPage() {
 
                       {/* Date d'ajout */}
                       <p className="text-xs text-gray-400 mt-3">
-                        Ajouté le {new Date(item.createdAt).toLocaleDateString('fr-FR')}
+                        {t("addedOn", { date: new Date(item.createdAt).toLocaleDateString(language) })}
                       </p>
                     </div>
                   </motion.div>

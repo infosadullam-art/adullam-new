@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/admin/auth-context"
 import { Package, ChevronRight, ArrowLeft, Clock, CheckCircle, XCircle, Truck } from "lucide-react"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
+import { useLocale } from "@/context/LocaleProvider"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { ordersApi } from "@/lib/admin/api-client"  // ✅ AJOUTÉ
 
@@ -19,6 +21,8 @@ interface Order {
 }
 
 export default function OrdersPage() {
+  const t = useTranslations("orders")
+  const { language } = useLocale()
   const router = useRouter()
   const { user } = useAuth()
   const { formatPrice } = useCurrencyFormatter()
@@ -44,11 +48,11 @@ export default function OrdersPage() {
       if (response.success) {
         setOrders(response.data || [])
       } else {
-        setError("Impossible de charger vos commandes")
+        setError(t("loadFailed"))
       }
     } catch (error) {
       console.error("Erreur:", error)
-      setError("Erreur de chargement")
+      setError(t("loadError"))
     } finally {
       setLoading(false)
     }
@@ -65,12 +69,12 @@ export default function OrdersPage() {
 
   const getStatusLabel = (status: string): string => {
     const statusMap: Record<string, string> = {
-      "PENDING": "Paiement en attente",
-      "CONFIRMED": "Confirmée",
-      "PROCESSING": "En cours",
-      "SHIPPED": "Expédiée",
-      "DELIVERED": "Livrée",
-      "CANCELLED": "Annulée"
+      "PENDING": t("statusPENDING"),
+      "CONFIRMED": t("statusCONFIRMED"),
+      "PROCESSING": t("statusPROCESSING"),
+      "SHIPPED": t("statusSHIPPED"),
+      "DELIVERED": t("statusDELIVERED"),
+      "CANCELLED": t("statusCANCELLED")
     }
     return statusMap[status] || status
   }
@@ -105,9 +109,9 @@ export default function OrdersPage() {
               onClick={() => router.back()}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-5 h-5 rtl:rotate-180" />
             </button>
-            <h1 className="text-2xl font-bold">Mes commandes</h1>
+            <h1 className="text-2xl font-bold">{t("title")}</h1>
           </div>
         </div>
       </div>
@@ -121,13 +125,13 @@ export default function OrdersPage() {
         ) : orders.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg shadow-sm">
             <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Aucune commande</h2>
-            <p className="text-gray-600 mb-6">Vous n'avez pas encore passé de commande.</p>
+            <h2 className="text-xl font-semibold mb-2">{t("emptyTitle")}</h2>
+            <p className="text-gray-600 mb-6">{t("emptyText")}</p>
             <Link
               href="/"
               className="inline-block px-6 py-3 bg-[#C72C1C] text-white rounded-lg hover:bg-[#A21F18] transition-colors"
             >
-              Découvrir nos produits
+              {t("discover")}
             </Link>
           </div>
         ) : (
@@ -143,9 +147,9 @@ export default function OrdersPage() {
                     <div className="flex items-center gap-4">
                       {getStatusIcon(order.status)}
                       <div>
-                        <p className="font-semibold">Commande #{order.orderNumber}</p>
+                        <p className="font-semibold">{t("orderNumber", { number: order.orderNumber })}</p>
                         <p className="text-sm text-gray-500">
-                          {new Date(order.createdAt).toLocaleDateString('fr-FR', {
+                          {new Date(order.createdAt).toLocaleDateString(language, {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric',
@@ -184,7 +188,7 @@ export default function OrdersPage() {
                     ))}
                     {order.items && order.items.length > 3 && (
                       <div className="flex items-center justify-center px-4 bg-gray-50 rounded-lg">
-                        <span className="text-sm text-gray-600">+{order.items.length - 3} autres</span>
+                        <span className="text-sm text-gray-600">{t("more", { count: order.items.length - 3 })}</span>
                       </div>
                     )}
                   </div>
@@ -195,8 +199,8 @@ export default function OrdersPage() {
                       onClick={() => router.push(`/account/orders/${order.id}`)}
                       className="flex items-center gap-1 text-[#C72C1C] hover:underline text-sm font-medium"
                     >
-                      Voir les détails
-                      <ChevronRight className="w-4 h-4" />
+                      {t("viewDetails")}
+                      <ChevronRight className="w-4 h-4 rtl:rotate-180" />
                     </button>
                   </div>
                 </div>

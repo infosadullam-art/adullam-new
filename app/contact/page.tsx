@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/admin/auth-context"
 import { useTheme } from "@/components/theme-provider"
 import { useLocale } from "@/context/LocaleProvider"
+import { useTranslations } from "next-intl"
 import { Header } from "@/components/header"
 import { MobileHeader } from "@/components/mobile-header"
 import { Footer } from "@/components/footer"
@@ -13,6 +14,7 @@ import { toast } from "sonner"
 import { Loader2, Send, Mail, Clock, CheckCircle, Phone } from "lucide-react"
 
 export default function ContactPage() {
+  const t = useTranslations("contact")
   const router = useRouter()
   const { user } = useAuth()
   const { theme } = useTheme()
@@ -49,7 +51,6 @@ export default function ContactPage() {
       'GA': '+241', // Gabon
       'CF': '+236', // Centrafrique
       'TD': '+235', // Tchad
-      'BJ': '+229', // Bénin
       'MA': '+212', // Maroc
       'DZ': '+213', // Algérie
       'TN': '+216', // Tunisie
@@ -98,7 +99,7 @@ export default function ContactPage() {
     e.preventDefault()
     
     if (!formData.name || !formData.email || !formData.message) {
-      toast.error("Veuillez remplir tous les champs obligatoires")
+      toast.error(t("errRequired"))
       return
     }
 
@@ -121,7 +122,7 @@ export default function ContactPage() {
 
       if (response.ok) {
         setSuccess(true)
-        toast.success("Votre message a été envoyé avec succès !")
+        toast.success(t("okSent"))
         setFormData({
           name: user?.name || "",
           email: user?.email || "",
@@ -132,11 +133,11 @@ export default function ContactPage() {
         })
         setTimeout(() => setSuccess(false), 5000)
       } else {
-        toast.error(data.error || "Erreur lors de l'envoi du message")
+        toast.error(data.error || t("errSend"))
       }
     } catch (error) {
       console.error("Erreur envoi message:", error)
-      toast.error("Une erreur est survenue")
+      toast.error(t("errGeneric"))
     } finally {
       setIsSubmitting(false)
     }
@@ -149,9 +150,9 @@ export default function ContactPage() {
 
       <main className="max-w-4xl mx-auto px-4 py-8 lg:py-12 pb-20 lg:pb-8">
         <div className="mb-8">
-          <h1 className="text-3xl lg:text-4xl font-bold mb-2">Nous contacter</h1>
+          <h1 className="text-3xl lg:text-4xl font-bold mb-2">{t("title")}</h1>
           <p className="text-muted-foreground">
-            Une question ? Une suggestion ? N'hésitez pas à nous écrire, nous vous répondrons sous 24h.
+            {t("subtitle")}
           </p>
         </div>
 
@@ -164,9 +165,9 @@ export default function ContactPage() {
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-100 dark:bg-green-900/30">
                     <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">Message envoyé !</h3>
+                  <h3 className="text-xl font-semibold mb-2">{t("successTitle")}</h3>
                   <p className="text-muted-foreground">
-                    Merci de nous avoir contactés. Nous vous répondrons dans les plus brefs délais.
+                    {t("successText")}
                   </p>
                 </div>
               ) : (
@@ -174,7 +175,7 @@ export default function ContactPage() {
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium mb-1.5" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>
-                        Nom complet *
+                        {t("fName")}
                       </label>
                       <input
                         type="text"
@@ -182,14 +183,14 @@ export default function ContactPage() {
                         value={formData.name}
                         onChange={handleChange}
                         className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-[#D4372B]/20 transition-all"
-                        placeholder="Jean Dupont"
+                        placeholder={t("phName")}
                         required
                         disabled={isSubmitting}
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1.5" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>
-                        Email *
+                        {t("fEmail")}
                       </label>
                       <input
                         type="email"
@@ -197,7 +198,7 @@ export default function ContactPage() {
                         value={formData.email}
                         onChange={handleChange}
                         className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-[#D4372B]/20 transition-all"
-                        placeholder="vous@exemple.com"
+                        placeholder={t("phEmail")}
                         required
                         disabled={isSubmitting}
                       />
@@ -206,9 +207,10 @@ export default function ContactPage() {
 
                   <div>
                     <label className="block text-sm font-medium mb-1.5" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>
-                      Téléphone (optionnel)
+                      {t("fPhone")}
                     </label>
-                    <div className="flex">
+                    {/* Indicatif + numéro : toujours dans l'ordre « +225 01 23… », même en arabe */}
+                    <div className="flex" dir="ltr">
                       <span className="inline-flex items-center px-4 rounded-l-xl border border-r-0 text-sm" style={{ background: isDark ? "#0A0A0A" : "#F4F4F4", color: isDark ? "#AAAAAA" : "#666666", borderColor: isDark ? "#2A2A2A" : "#ECECEC" }}>
                         {countryCode}
                       </span>
@@ -223,13 +225,13 @@ export default function ContactPage() {
                       />
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Indicatif automatique selon votre pays ({country})
+                      {t("fPhoneHint", { country })}
                     </p>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium mb-1.5" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>
-                      Sujet
+                      {t("fSubject")}
                     </label>
                     <select
                       name="subject"
@@ -238,20 +240,20 @@ export default function ContactPage() {
                       className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-[#D4372B]/20 transition-all"
                       disabled={isSubmitting}
                     >
-                      <option value="">Sélectionnez un sujet</option>
-                      <option value="commande">Question sur une commande</option>
-                      <option value="livraison">Problème de livraison</option>
-                      <option value="produit">Question sur un produit</option>
-                      <option value="compte">Problème de compte</option>
-                      <option value="retour">Retour / Remboursement</option>
-                      <option value="partenariat">Partenariat</option>
-                      <option value="autre">Autre</option>
+                      <option value="">{t("subjectPlaceholder")}</option>
+                      <option value="commande">{t("subjOrder")}</option>
+                      <option value="livraison">{t("subjDelivery")}</option>
+                      <option value="produit">{t("subjProduct")}</option>
+                      <option value="compte">{t("subjAccount")}</option>
+                      <option value="retour">{t("subjReturn")}</option>
+                      <option value="partenariat">{t("subjPartner")}</option>
+                      <option value="autre">{t("subjOther")}</option>
                     </select>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium mb-1.5" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>
-                      Numéro de commande (optionnel)
+                      {t("fOrder")}
                     </label>
                     <input
                       type="text"
@@ -259,14 +261,14 @@ export default function ContactPage() {
                       value={formData.orderNumber}
                       onChange={handleChange}
                       className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-[#D4372B]/20 transition-all"
-                      placeholder="ex: #20260820-xxxxx"
+                      placeholder={t("phOrder")}
                       disabled={isSubmitting}
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium mb-1.5" style={{ color: isDark ? "#DDDDDD" : "#0A0A0A" }}>
-                      Message *
+                      {t("fMessage")}
                     </label>
                     <textarea
                       name="message"
@@ -274,7 +276,7 @@ export default function ContactPage() {
                       onChange={handleChange}
                       rows={5}
                       className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-[#D4372B]/20 transition-all resize-none"
-                      placeholder="Décrivez votre demande en détail..."
+                      placeholder={t("phMessage")}
                       required
                       disabled={isSubmitting}
                     />
@@ -289,12 +291,12 @@ export default function ContactPage() {
                     {isSubmitting ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        Envoi en cours...
+                        {t("sending")}
                       </>
                     ) : (
                       <>
-                        <Send className="w-5 h-5" />
-                        Envoyer le message
+                        <Send className="w-5 h-5 rtl:-scale-x-100" />
+                        {t("send")}
                       </>
                     )}
                   </button>
@@ -306,31 +308,31 @@ export default function ContactPage() {
           {/* Infos contact */}
           <div>
             <div className="rounded-2xl border border-border bg-card p-6 space-y-6">
-              <h2 className="text-lg font-semibold">Informations</h2>
+              <h2 className="text-lg font-semibold">{t("infoTitle")}</h2>
               
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <Mail className="w-5 h-5 mt-0.5" style={{ color: "#D4372B" }} />
                   <div>
-                    <p className="text-sm font-medium">Email</p>
-                    <p className="text-sm text-muted-foreground">contact@adullamarket.com</p>
+                    <p className="text-sm font-medium">{t("emailLabel")}</p>
+                    <p className="text-sm text-muted-foreground"><bdi>contact@adullamarket.com</bdi></p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
                   <Clock className="w-5 h-5 mt-0.5" style={{ color: "#D4372B" }} />
                   <div>
-                    <p className="text-sm font-medium">Délai de réponse</p>
-                    <p className="text-sm text-muted-foreground">Sous 24h ouvrées</p>
+                    <p className="text-sm font-medium">{t("responseTime")}</p>
+                    <p className="text-sm text-muted-foreground">{t("within24")}</p>
                   </div>
                 </div>
               </div>
 
               <div className="pt-4 border-t border-border">
                 <div className="rounded-xl p-4" style={{ background: isDark ? "#1A1A1A" : "#F4F4F4" }}>
-                  <p className="text-sm font-medium mb-1">💡 Astuce</p>
+                  <p className="text-sm font-medium mb-1">{t("tipTitle")}</p>
                   <p className="text-sm text-muted-foreground">
-                    Pour une réponse plus rapide, indiquez votre numéro de commande et le produit concerné.
+                    {t("tipText")}
                   </p>
                 </div>
               </div>
@@ -339,7 +341,7 @@ export default function ContactPage() {
                 <div className="pt-2">
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <CheckCircle className="w-3 h-3 text-green-600" />
-                    Connecté en tant que {user.name || user.email}
+                    {t("connectedAs", { name: user.name || user.email })}
                   </p>
                 </div>
               )}
