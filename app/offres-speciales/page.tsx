@@ -7,6 +7,7 @@ import MobileNav from "@/components/mobile-nav"
 import { Footer } from "@/components/footer"
 import { Zap, Timer, Star, Sparkles } from "lucide-react"
 import Image from "next/image"
+import { useTranslations } from "next-intl"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { apiFetch } from "@/lib/api"
 
@@ -18,7 +19,11 @@ const textPrimary = "#0A0A0A"
 const textSecondary = "#AAAAAA"
 const borderColor = "#ECECEC"
 
+// Poppins pour le latin, pile du site (Cairo en arabe) en repli
+const poppins = "'Poppins', var(--font-amazon)"
+
 export default function OffresSpecialesPage() {
+  const t = useTranslations("listPages")
   const { formatPrice } = useCurrencyFormatter()
   const [products, setProducts] = useState<any[]>([])
   const [flashSale, setFlashSale] = useState<any>(null)
@@ -99,7 +104,7 @@ export default function OffresSpecialesPage() {
               <div>
                 <h1
                   style={{
-                    fontFamily: "'Poppins', sans-serif",
+                    fontFamily: poppins,
                     fontWeight: 900,
                     fontSize: "clamp(22px, 4vw, 36px)",
                     color: "#fff",
@@ -107,10 +112,10 @@ export default function OffresSpecialesPage() {
                     lineHeight: 1.1,
                   }}
                 >
-                  Offres Spéciales
+                  {t("soTitle")}
                 </h1>
-                <p style={{ fontSize: "13px", color: textSecondary, fontFamily: "'Poppins', sans-serif" }}>
-                  Prix imbattables et quantités limitées
+                <p style={{ fontSize: "13px", color: textSecondary, fontFamily: poppins }}>
+                  {t("soSubtitle")}
                 </p>
               </div>
             </div>
@@ -118,21 +123,22 @@ export default function OffresSpecialesPage() {
             {/* Timer */}
             <div className="flex items-center gap-3 mt-4 px-4 py-2 rounded-xl w-fit" style={{ background: "rgba(255,255,255,0.07)", border: "0.5px solid rgba(255,255,255,0.12)" }}>
               <Timer className="w-4 h-4" style={{ color: textSecondary }} />
-              <span className="text-sm font-medium" style={{ color: "#fff" }}>Se termine dans :</span>
-              <div className="flex gap-1">
+              <span className="text-sm font-medium" style={{ color: "#fff" }}>{t("endsIn")}</span>
+              {/* Chiffres toujours dans l'ordre HH:MM:SS, même en arabe */}
+              <div className="flex gap-1" dir="ltr">
                 <div className="rounded-lg px-2 py-0.5 text-center min-w-[40px]" style={{ background: "rgba(0,0,0,0.3)" }}>
                   <div className="text-xl font-bold text-white">{formatNumber(timeLeft.hours)}</div>
-                  <div className="text-[8px]" style={{ color: textSecondary }}>Heures</div>
+                  <div className="text-[8px]" style={{ color: textSecondary }}>{t("hours")}</div>
                 </div>
                 <span className="text-xl font-bold text-white self-center">:</span>
                 <div className="rounded-lg px-2 py-0.5 text-center min-w-[40px]" style={{ background: "rgba(0,0,0,0.3)" }}>
                   <div className="text-xl font-bold text-white">{formatNumber(timeLeft.minutes)}</div>
-                  <div className="text-[8px]" style={{ color: textSecondary }}>Minutes</div>
+                  <div className="text-[8px]" style={{ color: textSecondary }}>{t("minutes")}</div>
                 </div>
                 <span className="text-xl font-bold text-white self-center">:</span>
                 <div className="rounded-lg px-2 py-0.5 text-center min-w-[40px]" style={{ background: "rgba(0,0,0,0.3)" }}>
                   <div className="text-xl font-bold text-white">{formatNumber(timeLeft.seconds)}</div>
-                  <div className="text-[8px]" style={{ color: textSecondary }}>Secondes</div>
+                  <div className="text-[8px]" style={{ color: textSecondary }}>{t("seconds")}</div>
                 </div>
               </div>
             </div>
@@ -140,9 +146,9 @@ export default function OffresSpecialesPage() {
             {/* Stats pills */}
             <div className="flex items-center gap-2 mt-4 flex-wrap">
               {[
-                { label: "Économies garanties", dot: "#22C55E" },
-                { label: "Stock limité", dot: brandColor },
-                { label: "Meilleurs prix", dot: "#F5A623" },
+                { label: t("soPillSavings"), dot: "#22C55E" },
+                { label: t("soPillStock"), dot: brandColor },
+                { label: t("soPillPrices"), dot: "#F5A623" },
               ].map(({ label, dot }) => (
                 <span
                   key={label}
@@ -151,7 +157,7 @@ export default function OffresSpecialesPage() {
                     background: "rgba(255,255,255,0.07)",
                     border: "0.5px solid rgba(255,255,255,0.12)",
                     color: "#fff",
-                    fontFamily: "'Poppins', sans-serif",
+                    fontFamily: poppins,
                   }}
                 >
                   <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: dot, display: "inline-block", flexShrink: 0 }} />
@@ -170,17 +176,17 @@ export default function OffresSpecialesPage() {
             <div>
               <h2
                 style={{
-                  fontFamily: "'Poppins', sans-serif",
+                  fontFamily: poppins,
                   fontWeight: 800,
                   fontSize: "16px",
                   color: textPrimary,
                   letterSpacing: "-0.02em",
                 }}
               >
-                Ventes Flash
+                {t("soSection")}
               </h2>
-              <p style={{ fontSize: "12px", color: textSecondary, fontFamily: "'Poppins', sans-serif" }}>
-                Profitez des réductions avant la fin du timer
+              <p style={{ fontSize: "12px", color: textSecondary, fontFamily: poppins }}>
+                {t("soSectionSub")}
               </p>
             </div>
             {flashSale && (
@@ -188,7 +194,7 @@ export default function OffresSpecialesPage() {
                 className="px-3 py-1 rounded-full text-xs font-semibold"
                 style={{ background: surfaceGray, color: textPrimary }}
               >
-                Jusqu'à -{flashSale.discount}%
+                {t("upTo", { discount: flashSale.discount })}
               </span>
             )}
           </div>
@@ -200,7 +206,7 @@ export default function OffresSpecialesPage() {
             </div>
           ) : products.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-sm" style={{ color: textSecondary }}>Aucune offre spéciale pour le moment</p>
+              <p className="text-sm" style={{ color: textSecondary }}>{t("soEmpty")}</p>
             </div>
           ) : (
             /* Grille produits */
@@ -219,7 +225,8 @@ export default function OffresSpecialesPage() {
                     {/* Badge offre */}
                     {product.discount > 0 && (
                       <div
-                        className="absolute top-2 right-2 z-10 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                        dir="ltr"
+                        className="absolute top-2 end-2 z-10 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: brandColor, color: "#fff" }}
                       >
                         -{product.discount}%
@@ -241,7 +248,7 @@ export default function OffresSpecialesPage() {
                         fontSize: "12px",
                         fontWeight: 500,
                         color: textPrimary,
-                        fontFamily: "'Poppins', sans-serif",
+                        fontFamily: poppins,
                         lineHeight: 1.4,
                       }}
                     >
@@ -267,7 +274,7 @@ export default function OffresSpecialesPage() {
                           fontSize: "13px",
                           fontWeight: 700,
                           color: brandColor,
-                          fontFamily: "'Poppins', sans-serif",
+                          fontFamily: poppins,
                         }}
                       >
                         {formatPrice(product.price)}

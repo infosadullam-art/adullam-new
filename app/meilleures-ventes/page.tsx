@@ -7,10 +7,15 @@ import MobileNav from "@/components/mobile-nav"
 import { Footer } from "@/components/footer"
 import { TrendingUp, Star, ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
+import { useTranslations } from "next-intl"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { apiFetch } from "@/lib/api"
 
+// Poppins pour le latin, pile du site (Cairo en arabe) en repli
+const poppins = "'Poppins', var(--font-amazon)"
+
 export default function MeilleuresVentesPage() {
+  const t = useTranslations("listPages")
   const { formatPrice } = useCurrencyFormatter()
   const [products, setProducts] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -64,7 +69,7 @@ export default function MeilleuresVentesPage() {
               <div>
                 <h1
                   style={{
-                    fontFamily: "'Poppins', sans-serif",
+                    fontFamily: poppins,
                     fontWeight: 900,
                     fontSize: "clamp(22px, 4vw, 36px)",
                     color: "#fff",
@@ -72,10 +77,10 @@ export default function MeilleuresVentesPage() {
                     lineHeight: 1.1,
                   }}
                 >
-                  Meilleures ventes
+                  {t("bsTitle")}
                 </h1>
-                <p style={{ fontSize: "13px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
-                  Découvrez les produits les plus commandés par nos clients
+                <p style={{ fontSize: "13px", color: "#AAAAAA", fontFamily: poppins }}>
+                  {t("bsSubtitle")}
                 </p>
               </div>
             </div>
@@ -83,9 +88,9 @@ export default function MeilleuresVentesPage() {
             {/* Stats pills */}
             <div className="flex items-center gap-2 mt-4 flex-wrap">
               {[
-                { label: "Mis à jour quotidiennement", dot: "#22C55E" },
-                { label: "Livraison vers l'Afrique", dot: "#D4372B" },
-                { label: "Meilleurs prix garantis", dot: "#F5A623" },
+                { label: t("updatedDaily"), dot: "#22C55E" },
+                { label: t("bsPillDelivery"), dot: "#D4372B" },
+                { label: t("bsPillPrices"), dot: "#F5A623" },
               ].map(({ label, dot }) => (
                 <span
                   key={label}
@@ -94,7 +99,7 @@ export default function MeilleuresVentesPage() {
                     background: "rgba(255,255,255,0.07)",
                     border: "0.5px solid rgba(255,255,255,0.12)",
                     color: "#fff",
-                    fontFamily: "'Poppins', sans-serif",
+                    fontFamily: poppins,
                   }}
                 >
                   <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: dot, display: "inline-block", flexShrink: 0 }} />
@@ -113,25 +118,25 @@ export default function MeilleuresVentesPage() {
             <div>
               <h2
                 style={{
-                  fontFamily: "'Poppins', sans-serif",
+                  fontFamily: poppins,
                   fontWeight: 800,
                   fontSize: "16px",
                   color: "#0A0A0A",
                   letterSpacing: "-0.02em",
                 }}
               >
-                Top des ventes
+                {t("bsSection")}
               </h2>
-              <p style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
-                Mis à jour quotidiennement
+              <p style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: poppins }}>
+                {t("updatedDaily")}
               </p>
             </div>
             {totalPages > 1 && (
               <span
                 className="px-3 py-1 rounded-full text-xs font-semibold"
-                style={{ background: "#F4F4F4", color: "#0A0A0A", fontFamily: "'Poppins', sans-serif" }}
+                style={{ background: "#F4F4F4", color: "#0A0A0A", fontFamily: poppins }}
               >
-                Page {currentPage} / {totalPages}
+                {t("pageOf", { current: currentPage, total: totalPages })}
               </span>
             )}
           </div>
@@ -169,7 +174,7 @@ export default function MeilleuresVentesPage() {
                       {/* Rang badge — top 3 */}
                       {index < 3 && (
                         <span
-                          className="absolute top-2 left-2 z-10 flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold text-white"
+                          className="absolute top-2 start-2 z-10 flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold text-white"
                           style={{
                             background: index === 0 ? "#F5A623" : index === 1 ? "#AAAAAA" : "#CD7F32",
                           }}
@@ -193,7 +198,7 @@ export default function MeilleuresVentesPage() {
                           fontSize: "12px",
                           fontWeight: 500,
                           color: "#0A0A0A",
-                          fontFamily: "'Poppins', sans-serif",
+                          fontFamily: poppins,
                           lineHeight: 1.4,
                         }}
                       >
@@ -207,7 +212,7 @@ export default function MeilleuresVentesPage() {
                             <Star key={star} className="w-3 h-3 fill-[#F5A623] text-[#F5A623]" />
                           ))}
                         </div>
-                        <span style={{ fontSize: "10px", color: "#AAAAAA", fontFamily: "'Poppins', sans-serif" }}>
+                        <span style={{ fontSize: "10px", color: "#AAAAAA", fontFamily: poppins }}>
                           ({product.reviews})
                         </span>
                       </div>
@@ -218,7 +223,7 @@ export default function MeilleuresVentesPage() {
                           fontSize: "13px",
                           fontWeight: 700,
                           color: "#D4372B",
-                          fontFamily: "'Poppins', sans-serif",
+                          fontFamily: poppins,
                         }}
                       >
                         {formatPrice(product.price)}
@@ -241,7 +246,7 @@ export default function MeilleuresVentesPage() {
                     className="flex items-center justify-center w-9 h-9 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none"
                     style={{ border: "0.5px solid #ECECEC", background: "#fff" }}
                   >
-                    <ChevronLeft className="w-4 h-4" style={{ color: "#0A0A0A" }} />
+                    <ChevronLeft className="w-4 h-4 rtl:rotate-180" style={{ color: "#0A0A0A" }} />
                   </button>
 
                   {/* Pages */}
@@ -269,7 +274,7 @@ export default function MeilleuresVentesPage() {
                             background: isActive ? "#D4372B" : "#fff",
                             color: isActive ? "#fff" : "#0A0A0A",
                             border: isActive ? "none" : "0.5px solid #ECECEC",
-                            fontFamily: "'Poppins', sans-serif",
+                            fontFamily: poppins,
                           }}
                         >
                           {pageNum}
@@ -285,7 +290,7 @@ export default function MeilleuresVentesPage() {
                     className="flex items-center justify-center w-9 h-9 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none"
                     style={{ border: "0.5px solid #ECECEC", background: "#fff" }}
                   >
-                    <ChevronRight className="w-4 h-4" style={{ color: "#0A0A0A" }} />
+                    <ChevronRight className="w-4 h-4 rtl:rotate-180" style={{ color: "#0A0A0A" }} />
                   </button>
                 </div>
               )}

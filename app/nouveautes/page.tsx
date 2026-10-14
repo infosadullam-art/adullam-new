@@ -7,6 +7,7 @@ import MobileNav from "@/components/mobile-nav"
 import { Footer } from "@/components/footer"
 import { Sparkles, Star, ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
+import { useTranslations } from "next-intl"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { apiFetch } from "@/lib/api"
 
@@ -18,7 +19,11 @@ const textPrimary = "#0A0A0A"
 const textSecondary = "#AAAAAA"
 const borderColor = "#ECECEC"
 
+// Poppins pour le latin, pile du site (Cairo en arabe) en repli
+const poppins = "'Poppins', var(--font-amazon)"
+
 export default function NouveautesPage() {
+  const t = useTranslations("listPages")
   const { formatPrice } = useCurrencyFormatter()
   const [products, setProducts] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -75,7 +80,7 @@ export default function NouveautesPage() {
               <div>
                 <h1
                   style={{
-                    fontFamily: "'Poppins', sans-serif",
+                    fontFamily: poppins,
                     fontWeight: 900,
                     fontSize: "clamp(22px, 4vw, 36px)",
                     color: "#fff",
@@ -83,10 +88,10 @@ export default function NouveautesPage() {
                     lineHeight: 1.1,
                   }}
                 >
-                  Nouveautés
+                  {t("naTitle")}
                 </h1>
-                <p style={{ fontSize: "13px", color: textSecondary, fontFamily: "'Poppins', sans-serif" }}>
-                  Découvrez les derniers produits ajoutés à notre catalogue
+                <p style={{ fontSize: "13px", color: textSecondary, fontFamily: poppins }}>
+                  {t("naSubtitle")}
                 </p>
               </div>
             </div>
@@ -94,9 +99,9 @@ export default function NouveautesPage() {
             {/* Stats pills */}
             <div className="flex items-center gap-2 mt-4 flex-wrap">
               {[
-                { label: "Ajouts récents", dot: "#22C55E" },
-                { label: "Tendances", dot: brandColor },
-                { label: "Exclusivités", dot: "#F5A623" },
+                { label: t("naPillRecent"), dot: "#22C55E" },
+                { label: t("naPillTrends"), dot: brandColor },
+                { label: t("naPillExclusives"), dot: "#F5A623" },
               ].map(({ label, dot }) => (
                 <span
                   key={label}
@@ -105,7 +110,7 @@ export default function NouveautesPage() {
                     background: "rgba(255,255,255,0.07)",
                     border: "0.5px solid rgba(255,255,255,0.12)",
                     color: "#fff",
-                    fontFamily: "'Poppins', sans-serif",
+                    fontFamily: poppins,
                   }}
                 >
                   <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: dot, display: "inline-block", flexShrink: 0 }} />
@@ -124,17 +129,17 @@ export default function NouveautesPage() {
             <div>
               <h2
                 style={{
-                  fontFamily: "'Poppins', sans-serif",
+                  fontFamily: poppins,
                   fontWeight: 800,
                   fontSize: "16px",
                   color: textPrimary,
                   letterSpacing: "-0.02em",
                 }}
               >
-                Nouveaux produits
+                {t("naSection")}
               </h2>
-              <p style={{ fontSize: "12px", color: textSecondary, fontFamily: "'Poppins', sans-serif" }}>
-                Ajoutés récemment
+              <p style={{ fontSize: "12px", color: textSecondary, fontFamily: poppins }}>
+                {t("naSectionSub")}
               </p>
             </div>
             {totalPages > 1 && (
@@ -142,7 +147,7 @@ export default function NouveautesPage() {
                 className="px-3 py-1 rounded-full text-xs font-semibold"
                 style={{ background: surfaceGray, color: textPrimary }}
               >
-                Page {currentPage} / {totalPages}
+                {t("pageOf", { current: currentPage, total: totalPages })}
               </span>
             )}
           </div>
@@ -168,10 +173,10 @@ export default function NouveautesPage() {
                       style={{ borderRadius: "12px", background: "#fff", border: `0.5px solid ${borderColor}` }}
                     >
                       <div
-                        className="absolute top-2 left-2 z-10 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                        className="absolute top-2 start-2 z-10 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: "#22C55E20", color: "#22C55E", border: `0.5px solid #22C55E30` }}
                       >
-                        Nouveau
+                        {t("newBadge")}
                       </div>
                       <Image
                         src={product.image}
@@ -189,7 +194,7 @@ export default function NouveautesPage() {
                           fontSize: "12px",
                           fontWeight: 500,
                           color: textPrimary,
-                          fontFamily: "'Poppins', sans-serif",
+                          fontFamily: poppins,
                           lineHeight: 1.4,
                         }}
                       >
@@ -214,7 +219,7 @@ export default function NouveautesPage() {
                           fontSize: "13px",
                           fontWeight: 700,
                           color: brandColor,
-                          fontFamily: "'Poppins', sans-serif",
+                          fontFamily: poppins,
                         }}
                       >
                         {formatPrice(product.price)}
@@ -237,7 +242,7 @@ export default function NouveautesPage() {
                     className="flex items-center justify-center w-9 h-9 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     style={{ border: `0.5px solid ${borderColor}`, background: "#fff" }}
                   >
-                    <ChevronLeft className="w-4 h-4" style={{ color: textPrimary }} />
+                    <ChevronLeft className="w-4 h-4 rtl:rotate-180" style={{ color: textPrimary }} />
                   </button>
 
                   {/* Pages */}
@@ -265,7 +270,7 @@ export default function NouveautesPage() {
                             background: isActive ? brandColor : "#fff",
                             color: isActive ? "#fff" : textPrimary,
                             border: isActive ? "none" : `0.5px solid ${borderColor}`,
-                            fontFamily: "'Poppins', sans-serif",
+                            fontFamily: poppins,
                           }}
                         >
                           {pageNum}
@@ -281,7 +286,7 @@ export default function NouveautesPage() {
                     className="flex items-center justify-center w-9 h-9 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     style={{ border: `0.5px solid ${borderColor}`, background: "#fff" }}
                   >
-                    <ChevronRight className="w-4 h-4" style={{ color: textPrimary }} />
+                    <ChevronRight className="w-4 h-4 rtl:rotate-180" style={{ color: textPrimary }} />
                   </button>
                 </div>
               )}
