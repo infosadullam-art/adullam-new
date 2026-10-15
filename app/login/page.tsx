@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, Suspense } from "react"
+import { useState, useEffect, useRef, useMemo, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/card"
 import { useAuth } from "@/lib/admin/auth-context"
 import { useLocale } from "@/context/LocaleProvider"
+import { useTranslations } from "next-intl"
+import { getCountryName } from "@/lib/country-config"
 import Link from "next/link"
 
 // ============================================================
@@ -33,30 +35,12 @@ const DIAL_CODES: Record<string, string> = {
   US: "+1",
 }
 
-const COUNTRY_NAMES: Record<string, string> = {
-  CI: "Côte d'Ivoire", BF: "Burkina Faso", SN: "Sénégal", ML: "Mali",
-  BJ: "Bénin", TG: "Togo", NE: "Niger", GW: "Guinée-Bissau", CM: "Cameroun",
-  CF: "Centrafrique", GA: "Gabon", CG: "Congo", GQ: "Guinée équatoriale",
-  TD: "Tchad", NG: "Nigeria", GH: "Ghana", LR: "Liberia", SL: "Sierra Leone",
-  GM: "Gambie", CV: "Cap-Vert", MA: "Maroc", TN: "Tunisie", DZ: "Algérie",
-  LY: "Libye", EG: "Égypte", MR: "Mauritanie", KE: "Kenya", UG: "Ouganda",
-  TZ: "Tanzanie", RW: "Rwanda", BI: "Burundi", ET: "Éthiopie", SO: "Somalie",
-  DJ: "Djibouti", SD: "Soudan", SS: "Soudan du Sud", ZA: "Afrique du Sud",
-  NA: "Namibie", BW: "Botswana", ZW: "Zimbabwe", MZ: "Mozambique",
-  AO: "Angola", ZM: "Zambie", MW: "Malawi", MG: "Madagascar", MU: "Maurice",
-  KM: "Comores", SC: "Seychelles", US: "États-Unis",
-}
-
 // Emoji drapeau à partir du code pays ISO (ex: "CI" → 🇨🇮)
 function flagEmoji(code: string): string {
   return code.toUpperCase().replace(/./g, (char) =>
     String.fromCodePoint(127397 + char.charCodeAt(0))
   )
 }
-
-const DIAL_CODE_OPTIONS = Object.keys(DIAL_CODES)
-  .map((code) => ({ code, dial: DIAL_CODES[code], name: COUNTRY_NAMES[code] }))
-  .sort((a, b) => a.name.localeCompare(b.name))
 
 const DEFAULT_DIAL_CODE = "+225"
 
@@ -197,12 +181,22 @@ function ArrowLeft({ className }: { className?: string }) {
 // COMPOSANT INTERNE QUI UTILISE useSearchParams
 // ============================================================
 function UserLoginContent() {
+  const t = useTranslations("login")
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/account'
   
   const { login, register, user, isLoading: authLoading } = useAuth()
-  const { country } = useLocale()
+  const { country, language } = useLocale()
+
+  // Indicatifs triés par nom de pays, dans la langue de l'interface
+  const dialOptions = useMemo(
+    () =>
+      Object.keys(DIAL_CODES)
+        .map((code) => ({ code, dial: DIAL_CODES[code], name: getCountryName(code, language) }))
+        .sort((a, b) => a.name.localeCompare(b.name, language)),
+    [language]
+  )
 
   // Indicatif déduit du pays détecté par LocaleProvider ; peut être corrigé manuellement par l'utilisateur
   const [manualDial, setManualDial] = useState<string | null>(null)
@@ -245,14 +239,14 @@ function UserLoginContent() {
   const checkRateLimit = (): boolean => {
     if (blockedUntil && new Date() < blockedUntil) {
       const minutes = Math.ceil((blockedUntil.getTime() - Date.now()) / 60000)
-      setError(`Trop de tentatives. Réessayez dans ${minutes} minute(s)`)
+      setError(t("rateLimitMinutes", { minutes }))
       return false
     }
     
     if (attempts >= 3) {
       const blockTime = new Date(Date.now() + 15 * 60000)
       setBlockedUntil(blockTime)
-      setError("Trop de tentatives. Compte bloqué 15 minutes.")
+      setError(t("blocked15"))
       return false
     }
     
@@ -261,11 +255,11 @@ function UserLoginContent() {
 
   // Validation du mot de passe
   const validatePassword = (password: string): { valid: boolean; message: string } => {
-    if (password.length < 8) return { valid: false, message: "Minimum 8 caractères" }
-    if (!/[A-Z]/.test(password)) return { valid: false, message: "Au moins une majuscule" }
-    if (!/[0-9]/.test(password)) return { valid: false, message: "Au moins un chiffre" }
-    if (!/[^A-Za-z0-9]/.test(password)) return { valid: false, message: "Au moins un caractère spécial" }
-    return { valid: true, message: "Mot de passe valide" }
+    if (password.length < 8) return { valid: false, message: t("pwMin8") }
+    if (!/[A-Z]/.test(password)) return { valid: false, message: t("pwUpper") }
+    if (!/[0-9]/.test(password)) return { valid: false, message: t("pwDigit") }
+    if (!/[^A-Za-z0-9]/.test(password)) return { valid: false, message: t("pwSpecial") }
+    return { valid: true, message: t("pwValid") }
   }
 
   const sanitizeInput = (input: string): string => {
@@ -289,7 +283,7 @@ function UserLoginContent() {
       let identifier = loginMethod === "email" ? formData.email : formData.phone
       
       if (!identifier) {
-        setError(`${loginMethod === "email" ? "Email" : "Téléphone"} requis`)
+        setError(loginMethod === "email" ? t("emailRequired") : t("phoneRequired"))
         setIsSubmitting(false)
         return
       }
@@ -309,7 +303,7 @@ function UserLoginContent() {
       const data = await res.json()
 
       if (res.ok) {
-        setSuccess(`Code envoyé à ${identifier}`)
+        setSuccess(t("codeSent", { identifier }))
         setStep("verify")
         setAttempts(0)
         
@@ -324,11 +318,11 @@ function UserLoginContent() {
           })
         }, 1000)
       } else {
-        setError(data.error || "Erreur lors de l'envoi")
+        setError(data.error || t("sendError"))
         setAttempts(prev => prev + 1)
       }
     } catch (err) {
-      setError("Erreur de connexion")
+      setError(t("connError"))
     } finally {
       setIsSubmitting(false)
     }
@@ -342,7 +336,7 @@ function UserLoginContent() {
     
     const formCsrf = (e.target as any).csrf?.value
     if (formCsrf !== csrfToken.current) {
-      setError("Erreur de sécurité. Rafraîchissez la page.")
+      setError(t("securityError"))
       setIsSubmitting(false)
       return
     }
@@ -356,7 +350,7 @@ function UserLoginContent() {
         let identifier = loginMethod === "email" ? formData.email : formData.phone
         
         if (!identifier || !formData.password) {
-          setError("Tous les champs sont requis")
+          setError(t("allRequired"))
           setIsSubmitting(false)
           return
         }
@@ -372,13 +366,13 @@ function UserLoginContent() {
         
       } else if (step === "register") {
         if (!formData.name || !formData.password || !formData.confirmPassword) {
-          setError("Tous les champs sont requis")
+          setError(t("allRequired"))
           setIsSubmitting(false)
           return
         }
 
         if (formData.password !== formData.confirmPassword) {
-          setError("Les mots de passe ne correspondent pas")
+          setError(t("pwMismatch"))
           setIsSubmitting(false)
           return
         }
@@ -394,7 +388,7 @@ function UserLoginContent() {
         
       } else if (step === "verify") {
         if (!formData.verificationCode || formData.verificationCode.length !== 6) {
-          setError("Code à 6 chiffres requis")
+          setError(t("code6"))
           setIsSubmitting(false)
           return
         }
@@ -419,16 +413,16 @@ function UserLoginContent() {
           // Téléphone optionnel saisi à l'inscription — normalisé en E.164, jamais confondu avec l'email
           const phoneE164 = formData.phone.trim() ? toE164Phone(countryCode, formData.phone) : undefined
           await register(formData.name, identifier, formData.password, phoneE164)
-          setSuccess("Compte créé avec succès !")
+          setSuccess(t("accountCreated"))
           setTimeout(() => router.push(redirect), 2000)
         } else {
-          setError(data.error || "Code invalide")
+          setError(data.error || t("invalidCode"))
           setAttempts(prev => prev + 1)
         }
       }
     } catch (error: any) {
       console.error("❌ Erreur:", error)
-      setError(error.message || "Une erreur est survenue")
+      setError(error.message || t("genericError"))
       setAttempts(prev => prev + 1)
     } finally {
       setIsSubmitting(false)
@@ -447,14 +441,14 @@ function UserLoginContent() {
             <ShoppingBag className="h-6 w-6 text-white" />
           </Link>
           <CardTitle className="text-2xl text-foreground">
-            {step === "login" && "Connexion client"}
-            {step === "register" && "Créer un compte"}
-            {step === "verify" && "Vérification"}
+            {step === "login" && t("loginTitle")}
+            {step === "register" && t("registerTitle")}
+            {step === "verify" && t("verifyTitle")}
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            {step === "login" && "Connectez-vous pour accéder à votre espace client"}
-            {step === "register" && "Créez votre compte en quelques secondes"}
-            {step === "verify" && "Entrez le code reçu"}
+            {step === "login" && t("loginDesc")}
+            {step === "register" && t("registerDesc")}
+            {step === "verify" && t("verifyDesc")}
           </CardDescription>
         </CardHeader>
 
@@ -468,8 +462,8 @@ function UserLoginContent() {
               }}
               className="flex items-center gap-2 text-sm mb-4 text-muted-foreground transition-colors hover:text-foreground"
             >
-              <ArrowLeft className="w-4 h-4" />
-              Retour à la connexion
+              <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
+              {t("backToLogin")}
             </button>
           )}
 
@@ -498,8 +492,8 @@ function UserLoginContent() {
                     : "bg-surface-sunken text-muted-foreground hover:bg-surface"
                 }`}
               >
-                <Mail className="w-4 h-4 inline mr-2" />
-                Email
+                <Mail className="w-4 h-4 inline me-2" />
+                {t("tabEmail")}
               </button>
               <button
                 type="button"
@@ -510,8 +504,8 @@ function UserLoginContent() {
                     : "bg-surface-sunken text-muted-foreground hover:bg-surface"
                 }`}
               >
-                <Phone className="w-4 h-4 inline mr-2" />
-                Téléphone
+                <Phone className="w-4 h-4 inline me-2" />
+                {t("phone")}
               </button>
             </div>
           )}
@@ -523,12 +517,12 @@ function UserLoginContent() {
               <>
                 {step === "register" && (
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-foreground">Nom complet</Label>
+                    <Label htmlFor="name" className="text-foreground">{t("fullName")}</Label>
                     <Input
                       id="name"
                       name="name"
                       type="text"
-                      placeholder="Jean Dupont"
+                      placeholder={t("phName")}
                       value={formData.name}
                       onChange={handleInputChange}
                       disabled={isSubmitting}
@@ -539,16 +533,16 @@ function UserLoginContent() {
 
                 {step === "login" && loginMethod === "phone" ? (
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-foreground">Numéro de téléphone</Label>
-                    <div className="flex items-stretch w-full min-w-0 rounded-md border border-border overflow-hidden bg-transparent focus-within:ring-1 focus-within:ring-ring">
+                    <Label htmlFor="phone" className="text-foreground">{t("phoneNumber")}</Label>
+                    <div dir="ltr" className="flex items-stretch w-full min-w-0 rounded-md border border-border overflow-hidden bg-transparent focus-within:ring-1 focus-within:ring-ring">
                       <select
                         value={countryCode}
                         onChange={(e) => setManualDial(e.target.value)}
-                        aria-label="Indicatif du pays"
+                        aria-label={t("dialAria")}
                         className="flex-shrink-0 w-[68px] border-r border-border bg-surface-sunken text-foreground text-xs px-1 focus:outline-none"
                         style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                       >
-                        {DIAL_CODE_OPTIONS.map((c) => (
+                        {dialOptions.map((c) => (
                           <option key={c.code} value={c.dial} title={c.name}>
                             {flagEmoji(c.code)} {c.dial}
                           </option>
@@ -571,12 +565,12 @@ function UserLoginContent() {
                   <>
                     {/* Inscription (et connexion par email) : email toujours obligatoire */}
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="text-foreground">Adresse email</Label>
+                      <Label htmlFor="email" className="text-foreground">{t("emailLabel")}</Label>
                       <Input
                         id="email"
                         name="email"
                         type="email"
-                        placeholder="vous@exemple.com"
+                        placeholder={t("phEmail")}
                         value={formData.email}
                         onChange={handleInputChange}
                         disabled={isSubmitting}
@@ -587,16 +581,16 @@ function UserLoginContent() {
                     {/* Téléphone optionnel, uniquement à l'inscription — pour les notifications WhatsApp/SMS */}
                     {step === "register" && (
                       <div className="space-y-2">
-                        <Label htmlFor="phone" className="text-foreground">Téléphone</Label>
-                        <div className="flex items-stretch w-full min-w-0 rounded-md border border-border overflow-hidden bg-transparent focus-within:ring-1 focus-within:ring-ring">
+                        <Label htmlFor="phone" className="text-foreground">{t("phone")}</Label>
+                        <div dir="ltr" className="flex items-stretch w-full min-w-0 rounded-md border border-border overflow-hidden bg-transparent focus-within:ring-1 focus-within:ring-ring">
                           <select
                             value={countryCode}
                             onChange={(e) => setManualDial(e.target.value)}
-                            aria-label="Indicatif du pays"
+                            aria-label={t("dialAria")}
                             className="flex-shrink-0 w-[68px] border-r border-border bg-surface-sunken text-foreground text-xs px-1 focus:outline-none"
                             style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                           >
-                            {DIAL_CODE_OPTIONS.map((c) => (
+                            {dialOptions.map((c) => (
                               <option key={c.code} value={c.dial} title={c.name}>
                                 {flagEmoji(c.code)} {c.dial}
                               </option>
@@ -619,7 +613,7 @@ function UserLoginContent() {
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-foreground">Mot de passe</Label>
+                  <Label htmlFor="password" className="text-foreground">{t("passwordLabel")}</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -634,7 +628,7 @@ function UserLoginContent() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -643,7 +637,7 @@ function UserLoginContent() {
 
                 {step === "register" && (
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-foreground">Confirmer le mot de passe</Label>
+                    <Label htmlFor="confirmPassword" className="text-foreground">{t("confirmLabel")}</Label>
                     <div className="relative">
                       <Input
                         id="confirmPassword"
@@ -658,7 +652,7 @@ function UserLoginContent() {
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                       >
                         {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -673,11 +667,11 @@ function UserLoginContent() {
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Chargement...
+                      <Loader2 className="me-2 h-4 w-4 animate-spin" />
+                      {t("loading")}
                     </>
                   ) : (
-                    step === "login" ? "Se connecter" : "Créer mon compte"
+                    step === "login" ? t("submitLogin") : t("submitRegister")
                   )}
                 </Button>
               </>
@@ -690,7 +684,7 @@ function UserLoginContent() {
                     <MailCheck className="w-6 h-6 text-green-700 dark:text-green-400" />
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Nous avons envoyé un code à 6 chiffres à
+                    {t("sentCodeTo")}
                   </p>
                   <p className="text-sm font-medium mt-1 text-foreground">
                     {loginMethod === "email" ? formData.email : formData.phone}
@@ -698,7 +692,7 @@ function UserLoginContent() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="verificationCode" className="text-foreground">Code de vérification</Label>
+                  <Label htmlFor="verificationCode" className="text-foreground">{t("codeLabel")}</Label>
                   <Input
                     id="verificationCode"
                     name="verificationCode"
@@ -718,7 +712,7 @@ function UserLoginContent() {
 
                 {countdown > 0 ? (
                   <p className="text-sm text-center text-muted-foreground">
-                    Renvoyer le code dans {countdown} secondes
+                    {t("resendIn", { seconds: countdown })}
                   </p>
                 ) : (
                   <button
@@ -726,7 +720,7 @@ function UserLoginContent() {
                     onClick={handleSendCode}
                     className="w-full text-sm text-accent hover:underline"
                   >
-                    Renvoyer le code
+                    {t("resend")}
                   </button>
                 )}
 
@@ -737,11 +731,11 @@ function UserLoginContent() {
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Vérification...
+                      <Loader2 className="me-2 h-4 w-4 animate-spin" />
+                      {t("verifying")}
                     </>
                   ) : (
-                    "Vérifier et créer mon compte"
+                    t("verifyAndCreate")
                   )}
                 </Button>
               </>
@@ -751,7 +745,7 @@ function UserLoginContent() {
           {step !== "verify" && (
             <div className="mt-6 text-center text-sm">
               <span className="text-muted-foreground">
-                {step === "login" ? "Pas encore de compte ?" : "Déjà inscrit ?"}
+                {step === "login" ? t("noAccount") : t("alreadyRegistered")}
               </span>{" "}
               <button
                 type="button"
@@ -764,7 +758,7 @@ function UserLoginContent() {
                 }}
                 className="text-accent hover:underline"
               >
-                {step === "login" ? "Inscrivez-vous" : "Connectez-vous"}
+                {step === "login" ? t("signUpLink") : t("signInLink")}
               </button>
             </div>
           )}
@@ -772,15 +766,15 @@ function UserLoginContent() {
           <div className="mt-4 text-center text-xs flex items-center justify-center gap-3 text-muted-foreground">
             <div className="flex items-center gap-1">
               <Lock className="w-3 h-3" />
-              <span>Chiffré 256-bit</span>
+              <span>{t("encrypted")}</span>
             </div>
             <div className="flex items-center gap-1">
               <Shield className="w-3 h-3" />
-              <span>Protégé</span>
+              <span>{t("protected")}</span>
             </div>
             <div className="flex items-center gap-1">
               <Key className="w-3 h-3" />
-              <span>2FA disponible</span>
+              <span>{t("twoFA")}</span>
             </div>
           </div>
         </CardContent>
@@ -793,6 +787,7 @@ function UserLoginContent() {
 // LOADING FALLBACK PENDANT LE SUSPENSE
 // ============================================================
 function LoginLoadingFallback() {
+  const t = useTranslations("login")
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-md bg-card shadow-xs">
@@ -801,7 +796,7 @@ function LoginLoadingFallback() {
             <ShoppingBag className="h-6 w-6 text-white" />
           </div>
           <CardTitle className="text-2xl text-foreground">Adullam</CardTitle>
-          <CardDescription className="text-muted-foreground">Chargement...</CardDescription>
+          <CardDescription className="text-muted-foreground">{t("loading")}</CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center py-8">
           <Loader2 className="h-8 w-8 animate-spin text-accent" />

@@ -25,6 +25,7 @@ import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useLocale } from "@/context/LocaleProvider"
 import { useCart } from "@/context/CartContext"
 import { toast } from "react-hot-toast"
+import { useTranslations } from "next-intl"
 
 // ============================================================
 // ICÔNES
@@ -130,7 +131,7 @@ interface Offer {
 interface ChatbotWidgetProps {
   sessionId: string
   userId?: string
-  language?: 'fr' | 'en' | 'pt'
+  language?: 'fr' | 'en' | 'pt' | 'ar'
   token?: string
   onLogout?: () => void
 }
@@ -145,11 +146,23 @@ const MIN_VIEWS_BEFORE_TRIGGER = 3
 const FIRST_TRIGGER_DELAY = 30000
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.adullamarket.com'
 
+// Langues de synthèse et de reconnaissance vocale du navigateur
+const SPEECH_LANG: Record<string, string> = { fr: 'fr-FR', en: 'en-US', pt: 'pt-PT', ar: 'ar-SA' }
+
+// Mots lus à voix haute (le texte est nettoyé avant lecture)
+const SPEECH_WORDS: Record<string, { fcfa: string; pct: string; moq: string }> = {
+  fr: { fcfa: 'francs CFA', pct: 'pour cent', moq: 'quantité minimum' },
+  en: { fcfa: 'CFA francs', pct: 'percent', moq: 'minimum quantity' },
+  pt: { fcfa: 'francos CFA', pct: 'por cento', moq: 'quantidade mínima' },
+  ar: { fcfa: 'فرنك سيفا', pct: 'في المئة', moq: 'الحد الأدنى للكمية' },
+}
+
 // ============================================================
 // COMPOSANT PRINCIPAL
 // ============================================================
 
 export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLogout }: ChatbotWidgetProps) {
+  const t = useTranslations("chatbot")
   const { formatPrice } = useCurrencyFormatter()
   const { country, currency } = useLocale()
   // ✅ Ajout réel au panier depuis le chat — Adu ne peut techniquement rien
@@ -379,6 +392,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   // moteur de synthèse (gratuit, celui du navigateur), on peut déjà
   // corriger beaucoup en nettoyant ce qu'on lui donne à lire.
   const cleanTextForSpeech = (text: string): string => {
+    const words = SPEECH_WORDS[language] || SPEECH_WORDS.fr
     return text
       .replace(/\*\*(.*?)\*\*/g, '$1')          // **gras**
       .replace(/\*(.*?)\*/g, '$1')              // *italique*
@@ -387,9 +401,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')  // [texte](lien)
       .replace(/https?:\/\/\S+/g, '')           // URLs brutes
       .replace(/[-*•]\s+/g, '')                 // puces de liste
-      .replace(/FCFA/gi, 'francs CFA')
-      .replace(/(\d+)\s*%/g, '$1 pour cent')
-      .replace(/\bMOQ\b/gi, 'quantité minimum')
+      .replace(/FCFA/gi, words.fcfa)
+      .replace(/(\d+)\s*%/g, '$1 ' + words.pct)
+      .replace(/\bMOQ\b/gi, words.moq)
       .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '') // emoji
       .replace(/\s{2,}/g, ' ')
       .trim()
@@ -638,7 +652,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       }
 
       if (remainingTime === 300 && activeCoupon) {
-        addAssistantMessage(`⚠️ Ton coupon **${activeCoupon.code}** expire dans 5min ! Utilise-le vite 🔥`)
+        addAssistantMessage(t("couponExpiring", { code: activeCoupon.code }))
         setCouponExpanded(true)
       }
     }
@@ -754,12 +768,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           setProactiveMessage(data.welcome_back_message)
           setHasUnread(true)
         } else if (loaded.length === 0) {
-          const welcomes = {
-            fr: "Salut ! 👋 Je suis Adu, ton vendeur Adullam. Dis-moi ce que tu cherches, je suis là pour t'aider !",
-            en: "Hey! 👋 I'm Adu, your Adullam seller. Tell me what you're looking for!",
-            pt: "Oi! 👋 Sou o Adu, seu vendedor Adullam. Me diz o que você procura!",
-          }
-          addAssistantMessage(welcomes[language] || welcomes.fr)
+          addAssistantMessage(t("welcome"))
         }
 
         if (justClickedProduct) {
@@ -767,7 +776,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
         }
       } catch (error) {
         console.error("Erreur chargement historique:", error)
-        addAssistantMessage("Salut ! 👋 Je suis Adu, ton vendeur Adullam. Comment puis-je t'aider ?")
+        addAssistantMessage(t("welcomeShort"))
       }
     }
 
@@ -922,9 +931,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     }
 
     if (voiceSupported && speechSynthRef.current) {
-      const langPrefix = language === 'fr' ? 'fr' : language === 'pt' ? 'pt' : 'en'
+      const langPrefix = language
       const utterance = new SpeechSynthesisUtterance(cleanTextForSpeech(content))
-      utterance.lang = language === 'fr' ? 'fr-FR' : language === 'pt' ? 'pt-PT' : 'en-US'
+      utterance.lang = SPEECH_LANG[language] || 'en-US'
       const bestVoice = pickBestVoice(langPrefix)
       if (bestVoice) utterance.voice = bestVoice
       utterance.rate = 0.95
@@ -977,7 +986,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     // actionnable si c'est refusé, au lieu de tomber plus tard sur un
     // "not-allowed" générique.
     if (!window.isSecureContext) {
-      alert("La reconnaissance vocale nécessite une connexion sécurisée (HTTPS). Elle ne fonctionnera pas sur http://.")
+      alert(t("sttNeedsHttps"))
       return
     }
 
@@ -988,11 +997,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     } catch (err: any) {
       console.error("Permission micro refusée:", err)
       if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError' || err?.name === 'SecurityError') {
-        alert("Le micro est bloqué pour ce site. Clique sur l'icône 🔒 à côté de l'URL dans la barre d'adresse, autorise le micro, puis réessaie.")
+        alert(t("micBlocked"))
       } else if (err?.name === 'NotFoundError' || err?.name === 'DevicesNotFoundError') {
-        alert("Aucun micro détecté sur cet appareil.")
+        alert(t("micNotFound"))
       } else {
-        alert("Impossible d'accéder au micro. Réessaie ou vérifie les réglages de ton navigateur.")
+        alert(t("micError"))
       }
       return
     }
@@ -1000,7 +1009,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     const recognition = new SpeechRecognition()
     recognitionRef.current = recognition
 
-    recognition.lang = language === 'fr' ? 'fr-FR' : language === 'pt' ? 'pt-PT' : 'en-US'
+    recognition.lang = SPEECH_LANG[language] || 'en-US'
     recognition.continuous = false
     recognition.interimResults = false
     recognition.maxAlternatives = 1
@@ -1027,7 +1036,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       recognitionRef.current = null
 
       if (event.error === 'not-allowed') {
-        alert("Le micro est bloqué pour ce site. Clique sur l'icône 🔒 à côté de l'URL dans la barre d'adresse, autorise le micro, puis réessaie.")
+        alert(t("micBlocked"))
       }
     }
 
@@ -1103,7 +1112,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       const data = await response.json()
       if (data.success && data.products?.length > 0) {
         addAssistantMessage(
-          `Ah, excellent choix ! Puisque tu aimes celui-ci, je te montre des produits qui vont super bien avec 👀`,
+          t("similarIntro"),
           data.products
         )
       }
@@ -1222,7 +1231,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
             eurSize: attrValues[1],
           })
           if (result.success) {
-            toast.success("Ajouté à ton panier !", { duration: 3000, position: "top-center" })
+            toast.success(t("addedToCart"), { duration: 3000, position: "top-center" })
           }
           // Si result.success est false, CartContext a déjà affiché son propre
           // toast d'erreur MOQ (avec le minimum requis) — rien à ajouter ici,
@@ -1256,11 +1265,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           console.debug("Tracker error:", e)
         }
       } else {
-        addAssistantMessage("Désolé, je n'ai pas pu traiter ta demande. Réessaie ! 🙏")
+        addAssistantMessage(t("sorry"))
       }
     } catch (error) {
       console.error("Erreur envoi message:", error)
-      addAssistantMessage("Oups, un souci de connexion. Réessaie dans un instant 😅")
+      addAssistantMessage(t("connIssue"))
     } finally {
       setIsTyping(false)
       pendingProductFromPageRef.current = null
@@ -1274,13 +1283,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   const acceptOffer = useCallback(() => {
     setShowOfferBanner(false)
     setActiveOffer(null)
-    sendMessage("Oui, je suis intéressé par cette offre !")
+    sendMessage(t("acceptOffer"))
   }, [sendMessage])
 
   const declineOffer = useCallback(() => {
     setShowOfferBanner(false)
     setActiveOffer(null)
-    sendMessage("Non merci, pas maintenant.")
+    sendMessage(t("declineOffer"))
   }, [sendMessage])
 
   // ============================================================
@@ -1313,16 +1322,16 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       if (data.success && data.products?.length > 0) {
         setLoadOffset(prev => prev + 12)
         addAssistantMessage(
-          `Voici d'autres produits qui pourraient te plaire ! 👀`,
+          t("moreIntro"),
           data.products
         )
         setTimeout(scrollToBottom, 300)
       } else {
-        addAssistantMessage("Je n'ai pas trouvé d'autres produits pour le moment. Tu veux essayer un autre mot-clé ?")
+        addAssistantMessage(t("noMore"))
       }
     } catch (error) {
       console.error("Erreur chargement plus:", error)
-      addAssistantMessage("Oups, erreur de chargement. Réessaie !")
+      addAssistantMessage(t("loadError"))
     }
   }, [sessionId, userId, addAssistantMessage, scrollToBottom, messages, country])
 
@@ -1632,7 +1641,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                     letterSpacing: '0.5px',
                     margin: 0,
                   }}>
-                    🎁 Réduction spéciale
+                    {t("couponSpecial")}
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     <p style={{
@@ -1662,11 +1671,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                     opacity: 0.6,
                     margin: '2px 0 0 0',
                   }}>
-                    {remainingTime <= 300 ? '⚠️ Expire bientôt !' : 'Valable 20min'}
+                    {remainingTime <= 300 ? t("couponExpiresSoon") : t("couponValid")}
                   </p>
                 </div>
-                <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <p style={{ fontSize: isMobile ? '7px' : '10px', opacity: 0.7, margin: 0 }}>Expire</p>
+                <div style={{ textAlign: 'end', flexShrink: 0 }}>
+                  <p style={{ fontSize: isMobile ? '7px' : '10px', opacity: 0.7, margin: 0 }}>{t("couponExpire")}</p>
                   <p style={{
                     fontSize: isMobile ? '18px' : '22px',
                     fontWeight: 700,
@@ -1690,7 +1699,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                     const btn = document.getElementById('copy-coupon-btn')
                     if (btn) {
                       btn.textContent = '✅'
-                      setTimeout(() => { btn.textContent = '📋 Copier' }, 1500)
+                      setTimeout(() => { btn.textContent = t("copy") }, 1500)
                     }
                   }}
                   id="copy-coupon-btn"
@@ -1707,7 +1716,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                     transition: 'all 0.2s',
                   }}
                 >
-                  📋 Copier
+                  {t("copy")}
                 </button>
                 <button
                   onClick={() => window.location.href = '/cart'}
@@ -1767,7 +1776,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
             const t = e.touches[0]
             if (t) startDrag(t.clientX, t.clientY, 'bubble')
           }}
-          aria-label="Ouvrir Adu, votre vendeur (déplaçable)"
+          aria-label={t("openAria")}
           style={{
             position: 'fixed',
             ...(bubblePos
@@ -1946,14 +1955,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                 Adu {isSpeaking && '🔊'}
               </p>
               <p style={{ margin: 0, color: 'rgba(255,255,255,0.8)', fontSize: '10px' }}>
-                {isRecording ? '🎤 Écoute...' : 'Votre vendeur Adullam'}
+                {isRecording ? t("listening") : t("sellerSubtitle")}
               </p>
             </div>
             <div style={{ display: 'flex', gap: '4px' }}>
               {isSpeaking && (
                 <button
                   onClick={(e) => { e.stopPropagation(); stopSpeaking() }}
-                  aria-label="Arrêter la voix"
+                  aria-label={t("stopVoiceAria")}
                   style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}
                 >
                   <StopIcon size={14} />
@@ -1961,14 +1970,14 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
               )}
               <button
                 onClick={e => { e.stopPropagation(); setIsMinimized(!isMinimized) }}
-                aria-label={isMinimized ? "Agrandir" : "Réduire"}
+                aria-label={isMinimized ? t("expandAria") : t("reduceAria")}
                 style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}
               >
                 <ChevronIcon size={16} up={isMinimized} />
               </button>
               <button
                 onClick={e => { e.stopPropagation(); setIsOpen(false) }}
-                aria-label="Fermer"
+                aria-label={t("closeAria")}
                 style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}
               >
                 <CloseIcon size={16} />
@@ -2095,7 +2104,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                                 {p.image ? (
                                   <img
                                     src={p.image}
-                                    alt={p.title || p.name || 'Produit'}
+                                    alt={p.title || p.name || t("productFallback")}
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                   />
                                 ) : (
@@ -2128,7 +2137,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                                   fontSize: isMobile ? '8px' : '9px',
                                   color: 'var(--muted-foreground)',
                                 }}>
-                                  💡 {p.reason || 'Recommandé pour vous'}
+                                  💡 {p.reason || t("recommendedDefault")}
                                 </p>
                               </div>
 
@@ -2176,7 +2185,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                                 e.currentTarget.style.borderColor = 'var(--accent)'
                               }}
                             >
-                              Voir plus de produits →
+                              {t("seeMore")}
                             </button>
                           )}
                         </div>
@@ -2203,13 +2212,13 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                       letterSpacing: '0.05em',
                       margin: 0,
                     }}>
-                      Comment veux-tu procéder ?
+                      {t("howProceed")}
                     </p>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                       <button
                         onClick={() => {
-                          sendMessage(language === 'en' ? "I'll take the urgent offer, right now" : "Je prends l'offre rapide, maintenant")
+                          sendMessage(t("chooseUrgent"))
                           setOfferChoice(null)
                         }}
                         style={{
@@ -2239,7 +2248,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
 
                       <button
                         onClick={() => {
-                          sendMessage(language === 'en' ? "I'd rather take my time" : "Je préfère prendre mon temps")
+                          sendMessage(t("chooseWait"))
                           setOfferChoice(null)
                         }}
                         style={{
@@ -2343,7 +2352,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                       letterSpacing: '0.05em',
                       margin: 0,
                     }}>
-                      Quantité (minimum {moqPrompt.min_quantity})
+                      {t("moqLabel", { min: moqPrompt.min_quantity })}
                     </p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -2387,7 +2396,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                       </div>
                       <button
                         onClick={() => {
-                          sendMessage(language === 'en' ? `Yes, ${moqQuantity} pieces` : `Oui, ${moqQuantity} pièces`)
+                          sendMessage(t("moqYes", { count: moqQuantity }))
                           setMoqPrompt(null)
                         }}
                         style={{
@@ -2402,7 +2411,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                           cursor: 'pointer',
                         }}
                       >
-                        Confirmer
+                        {t("confirm")}
                       </button>
                     </div>
                   </div>
@@ -2473,7 +2482,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                       el.style.height = `${Math.min(el.scrollHeight, 96)}px`
                     }}
                     onKeyDown={handleKeyDown}
-                    placeholder={isRecording ? "🎤 Écoute en cours..." : "Dis-moi ce que tu cherches..."}
+                    placeholder={isRecording ? t("listeningPlaceholder") : t("inputPlaceholder")}
                     disabled={isTyping || isRecording}
                     name="adu-chat-message"
                     autoComplete="off"
