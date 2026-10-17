@@ -480,7 +480,7 @@ export function Header() {
                               </button>
                             ))}
                         </div>
-                        {(categories.find((c) => c.title === activeCategory)?.items.length ?? 0) > 8 && (
+                        {(categories.find((c) => c.title === activeCategory)?.items.length ?? 0) > 0 && (
                           <button
                             onClick={() => {
                               goToCategory(activeCategory)
