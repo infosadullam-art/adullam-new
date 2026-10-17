@@ -277,6 +277,8 @@ export function Header() {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "")
 
+  const tl = (name: string) => { const s = generateSlug(name); return tc.has(s) ? tc(s) : name }
+
   const goToCategory = (category: string) => {
     router.push(`/categorie/${generateSlug(category)}`)
   }
@@ -328,16 +330,16 @@ export function Header() {
   const categories = [
     { title: "Homme", items: ["T-Shirts Homme", "Chemises Homme", "Pantalons Homme", "Jeans Homme", "Shorts Homme", "Manteaux Homme", "Sweats Homme", "Costumes Homme", "Maillots de bain Homme", "Pyjamas Homme", "Sous-vêtements Homme", "Chaussettes Homme"] },
     { title: "Femme", items: ["Robes", "Tops Femme", "T-Shirts Femme", "Pantalons Femme", "Jeans Femme", "Jupes", "Manteaux Femme", "Sweats Femme", "Combinaisons", "Maillots de bain Femme", "Pyjamas Femme", "Sous-vêtements Femme", "Collants & Chaussettes"] },
-    { title: "Enfant", items: ["Bébé Fille", "Bébé Garçon", "Fille 2-12 ans", "Garçon 2-12 ans", "Bébé mixte", "Vêtements Fille", "Vêtements Garçon", "Chaussures Enfant"] },
+    { title: "Enfant", items: ["Bébé Fille", "Bébé Garçon", "Fille 2-12 ans", "Garçon 2-12 ans", "Bébé mixte", "Vêtements Fille", "Vêtements Garçon", "Chaussures Enfant", "Jeux & Jouets"] },
     { title: "Chaussures", items: ["Baskets Homme", "Baskets Femme", "Baskets Enfant", "Chaussures Habillées Homme", "Chaussures Habillées Femme", "Bottes", "Sandales", "Chaussures de Sport", "Mules & Sabots"] },
     { title: "Accessoires", items: ["Sacs & Maroquinerie", "Montres", "Bijoux", "Ceintures", "Chapeaux & Casquettes", "Lunettes", "Gants", "Écharpes & Foulards", "Parapluies", "Portefeuilles"] },
     { title: "Sport", items: ["Vêtements de Sport Homme", "Vêtements de Sport Femme", "Vêtements de Sport Enfant", "Chaussures de Sport", "Accessoires de Sport", "Sports d'équipe", "Sports de raquette", "Sports d'hiver"] },
-    { title: "Maison", items: ["Maison & Décoration", "Literie", "Cuisine", "Salle de bain", "Meubles", "Électroménager", "Linge de maison", "Décoration"] },
+    { title: "Maison", items: ["Maison & Décoration", "Literie", "Cuisine", "Cuisinières & plaques de cuisson", "Salle de bain", "Meubles", "Électroménager", "Linge de maison", "Décoration"] },
     { title: "Beauté", items: ["Parfums", "Maquillage", "Soins Visage", "Soins Corps", "Soins Cheveux", "Hygiène"] },
     { title: "Électronique", items: ["Téléphones", "Ordinateurs", "Tablettes", "TV & Vidéo", "Audio", "Photo & Caméra", "Gaming", "Accessoires Électronique"] },
-    { title: "Loisirs", items: ["Livres", "Jeux & Jouets", "Jeux de société", "Instruments de musique"] },
-    { title: "Alimentation", items: ["Épicerie", "Boissons", "Confiserie", "Produits régionaux"] },
-    { title: "Animaux", items: ["Chien", "Chat", "Poissons", "Oiseaux", "Accessoires Animaux"] },
+    { title: "Machines & équipement pro", items: ["Machines agricoles", "Transformation alimentaire", "Cuisine professionnelle", "Impression DTF", "Machines à glace", "Groupes électrogènes", "Soudure"] },
+    { title: "Outils & bricolage", items: ["Outils manuels", "Pinces & clés", "Meules & perceuses"] },
+    { title: "Auto-Moto", items: ["Accessoires auto", "Équipement moto", "Entretien auto", "Équipement d'atelier"] },
   ]
 
   return (
@@ -432,7 +434,7 @@ export function Header() {
                               : "bg-surface text-foreground hover:bg-surface-sunken"
                           }`}
                         >
-                          {tc(generateSlug(cat.title))}
+                          {tl(cat.title)}
                         </button>
                       ))}
                     </div>
@@ -453,14 +455,14 @@ export function Header() {
                               : "bg-surface text-foreground hover:bg-surface-sunken"
                           }`}
                         >
-                          {tc(generateSlug(cat.title))}
+                          {tl(cat.title)}
                         </button>
                       ))}
                     </div>
 
                     {activeCategory && (
                       <div className="anim-fade-up border-t border-border pt-4">
-                        <p className="overline mb-3 text-accent">{tc(generateSlug(activeCategory))}</p>
+                        <p className="overline mb-3 text-accent">{tl(activeCategory)}</p>
                         <div className="grid grid-cols-4 gap-1.5">
                           {categories
                             .find((c) => c.title === activeCategory)
@@ -474,7 +476,7 @@ export function Header() {
                                 }}
                                 className="link-underline rounded-lg px-2 py-1.5 text-start text-xs text-ink-2 transition-colors duration-200 hover:text-accent"
                               >
-                                {tc(generateSlug(item))}
+                                {tl(item)}
                               </button>
                             ))}
                         </div>
@@ -776,7 +778,7 @@ export function Header() {
                   }}
                   className="flex w-full items-center justify-between border-b border-border py-3 text-sm font-medium text-foreground"
                 >
-                  {tc(generateSlug(cat.title))}
+                  {tl(cat.title)}
                   {cat.items.length > 0 && (
                     <IconChevronDown
                       className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${
@@ -796,7 +798,7 @@ export function Header() {
                         }}
                         className="py-1.5 text-start text-sm text-ink-3 hover:text-accent"
                       >
-                        {tc(generateSlug(item))}
+                        {tl(item)}
                       </button>
                     ))}
                   </div>
