@@ -14,6 +14,8 @@ import { useParams } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { useLocale } from "@/context/LocaleProvider"
 
+const PAGE_SIZE = 48
+
 export default function CategoryPage() {
   const t = useTranslations("categoryPage")
   const tCat = useTranslations("categories")
@@ -28,6 +30,9 @@ export default function CategoryPage() {
   const [category, setCategory] = useState<any>(null)
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [loadingMore, setLoadingMore] = useState(false)
 
   const [filters, setFilters] = useState({
     priceRange: [0, 50000],
@@ -82,7 +87,7 @@ export default function CategoryPage() {
           setCategory(foundCategory)
           console.log("✅ Catégorie trouvée:", foundCategory.name)
           
-          const productsRes = await productsApi.list({ categoryId: foundCategory.id, limit: 100, locale: language } as any)
+          const productsRes = await productsApi.list({ categoryId: foundCategory.id, includeSubcategories: true, limit: PAGE_SIZE, page: 1, locale: language } as any)
           console.log("📦 productsRes:", productsRes)
           
           if (productsRes.success) {
@@ -92,7 +97,7 @@ export default function CategoryPage() {
             const productList = Array.isArray(productsRes.data)
               ? productsRes.data
               : productsRes.data?.data || []
-            setProducts(productList)
+            setProducts(productList); setTotal((productsRes as any).meta?.total ?? productList.length); setPage(1)
             console.log("✅ Produits chargés:", productList.length)
           }
         } else {
@@ -106,6 +111,8 @@ export default function CategoryPage() {
     }
     if (slug) loadData()
   }, [slug, language])
+
+  const loadMore = async () => { if (!category || loadingMore) return; setLoadingMore(true); try { const next = page + 1; const res = await productsApi.list({ categoryId: category.id, includeSubcategories: true, limit: PAGE_SIZE, page: next, locale: language } as any); if (res.success) { const list = Array.isArray(res.data) ? res.data : (res.data as any)?.data || []; setProducts((prev) => { const seen = new Set(prev.map((x: any) => x.id)); return [...prev, ...list.filter((x: any) => !seen.has(x.id))] }); setPage(next) } } catch (e) { console.error(e) } finally { setLoadingMore(false) } }
 
   if (loading) {
     return (
@@ -303,7 +310,7 @@ export default function CategoryPage() {
               {categoryName}
             </h1>
             <p style={{ fontSize: "12px", color: "#AAAAAA", fontFamily: "'Poppins', var(--font-amazon)", marginTop: "2px" }}>
-              {t("productsAvailable", { count: products.length })}
+              {t("productsAvailable", { count: total || products.length })}
             </p>
           </div>
 
@@ -480,6 +487,7 @@ export default function CategoryPage() {
                       </Link>
                     )
                   })}
+                  <div className="col-span-full flex justify-center py-4">{products.length < total && (<button onClick={loadMore} disabled={loadingMore} className="px-6 py-2.5 text-sm font-bold rounded-xl" style={{ background: "#fff", border: "0.5px solid #D4372B", color: "#D4372B", fontFamily: "'Poppins', var(--font-amazon)" }}>{loadingMore ? "..." : (t.has("loadMore") ? t("loadMore") : "Voir plus")}</button>)}</div>
                 </div>
               )}
             </div>
