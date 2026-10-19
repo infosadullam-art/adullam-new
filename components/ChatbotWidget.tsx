@@ -1323,7 +1323,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
         setLoadOffset(prev => prev + 12)
         addAssistantMessage(
           t("moreIntro"),
-          data.products
+          data.products.map((p: any) => ({ ...p, reason: p.reason || (query.length <= 60 ? 'Résultat pour "' + query + '"' : undefined) }))
         )
         setTimeout(scrollToBottom, 300)
       } else {
@@ -2162,7 +2162,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                           {msg.products.length > (isMobile ? 2 : 3) && (
                             <button
                               onClick={() => {
-                                const query = msg.products.map(p => p.title || p.name).filter(Boolean).join(' ')
+                                const query = msg.products.map(p => (p.reason || '').match(/"([^"]+)"/)?.[1]).find(Boolean) || msg.products.map(p => p.title || p.name).filter(Boolean).join(' ').slice(0, 150)
                                 loadMoreProducts(query, [])
                               }}
                               style={{
