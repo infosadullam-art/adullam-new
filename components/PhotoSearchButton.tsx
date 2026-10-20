@@ -78,7 +78,7 @@ export function PhotoSearchButton({ className = "", onResults }: PhotoSearchButt
         try {
           (window as any).__photoSearch = { products: data.data, thumb, ts: Date.now() }; sessionStorage.setItem("photoSearch", JSON.stringify({ products: data.data, thumb, ts: Date.now() }))
         } catch {}
-        router.push("/search?photo=" + Date.now())
+        if (window.location.pathname === "/photo") { window.dispatchEvent(new Event("photo-search-updated")) } else { router.push("/photo") }
       }
     } catch {
       afficherErreur("Image illisible, essayez une autre photo.")

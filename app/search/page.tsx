@@ -31,13 +31,9 @@ function SearchContent() {
   const tCat = useTranslations("categories")
   const searchParams = useSearchParams()
   const query = searchParams.get('q') || ''
-  const photoKey = searchParams.get('photo') || ''
-  const hasPhoto = photoKey !== ''
   
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [photoThumb, setPhotoThumb] = useState('')
-  const [photoDebug, setPhotoDebug] = useState('')
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [showFilters, setShowFilters] = useState(false)
@@ -54,22 +50,7 @@ function SearchContent() {
 
   useEffect(() => {
     const fetchSearchResults = async () => {
-        if (hasPhoto) {
-          try {
-            const saved = (window as any).__photoSearch || JSON.parse(sessionStorage.getItem('photoSearch') || 'null')
-            const list = saved?.products || []
-            setPhotoDebug('win=' + (!!(window as any).__photoSearch) + ' ss=' + (sessionStorage.getItem('photoSearch') || '').length + ' n=' + list.length)
-            setProducts(list)
-            setPagination({ total: list.length, page: 1, totalPages: 1 })
-            setPhotoThumb(saved?.thumb || '')
-          } catch (e) {
-            setProducts([])
-          }
-          setIsLoading(false)
-          setIsInitialLoad(false)
-          return
-        }
-      if (!query && !hasPhoto) {
+      if (!query) {
         setIsLoading(false)
         setIsInitialLoad(false)
         return
@@ -112,7 +93,7 @@ function SearchContent() {
     }
 
     fetchSearchResults()
-  }, [query, photoKey, selectedCategory, sortBy, pagination.page, priceRange[1]])
+  }, [query, selectedCategory, sortBy, pagination.page, priceRange[1]])
 
   const handlePageChange = (newPage: number) => {
     setPagination(prev => ({ ...prev, page: newPage }))
@@ -128,7 +109,7 @@ function SearchContent() {
   }
 
   // ✅ Évite le flash : écran de chargement initial
-  if (isInitialLoad && (query || hasPhoto)) {
+  if (isInitialLoad && query) {
     return (
       <div className="min-h-screen bg-white">
         <div className="hidden lg:block"><Header /></div>
@@ -177,7 +158,7 @@ function SearchContent() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold">
-                  {hasPhoto ? (<span className="inline-flex items-center gap-3">{photoThumb && <img src={photoThumb} alt="" className="h-10 w-10 rounded-md border object-cover" />}Résultats pour votre photo</span>) : t("resultsFor", { query })}
+                  {t("resultsFor", { query })}
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">
                   {isLoading ? t("searching") : t("resultsCount", { count: pagination.total })}
@@ -186,7 +167,7 @@ function SearchContent() {
               
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={hasPhoto ? "hidden" : "lg:hidden flex items-center justify-center gap-2 px-4 py-2 border rounded-lg bg-white"}
+                className="lg:hidden flex items-center justify-center gap-2 px-4 py-2 border rounded-lg bg-white"
               >
                 <Filter className="w-4 h-4" />
                 {t("filters")}
@@ -195,7 +176,7 @@ function SearchContent() {
           </div>
 
           {/* Barre de tri - desktop */}
-          <div className={hasPhoto ? "hidden" : "hidden lg:flex justify-end mb-6"}>
+          <div className="hidden lg:flex justify-end mb-6">
             <select
               value={sortBy}
               onChange={(e) => {
@@ -219,7 +200,6 @@ function SearchContent() {
             <div className="text-center py-12">
               <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">{t("noResults")}</h3>
-                  {hasPhoto && <p className="text-xs text-gray-400 mb-2">debug photo : {photoDebug}</p>}
               <p className="text-gray-500 mb-6">
                 {t("noResultsHint")}
               </p>
@@ -231,10 +211,10 @@ function SearchContent() {
               </Link>
             </div>
           ) : (
-            <div className={hasPhoto ? "grid gap-6" : "grid lg:grid-cols-4 gap-6"}>
+            <div className="grid lg:grid-cols-4 gap-6">
               
               {/* Sidebar filtres */}
-              <div className={hasPhoto ? "hidden" : "hidden lg:block lg:col-span-1"}>
+              <div className="hidden lg:block lg:col-span-1">
                 <div className="bg-gray-50 rounded-lg p-4 sticky top-24">
                   <h3 className="font-bold mb-4">{t("filters")}</h3>
                   
@@ -300,9 +280,9 @@ function SearchContent() {
               </div>
 
               {/* Grille des résultats */}
-              <div className={hasPhoto ? "" : "lg:col-span-3"}>
+              <div className="lg:col-span-3">
                 {/* Tri mobile */}
-                <div className={hasPhoto ? "hidden" : "lg:hidden mb-4"}>
+                <div className="lg:hidden mb-4">
                   <select
                     value={sortBy}
                     onChange={(e) => {

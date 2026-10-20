@@ -536,6 +536,13 @@ export function Header() {
 
                 <input
                   type="text"
+                  name="q"
+                  inputMode="search"
+                  enterKeyHint="search"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
                   placeholder=""
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
