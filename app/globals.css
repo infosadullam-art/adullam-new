@@ -662,3 +662,6 @@
 @media (prefers-reduced-motion: reduce) {
   [dir="rtl"] .loader-bar-fill { animation: none; left: auto; right: 0; width: 100%; opacity: .5; }
 }
+
+/* Champ de recherche des headers : pas de croix native */
+input[type="search"]::-webkit-search-cancel-button { display: none; -webkit-appearance: none; }

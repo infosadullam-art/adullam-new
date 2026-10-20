@@ -417,8 +417,12 @@ export function MobileHeader() {
             )}
 
             <input
-              type="text"
+              type="search"
               name="q"
+              role="searchbox"
+              data-lpignore="true"
+              data-1p-ignore="true"
+              data-form-type="other"
               inputMode="search"
               enterKeyHint="search"
               autoComplete="off"
