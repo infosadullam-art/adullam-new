@@ -76,7 +76,7 @@ export function PhotoSearchButton({ className = "", onResults }: PhotoSearchButt
         onResults(data.data, thumb)
       } else {
         try {
-          sessionStorage.setItem("photoSearch", JSON.stringify({ products: data.data, thumb, ts: Date.now() }))
+          (window as any).__photoSearch = { products: data.data, thumb, ts: Date.now() }; sessionStorage.setItem("photoSearch", JSON.stringify({ products: data.data, thumb, ts: Date.now() }))
         } catch {}
         router.push("/search?photo=" + Date.now())
       }

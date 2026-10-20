@@ -37,6 +37,7 @@ function SearchContent() {
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [photoThumb, setPhotoThumb] = useState('')
+  const [photoDebug, setPhotoDebug] = useState('')
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [showFilters, setShowFilters] = useState(false)
@@ -55,8 +56,9 @@ function SearchContent() {
     const fetchSearchResults = async () => {
         if (hasPhoto) {
           try {
-            const saved = JSON.parse(sessionStorage.getItem('photoSearch') || 'null')
+            const saved = (window as any).__photoSearch || JSON.parse(sessionStorage.getItem('photoSearch') || 'null')
             const list = saved?.products || []
+            setPhotoDebug('win=' + (!!(window as any).__photoSearch) + ' ss=' + (sessionStorage.getItem('photoSearch') || '').length + ' n=' + list.length)
             setProducts(list)
             setPagination({ total: list.length, page: 1, totalPages: 1 })
             setPhotoThumb(saved?.thumb || '')
@@ -217,6 +219,7 @@ function SearchContent() {
             <div className="text-center py-12">
               <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">{t("noResults")}</h3>
+                  {hasPhoto && <p className="text-xs text-gray-400 mb-2">debug photo : {photoDebug}</p>}
               <p className="text-gray-500 mb-6">
                 {t("noResultsHint")}
               </p>
