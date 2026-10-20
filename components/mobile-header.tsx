@@ -1,4 +1,5 @@
 "use client"
+import { PhotoSearchButton } from "@/components/PhotoSearchButton"
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
@@ -392,6 +393,7 @@ export function MobileHeader() {
 
           {/* Row 2 : Barre de recherche AVEC CARROUSEL VERTICAL */}
           <form onSubmit={handleSearch} className="relative">
+                <PhotoSearchButton className="absolute end-1.5 top-1/2 -translate-y-1/2 z-10" />
             <IconSearch
               className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none z-10 transition-colors duration-200"
               style={{ color: searchFocused ? "var(--accent)" : "var(--muted-foreground)" }}
@@ -421,7 +423,7 @@ export function MobileHeader() {
               onChange={e => setSearchQuery(e.target.value)}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
-              className="w-full ps-9 pe-4 text-sm text-foreground focus:outline-none"
+              className="w-full ps-9 pe-12 text-sm text-foreground focus:outline-none"
               style={{
                 background: "var(--surface)",
                 borderRadius: "10px",

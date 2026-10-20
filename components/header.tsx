@@ -1,4 +1,5 @@
 "use client"
+import { PhotoSearchButton } from "@/components/PhotoSearchButton"
 
 import { useState, useRef, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
@@ -541,11 +542,12 @@ export function Header() {
                   onFocus={() => setSearchFocused(true)}
                   onBlur={() => setSearchFocused(false)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  className={`w-full rounded-lg bg-surface py-2.5 ps-10 pe-14 text-sm text-foreground transition-all duration-200 focus:outline-none border ${
+                  className={`w-full rounded-lg bg-surface py-2.5 ps-10 pe-24 text-sm text-foreground transition-all duration-200 focus:outline-none border ${
                     searchFocused ? "border-accent ring-2 ring-accent/15 bg-background" : "border-transparent"
                   }`}
                 />
 
+                <PhotoSearchButton className="absolute end-11 top-1/2 -translate-y-1/2" />
                 <button
                   onClick={handleSearch}
                   aria-label={t("searchAria")}
