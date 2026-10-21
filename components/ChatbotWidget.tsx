@@ -1130,30 +1130,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   // une confirmation sans que l'utilisateur ait à taper). Sans argument,
   // utilise le contenu de l'input comme avant.
 
-  const handlePhotoResults = (list: any[]) => {
-    const userMsg: Message = {
-      id: `user_${Date.now()}`,
-      role: 'user',
-      content: '📷 Photo envoyée',
-      timestamp: new Date(),
-    }
-    setMessages(prev => [...prev, userMsg])
-    const prods: Product[] = (list || []).slice(0, 12).map((p: any) => ({
-      id: p.id,
-      title: p.title,
-      price: p.price,
-      image: p.image,
-      score: p.score,
-      source: 'photo',
-    }))
-    if (prods.length > 0) {
-      addAssistantMessage('Voici les produits les plus proches de votre photo :', prods)
-    } else {
-      addAssistantMessage("Je n'ai pas trouvé de produit assez proche de cette photo. Essayez une photo plus nette, avec le produit bien au centre, ou décrivez-moi par écrit ce que vous cherchez.")
-    }
-    setTimeout(scrollToBottom, 300)
-  }
-
   const sendMessage = async (overrideText?: string) => {
     const text = (overrideText ?? input).trim()
     if (!text || isTyping) return
@@ -2558,7 +2534,6 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                   </button>
                 )}
 
-                <PhotoSearchButton className="shrink-0 bg-[var(--surface)]" onResults={(list) => handlePhotoResults(list)} />
                 <button
                   onClick={() => sendMessage()}
                   disabled={!input.trim() || isTyping}
