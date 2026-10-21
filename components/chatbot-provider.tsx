@@ -15,8 +15,8 @@ export function ChatbotProvider() {
   // "pt-CV", "ar-LY", "en-NG") est déjà calculé dynamiquement par
   // LocaleProvider selon le pays détecté ; on en extrait juste le préfixe de
   // langue au lieu de l'ignorer.
-  const { locale } = useLocale()
-  const language = locale.split("-")[0]
+  const { language } = useLocale() // choix manuel du visiteur, sinon langue du pays (voir proxy.ts)
+
 
   useEffect(() => {
     if (user?.id) {
