@@ -52,9 +52,9 @@ function Bouton({ apiBase, onResults }: Props) {
       const q = new URLSearchParams(window.location.search).get("photochat")
       if (q === "1") localStorage.setItem("photochat", "1")
       if (q === "0") localStorage.removeItem("photochat")
-      setActif(localStorage.getItem("photochat") === "1")
+      setActif(localStorage.getItem("photochat") !== "0")
     } catch {
-      setActif(false)
+      setActif(true)
     }
   }, [])
 
