@@ -16,6 +16,7 @@
 //    (Redis, TTL calé sur expires_at) est l'unique source de vérité, plus
 //    besoin de localStorage. Le coupon survit désormais à un F5.
 
+import { ChatPhotoButton } from "@/components/ChatPhotoButton"
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import ReactMarkdown from 'react-markdown'
@@ -1129,6 +1130,35 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   // ✅ Accepte un texte optionnel (utilisé par le banner d'offre pour envoyer
   // une confirmation sans que l'utilisateur ait à taper). Sans argument,
   // utilise le contenu de l'input comme avant.
+
+  const handlePhotoResults = (list: any[]) => {
+    const userMsg: Message = {
+      id: `user_${Date.now()}`,
+      role: 'user',
+      content: '\uD83D\uDCF7 Photo envoy\u00e9e',
+      timestamp: new Date(),
+    }
+    setMessages(prev => [...prev, userMsg])
+    const prods: Product[] = (list || []).slice(0, 12).map((p: any) => ({
+      id: p.id,
+      title: p.title,
+      price: p.price,
+      image: p.image,
+      score: p.score,
+      source: 'photo',
+    }))
+    if (prods.length > 0) {
+      addAssistantMessage('Voici les produits les plus proches de votre photo :', prods)
+      fetch(`${API_BASE_URL}/api/chat/photo-context`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId, user_id: userId || null, products: prods.map(p => ({ id: p.id })) }),
+      }).catch(() => {})
+    } else {
+      addAssistantMessage("Je n'ai pas trouvé de produit assez proche de cette photo. Essayez une photo plus nette, avec le produit bien au centre, ou décrivez-moi par écrit ce que vous cherchez.")
+    }
+    setTimeout(scrollToBottom, 300)
+  }
 
   const sendMessage = async (overrideText?: string) => {
     const text = (overrideText ?? input).trim()
@@ -2534,6 +2564,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
                   </button>
                 )}
 
+                <ChatPhotoButton apiBase={API_BASE_URL} onResults={(list) => handlePhotoResults(list)} />
                 <button
                   onClick={() => sendMessage()}
                   disabled={!input.trim() || isTyping}
