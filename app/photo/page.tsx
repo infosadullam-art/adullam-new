@@ -28,7 +28,7 @@ export default function PhotoResultsPage() {
   const [loaded, setLoaded] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
   const [thumb, setThumb] = useState("")
-  const [debug, setDebug] = useState("")
+  const [, setDebug] = useState("")
 
   const catName = (slug?: string, name?: string) =>
     slug && !slug.includes(".") && tCat.has(slug) ? tCat(slug) : name
@@ -78,7 +78,6 @@ export default function PhotoResultsPage() {
               <p className="text-gray-500 mb-2">
                 Essayez avec une photo plus nette, bien éclairée, avec le produit au centre.
               </p>
-              <p className="text-xs text-gray-400 mb-6">diagnostic : {debug}</p>
               <Link
                 href="/categories"
                 className="inline-block px-6 py-3 bg-brand text-white rounded-lg hover:bg-brand-dark transition-colors"
