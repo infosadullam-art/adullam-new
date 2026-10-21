@@ -24,6 +24,7 @@ interface Product {
 export default function PhotoResultsPage() {
   const t = useTranslations("search")
   const tCat = useTranslations("categories")
+  const tp = useTranslations("photoSearch")
   const { formatPrice } = useCurrencyFormatter()
   const [loaded, setLoaded] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
@@ -64,9 +65,9 @@ export default function PhotoResultsPage() {
           <div className="mb-4 sm:mb-6 flex items-center gap-3">
             {thumb && <img src={thumb} alt="" className="h-12 w-12 rounded-md border object-cover" />}
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold">Résultats pour votre photo</h2>
+              <h2 className="text-xl sm:text-2xl font-bold">{tp("results")}</h2>
               {loaded && products.length > 0 && (
-                <p className="text-sm text-gray-500 mt-1">{products.length} produits similaires</p>
+                <p className="text-sm text-gray-500 mt-1">{tp("similar", { count: products.length })}</p>
               )}
             </div>
           </div>
@@ -74,9 +75,9 @@ export default function PhotoResultsPage() {
           {loaded && products.length === 0 ? (
             <div className="text-center py-12">
               <Camera className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Aucun produit similaire trouvé</h3>
+              <h3 className="text-lg font-medium mb-2">{tp("emptyTitle")}</h3>
               <p className="text-gray-500 mb-2">
-                Essayez avec une photo plus nette, bien éclairée, avec le produit au centre.
+                {tp("emptyHint")}
               </p>
               <Link
                 href="/categories"

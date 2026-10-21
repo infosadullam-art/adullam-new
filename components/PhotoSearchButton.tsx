@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { Camera, Loader2 } from "lucide-react"
 import { apiFetch } from "@/lib/api"
 
@@ -47,6 +48,7 @@ export function PhotoSearchButton({ className = "", onResults }: PhotoSearchButt
   const inputRef = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
   const [erreur, setErreur] = useState("")
+  const t = useTranslations("photoSearch")
 
   const afficherErreur = (msg: string) => {
     setErreur(msg)
@@ -69,7 +71,7 @@ export function PhotoSearchButton({ className = "", onResults }: PhotoSearchButt
       const res = await apiFetch("/api/search/image", { method: "POST", body: form })
       const data = await res.json().catch(() => null)
       if (!res.ok || !data?.success) {
-        afficherErreur(data?.error || "Recherche par photo indisponible pour le moment.")
+        afficherErreur(res.status === 429 ? t("tooMany") : t("unavailable"))
         return
       }
       if (onResults) {
@@ -81,7 +83,7 @@ export function PhotoSearchButton({ className = "", onResults }: PhotoSearchButt
         if (window.location.pathname === "/photo") { window.dispatchEvent(new Event("photo-search-updated")) } else { router.push("/photo") }
       }
     } catch {
-      afficherErreur("Image illisible, essayez une autre photo.")
+      afficherErreur(t("unreadable"))
     } finally {
       setBusy(false)
     }
@@ -93,8 +95,8 @@ export function PhotoSearchButton({ className = "", onResults }: PhotoSearchButt
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={busy}
-        aria-label="Rechercher par photo"
-        title="Rechercher par photo"
+        aria-label={t("button")}
+        title={t("button")}
         className={`flex h-8 w-8 items-center justify-center rounded-full text-gray-500 hover:text-gray-800 hover:bg-black/5 transition-colors disabled:opacity-60 ${className}`}
       >
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}

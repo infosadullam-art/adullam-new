@@ -1,10 +1,11 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
+import { useTranslations } from "next-intl"
 
 interface Props {
   apiBase: string
-  onResults: (products: any[]) => void
+  onResults: (products: any[], labels?: { sent: string; found: string; none: string }) => void
 }
 
 const MAX_SIDE = 800
@@ -46,6 +47,7 @@ function Bouton({ apiBase, onResults }: Props) {
   const [actif, setActif] = useState(false)
   const [busy, setBusy] = useState(false)
   const [erreur, setErreur] = useState("")
+  const t = useTranslations("photoSearch")
 
   useEffect(() => {
     try {
@@ -76,12 +78,12 @@ function Bouton({ apiBase, onResults }: Props) {
       const res = await fetch(`${apiBase}/api/search/image`, { method: "POST", body: form })
       const data = await res.json().catch(() => null)
       if (!res.ok || !data?.success) {
-        afficherErreur(data?.error || "Recherche par photo indisponible pour le moment.")
+        afficherErreur(res.status === 429 ? t("tooMany") : t("unavailable"))
         return
       }
-      onResults(data.data || [])
+      onResults(data.data || [], { sent: t("chatSent"), found: t("chatFound"), none: t("chatNone") })
     } catch {
-      afficherErreur("Image illisible, essayez une autre photo.")
+      afficherErreur(t("unreadable"))
     } finally {
       setBusy(false)
     }
@@ -95,8 +97,8 @@ function Bouton({ apiBase, onResults }: Props) {
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={busy}
-        aria-label="Rechercher par photo"
-        title="Rechercher par photo"
+        aria-label={t("button")}
+        title={t("button")}
         style={{
           width: "34px", height: "34px", borderRadius: "50%", background: "var(--surface)",
           border: "none", cursor: busy ? "default" : "pointer", display: "flex",

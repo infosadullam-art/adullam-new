@@ -1125,5 +1125,18 @@
     "confirm": "Confirm",
     "listeningPlaceholder": "🎤 Listening...",
     "inputPlaceholder": "Tell me what you're looking for..."
+  },
+  "photoSearch": {
+    "button": "Search by photo",
+    "results": "Results for your photo",
+    "similar": "{count} similar products",
+    "emptyTitle": "No similar product found",
+    "emptyHint": "Try a sharper, well-lit photo with the product in the center.",
+    "unavailable": "Photo search is unavailable right now.",
+    "unreadable": "Unreadable image, please try another photo.",
+    "tooMany": "Too many searches, please try again in a minute.",
+    "chatSent": "Photo sent",
+    "chatFound": "Here are the products closest to your photo:",
+    "chatNone": "I couldn't find a product close enough to this photo. Try a sharper photo with the product in the center, or describe what you're looking for in writing."
   }
 }

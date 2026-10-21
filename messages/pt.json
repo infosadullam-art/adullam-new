@@ -1125,5 +1125,18 @@
     "confirm": "Confirmar",
     "listeningPlaceholder": "🎤 A ouvir...",
     "inputPlaceholder": "Me diz o que você procura..."
+  },
+  "photoSearch": {
+    "button": "Pesquisar por foto",
+    "results": "Resultados da sua foto",
+    "similar": "{count} produtos semelhantes",
+    "emptyTitle": "Nenhum produto semelhante encontrado",
+    "emptyHint": "Tente uma foto mais nítida, bem iluminada, com o produto ao centro.",
+    "unavailable": "A pesquisa por foto está indisponível no momento.",
+    "unreadable": "Imagem ilegível, tente outra foto.",
+    "tooMany": "Muitas pesquisas, tente novamente em um minuto.",
+    "chatSent": "Foto enviada",
+    "chatFound": "Aqui estão os produtos mais próximos da sua foto:",
+    "chatNone": "Não encontrei um produto suficientemente próximo desta foto. Tente uma foto mais nítida, com o produto bem ao centro, ou descreva por escrito o que procura."
   }
 }
