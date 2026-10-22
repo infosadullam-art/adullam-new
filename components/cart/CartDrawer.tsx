@@ -310,13 +310,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           <span className="font-medium text-foreground" style={{ fontSize: "10px" }}>{formatPrice(item.shippingCostUSD)}</span>
                         </div>
                       ) : null}
-                      {item.portePorteCostUSD ? (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground" style={{ fontSize: "10px" }}>Porte-à-porte</span>
-                          <span className="font-medium text-foreground" style={{ fontSize: "10px" }}>{formatPrice(item.portePorteCostUSD)}</span>
-                        </div>
-                      ) : null}
-                    </div>
+                                          </div>
                   ) : null}
 
                   {item.totalWeight ? (

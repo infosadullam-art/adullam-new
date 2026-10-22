@@ -424,12 +424,7 @@ export default function CartPage() {
                                   {t("plusShipping", { price: formatPrice(item.shippingCostUSD) })}
                                 </p>
                               ) : null}
-                              {item.portePorteCostUSD ? (
-                                <p className="text-[10px] text-muted-foreground">
-                                  {t("plusDoorToDoor", { price: formatPrice(item.portePorteCostUSD) })}
-                                </p>
-                              ) : null}
-                            </div>
+                                                          </div>
                           </div>
                         </div>
                       </div>
