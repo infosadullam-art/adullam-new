@@ -1575,6 +1575,11 @@ export default function ProductPage() {
     const result = addItemsToCart(itemsToAdd)
 
     if (result.success) {
+      // Retour a l'etat initial apres un ajout reussi (evite les doublons par clics repetes)
+      setSimpleQuantity(1)
+      setSimpleModalQuantity(0)
+      setSimpleVariantQuantities((prev) => Object.fromEntries(Object.keys(prev).map((k) => [k, 0])))
+      setComplexSelections((prev) => Object.fromEntries(Object.entries(prev).map(([pk, sec]) => [pk, Object.fromEntries(Object.keys(sec).map((sk) => [sk, 0]))])))
       toast.success(t("addedToCart", { count: result.addedCount }), {
         duration: 3000,
         position: "top-center",
