@@ -1591,13 +1591,13 @@ export default function ProductPage() {
             style={{
               opacity: tt.visible ? 1 : 0,
               transform: tt.visible ? "translateY(0)" : "translateY(-8px)",
-              transition: "opacity 200ms ease, transform 200ms ease",
+              transition: "opacity 200ms ease, transform 200ms ease", borderLeft: "3px solid var(--accent-amber)",
               cursor: "pointer",
             }}
             className="flex w-[min(92vw,380px)] items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-xl"
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style={{ background: "#16a34a" }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style={{ background: "var(--primary)" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ stroke: "var(--primary-foreground)" }} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
