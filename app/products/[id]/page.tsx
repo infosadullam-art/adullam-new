@@ -1580,11 +1580,38 @@ export default function ProductPage() {
       setSimpleModalQuantity(0)
       setSimpleVariantQuantities((prev) => Object.fromEntries(Object.keys(prev).map((k) => [k, 0])))
       setComplexSelections((prev) => Object.fromEntries(Object.entries(prev).map(([pk, sec]) => [pk, Object.fromEntries(Object.keys(sec).map((sk) => [sk, 0]))])))
-      toast.success(t("addedToCart", { count: result.addedCount }), {
-        duration: 3000,
-        position: "top-center",
-        icon: "🛒",
-      })
+      toast.custom(
+        (tt) => (
+          <div
+            role="button"
+            onClick={() => {
+              toast.dismiss(tt.id)
+              router.push("/cart")
+            }}
+            style={{
+              opacity: tt.visible ? 1 : 0,
+              transform: tt.visible ? "translateY(0)" : "translateY(-8px)",
+              transition: "opacity 200ms ease, transform 200ms ease",
+              cursor: "pointer",
+            }}
+            className="flex w-[min(92vw,380px)] items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-xl"
+          >
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style={{ background: "#16a34a" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-foreground">{t("addedToCart", { count: result.addedCount })}</p>
+              <p className="truncate text-xs text-muted-foreground">{product.title}</p>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-muted-foreground" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </div>
+        ),
+        { duration: 3500, position: "top-center" }
+      )
     }
     // En cas d'échec, addItemsToCart affiche déjà le toast d'erreur MOQ —
     // on ne montre donc pas de faux succès en parallèle.
