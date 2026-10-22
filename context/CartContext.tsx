@@ -640,6 +640,65 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     recalcAllItems();
   }, [country, ready]);
 
+  // ✅ Livraison du PANIER ENTIER : transport cumulé par mode + UN seul porte-à-porte.
+  // Les coûts par ligne restent le filet de sécurité si la route échoue.
+  const costSig = cart
+    .map((i) => `${i.variantKey}:${i.quantity}:${i.shippingMode || shippingMode}:${i.shippingCostUSD ?? ""}:${i.portePorteCostUSD ?? ""}`)
+    .join("|") + "|" + country;
+
+  useEffect(() => {
+    if (!ready || cart.length === 0) return;
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        const snapshot = cartRef.current;
+        if (snapshot.length === 0) return;
+        const res = await apiFetch("/api/logistics/cart-estimate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            country,
+            items: snapshot.map((i) => ({
+              id: i.id,
+              name: i.name || i.productTitle,
+              weight: i.weight,
+              category: i.productCategory,
+              quantity: i.quantity,
+              mode: i.shippingMode || shippingMode,
+            })),
+          }),
+        });
+        const data = await res.json();
+        if (cancelled || !data?.success || !Array.isArray(data.data?.lines)) return;
+        const lines = data.data.lines;
+        if (lines.length !== snapshot.length) return;
+        const latest = cartRef.current;
+        if (
+          latest.length !== snapshot.length ||
+          latest.some((it, idx) => it.variantKey !== snapshot[idx].variantKey || it.quantity !== snapshot[idx].quantity)
+        ) return;
+        let changed = false;
+        const next = latest.map((it, idx) => {
+          const l = lines[idx];
+          if (
+            Math.abs((it.shippingCostUSD || 0) - l.shippingCost) > 0.0005 ||
+            Math.abs((it.portePorteCostUSD || 0) - l.portePorteCost) > 0.0005
+          ) {
+            changed = true;
+            return { ...it, shippingCostUSD: l.shippingCost, portePorteCostUSD: l.portePorteCost };
+          }
+          return it;
+        });
+        if (changed) commitCart(next);
+      } catch {
+        // Non bloquant : les coûts par ligne restent affichés
+      }
+    }, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [costSig, ready]);
   const totalUSD = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const totalShippingUSD = cart.reduce((sum, item) => sum + (item.shippingCostUSD || 0), 0);
