@@ -840,6 +840,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
               has_added_to_cart: checkCartStatus(),
               has_visited_checkout: checkCheckoutStatus(),
               has_come_back: true,
+              language: language,
               country: country,
             }),
           })
