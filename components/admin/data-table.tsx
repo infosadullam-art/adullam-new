@@ -1,13 +1,11 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Column<T> {
   key: string
@@ -33,213 +31,129 @@ interface DataTableProps<T> {
   onRowClick?: (item: T) => void
 }
 
+// Même API qu'avant. Sur ordinateur : un tableau. Sur téléphone : une fiche par ligne
+// (1re colonne = titre, colonne sans titre = actions en haut à droite, les autres = « libellé / valeur »).
 export function DataTable<T>({
   columns,
   data,
   isLoading,
   pagination,
-  emptyMessage = "No data found",
+  emptyMessage = "Rien à afficher pour le moment",
   onRowClick,
 }: DataTableProps<T>) {
-  const [hoveredRow, setHoveredRow] = useState<number | null>(null)
-
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        {/* Header skeleton */}
-        <div className="flex items-center space-x-4">
-          {Array.from({ length: columns.length }).map((_, i) => (
-            <Skeleton key={i} className="h-8 flex-1" />
-          ))}
-        </div>
-        {/* Rows skeleton */}
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex items-center space-x-4">
-            {Array.from({ length: columns.length }).map((_, j) => (
-              <Skeleton key={j} className="h-12 flex-1" />
-            ))}
-          </div>
+      <div className="space-y-3" aria-busy="true" aria-label="Chargement">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-16 w-full rounded-lg" />
         ))}
       </div>
     )
   }
 
-  const startItem = pagination ? ((pagination.page - 1) * (pagination.pageSize || 10)) + 1 : 1
-  const endItem = pagination 
-    ? Math.min(pagination.page * (pagination.pageSize || 10), pagination.total || 0)
-    : data.length
+  const colTitre = columns[0]
+  const colActions = columns.filter((c) => !c.header)
+  const colDetails = columns.slice(1).filter((c) => c.header)
 
   return (
     <div className="space-y-4">
-      {/* Table */}
-      <div className="rounded-lg border bg-card shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader className="bg-muted/50">
-            <TableRow className="hover:bg-transparent">
-              {columns.map((column) => (
-                <TableHead 
-                  key={column.key} 
-                  className={cn(
-                    "h-10 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider",
-                    column.className
-                  )}
-                >
-                  {column.header}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.length === 0 ? (
-              <TableRow>
-                <TableCell 
-                  colSpan={columns.length} 
-                  className="h-32 text-center text-muted-foreground"
-                >
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <div className="text-4xl">📭</div>
-                    <div>{emptyMessage}</div>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              data.map((item, index) => (
-                <TableRow
-                  key={index}
-                  className={cn(
-                    "transition-colors",
-                    onRowClick && "cursor-pointer hover:bg-muted/50",
-                    hoveredRow === index && "bg-muted/30"
-                  )}
-                  onClick={() => onRowClick?.(item)}
-                  onMouseEnter={() => setHoveredRow(index)}
-                  onMouseLeave={() => setHoveredRow(null)}
-                >
-                  {columns.map((column) => (
-                    <TableCell 
-                      key={column.key} 
-                      className={cn("px-4 py-3", column.className)}
-                    >
-                      {column.cell(item)}
-                    </TableCell>
+      {data.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-[var(--adm-trait)] bg-[var(--adm-papier)] px-4 py-12 text-center text-sm text-[var(--adm-gris)]">
+          {emptyMessage}
+        </div>
+      ) : (
+        <>
+          {/* Ordinateur */}
+          <div className="hidden overflow-hidden rounded-lg border border-[var(--adm-trait)] bg-[var(--adm-papier)] md:block">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-[var(--adm-trait)] hover:bg-transparent">
+                  {columns.map((c) => (
+                    <TableHead key={c.key} className={cn("h-11 px-4 text-[13px] font-semibold text-[var(--adm-gris)]", c.className)}>
+                      {c.header}
+                    </TableHead>
                   ))}
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination */}
-      {pagination && pagination.totalPages > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
-          {/* Info */}
-          <div className="text-sm text-muted-foreground order-2 sm:order-1">
-            {pagination.total ? (
-              <span>
-                Showing <span className="font-medium text-foreground">{startItem}</span> to{" "}
-                <span className="font-medium text-foreground">{endItem}</span> of{" "}
-                <span className="font-medium text-foreground">{pagination.total}</span> results
-              </span>
-            ) : (
-              <span>
-                Page <span className="font-medium text-foreground">{pagination.page}</span> of{" "}
-                <span className="font-medium text-foreground">{pagination.totalPages}</span>
-              </span>
-            )}
+              </TableHeader>
+              <TableBody>
+                {data.map((item, index) => (
+                  <TableRow
+                    key={index}
+                    className={cn("border-[var(--adm-trait)]", onRowClick && "cursor-pointer hover:bg-black/[0.03]")}
+                    onClick={() => onRowClick?.(item)}
+                  >
+                    {columns.map((c) => (
+                      <TableCell key={c.key} className={cn("px-4 py-3", c.className)}>
+                        {c.cell(item)}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
 
-          {/* Page Size Selector */}
-          {pagination.onPageSizeChange && pagination.pageSizeOptions && (
-            <div className="flex items-center gap-2 order-1 sm:order-2">
-              <span className="text-sm text-muted-foreground">Rows per page:</span>
-              <Select
-                value={pagination.pageSize?.toString()}
-                onValueChange={(value) => pagination.onPageSizeChange?.(parseInt(value))}
+          {/* Téléphone */}
+          <ul className="space-y-3 md:hidden">
+            {data.map((item, index) => (
+              <li
+                key={index}
+                className={cn(
+                  "rounded-lg border border-[var(--adm-trait)] bg-[var(--adm-papier)]",
+                  onRowClick && "cursor-pointer active:bg-black/[0.03]",
+                )}
+                onClick={() => onRowClick?.(item)}
               >
-                <SelectTrigger className="h-8 w-[70px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {pagination.pageSizeOptions.map((size) => (
-                    <SelectItem key={size} value={size.toString()}>
-                      {size}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+                <div className="flex items-start justify-between gap-2 p-3">
+                  <div className="min-w-0 flex-1">{colTitre?.cell(item)}</div>
+                  {colActions.length > 0 && (
+                    <div className="flex shrink-0 items-center" onClick={(e) => e.stopPropagation()}>
+                      {colActions.map((c) => (
+                        <div key={c.key}>{c.cell(item)}</div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {colDetails.length > 0 && (
+                  <dl className="adm-perf grid grid-cols-2 gap-x-3 gap-y-2 px-3 py-3 text-sm">
+                    {colDetails.map((c) => (
+                      <div key={c.key} className="min-w-0">
+                        <dt className="text-xs text-[var(--adm-gris)]">{c.header}</dt>
+                        <dd className="mt-0.5 min-w-0 [&_a]:!block [&_a]:!p-0 [&>div]:!p-0">{c.cell(item)}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
 
-          {/* Pagination Controls */}
-          <div className="flex items-center gap-1 order-3">
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm text-[var(--adm-gris)]">
+            Page <span className="font-semibold text-[var(--adm-encre)]">{pagination.page}</span> sur {pagination.totalPages}
+            {pagination.total ? ` · ${pagination.total} résultats` : ""}
+          </p>
+          <div className="flex gap-2">
             <Button
               variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => pagination.onPageChange(1)}
-              disabled={pagination.page <= 1}
-            >
-              <ChevronsLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
+              size="sm"
               onClick={() => pagination.onPageChange(pagination.page - 1)}
               disabled={pagination.page <= 1}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="mr-1 h-4 w-4" />
+              Précédent
             </Button>
-            
-            {/* Page Numbers */}
-            <div className="flex items-center gap-1 px-2">
-              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                let pageNum = pagination.page
-                if (pagination.totalPages <= 5) {
-                  pageNum = i + 1
-                } else if (pagination.page <= 3) {
-                  pageNum = i + 1
-                } else if (pagination.page >= pagination.totalPages - 2) {
-                  pageNum = pagination.totalPages - 4 + i
-                } else {
-                  pageNum = pagination.page - 2 + i
-                }
-                
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={pagination.page === pageNum ? "default" : "outline"}
-                    size="icon"
-                    className={cn(
-                      "h-8 w-8",
-                      pagination.page === pageNum && "pointer-events-none"
-                    )}
-                    onClick={() => pagination.onPageChange(pageNum)}
-                  >
-                    {pageNum}
-                  </Button>
-                )
-              })}
-            </div>
-
             <Button
               variant="outline"
-              size="icon"
-              className="h-8 w-8"
+              size="sm"
               onClick={() => pagination.onPageChange(pagination.page + 1)}
               disabled={pagination.page >= pagination.totalPages}
             >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => pagination.onPageChange(pagination.totalPages)}
-              disabled={pagination.page >= pagination.totalPages}
-            >
-              <ChevronsRight className="h-4 w-4" />
+              Suivant
+              <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           </div>
         </div>

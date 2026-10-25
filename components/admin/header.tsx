@@ -2,32 +2,27 @@
 
 import type React from "react"
 
-import { Bell, Search } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-
 interface AdminHeaderProps {
   title: string
   description?: string
   actions?: React.ReactNode
+  backButton?: React.ReactNode
 }
 
-export function AdminHeader({ title, description, actions }: AdminHeaderProps) {
+// Même API qu'avant (title, description, actions) + backButton déjà utilisé par plusieurs pages.
+// La fausse recherche et la fausse cloche ont été retirées.
+export function AdminHeader({ title, description, actions, backButton }: AdminHeaderProps) {
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-6">
-      <div>
-        <h1 className="text-xl font-semibold">{title}</h1>
-        {description && <p className="text-sm text-muted-foreground">{description}</p>}
-      </div>
-      <div className="flex items-center gap-4">
-        <div className="relative hidden md:block">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search..." className="w-64 pl-9" />
+    <header className="sticky top-0 z-20 border-b border-[var(--adm-trait)] bg-[var(--adm-quai)]/95 backdrop-blur">
+      <div className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div className="flex min-w-0 items-center gap-2">
+          {backButton}
+          <div className="min-w-0">
+            <h1 className="adm-display truncate text-2xl font-bold leading-tight sm:text-[28px]">{title}</h1>
+            {description && <p className="mt-0.5 text-sm text-[var(--adm-gris)]">{description}</p>}
+          </div>
         </div>
-        <Button variant="outline" size="icon">
-          <Bell className="h-4 w-4" />
-        </Button>
-        {actions}
+        {actions && <div className="flex flex-wrap items-center gap-2 [&>*]:shrink-0">{actions}</div>}
       </div>
     </header>
   )

@@ -900,3 +900,8 @@ export const chatFeedbackApi = {
 // ✅ EXPORT DES FONCTIONS DE TOKEN
 // ============================================================
 export { getStoredToken, setStoredToken }
+
+// Vue d'ensemble de l'accueil admin (donnees reelles)
+export const overviewApi = {
+  get: () => apiClient<{ success: boolean; data?: any; error?: string }>("/api/admin/overview"),
+}

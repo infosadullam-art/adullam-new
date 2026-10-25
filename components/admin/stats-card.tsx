@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import type { LucideIcon } from "lucide-react"
 
@@ -7,42 +6,30 @@ interface StatsCardProps {
   value: string | number
   description?: string
   icon?: LucideIcon
-  trend?: {
-    value: number
-    isPositive: boolean
-  }
+  // conservé pour compatibilité avec les anciennes pages ; n'affiche rien d'inventé
+  trend?: { value: number; isPositive: boolean }
   className?: string
 }
 
 export function StatsCard({ title, value, description, icon: Icon, trend, className }: StatsCardProps) {
   return (
-    <Card className={cn("overflow-hidden transition-all hover:shadow-md", className)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold tracking-tight">{value}</div>
-        {(description || trend) && (
-          <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-            {trend && (
-              <span
-                className={cn(
-                  "inline-flex items-center rounded-full px-1.5 py-0.5 font-medium",
-                  trend.isPositive 
-                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" 
-                    : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                )}
-              >
-                {trend.isPositive ? "↑" : "↓"} {Math.abs(trend.value)}%
-              </span>
-            )}
-            {description && (
-              <span className="truncate">{description}</span>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <div className={cn("rounded-lg border border-[var(--adm-trait)] bg-[var(--adm-papier)] p-4", className)}>
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm text-[var(--adm-gris)]">{title}</p>
+        {Icon && <Icon className="h-4 w-4 shrink-0 text-[var(--adm-gris)]" />}
+      </div>
+      <p className="adm-display mt-1 text-[28px] font-bold leading-none">{value}</p>
+      {(description || trend) && (
+        <p className="mt-2 flex items-center gap-2 text-xs text-[var(--adm-gris)]">
+          {trend && (
+            <span className={cn("adm-stamp", trend.isPositive ? "adm-tone-vert" : "adm-tone-rouge")}>
+              {trend.isPositive ? "+" : "−"}
+              {Math.abs(trend.value)}%
+            </span>
+          )}
+          {description && <span className="truncate">{description}</span>}
+        </p>
+      )}
+    </div>
   )
 }

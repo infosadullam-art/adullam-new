@@ -1,0 +1,112 @@
+/* Adullam admin — « bordereau de transport »
+   Les variables shadcn sont redéfinies ici : toutes les anciennes pages
+   (boutons, cartes, champs, onglets) prennent le nouveau style sans modification. */
+
+:root:has(.adm-shell) {
+  --adm-quai: #e9ebe7;
+  --adm-papier: #fbfbf9;
+  --adm-encre: #0f1314;
+  --adm-encre-2: #1b2123;
+  --adm-gris: #5b6561;
+  --adm-trait: #d3d7d1;
+  --adm-rouge: #d4372b;
+  --adm-ambre: #f5a623;
+  --adm-vert: #1f7a4d;
+  --adm-bleu: #2f5d8a;
+
+  --background: #e9ebe7;
+  --foreground: #0f1314;
+  --card: #fbfbf9;
+  --card-foreground: #0f1314;
+  --popover: #fbfbf9;
+  --popover-foreground: #0f1314;
+  --primary: #0f1314;
+  --primary-foreground: #fbfbf9;
+  --secondary: #e1e4df;
+  --secondary-foreground: #0f1314;
+  --muted: #e1e4df;
+  --muted-foreground: #5b6561;
+  --accent: #e1e4df;
+  --accent-foreground: #0f1314;
+  --destructive: #d4372b;
+  --destructive-foreground: #fbfbf9;
+  --border: #d3d7d1;
+  --input: #d3d7d1;
+  --ring: #d4372b;
+  --radius: 0.5rem;
+}
+
+.adm-shell {
+  font-family: var(--font-adm-body), system-ui, sans-serif;
+  color: var(--adm-encre);
+  background: var(--adm-quai);
+  -webkit-font-smoothing: antialiased;
+}
+
+.adm-display {
+  font-family: var(--font-adm-display), system-ui, sans-serif;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  letter-spacing: -0.02em;
+}
+
+.adm-shell h1,
+.adm-shell h2,
+.adm-shell h3 {
+  font-family: var(--font-adm-display), system-ui, sans-serif;
+  letter-spacing: -0.015em;
+}
+
+/* Focus clavier visible partout */
+.adm-shell :is(a, button, input, select, textarea, summary, [role="button"]):focus-visible {
+  outline: 2px solid var(--adm-rouge);
+  outline-offset: 2px;
+}
+
+/* Tampon de statut : bordure pleine, coins presque droits */
+.adm-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
+  padding: 1px 7px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.adm-tone-rouge { color: var(--adm-rouge); background: #d4372b14; }
+.adm-tone-ambre { color: #9a6200; background: #f5a62322; }
+.adm-tone-vert  { color: var(--adm-vert); background: #1f7a4d14; }
+.adm-tone-bleu  { color: var(--adm-bleu); background: #2f5d8a14; }
+.adm-tone-gris  { color: var(--adm-gris); background: #5b656114; }
+
+/* Trait de perforation entre deux zones d'un bordereau */
+.adm-perf {
+  border-top: 1.5px dashed var(--adm-trait);
+}
+
+/* Panneau sombre « à traiter » */
+.adm-encre {
+  background: var(--adm-encre);
+  color: #f1f2ee;
+}
+
+/* Barres du graphique : une seule animation, à l'ouverture de la page */
+@keyframes adm-pousse {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+.adm-barre {
+  transform-origin: bottom;
+  animation: adm-pousse 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adm-barre { animation: none; }
+}
+
+/* Barre de navigation basse (téléphone) : respecte l'encoche iPhone */
+.adm-bottom-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
