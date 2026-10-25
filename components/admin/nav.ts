@@ -16,6 +16,7 @@ import {
   ScrollText,
   Activity,
   Cog,
+  Ticket,
   type LucideIcon,
 } from "lucide-react"
 
@@ -41,6 +42,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { name: "Commandes", href: `${base}/orders`, icon: ShoppingCart },
       { name: "Clients", href: `${base}/users`, icon: Users },
       { name: "Demandes sourcing", href: `${base}/sourcing`, icon: FileSearch },
+      { name: "Coupons", href: `${base}/coupons`, icon: Ticket },
     ],
   },
   {
@@ -61,14 +63,7 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: "Intelligence IA",
-    collapsed: true,
-    items: [
-      { name: "Cycle", href: `${base}/ia/cycle`, icon: Brain },
-      { name: "Qualité", href: `${base}/ia/quality`, icon: Target },
-      { name: "Nouveaux visiteurs", href: `${base}/ia/coldstart`, icon: UserPlus },
-      { name: "Diversité", href: `${base}/ia/diversity`, icon: Palette },
-      { name: "Défilement infini", href: `${base}/ia/scroll`, icon: ScrollText },
-    ],
+    items: [{ name: "Recommandations", href: `${base}/ia`, icon: Brain, end: true }],
   },
   {
     title: "Système",

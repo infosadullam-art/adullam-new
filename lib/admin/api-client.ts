@@ -905,3 +905,19 @@ export { getStoredToken, setStoredToken }
 export const overviewApi = {
   get: () => apiClient<{ success: boolean; data?: any; error?: string }>("/api/admin/overview"),
 }
+
+
+// Intelligence IA (mesures reelles) et coupons
+export const iaApi = {
+  get: () => apiClient<{ success: boolean; data?: any; error?: string }>("/api/admin/ia"),
+}
+
+export const couponsApi = {
+  list: () => apiClient<{ coupons?: any[]; error?: string }>("/api/admin/coupons"),
+  create: (data: Record<string, unknown>) =>
+    apiClient<{ success?: boolean; coupon?: any; error?: string }>("/api/admin/coupons", { method: "POST", body: JSON.stringify(data) }),
+  update: (id: string, data: Record<string, unknown>) =>
+    apiClient<{ success?: boolean; coupon?: any; error?: string }>("/api/admin/coupons", { method: "PUT", params: { id }, body: JSON.stringify({ id, ...data }) }),
+  remove: (id: string) =>
+    apiClient<{ success?: boolean; error?: string }>("/api/admin/coupons", { method: "DELETE", params: { id } }),
+}

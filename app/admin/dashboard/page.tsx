@@ -371,6 +371,7 @@ export default function DashboardHome() {
                   ? `${data.coupons.uses} utilisations, ${formatFCFA(data.coupons.discountGiven)} offerts`
                   : "Aucune utilisation"
               }
+              href={`${base}/coupons`}
             />
             <Chiffre
               label="Panier moyen payé"
