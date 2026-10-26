@@ -1,8 +1,8 @@
 // lib/admin/format.ts — formats et libellés communs de l'admin (français, FCFA)
 
-export function formatFCFA(value: number | null | undefined): string {
+export function formatUSD(value: number | null | undefined): string {
   const n = Number(value ?? 0)
-  return new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(n).replace(/ | /g, " ") + " FCFA"
+  return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "USD", currencyDisplay: "narrowSymbol" }).format(n)
 }
 
 export function formatNombre(value: number | null | undefined): string {

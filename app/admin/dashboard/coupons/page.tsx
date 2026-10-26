@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import { couponsApi } from "@/lib/admin/api-client"
-import { formatFCFA, formatDate, type Ton } from "@/lib/admin/format"
+import { formatUSD, formatDate, type Ton } from "@/lib/admin/format"
 
 type CouponType = "PERCENTAGE" | "FIXED_AMOUNT" | "FREE_SHIPPING"
 
@@ -77,8 +77,8 @@ function Ticket({ c, onEdit, onToggle, onDelete }: { c: Coupon; onEdit: () => vo
     <li className="relative flex overflow-hidden rounded-lg border border-[var(--adm-trait)] bg-[var(--adm-papier)]">
       <div className="flex w-[7.5rem] shrink-0 flex-col items-center justify-center gap-1 bg-[var(--adm-encre)] px-2 py-5 text-center text-white">
         <span className="adm-display text-[26px] font-bold leading-none text-[var(--adm-ambre)]">{valeurCourte(c)}</span>
-        {c.type === "FIXED_AMOUNT" && <span className="text-xs text-[#b9c0bb]">FCFA</span>}
-        {c.type === "PERCENTAGE" && c.maxDiscount ? <span className="text-xs text-[#b9c0bb]">max {formatFCFA(c.maxDiscount)}</span> : null}
+        {c.type === "FIXED_AMOUNT" && <span className="text-xs text-[#b9c0bb]">USD</span>}
+        {c.type === "PERCENTAGE" && c.maxDiscount ? <span className="text-xs text-[#b9c0bb]">max {formatUSD(c.maxDiscount)}</span> : null}
       </div>
       <span className="absolute left-[7.5rem] top-[-9px] h-[18px] w-[18px] -translate-x-1/2 rounded-full bg-[var(--adm-quai)] border border-[var(--adm-trait)]" aria-hidden />
       <span className="absolute bottom-[-9px] left-[7.5rem] h-[18px] w-[18px] -translate-x-1/2 rounded-full bg-[var(--adm-quai)] border border-[var(--adm-trait)]" aria-hidden />
@@ -98,7 +98,7 @@ function Ticket({ c, onEdit, onToggle, onDelete }: { c: Coupon; onEdit: () => vo
           </div>
           <div>
             <dt className="text-xs text-[var(--adm-gris)]">Panier minimum</dt>
-            <dd className="font-semibold">{c.minPurchase ? formatFCFA(c.minPurchase) : "Aucun"}</dd>
+            <dd className="font-semibold">{c.minPurchase ? formatUSD(c.minPurchase) : "Aucun"}</dd>
           </div>
           <div>
             <dt className="text-xs text-[var(--adm-gris)]">Valable</dt>
@@ -323,19 +323,19 @@ export default function CouponsPage() {
               </div>
               {form.type !== "FREE_SHIPPING" && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="c-val">{form.type === "PERCENTAGE" ? "Pourcentage" : "Montant (FCFA)"}</Label>
+                  <Label htmlFor="c-val">{form.type === "PERCENTAGE" ? "Pourcentage" : "Montant (USD)"}</Label>
                   <Input id="c-val" type="number" inputMode="numeric" min={0} max={form.type === "PERCENTAGE" ? 100 : undefined} value={form.value} onChange={maj("value")} required />
                 </div>
               )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="c-min">Panier minimum (FCFA)</Label>
+                <Label htmlFor="c-min">Panier minimum (USD)</Label>
                 <Input id="c-min" type="number" inputMode="numeric" min={0} value={form.minPurchase} onChange={maj("minPurchase")} />
               </div>
               {form.type === "PERCENTAGE" && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="c-max">Réduction maximale (FCFA)</Label>
+                  <Label htmlFor="c-max">Réduction maximale (USD)</Label>
                   <Input id="c-max" type="number" inputMode="numeric" min={0} value={form.maxDiscount} onChange={maj("maxDiscount")} />
                 </div>
               )}

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { overviewApi } from "@/lib/admin/api-client"
 import {
-  formatFCFA,
+  formatUSD,
   formatNombre,
   formatDate,
   formatDateHeure,
@@ -121,13 +121,13 @@ function Encaisse({ d }: { d: Overview }) {
       <h2 className="text-lg font-semibold">Encaissé</h2>
       <div className="mt-3 grid gap-5 sm:grid-cols-[auto_1fr] sm:gap-8">
         <div>
-          <p className="adm-display text-[40px] font-bold leading-none sm:text-5xl">{formatFCFA(d.revenue.paidTotal)}</p>
+          <p className="adm-display text-[40px] font-bold leading-none sm:text-5xl">{formatUSD(d.revenue.paidTotal)}</p>
           <p className="mt-2 text-sm text-[var(--adm-gris)]">
             sur {formatNombre(d.revenue.paidOrders)} {d.revenue.paidOrders > 1 ? "commandes payées" : "commande payée"}, depuis le début
           </p>
           <div className="adm-perf mt-4 pt-3 text-sm">
             <p>
-              <span className="font-semibold">{formatFCFA(d.revenue.paid30d)}</span>
+              <span className="font-semibold">{formatUSD(d.revenue.paid30d)}</span>
               <span className="text-[var(--adm-gris)]"> sur les 30 derniers jours</span>
             </p>
             {d.revenue.paid30d === 0 && (
@@ -140,7 +140,7 @@ function Encaisse({ d }: { d: Overview }) {
           <div
             className="flex h-28 items-end gap-[3px] border-b border-[var(--adm-trait)]"
             role="img"
-            aria-label={`Encaissements par jour sur 30 jours, maximum ${formatFCFA(max)}`}
+            aria-label={`Encaissements par jour sur 30 jours, maximum ${formatUSD(max)}`}
           >
             {d.daily.map((j, i) => {
               const h = max > 0 ? Math.max(3, Math.round((j.revenue / max) * 100)) : 3
@@ -153,7 +153,7 @@ function Encaisse({ d }: { d: Overview }) {
                     background: j.revenue > 0 ? "var(--adm-rouge)" : "var(--adm-trait)",
                     animationDelay: `${i * 12}ms`,
                   }}
-                  title={`${formatDate(j.date)} : ${formatFCFA(j.revenue)} · ${j.orders} commande${j.orders > 1 ? "s" : ""}`}
+                  title={`${formatDate(j.date)} : ${formatUSD(j.revenue)} · ${j.orders} commande${j.orders > 1 ? "s" : ""}`}
                 />
               )
             })}
@@ -236,7 +236,7 @@ function Dernieres({ d }: { d: Overview }) {
                     </p>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
-                    <span className="adm-display font-bold">{formatFCFA(o.total)}</span>
+                    <span className="adm-display font-bold">{formatUSD(o.total)}</span>
                     <span className="flex gap-1">
                       <Stamp ton={st.ton}>{st.label}</Stamp>
                       <Stamp ton={pay.ton}>{pay.label}</Stamp>
@@ -311,7 +311,7 @@ export default function DashboardHome() {
     <div>
       <AdminHeader
         title="Accueil"
-        description="L'état réel de la boutique, en FCFA"
+        description="L'état réel de la boutique, en dollars (USD)"
         actions={
           <Button variant="outline" size="sm" onClick={charger} disabled={chargement}>
             <RefreshCw className={`mr-2 h-4 w-4 ${chargement ? "animate-spin" : ""}`} />
@@ -368,14 +368,14 @@ export default function DashboardHome() {
               valeur={formatNombre(data.coupons.active)}
               note={
                 data.coupons.uses > 0
-                  ? `${data.coupons.uses} utilisations, ${formatFCFA(data.coupons.discountGiven)} offerts`
+                  ? `${data.coupons.uses} utilisations, ${formatUSD(data.coupons.discountGiven)} offerts`
                   : "Aucune utilisation"
               }
               href={`${base}/coupons`}
             />
             <Chiffre
               label="Panier moyen payé"
-              valeur={data.revenue.paidOrders > 0 ? formatFCFA(Math.round(data.revenue.paidTotal / data.revenue.paidOrders)) : "—"}
+              valeur={data.revenue.paidOrders > 0 ? formatUSD(data.revenue.paidTotal / data.revenue.paidOrders) : "—"}
               note={data.revenue.paidOrders > 0 ? `sur ${data.revenue.paidOrders} commandes payées` : "Aucune commande payée"}
             />
           </div>
