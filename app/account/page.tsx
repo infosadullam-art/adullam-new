@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 
 // ════════════════════════════════════════════════════════════
 // INDICATIFS TÉLÉPHONIQUES — users multi-pays, +225 ne suffit pas
@@ -17,20 +17,6 @@ const DIAL_CODES: Record<string, string> = {
   US: "+1",
 }
 
-const COUNTRY_NAMES: Record<string, string> = {
-  CI: "Côte d'Ivoire", BF: "Burkina Faso", SN: "Sénégal", ML: "Mali",
-  BJ: "Bénin", TG: "Togo", NE: "Niger", GW: "Guinée-Bissau", CM: "Cameroun",
-  CF: "Centrafrique", GA: "Gabon", CG: "Congo", GQ: "Guinée équatoriale",
-  TD: "Tchad", NG: "Nigeria", GH: "Ghana", LR: "Liberia", SL: "Sierra Leone",
-  GM: "Gambie", CV: "Cap-Vert", MA: "Maroc", TN: "Tunisie", DZ: "Algérie",
-  LY: "Libye", EG: "Égypte", MR: "Mauritanie", KE: "Kenya", UG: "Ouganda",
-  TZ: "Tanzanie", RW: "Rwanda", BI: "Burundi", ET: "Éthiopie", SO: "Somalie",
-  DJ: "Djibouti", SD: "Soudan", SS: "Soudan du Sud", ZA: "Afrique du Sud",
-  NA: "Namibie", BW: "Botswana", ZW: "Zimbabwe", MZ: "Mozambique",
-  AO: "Angola", ZM: "Zambie", MW: "Malawi", MG: "Madagascar", MU: "Maurice",
-  KM: "Comores", SC: "Seychelles", US: "États-Unis",
-}
-
 // Emoji drapeau à partir du code pays ISO (ex: "CI" → 🇨🇮), aucune donnée supplémentaire à maintenir
 function flagEmoji(code: string): string {
   return code.toUpperCase().replace(/./g, (char) =>
@@ -38,11 +24,11 @@ function flagEmoji(code: string): string {
   )
 }
 
-const DIAL_CODE_OPTIONS = Object.keys(DIAL_CODES)
-  .map((code) => ({ code, dial: DIAL_CODES[code], name: COUNTRY_NAMES[code] }))
-  .sort((a, b) => a.name.localeCompare(b.name))
-
 const DEFAULT_DIAL_CODE = "+225"
+
+// Petits libelles absents des fichiers de traduction
+const OU_LABEL: Record<string, string> = { fr: "Ou", en: "Or", pt: "Ou", ar: "أو" }
+const ORDER_LABEL: Record<string, string> = { fr: "Commande", en: "Order", pt: "Pedido", ar: "طلب" }
 
 // Compose un numéro au format international à partir de l'indicatif choisi et de la saisie locale
 function toE164Phone(dial: string, raw: string): string {
@@ -298,6 +284,9 @@ import { useAuth } from "@/lib/admin/auth-context"
 import { FcGoogle } from "react-icons/fc"
 import { FaFacebook, FaApple } from "react-icons/fa"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
+import { useLocale } from "@/context/LocaleProvider"
+import { getCountryName } from "@/lib/country-config"
 import { ordersApi, addressesApi, wishlistApi } from "@/lib/admin/api-client"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import Link from "next/link"
@@ -319,6 +308,21 @@ const Logo = () => {
 // ============================================================
 export default function AccountPage() {
   const router = useRouter()
+  const t = useTranslations("account")
+  const tLogin = useTranslations("login")
+  const tOrders = useTranslations("orders")
+  const tAddr = useTranslations("addresses")
+  const tWish = useTranslations("wishlist")
+  const tHeader = useTranslations("header")
+  const tHelp = useTranslations("pageAide")
+  const tContact = useTranslations("contact")
+  const tProduct = useTranslations("product")
+  const { language } = useLocale()
+  // Indicatifs triés par nom de pays, dans la langue de l'interface
+  const dialOptions = useMemo(
+    () => Object.keys(DIAL_CODES).map((code) => ({ code, dial: DIAL_CODES[code], name: getCountryName(code, language) })).sort((a, b) => a.name.localeCompare(b.name, language)),
+    [language]
+  )
   const { user, login, register, logout, isLoading: authLoading } = useAuth()
   const { formatPrice } = useCurrencyFormatter()
 
@@ -368,7 +372,6 @@ export default function AccountPage() {
   const [attempts, setAttempts] = useState(0)
   const [blockedUntil, setBlockedUntil] = useState<Date | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
-  const csrfToken = useRef(generateCSRFToken())
 
   // ============================================================
   // CHARGEMENT DES DONNÉES UTILISATEUR
@@ -426,14 +429,14 @@ export default function AccountPage() {
   const checkRateLimit = (): boolean => {
     if (blockedUntil && new Date() < blockedUntil) {
       const minutes = Math.ceil((blockedUntil.getTime() - Date.now()) / 60000)
-      setError(`Trop de tentatives. Réessayez dans ${minutes} minute(s)`)
+      setError(tLogin("rateLimitMinutes", { minutes }))
       return false
     }
     
     if (attempts >= 3) {
       const blockTime = new Date(Date.now() + 15 * 60000)
       setBlockedUntil(blockTime)
-      setError("Trop de tentatives. Compte bloqué 15 minutes.")
+      setError(tLogin("blocked15"))
       return false
     }
     
@@ -442,18 +445,18 @@ export default function AccountPage() {
 
   const validatePassword = (password: string): { valid: boolean; message: string } => {
     if (password.length < 8) {
-      return { valid: false, message: "Minimum 8 caractères" }
+      return { valid: false, message: tLogin("pwMin8") }
     }
     if (!/[A-Z]/.test(password)) {
-      return { valid: false, message: "Au moins une majuscule" }
+      return { valid: false, message: tLogin("pwUpper") }
     }
     if (!/[0-9]/.test(password)) {
-      return { valid: false, message: "Au moins un chiffre" }
+      return { valid: false, message: tLogin("pwDigit") }
     }
     if (!/[^A-Za-z0-9]/.test(password)) {
-      return { valid: false, message: "Au moins un caractère spécial" }
+      return { valid: false, message: tLogin("pwSpecial") }
     }
-    return { valid: true, message: "Mot de passe valide" }
+    return { valid: true, message: tLogin("pwValid") }
   }
 
   const sanitizeInput = (input: string): string => {
@@ -465,7 +468,9 @@ export default function AccountPage() {
   // ============================================================
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: sanitizeInput(value) }))
+    // Les mots de passe ne doivent jamais etre modifies (sinon < et > disparaissent et la connexion depuis l'app echoue)
+    const isPassword = name === "password" || name === "confirmPassword"
+    setFormData(prev => ({ ...prev, [name]: isPassword ? value : sanitizeInput(value) }))
     setError("")
   }
 
@@ -479,7 +484,7 @@ export default function AccountPage() {
       let identifier = loginMethod === "email" ? formData.email : formData.phone
       
       if (!identifier) {
-        setError(`${loginMethod === "email" ? "Email" : "Téléphone"} requis`)
+        setError(loginMethod === "email" ? tLogin("emailRequired") : tLogin("phoneRequired"))
         setIsSubmitting(false)
         return
       }
@@ -499,7 +504,7 @@ export default function AccountPage() {
       const data = await res.json()
 
       if (res.ok) {
-        setSuccess(`Code envoyé à ${identifier}`)
+        setSuccess(tLogin("codeSent", { identifier }))
         setStep("verify")
         setAttempts(0)
         
@@ -514,11 +519,11 @@ export default function AccountPage() {
           })
         }, 1000)
       } else {
-        setError(data.error || "Erreur lors de l'envoi")
+        setError(data.error || tLogin("sendError"))
         setAttempts(prev => prev + 1)
       }
     } catch (err) {
-      setError("Erreur de connexion")
+      setError(tLogin("connError"))
     } finally {
       setIsSubmitting(false)
     }
@@ -529,13 +534,6 @@ export default function AccountPage() {
     
     if (!checkRateLimit()) return
     
-    const formCsrf = (e.target as any).csrf?.value
-    if (formCsrf !== csrfToken.current) {
-      setError("Erreur de sécurité. Rafraîchissez la page.")
-      setIsSubmitting(false)
-      return
-    }
-
     setIsSubmitting(true)
     setError("")
     setSuccess("")
@@ -545,7 +543,7 @@ export default function AccountPage() {
         let identifier = loginMethod === "email" ? formData.email : formData.phone
         
         if (!identifier || !formData.password) {
-          setError("Tous les champs sont requis")
+          setError(tLogin("allRequired"))
           setIsSubmitting(false)
           return
         }
@@ -561,13 +559,13 @@ export default function AccountPage() {
         
       } else if (step === "register") {
         if (!formData.name || !formData.password || !formData.confirmPassword) {
-          setError("Tous les champs sont requis")
+          setError(tLogin("allRequired"))
           setIsSubmitting(false)
           return
         }
 
         if (formData.password !== formData.confirmPassword) {
-          setError("Les mots de passe ne correspondent pas")
+          setError(tLogin("pwMismatch"))
           setIsSubmitting(false)
           return
         }
@@ -583,7 +581,7 @@ export default function AccountPage() {
         
       } else if (step === "verify") {
         if (!formData.verificationCode || formData.verificationCode.length !== 6) {
-          setError("Code à 6 chiffres requis")
+          setError(tLogin("code6"))
           setIsSubmitting(false)
           return
         }
@@ -608,16 +606,16 @@ export default function AccountPage() {
           // Téléphone optionnel saisi à l'inscription — normalisé en E.164, jamais confondu avec l'email
           const phoneE164 = formData.phone.trim() ? toE164Phone(countryCode, formData.phone) : undefined
           await register(formData.name, identifier, formData.password, phoneE164)
-          setSuccess("Compte créé avec succès !")
+          setSuccess(tLogin("accountCreated"))
           setTimeout(() => router.push("/account"), 2000)
         } else {
-          setError(data.error || "Code invalide")
+          setError(data.error || tLogin("invalidCode"))
           setAttempts(prev => prev + 1)
         }
       }
     } catch (error: any) {
       console.error("❌ Erreur:", error)
-      setError(error.message || "Une erreur est survenue")
+      setError(error.message || tLogin("genericError"))
       setAttempts(prev => prev + 1)
     } finally {
       setIsSubmitting(false)
@@ -634,21 +632,21 @@ export default function AccountPage() {
   // GESTION DES ADRESSES
   // ============================================================
   const handleDeleteAddress = async (id: string) => {
-    if (!confirm("Voulez-vous vraiment supprimer cette adresse ?")) return
+    if (!confirm(t("confirmDeleteAddress"))) return
     
     try {
       const response = await addressesApi.delete(id)
       
       if (response.success) {
         await fetchUserData()
-        setSuccess("Adresse supprimée avec succès")
+        setSuccess(t("addressDeleted"))
         setTimeout(() => setSuccess(""), 3000)
       } else {
-        setError("Erreur lors de la suppression")
+        setError(t("deleteFailed"))
       }
     } catch (error) {
       console.error("Erreur suppression adresse:", error)
-      setError("Erreur lors de la suppression")
+      setError(t("deleteFailed"))
     }
   }
 
@@ -658,7 +656,7 @@ export default function AccountPage() {
       
       if (response.success) {
         await fetchUserData()
-        setSuccess("Adresse par défaut mise à jour")
+        setSuccess(t("defaultUpdated"))
         setTimeout(() => setSuccess(""), 3000)
       }
     } catch (error) {
@@ -669,20 +667,20 @@ export default function AccountPage() {
   // ============================================================
   // GESTION DE LA WISHLIST
   // ============================================================
-  const handleRemoveFromWishlist = async (id: string) => {
-    if (!confirm("Voulez-vous retirer ce produit de votre liste de souhaits ?")) return
+  const handleRemoveFromWishlist = async (productId: string) => {
+    if (!confirm(tWish("confirmRemove"))) return
     
     try {
-      const response = await wishlistApi.remove(id)
+      const response = await wishlistApi.remove(productId)
       
       if (response.success) {
         await fetchUserData()
-        setSuccess("Produit retiré de la wishlist")
+        setSuccess(t("wishRemoved"))
         setTimeout(() => setSuccess(""), 3000)
       }
     } catch (error) {
       console.error("Erreur suppression wishlist:", error)
-      setError("Erreur lors de la suppression")
+      setError(t("deleteFailed"))
     }
   }
 
@@ -691,12 +689,12 @@ export default function AccountPage() {
   // ============================================================
   const getStatusLabel = (status: string): string => {
     const statusMap: Record<string, string> = {
-      "PENDING": "Paiement en attente",
-      "CONFIRMED": "Confirmée",
-      "PROCESSING": "En cours",
-      "SHIPPED": "Expédiée",
-      "DELIVERED": "Livrée",
-      "CANCELLED": "Annulée"
+      "PENDING": tOrders("statusPENDING"),
+      "CONFIRMED": tOrders("statusCONFIRMED"),
+      "PROCESSING": tOrders("statusPROCESSING"),
+      "SHIPPED": tOrders("statusSHIPPED"),
+      "DELIVERED": tOrders("statusDELIVERED"),
+      "CANCELLED": tOrders("statusCANCELLED")
     }
     return statusMap[status] || status
   }
@@ -732,9 +730,9 @@ export default function AccountPage() {
             <div className="p-5 border-b" style={{ borderColor: 'var(--border)' }}>
               <div className="flex items-center justify-between">
                 <h2 className="text-base font-semibold" style={{ color: 'var(--foreground)' }}>
-                  {step === "login" && "Connexion"}
-                  {step === "register" && "Inscription"}
-                  {step === "verify" && "Vérification"}
+                  {step === "login" && tHeader("login")}
+                  {step === "register" && tHeader("register")}
+                  {step === "verify" && tLogin("verifyTitle")}
                 </h2>
                 {step !== "login" && (
                   <button
@@ -746,7 +744,7 @@ export default function AccountPage() {
                     className="text-xs hover:text-gray-700"
                     style={{ color: 'var(--muted-foreground)' }}
                   >
-                    Retour
+                    {tAddr("back")}
                   </button>
                 )}
               </div>
@@ -765,8 +763,8 @@ export default function AccountPage() {
                     }`}
                     style={loginMethod === "email" ? { background: "var(--accent)" } : { background: 'var(--surface)' }}
                   >
-                    <Mail className="w-3 h-3 inline mr-1.5" />
-                    Email
+                    <Mail className="w-3 h-3 inline me-1.5" />
+                    {tLogin("tabEmail")}
                   </button>
                   <button
                     onClick={() => setLoginMethod("phone")}
@@ -777,8 +775,8 @@ export default function AccountPage() {
                     }`}
                     style={loginMethod === "phone" ? { background: "var(--accent)" } : { background: 'var(--surface)' }}
                   >
-                    <Phone className="w-3 h-3 inline mr-1.5" />
-                    Téléphone
+                    <Phone className="w-3 h-3 inline me-1.5" />
+                    {tLogin("phone")}
                   </button>
                 </div>
               )}
@@ -799,23 +797,22 @@ export default function AccountPage() {
 
               <form ref={formRef} onSubmit={handleSubmit} className="space-y-3">
                 
-                <input type="hidden" name="csrf" value={csrfToken.current} />
-
                 {step !== "verify" && (
                   <>
                     {step === "register" && (
                       <div>
                         <label className="block text-xs font-medium mb-1" style={{ color: 'var(--foreground)' }}>
-                          Nom complet
+                          {tLogin("fullName")}
                         </label>
                         <input
                           type="text"
                           name="name"
+                          autoComplete="name"
                           value={formData.name}
                           onChange={handleInputChange}
                           className="w-full px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/20"
                           style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
-                          placeholder="Jean Dupont"
+                          placeholder={tLogin("phName")}
                           required
                         />
                       </div>
@@ -824,23 +821,24 @@ export default function AccountPage() {
                     {step === "login" && loginMethod === "phone" ? (
                       <div>
                         <label className="block text-xs font-medium mb-1" style={{ color: 'var(--foreground)' }}>
-                          Numéro de téléphone
+                          {tLogin("phoneNumber")}
                         </label>
                         <div className="flex w-full min-w-0">
                           <select
                             value={countryCode}
                             onChange={(e) => setManualDial(e.target.value)}
-                            aria-label="Indicatif du pays"
+                            aria-label={tLogin("dialAria")}
                             className="flex-shrink-0 w-[68px] rounded-l-md border border-r-0 text-xs px-1"
                             style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--foreground)', WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                           >
-                            {DIAL_CODE_OPTIONS.map((c) => (
+                            {dialOptions.map((c) => (
                               <option key={c.code} value={c.dial} title={c.name}>{flagEmoji(c.code)} {c.dial}</option>
                             ))}
                           </select>
                           <input
                             type="tel"
                             name="phone"
+                            autoComplete="tel"
                             value={formData.phone}
                             onChange={handleInputChange}
                             className="flex-1 min-w-0 px-3 py-2 text-sm rounded-r-md focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/20"
@@ -855,16 +853,17 @@ export default function AccountPage() {
                         {/* Inscription (et connexion par email) : email toujours obligatoire */}
                         <div>
                           <label className="block text-xs font-medium mb-1" style={{ color: 'var(--foreground)' }}>
-                            Adresse email
+                            {tLogin("emailLabel")}
                           </label>
                           <input
                             type="email"
                             name="email"
+                            autoComplete="email"
                             value={formData.email}
                             onChange={handleInputChange}
                             className="w-full px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/20"
                             style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
-                            placeholder="vous@exemple.com"
+                            placeholder={tLogin("phEmail")}
                             required
                           />
                         </div>
@@ -873,23 +872,24 @@ export default function AccountPage() {
                         {step === "register" && (
                           <div>
                             <label className="block text-xs font-medium mb-1" style={{ color: 'var(--foreground)' }}>
-                              Téléphone
+                              {tLogin("phone")}
                             </label>
                             <div className="flex w-full min-w-0">
                               <select
                                 value={countryCode}
                                 onChange={(e) => setManualDial(e.target.value)}
-                                aria-label="Indicatif du pays"
+                                aria-label={tLogin("dialAria")}
                                 className="flex-shrink-0 w-[68px] rounded-l-md border border-r-0 text-xs px-1"
                                 style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--foreground)', WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
                               >
-                                {DIAL_CODE_OPTIONS.map((c) => (
+                                {dialOptions.map((c) => (
                                   <option key={c.code} value={c.dial} title={c.name}>{flagEmoji(c.code)} {c.dial}</option>
                                 ))}
                               </select>
                               <input
                                 type="tel"
                                 name="phone"
+                                autoComplete="tel"
                                 value={formData.phone}
                                 onChange={handleInputChange}
                                 className="flex-1 min-w-0 px-3 py-2 text-sm rounded-r-md focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/20"
@@ -904,15 +904,16 @@ export default function AccountPage() {
 
                     <div>
                       <label className="block text-xs font-medium mb-1" style={{ color: 'var(--foreground)' }}>
-                        Mot de passe
+                        {tLogin("passwordLabel")}
                       </label>
                       <div className="relative">
                         <input
                           type={showPassword ? "text" : "password"}
                           name="password"
+                          autoComplete={step === "login" ? "current-password" : "new-password"}
                           value={formData.password}
                           onChange={handleInputChange}
-                          className="w-full px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/20 pr-9"
+                          className="w-full px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/20 pe-9"
                           style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
                           placeholder="••••••••"
                           required
@@ -931,15 +932,16 @@ export default function AccountPage() {
                     {step === "register" && (
                       <div>
                         <label className="block text-xs font-medium mb-1" style={{ color: 'var(--foreground)' }}>
-                          Confirmer le mot de passe
+                          {tLogin("confirmLabel")}
                         </label>
                         <div className="relative">
                           <input
                             type={showConfirmPassword ? "text" : "password"}
                             name="confirmPassword"
+                            autoComplete="new-password"
                             value={formData.confirmPassword}
                             onChange={handleInputChange}
-                            className="w-full px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/20 pr-9"
+                            className="w-full px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/20 pe-9"
                             style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
                             placeholder="••••••••"
                             required
@@ -964,14 +966,14 @@ export default function AccountPage() {
                     >
                       {isSubmitting ? (
                         <span className="flex items-center justify-center">
-                          <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <svg className="animate-spin -ms-1 me-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
-                          Chargement...
+                          {tLogin("loading")}
                         </span>
                       ) : (
-                        step === "login" ? "Se connecter" : "Créer mon compte"
+                        step === "login" ? tLogin("submitLogin") : tLogin("submitRegister")
                       )}
                     </button>
                   </>
@@ -984,20 +986,22 @@ export default function AccountPage() {
                         <MailCheck className="w-4 h-4" style={{ color: '#22C55E' }} />
                       </div>
                       <h3 className="text-sm font-semibold mb-0.5" style={{ color: 'var(--foreground)' }}>
-                        Vérification
+                        {tLogin("verifyTitle")}
                       </h3>
                       <p className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
-                        Code envoyé à {loginMethod === "email" ? formData.email : formData.phone}
+                        {tLogin("codeSent", { identifier: loginMethod === "email" ? formData.email : formData.phone })}
                       </p>
                     </div>
 
                     <div>
                       <label className="block text-xs font-medium mb-1" style={{ color: 'var(--foreground)' }}>
-                        Code de vérification
+                        {tLogin("codeLabel")}
                       </label>
                       <input
                         type="text"
                         name="verificationCode"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
                         value={formData.verificationCode}
                         onChange={(e) => {
                           const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6)
@@ -1013,7 +1017,7 @@ export default function AccountPage() {
 
                     {countdown > 0 ? (
                       <p className="text-xs text-center" style={{ color: 'var(--muted-foreground)' }}>
-                        Renvoyer dans {countdown}s
+                        {t("resendIn", { seconds: countdown })}
                       </p>
                     ) : (
                       <button
@@ -1022,7 +1026,7 @@ export default function AccountPage() {
                         className="w-full text-xs hover:underline"
                         style={{ color: "var(--accent)" }}
                       >
-                        Renvoyer le code
+                        {tLogin("resend")}
                       </button>
                     )}
 
@@ -1032,7 +1036,7 @@ export default function AccountPage() {
                       className="w-full text-white font-medium py-2 px-4 rounded-md text-sm transition-all disabled:opacity-50 mt-2"
                       style={{ background: "var(--accent)" }}
                     >
-                      {isSubmitting ? "Vérification..." : "Vérifier et créer mon compte"}
+                      {isSubmitting ? tLogin("verifying") : tLogin("verifyAndCreate")}
                     </button>
                   </>
                 )}
@@ -1045,7 +1049,7 @@ export default function AccountPage() {
                       <div className="w-full border-t" style={{ borderColor: 'var(--border)' }}></div>
                     </div>
                     <div className="relative flex justify-center text-xs">
-                      <span className="px-3" style={{ background: 'var(--card)', color: 'var(--muted-foreground)' }}>Ou</span>
+                      <span className="px-3" style={{ background: 'var(--card)', color: 'var(--muted-foreground)' }}>{OU_LABEL[language] ?? OU_LABEL.en}</span>
                     </div>
                   </div>
 
@@ -1057,7 +1061,7 @@ export default function AccountPage() {
                     ].map((item, idx) => (
                       <button
                         key={idx}
-                        onClick={() => alert("Connexion bientôt disponible")}
+                        onClick={() => alert(t("socialSoon"))}
                         className="flex items-center justify-center py-2 px-3 border rounded-md opacity-50 cursor-not-allowed"
                         style={{ borderColor: 'var(--border)' }}
                         disabled
@@ -1071,7 +1075,7 @@ export default function AccountPage() {
 
               {step !== "verify" && (
                 <p className="text-xs text-center mt-4" style={{ color: 'var(--muted-foreground)' }}>
-                  {step === "login" ? "Pas encore de compte ?" : "Déjà inscrit ?"}{" "}
+                  {step === "login" ? tLogin("noAccount") : tLogin("alreadyRegistered")}{" "}
                   <button
                     onClick={() => {
                       setStep(step === "login" ? "register" : "login")
@@ -1082,7 +1086,7 @@ export default function AccountPage() {
                     className="font-medium hover:underline"
                     style={{ color: "var(--accent)" }}
                   >
-                    {step === "login" ? "Inscrivez-vous" : "Connectez-vous"}
+                    {step === "login" ? tLogin("signUpLink") : tLogin("signInLink")}
                   </button>
                 </p>
               )}
@@ -1113,7 +1117,7 @@ export default function AccountPage() {
                   <span className="w-1 h-1 rounded-full" style={{ background: 'var(--border-strong)' }}></span>
                   <div className="flex items-center gap-1">
                     <Shield className="w-3 h-3 text-green-600" />
-                    <span className="text-xs text-green-600">Vérifié</span>
+                    <span className="text-xs text-green-600">{t("verified")}</span>
                   </div>
                 </div>
               </div>
@@ -1122,7 +1126,7 @@ export default function AccountPage() {
             <button
               onClick={handleLogout}
               className="p-2 rounded-md transition-colors text-muted-foreground hover:text-foreground"
-              title="Déconnexion"
+              title={tHeader("logout")}
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -1133,12 +1137,12 @@ export default function AccountPage() {
           <div className="max-w-7xl mx-auto px-4">
             <nav className="flex gap-1 overflow-x-auto py-2">
               {[
-                { id: "dashboard", label: "Dashboard", icon: Home },
-                { id: "orders", label: "Commandes", icon: ShoppingCart, count: orders.length },
-                { id: "wishlist", label: "Favoris", icon: Heart, count: wishlist.length },
-                { id: "addresses", label: "Adresses", icon: MapPin, count: addresses.length },
-                { id: "security", label: "Sécurité", icon: Shield },
-                { id: "help", label: "Aide", icon: HelpCircle },
+                { id: "dashboard", label: t("tabDashboard"), icon: Home },
+                { id: "orders", label: t("tabOrders"), icon: ShoppingCart, count: orders.length },
+                { id: "wishlist", label: t("tabWishlist"), icon: Heart, count: wishlist.length },
+                { id: "addresses", label: t("tabAddresses"), icon: MapPin, count: addresses.length },
+                { id: "security", label: t("tabSecurity"), icon: Shield },
+                { id: "help", label: t("tabHelp"), icon: HelpCircle },
               ].map((item) => {
                 const Icon = item.icon
                 const isActive = activeTab === item.id
@@ -1157,7 +1161,7 @@ export default function AccountPage() {
                     <Icon className="w-3.5 h-3.5" />
                     <span>{item.label}</span>
                     {item.count !== undefined && item.count > 0 && (
-                      <span className="ml-0.5 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: isActive ? "rgba(255,255,255,0.2)" : 'var(--border)', color: isActive ? "#fff" : 'var(--muted-foreground)' }}>
+                      <span className="ms-0.5 text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: isActive ? "rgba(255,255,255,0.2)" : 'var(--border)', color: isActive ? "#fff" : 'var(--muted-foreground)' }}>
                         {item.count}
                       </span>
                     )}
@@ -1175,18 +1179,18 @@ export default function AccountPage() {
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h1 className="text-xl font-bold" style={{ color: 'var(--foreground)' }}>
-                  Bonjour, {user?.name?.split(' ')[0] || user?.email} !
+                  {t("hello", { name: user?.name?.split(' ')[0] || user?.email || "" })}
                 </h1>
-                <p className="text-sm mt-0.5" style={{ color: 'var(--muted-foreground)' }}>Bienvenue dans votre espace personnel</p>
+                <p className="text-sm mt-0.5" style={{ color: 'var(--muted-foreground)' }}>{t("welcome")}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
               {[
-                { label: "Commandes", value: orders.length, icon: ShoppingCart, color: "blue" },
-                { label: "Favoris", value: wishlist.length, icon: Heart, color: "red" },
-                { label: "Adresses", value: addresses.length, icon: MapPin, color: "green" },
-                { label: "Livrées", value: orders.filter(o => o.status === "DELIVERED").length, icon: Package, color: "purple" }
+                { label: t("tabOrders"), value: orders.length, icon: ShoppingCart, color: "blue" },
+                { label: t("tabWishlist"), value: wishlist.length, icon: Heart, color: "red" },
+                { label: t("tabAddresses"), value: addresses.length, icon: MapPin, color: "green" },
+                { label: t("statDelivered"), value: orders.filter(o => o.status === "DELIVERED").length, icon: Package, color: "purple" }
               ].map((stat, index) => (
                 <div key={index} className="p-4 rounded-lg border" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
                   <div className="flex items-center justify-between mb-2">
@@ -1202,7 +1206,7 @@ export default function AccountPage() {
 
             {orders.length > 0 && (
               <div className="rounded-lg border p-4" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
-                <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--foreground)' }}>Dernières commandes</h2>
+                <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--foreground)' }}>{t("lastOrders")}</h2>
                 <div className="space-y-2">
                   {orders.slice(0, 3).map((order) => (
                     <div 
@@ -1212,8 +1216,8 @@ export default function AccountPage() {
                       onClick={() => router.push(`/account/orders/${order.id}`)}
                     >
                       <div>
-                        <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Commande #{order.orderNumber}</p>
-                        <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{new Date(order.createdAt).toLocaleDateString()}</p>
+                        <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{(ORDER_LABEL[language] ?? ORDER_LABEL.en)} #{order.orderNumber}</p>
+                        <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{new Date(order.createdAt).toLocaleDateString(language)}</p>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${getStatusColor(order.status)}`}>
@@ -1231,7 +1235,7 @@ export default function AccountPage() {
 
         {activeTab === "orders" && (
           <div>
-            <h2 className="text-base font-semibold mb-3" style={{ color: 'var(--foreground)' }}>Mes commandes</h2>
+            <h2 className="text-base font-semibold mb-3" style={{ color: 'var(--foreground)' }}>{tOrders("title")}</h2>
             {loading.orders ? (
               <div className="flex justify-center py-8">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2" style={{ borderColor: "var(--accent)" }}></div>
@@ -1247,8 +1251,8 @@ export default function AccountPage() {
                   >
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Commande #{order.orderNumber}</p>
-                        <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{new Date(order.createdAt).toLocaleDateString()}</p>
+                        <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{(ORDER_LABEL[language] ?? ORDER_LABEL.en)} #{order.orderNumber}</p>
+                        <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{new Date(order.createdAt).toLocaleDateString(language)}</p>
                       </div>
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${getStatusColor(order.status)}`}>
                         {getStatusLabel(order.status)}
@@ -1257,7 +1261,7 @@ export default function AccountPage() {
                     <div className="flex justify-between items-center pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
                       <span className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>{formatPrice(order.total)}</span>
                       <button className="px-3 py-1.5 text-white text-xs rounded-md transition-colors" style={{ background: "var(--accent)" }}>
-                        Détails
+                        {t("details")}
                       </button>
                     </div>
                   </div>
@@ -1266,13 +1270,13 @@ export default function AccountPage() {
             ) : (
               <div className="text-center py-12 rounded-lg border" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
                 <Package className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--border-strong)' }} />
-                <p className="text-sm mb-2" style={{ color: 'var(--muted-foreground)' }}>Aucune commande pour le moment</p>
+                <p className="text-sm mb-2" style={{ color: 'var(--muted-foreground)' }}>{t("noOrders")}</p>
                 <button 
                   onClick={() => router.push("/products")}
                   className="px-4 py-1.5 text-white text-sm rounded-md transition-colors mt-2"
                   style={{ background: "var(--accent)" }}
                 >
-                  Découvrir nos produits
+                  {tWish("discover")}
                 </button>
               </div>
             )}
@@ -1281,7 +1285,7 @@ export default function AccountPage() {
 
         {activeTab === "wishlist" && (
           <div>
-            <h2 className="text-base font-semibold mb-3" style={{ color: 'var(--foreground)' }}>Ma liste de souhaits</h2>
+            <h2 className="text-base font-semibold mb-3" style={{ color: 'var(--foreground)' }}>{tWish("title")}</h2>
             {loading.wishlist ? (
               <div className="flex justify-center py-8">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2" style={{ borderColor: "var(--accent)" }}></div>
@@ -1297,7 +1301,7 @@ export default function AccountPage() {
                   return (
                     <div key={item.id} className="p-3 rounded-lg border group relative" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
                       <button
-                        onClick={() => handleRemoveFromWishlist(item.id)}
+                        onClick={() => handleRemoveFromWishlist(item.productId ?? item.product?.id ?? item.id)}
                         className="absolute top-2 right-2 p-1 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-10"
                         style={{ background: 'var(--card)' }}
                       >
@@ -1337,13 +1341,13 @@ export default function AccountPage() {
             ) : (
               <div className="text-center py-12 rounded-lg border" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
                 <Heart className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--border-strong)' }} />
-                <p className="text-sm mb-2" style={{ color: 'var(--muted-foreground)' }}>Votre wishlist est vide</p>
+                <p className="text-sm mb-2" style={{ color: 'var(--muted-foreground)' }}>{t("wishEmpty")}</p>
                 <button 
                   onClick={() => router.push("/products")}
                   className="px-4 py-1.5 text-white text-sm rounded-md transition-colors mt-2"
                   style={{ background: "var(--accent)" }}
                 >
-                  Explorer les produits
+                  {t("exploreProducts")}
                 </button>
               </div>
             )}
@@ -1353,14 +1357,14 @@ export default function AccountPage() {
         {activeTab === "addresses" && (
           <div>
             <div className="flex justify-between items-center mb-3">
-              <h2 className="text-base font-semibold" style={{ color: 'var(--foreground)' }}>Mes adresses</h2>
+              <h2 className="text-base font-semibold" style={{ color: 'var(--foreground)' }}>{tAddr("title")}</h2>
               <button 
                 onClick={() => router.push("/account/addresses")}
                 className="px-3 py-1.5 text-white text-xs rounded-md transition-colors flex items-center gap-1"
                 style={{ background: "var(--accent)" }}
               >
                 <Plus className="w-3 h-3" />
-                Ajouter
+                {tAddr("addBtn")}
               </button>
             </div>
             {loading.addresses ? (
@@ -1372,8 +1376,8 @@ export default function AccountPage() {
                 {addresses.map((address) => (
                   <div key={address.id} className="p-4 rounded-lg border relative" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
                     {address.isDefault && (
-                      <span className="absolute top-3 right-3 px-1.5 py-0.5 text-[10px] rounded" style={{ background: 'var(--surface)', color: 'var(--muted-foreground)' }}>
-                        Par défaut
+                      <span className="absolute top-3 end-3 px-1.5 py-0.5 text-[10px] rounded" style={{ background: 'var(--surface)', color: 'var(--muted-foreground)' }}>
+                        {tAddr("default")}
                       </span>
                     )}
                     <div className="flex items-start gap-2 mb-3">
@@ -1383,21 +1387,21 @@ export default function AccountPage() {
                       <div>
                         <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{address.firstName} {address.lastName}</p>
                         <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>{address.address}</p>
-                        <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{address.city}, {address.country}</p>
+                        <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{address.city}, {getCountryName(address.country, language)}</p>
                         <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{address.phone}</p>
                       </div>
                     </div>
                     <div className="flex gap-3 pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
                       <button onClick={() => router.push(`/account/addresses?edit=${address.id}`)} className="text-xs hover:underline" style={{ color: 'var(--muted-foreground)' }}>
-                        Modifier
+                        {tAddr("edit")}
                       </button>
                       {!address.isDefault && (
                         <button onClick={() => handleSetDefaultAddress(address.id)} className="text-xs hover:underline" style={{ color: 'var(--muted-foreground)' }}>
-                          Définir par défaut
+                          {t("makeDefault")}
                         </button>
                       )}
                       <button onClick={() => handleDeleteAddress(address.id)} className="text-xs hover:underline" style={{ color: "var(--accent)" }}>
-                        Supprimer
+                        {tAddr("delete")}
                       </button>
                     </div>
                   </div>
@@ -1406,13 +1410,13 @@ export default function AccountPage() {
             ) : (
               <div className="text-center py-12 rounded-lg border" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
                 <MapPin className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--border-strong)' }} />
-                <p className="text-sm mb-2" style={{ color: 'var(--muted-foreground)' }}>Aucune adresse enregistrée</p>
+                <p className="text-sm mb-2" style={{ color: 'var(--muted-foreground)' }}>{tAddr("empty")}</p>
                 <button 
                   onClick={() => router.push("/account/addresses")}
                   className="px-4 py-1.5 text-white text-sm rounded-md transition-colors mt-2"
                   style={{ background: "var(--accent)" }}
                 >
-                  Ajouter une adresse
+                  {tAddr("add")}
                 </button>
               </div>
             )}
@@ -1421,7 +1425,7 @@ export default function AccountPage() {
 
         {activeTab === "security" && (
           <div className="max-w-xl">
-            <h2 className="text-base font-semibold mb-3" style={{ color: 'var(--foreground)' }}>Paramètres de sécurité</h2>
+            <h2 className="text-base font-semibold mb-3" style={{ color: 'var(--foreground)' }}>{t("secTitle")}</h2>
             
             <div className="space-y-3">
               <div className="p-4 rounded-lg border" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
@@ -1431,17 +1435,17 @@ export default function AccountPage() {
                       <Lock className="w-4 h-4" style={{ color: '#3B82F6' }} />
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Mot de passe</h3>
-                      <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Dernière modification il y a 30 jours</p>
+                      <h3 className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{tLogin("passwordLabel")}</h3>
+                      <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{t("lastChange")}</p>
                     </div>
                   </div>
                   <button className="px-3 py-1 border rounded-md text-xs transition-colors" style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
-                    Modifier
+                    {tAddr("edit")}
                   </button>
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-green-600">
                   <CheckCircle className="w-3.5 h-3.5" />
-                  <span>Mot de passe fort</span>
+                  <span>{t("strongPassword")}</span>
                 </div>
               </div>
 
@@ -1452,19 +1456,19 @@ export default function AccountPage() {
                       <Smartphone className="w-4 h-4" style={{ color: '#22C55E' }} />
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Authentification à 2 facteurs</h3>
-                      <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Protection supplémentaire</p>
+                      <h3 className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{t("twoFA")}</h3>
+                      <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{t("extraProtection")}</p>
                     </div>
                   </div>
                   <button className="px-3 py-1 text-white text-xs rounded-md transition-colors" style={{ background: "var(--accent)" }}>
-                    Activer
+                    {t("activate")}
                   </button>
                 </div>
-                <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Protégez votre compte avec une vérification en deux étapes</p>
+                <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{t("twoFAText")}</p>
               </div>
 
               <div className="p-4 rounded-lg border" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
-                <h3 className="text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>Sessions actives</h3>
+                <h3 className="text-sm font-medium mb-3" style={{ color: 'var(--foreground)' }}>{t("activeSessions")}</h3>
                 <div className="p-3 rounded-md" style={{ background: 'var(--surface)' }}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -1472,11 +1476,11 @@ export default function AccountPage() {
                         <Smartphone className="w-3.5 h-3.5" style={{ color: 'var(--muted-foreground)' }} />
                       </div>
                       <div>
-                        <p className="text-xs font-medium" style={{ color: 'var(--foreground)' }}>Appareil actuel</p>
-                        <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>Dernière activité: il y a quelques minutes</p>
+                        <p className="text-xs font-medium" style={{ color: 'var(--foreground)' }}>{t("currentDevice")}</p>
+                        <p className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>{t("lastActivity")}</p>
                       </div>
                     </div>
-                    <span className="text-[10px] text-green-600">Session actuelle</span>
+                    <span className="text-[10px] text-green-600">{t("currentSession")}</span>
                   </div>
                 </div>
               </div>
@@ -1486,32 +1490,32 @@ export default function AccountPage() {
 
         {activeTab === "help" && (
           <div className="max-w-xl">
-            <h2 className="text-base font-semibold mb-3" style={{ color: 'var(--foreground)' }}>Centre d'aide</h2>
+            <h2 className="text-base font-semibold mb-3" style={{ color: 'var(--foreground)' }}>{tHelp("title")}</h2>
             
             <div className="rounded-lg border p-4" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
               <form className="space-y-3">
                 <div>
                   <label className="block text-xs font-medium mb-1" style={{ color: 'var(--foreground)' }}>
-                    Sujet
+                    {tContact("fSubject")}
                   </label>
                   <select className="w-full px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/20" style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--foreground)' }}>
-                    <option>Problème de commande</option>
-                    <option>Problème de livraison</option>
-                    <option>Question sur un produit</option>
-                    <option>Problème de compte</option>
-                    <option>Autre</option>
+                    <option>{t("subjOrderProblem")}</option>
+                    <option>{tContact("subjDelivery")}</option>
+                    <option>{tContact("subjProduct")}</option>
+                    <option>{tContact("subjAccount")}</option>
+                    <option>{tContact("subjOther")}</option>
                   </select>
                 </div>
                 
                 <div>
                   <label className="block text-xs font-medium mb-1" style={{ color: 'var(--foreground)' }}>
-                    Description
+                    {tProduct("tabDescription")}
                   </label>
                   <textarea
                     rows={4}
                     className="w-full px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/20"
                     style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
-                    placeholder="Décrivez votre problème..."
+                    placeholder={t("describeProblem")}
                   />
                 </div>
 
@@ -1520,24 +1524,24 @@ export default function AccountPage() {
                   className="w-full px-4 py-2 text-white text-sm rounded-md transition-colors font-medium"
                   style={{ background: "var(--accent)" }}
                 >
-                  Envoyer
+                  {t("sendBtn")}
                 </button>
               </form>
 
               <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
-                <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>Questions fréquentes</h3>
+                <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>{t("faqTitle")}</h3>
                 <div className="space-y-1.5">
                   <button className="text-xs hover:underline block" style={{ color: 'var(--muted-foreground)' }}>
-                    • Comment suivre ma commande ?
+                    • {t("faq1")}
                   </button>
                   <button className="text-xs hover:underline block" style={{ color: 'var(--muted-foreground)' }}>
-                    • Délais de livraison moyens
+                    • {t("faq2")}
                   </button>
                   <button className="text-xs hover:underline block" style={{ color: 'var(--muted-foreground)' }}>
-                    • Politique de retour
+                    • {t("faq3")}
                   </button>
                   <button className="text-xs hover:underline block" style={{ color: 'var(--muted-foreground)' }}>
-                    • Comment modifier mon adresse ?
+                    • {t("faq4")}
                   </button>
                 </div>
               </div>
@@ -1547,8 +1551,4 @@ export default function AccountPage() {
       </main>
     </div>
   )
-}
-
-function generateCSRFToken(): string {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
 }
