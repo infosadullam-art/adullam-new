@@ -1,4 +1,29 @@
 {
+  "productCard": {
+  "badge": {
+    "forYou": "Para você",
+    "recommended": "Recomendado",
+    "trend": "Tendência",
+    "new": "Novo",
+    "discovery": "Descoberta",
+    "popular": "Popular",
+    "cart": "Carrinho",
+    "novelty": "Novidade",
+    "adu": "💬 Adu",
+    "category": "💬 Categoria",
+    "similar": "🔍 Semelhante"
+  },
+  "trust": {
+    "securePayment": "Pagamento seguro",
+    "guaranteedDelivery": "Entrega garantida",
+    "directFactory": "Direto da fábrica",
+    "verifiedSupplier": "Fornecedor verificado",
+    "verifiedProduct": "Produto verificado",
+    "support": "Suporte 7 dias por semana"
+  },
+  "viewers": "{count} a ver",
+  "selected": "Selecionado"
+},
   "header": {
     "nav": {
       "dealsDuJour": "Ofertas do dia",

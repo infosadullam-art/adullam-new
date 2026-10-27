@@ -1,4 +1,29 @@
 {
+  "productCard": {
+  "badge": {
+    "forYou": "لك",
+    "recommended": "موصى به",
+    "trend": "رائج",
+    "new": "جديد",
+    "discovery": "اكتشف",
+    "popular": "شائع",
+    "cart": "السلة",
+    "novelty": "وصل حديثاً",
+    "adu": "💬 أدو",
+    "category": "💬 الفئة",
+    "similar": "🔍 مشابه"
+  },
+  "trust": {
+    "securePayment": "دفع آمن",
+    "guaranteedDelivery": "توصيل مضمون",
+    "directFactory": "مباشرة من المصنع",
+    "verifiedSupplier": "مورّد موثوق",
+    "verifiedProduct": "منتج موثّق",
+    "support": "دعم على مدار الأسبوع"
+  },
+  "viewers": "{count} يشاهدون",
+  "selected": "محدد"
+},
   "header": {
     "nav": {
       "dealsDuJour": "عروض اليوم",

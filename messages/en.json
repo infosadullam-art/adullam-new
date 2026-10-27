@@ -1,4 +1,29 @@
 {
+  "productCard": {
+  "badge": {
+    "forYou": "For you",
+    "recommended": "Recommended",
+    "trend": "Trending",
+    "new": "New",
+    "discovery": "Discover",
+    "popular": "Popular",
+    "cart": "Cart",
+    "novelty": "New arrival",
+    "adu": "💬 Adu",
+    "category": "💬 Category",
+    "similar": "🔍 Similar"
+  },
+  "trust": {
+    "securePayment": "Secure payment",
+    "guaranteedDelivery": "Guaranteed delivery",
+    "directFactory": "Straight from the factory",
+    "verifiedSupplier": "Verified supplier",
+    "verifiedProduct": "Verified product",
+    "support": "Support 7 days a week"
+  },
+  "viewers": "{count} watching",
+  "selected": "Selected"
+},
   "header": {
     "nav": {
       "dealsDuJour": "Deals of the day",

@@ -4,24 +4,25 @@ import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
+import { useTranslations } from "next-intl"
 
 // ✅ Configuration des badges selon la source
 // Un seul langage visuel : étiquette pleine sombre par défaut,
 // accent (rouge) réservé aux badges à caractère promotionnel.
-const badgeConfig: Record<string, { label: string; tone: "dark" | "accent" }> = {
-  session_graph: { label: "Pour vous", tone: "dark" },
-  session: { label: "Pour vous", tone: "dark" },
-  als: { label: "Recommandé", tone: "dark" },
-  trend: { label: "Tendance", tone: "accent" },
-  new: { label: "Nouveau", tone: "dark" },
-  random: { label: "Découverte", tone: "dark" },
-  popular: { label: "Populaire", tone: "dark" },
-  abandoned_cart: { label: "Panier", tone: "accent" },
-  cache: { label: "Pour vous", tone: "dark" },
-  fallback_total: { label: "Nouveauté", tone: "dark" },
-  chat: { label: "💬 Adu", tone: "accent" },
-  chat_category: { label: "💬 Catégorie", tone: "dark" },
-  selected_product: { label: "🔍 Similaire", tone: "dark" },
+const badgeConfig: Record<string, { key: string; tone: "dark" | "accent" }> = {
+  session_graph: { key: "forYou", tone: "dark" },
+  session: { key: "forYou", tone: "dark" },
+  als: { key: "recommended", tone: "dark" },
+  trend: { key: "trend", tone: "accent" },
+  new: { key: "new", tone: "dark" },
+  random: { key: "discovery", tone: "dark" },
+  popular: { key: "popular", tone: "dark" },
+  abandoned_cart: { key: "cart", tone: "accent" },
+  cache: { key: "forYou", tone: "dark" },
+  fallback_total: { key: "novelty", tone: "dark" },
+  chat: { key: "adu", tone: "accent" },
+  chat_category: { key: "category", tone: "dark" },
+  selected_product: { key: "similar", tone: "dark" },
 }
 
 // ════════════════════════════════════════════════════════════
@@ -79,13 +80,13 @@ const IconHeadset = ({ className }: TrustIconProps) => (
   </svg>
 )
 
-const trustPool: { label: string; icon: (p: TrustIconProps) => JSX.Element }[] = [
-  { label: "Paiement sécurisé", icon: IconShieldCheck },
-  { label: "Livraison garantie", icon: IconTruck },
-  { label: "Tout droit de l'usine", icon: IconFactory },
-  { label: "Fournisseur vérifié", icon: IconVerifiedBadge },
-  { label: "Produit vérifié", icon: IconCheckCircle },
-  { label: "Assistance 7j/7", icon: IconHeadset },
+const trustPool: { key: string; icon: (p: TrustIconProps) => JSX.Element }[] = [
+  { key: "securePayment", icon: IconShieldCheck },
+  { key: "guaranteedDelivery", icon: IconTruck },
+  { key: "directFactory", icon: IconFactory },
+  { key: "verifiedSupplier", icon: IconVerifiedBadge },
+  { key: "verifiedProduct", icon: IconCheckCircle },
+  { key: "support", icon: IconHeadset },
 ]
 
 function hashOf(id: string): number {
@@ -106,6 +107,7 @@ function pickTrustItems(id: string, count = 3) {
 // à chaque produit, transition légère (fondu + micro-glissement), donc
 // jamais deux cartes qui changent en même temps sur une ligne.
 function TrustCarousel({ productId, sizeClass }: { productId: string; sizeClass: string }) {
+  const t = useTranslations("productCard")
   const items = pickTrustItems(productId)
   const [index, setIndex] = useState(0)
   const [fading, setFading] = useState(false)
@@ -150,7 +152,7 @@ function TrustCarousel({ productId, sizeClass }: { productId: string; sizeClass:
           transform: fading ? "translateY(-1px)" : "translateY(0)",
         }}
       >
-        {current.label}
+        {t(`trust.${current.key}`)}
       </span>
     </div>
   )
@@ -178,6 +180,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onClick, size = 'md', showTrust = false }: ProductCardProps) {
   const { formatPrice } = useCurrencyFormatter()
+  const t = useTranslations("productCard")
 
   // ✅ Protection si priceUSD est undefined ou null
   const price = typeof product.priceUSD === 'number' && !isNaN(product.priceUSD)
@@ -193,14 +196,14 @@ export function ProductCard({ product, onClick, size = 'md', showTrust = false }
   if (!badgeLabel && product.source) {
     const config = badgeConfig[product.source]
     if (config) {
-      badgeLabel = config.label
+      badgeLabel = t(`badge.${config.key}`)
       badgeTone = config.tone
     }
   }
 
   // ✅ Texte de preuve sociale
   const viewersText = product.viewers && product.viewers > 0
-    ? `${product.viewers} regardent`
+    ? t("viewers", { count: product.viewers })
     : null
 
   // ✅ Taille du composant
@@ -257,7 +260,7 @@ export function ProductCard({ product, onClick, size = 'md', showTrust = false }
           {/* BADGE */}
           {badgeLabel && (
             <span
-              className={`absolute top-2 left-2 rounded-sm font-medium z-10 text-white ${classes.badge}`}
+              className={`absolute top-2 start-2 rounded-sm font-medium z-10 text-white ${classes.badge}`}
               style={{ background: badgeTone === "accent" ? "var(--accent)" : "color-mix(in oklab, var(--foreground) 82%, transparent)" }}
             >
               {badgeLabel}
@@ -266,22 +269,22 @@ export function ProductCard({ product, onClick, size = 'md', showTrust = false }
 
           {/* FLAG */}
           {product.flag && (
-            <span className="absolute top-2 right-2 text-lg z-10">
+            <span className="absolute top-2 end-2 text-lg z-10">
               {product.flag}
             </span>
           )}
 
           {/* VIEWERS - Preuve sociale */}
           {viewersText && (
-            <span className="absolute bottom-2 left-2 rounded-sm bg-brand/75 px-1.5 py-0.5 text-[10px] text-white z-10">
+            <span className="absolute bottom-2 start-2 rounded-sm bg-brand/75 px-1.5 py-0.5 text-[10px] text-white z-10">
               {viewersText}
             </span>
           )}
 
           {/* ✅ BADGE "SÉLECTIONNÉ" (poids fort) */}
           {product.isSelected && (
-            <span className="absolute bottom-2 right-2 rounded-sm bg-accent px-1.5 py-0.5 text-[10px] text-white z-10">
-              Sélectionné
+            <span className="absolute bottom-2 end-2 rounded-sm bg-accent px-1.5 py-0.5 text-[10px] text-white z-10">
+              {t("selected")}
             </span>
           )}
         </div>
