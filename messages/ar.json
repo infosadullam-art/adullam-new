@@ -1,4 +1,111 @@
 {
+  "orderTracking": {
+    "title": "تتبع الطلب",
+    "back": "رجوع",
+    "backToOrders": "العودة إلى طلباتي",
+    "notFound": "الطلب غير موجود",
+    "loadError": "تعذّر تحميل هذا الطلب",
+    "cancelledTitle": "تم إلغاء الطلب",
+    "cancelledDefault": "تم إلغاء هذا الطلب. يُرد أي مبلغ تم دفعه تلقائياً.",
+    "cancelledOn": "في {date}",
+    "refundedTitle": "تم استرداد مبلغ الطلب",
+    "refundedText": "تم استرداد مبلغ هذا الطلب.",
+    "deliveryStatus": "حالة التوصيل",
+    "estimated": "التوصيل المتوقع: {date}",
+    "pendingNote": "يبدأ التتبع فور تأكيد الدفع.",
+    "trackingNo": "رقم التتبع:",
+    "copy": "نسخ",
+    "copied": "تم النسخ",
+    "carrier": "التتبع المباشر لدى شركة الشحن",
+    "done": "تم",
+    "items": "المنتجات ({count})",
+    "product": "منتج",
+    "qty": "الكمية {count}",
+    "total": "المجموع",
+    "address": "عنوان التوصيل",
+    "payment": "الدفع",
+    "method": "الطريقة",
+    "paymentStatus": "الحالة",
+    "paid": "مدفوع",
+    "unpaid": "في انتظار الدفع",
+    "helpTitle": "هل تحتاج مساعدة بخصوص هذا الطلب؟",
+    "helpText": "استرداد تلقائي في حال عدم التسليم",
+    "contact": "تواصل معنا",
+    "status": {
+      "PENDING": "في انتظار الدفع",
+      "CONFIRMED": "مؤكد",
+      "PROCESSING": "قيد التجهيز",
+      "SHIPPED": "تم الشحن",
+      "IN_TRANSIT": "في الطريق",
+      "OUT_FOR_DELIVERY": "قيد التوصيل",
+      "DELIVERED": "تم التسليم",
+      "CANCELLED": "ملغى",
+      "REFUNDED": "تم الاسترداد"
+    },
+    "steps": {
+      "confirmed": {
+        "label": "تم تأكيد الطلب",
+        "desc": "تم تأكيد دفعتك وتسجيل الطلب"
+      },
+      "processing": {
+        "label": "قيد التجهيز",
+        "desc": "يتم تجهيز طردك في مستودعنا"
+      },
+      "shipped": {
+        "label": "تم الشحن",
+        "desc": "غادر طردك مستودع المورّد"
+      },
+      "inTransit": {
+        "label": "في الطريق",
+        "desc": "طردك في الشحن الدولي"
+      },
+      "outForDelivery": {
+        "label": "قيد التوصيل",
+        "desc": "طردك في جولة التوصيل المحلية"
+      },
+      "delivered": {
+        "label": "تم التسليم",
+        "desc": "وصل طردك إلى وجهته"
+      }
+    }
+  },
+  "checkoutResult": {
+    "verifying": "جارٍ التحقق من دفعتك...",
+    "loading": "جارٍ التحميل...",
+    "confirmedTitle": "تم تأكيد الدفع!",
+    "confirmedText": "تم قبول دفعتك. طلبك قيد المعالجة.",
+    "orderNumber": "رقم الطلب",
+    "detailsTitle": "تفاصيل الطلب",
+    "status": "الحالة",
+    "orderDate": "تاريخ الطلب",
+    "estimatedDelivery": "التوصيل المتوقع",
+    "address": "عنوان التوصيل",
+    "recap": "الملخص",
+    "quantity": "الكمية: {count}",
+    "subtotal": "المجموع الفرعي ({count} منتج)",
+    "shipping": "الشحن",
+    "discount": "خصم ({code})",
+    "total": "المجموع",
+    "home": "الرئيسية",
+    "myOrders": "عرض طلباتي",
+    "emailSent": "تم إرسال رسالة تأكيد إلى {email}",
+    "back": "رجوع",
+    "pendingTitle": "الدفع قيد التأكيد",
+    "pendingText": "لم نتلقَّ تأكيد دفعتك بعد. قد يستغرق ذلك بضع دقائق. ستصلك رسالة بريد إلكتروني فور تأكيدها.",
+    "notFoundTitle": "الطلب غير موجود",
+    "errorText": "تعذّر التحقق من طلبك. يرجى الاطلاع على قائمة طلباتك.",
+    "failedTitle": "فشل الدفع",
+    "failedText": "تعذّر إتمام الدفع. يرجى المحاولة مرة أخرى.",
+    "reference": "مرجع العملية",
+    "causesTitle": "الأسباب المحتملة:",
+    "cause1": "رصيد غير كافٍ",
+    "cause2": "رمز التحقق غير صحيح أو منتهي",
+    "cause3": "مشكلة في اتصال الشبكة",
+    "cause4": "تم إلغاء العملية من قبل المستخدم",
+    "retry": "إعادة محاولة الدفع",
+    "viewCart": "عرض السلة",
+    "support": "هل هناك مشكلة؟ تواصل مع خدمة العملاء:"
+  },
   "productCard": {
   "badge": {
     "forYou": "لك",

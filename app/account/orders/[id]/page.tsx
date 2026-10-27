@@ -5,6 +5,9 @@ import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import { useAuth } from "@/lib/admin/auth-context"
 import { ordersApi } from "@/lib/admin/api-client"
+import { useTranslations } from "next-intl"
+import { useLocale } from "@/context/LocaleProvider"
+import { orderUsd } from "@/lib/order-amounts"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 
 // ════════════════════════════════════════════════════════════
@@ -121,17 +124,7 @@ function Copy({ className, style }: IconProps) {
 // ════════════════════════════════════════════════════════════
 // STATUTS — labels/couleurs alignés sur app/account/page.tsx
 // ════════════════════════════════════════════════════════════
-const STATUS_LABELS: Record<string, string> = {
-  PENDING: "Paiement en attente",
-  CONFIRMED: "Confirmée",
-  PROCESSING: "En préparation",
-  SHIPPED: "Expédiée",
-  IN_TRANSIT: "En transit",
-  OUT_FOR_DELIVERY: "En cours de livraison",
-  DELIVERED: "Livrée",
-  CANCELLED: "Annulée",
-  REFUNDED: "Remboursée",
-}
+const KNOWN_STATUSES = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED", "REFUNDED"]
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "bg-yellow-50 text-yellow-700",
@@ -150,12 +143,12 @@ const STATUS_COLORS: Record<string, string> = {
 // encore validé) ; CANCELLED et REFUNDED sont traités à part, en bannière,
 // plutôt que comme des étapes de la timeline.
 const TRACKING_STEPS = [
-  { key: "CONFIRMED", label: "Commande confirmée", desc: "Votre paiement est validé et la commande est enregistrée", icon: CheckCircle },
-  { key: "PROCESSING", label: "En préparation", desc: "Votre colis est préparé dans notre entrepôt", icon: Package },
-  { key: "SHIPPED", label: "Expédiée", desc: "Votre colis a quitté l'entrepôt fournisseur", icon: Truck },
-  { key: "IN_TRANSIT", label: "En transit", desc: "Votre colis est en acheminement international", icon: Ship },
-  { key: "OUT_FOR_DELIVERY", label: "En cours de livraison", desc: "Votre colis est en tournée de livraison locale", icon: MapPin },
-  { key: "DELIVERED", label: "Livrée", desc: "Votre colis est arrivé à destination", icon: Home },
+  { key: "CONFIRMED", tk: "confirmed", icon: CheckCircle },
+  { key: "PROCESSING", tk: "processing", icon: Package },
+  { key: "SHIPPED", tk: "shipped", icon: Truck },
+  { key: "IN_TRANSIT", tk: "inTransit", icon: Ship },
+  { key: "OUT_FOR_DELIVERY", tk: "outForDelivery", icon: MapPin },
+  { key: "DELIVERED", tk: "delivered", icon: Home },
 ]
 
 // ============================================================
@@ -163,6 +156,8 @@ const TRACKING_STEPS = [
 // ============================================================
 export default function OrderTrackingPage() {
   const router = useRouter()
+  const t = useTranslations("orderTracking")
+  const { language } = useLocale()
   const params = useParams()
   const orderId = (params?.id as string) || ""
   const { user, isLoading: authLoading } = useAuth()
@@ -177,8 +172,8 @@ export default function OrderTrackingPage() {
   // Déclenche l'animation de la timeline après le premier rendu
   // (sinon React peint directement l'état final, sans transition CSS à jouer)
   useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 80)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setMounted(true), 80)
+    return () => clearTimeout(timer)
   }, [])
 
   useEffect(() => {
@@ -199,11 +194,11 @@ export default function OrderTrackingPage() {
       if (response?.success && response.data) {
         setOrder(response.data)
       } else {
-        setError("Commande introuvable")
+        setError(t("notFound"))
       }
     } catch (err) {
       console.error("Erreur chargement commande:", err)
-      setError("Impossible de charger cette commande")
+      setError(t("loadError"))
     } finally {
       setLoading(false)
     }
@@ -240,13 +235,13 @@ export default function OrderTrackingPage() {
       <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--surface)" }}>
         <div className="text-center">
           <Package className="w-12 h-12 mx-auto mb-3" style={{ color: "var(--border-strong)" }} />
-          <p className="text-sm mb-3" style={{ color: "var(--muted-foreground)" }}>{error || "Commande introuvable"}</p>
+          <p className="text-sm mb-3" style={{ color: "var(--muted-foreground)" }}>{error || t("notFound")}</p>
           <button
             onClick={() => router.push("/account")}
             className="px-4 py-1.5 text-white text-sm rounded-md transition-transform duration-150 active:scale-95"
             style={{ background: "var(--accent)" }}
           >
-            Retour à mes commandes
+            {t("backToOrders")}
           </button>
         </div>
       </div>
@@ -262,15 +257,15 @@ export default function OrderTrackingPage() {
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
           <button
             onClick={() => router.push("/account")}
-            className="p-1.5 -ml-1.5 rounded-md transition-transform duration-150 active:scale-90"
-            aria-label="Retour"
+            className="p-1.5 -ms-1.5 rounded-md transition-transform duration-150 active:scale-90"
+            aria-label={t("back")}
           >
-            <ArrowLeft className="w-5 h-5" style={{ color: "var(--foreground)" }} />
+            <ArrowLeft className="w-5 h-5 rtl:rotate-180" style={{ color: "var(--foreground)" }} />
           </button>
           <div>
-            <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Suivi de commande</p>
+            <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>{t("title")}</p>
             <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-              #{order.orderNumber} · {new Date(order.createdAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+              #{order.orderNumber} · {new Date(order.createdAt).toLocaleDateString(language, { day: "numeric", month: "long", year: "numeric" })}
             </p>
           </div>
         </div>
@@ -283,13 +278,13 @@ export default function OrderTrackingPage() {
               <XCircle className="w-5 h-5" style={{ color: "#EF4444" }} />
             </div>
             <div>
-              <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Commande annulée</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>{t("cancelledTitle")}</p>
               <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-                {order.cancellationReason || "Cette commande a été annulée. Un paiement déjà effectué est remboursé automatiquement."}
+                {order.cancellationReason || t("cancelledDefault")}
               </p>
               {order.cancelledAt && (
                 <p className="text-[10px] mt-1.5" style={{ color: "var(--muted-foreground)" }}>
-                  Le {new Date(order.cancelledAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                  {t("cancelledOn", { date: new Date(order.cancelledAt).toLocaleDateString(language, { day: "numeric", month: "long", year: "numeric" }) })}
                 </p>
               )}
             </div>
@@ -302,9 +297,9 @@ export default function OrderTrackingPage() {
               <CheckCircle className="w-5 h-5" style={{ color: "#64748B" }} />
             </div>
             <div>
-              <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Commande remboursée</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>{t("refundedTitle")}</p>
               <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-                Le montant de cette commande a été remboursé.
+                {t("refundedText")}
               </p>
             </div>
           </div>
@@ -312,22 +307,22 @@ export default function OrderTrackingPage() {
 
         {showTracker && (
           <div className="rounded-lg border p-5" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-            <h2 className="text-sm font-semibold mb-4" style={{ color: "var(--foreground)" }}>Statut de la livraison</h2>
+            <h2 className="text-sm font-semibold mb-4" style={{ color: "var(--foreground)" }}>{t("deliveryStatus")}</h2>
 
             <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
               <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[order.status] || "bg-gray-50 text-gray-700"}`}>
-                {STATUS_LABELS[order.status] || order.status}
+                {KNOWN_STATUSES.includes(order.status) ? t(`status.${order.status}`) : order.status}
               </span>
               {order.estimatedDelivery && (
                 <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                  Livraison estimée : {new Date(order.estimatedDelivery).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}
+                  {t("estimated", { date: new Date(order.estimatedDelivery).toLocaleDateString(language, { day: "numeric", month: "long" }) })}
                 </span>
               )}
             </div>
 
             {isPending && (
               <p className="text-xs mt-2" style={{ color: "var(--muted-foreground)" }}>
-                Le suivi démarre dès que le paiement est confirmé.
+                {t("pendingNote")}
               </p>
             )}
 
@@ -338,11 +333,11 @@ export default function OrderTrackingPage() {
                 style={{ background: "var(--surface)" }}
               >
                 <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                  N° de suivi : <span className="font-mono" style={{ color: "var(--foreground)" }}>{order.trackingNumber}</span>
+                  {t("trackingNo")} <span className="font-mono" style={{ color: "var(--foreground)" }}>{order.trackingNumber}</span>
                 </span>
                 <span className="flex items-center gap-1 text-xs font-medium" style={{ color: "var(--accent)" }}>
                   {copied ? <CheckCircle className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                  {copied ? "Copié" : "Copier"}
+                  {copied ? t("copied") : t("copy")}
                 </span>
               </button>
             )}
@@ -355,7 +350,7 @@ export default function OrderTrackingPage() {
                 className="mt-2 block text-center text-xs font-medium py-2 rounded-md transition-colors"
                 style={{ background: "var(--surface)", color: "var(--accent)" }}
               >
-                Suivi en temps réel chez le transporteur
+                {t("carrier")}
               </a>
             )}
 
@@ -368,14 +363,14 @@ export default function OrderTrackingPage() {
                 const isLast = i === TRACKING_STEPS.length - 1
                 const StepIcon = step.icon
                 const stepDate = step.key === "DELIVERED" && order.deliveredAt
-                  ? new Date(order.deliveredAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })
+                  ? new Date(order.deliveredAt).toLocaleDateString(language, { day: "numeric", month: "long", year: "numeric" })
                   : null
 
                 return (
                   <div key={step.key} className="relative flex gap-3 pb-7 last:pb-0">
                     {!isLast && (
                       <div
-                        className="absolute left-[15px] top-8 w-[2px]"
+                        className="absolute start-[15px] top-8 w-[2px]"
                         style={{ height: "calc(100% - 1.5rem)", background: "var(--border)" }}
                       >
                         <div
@@ -414,10 +409,10 @@ export default function OrderTrackingPage() {
 
                     <div className="pt-1">
                       <p className="text-sm font-medium" style={{ color: reached ? "var(--foreground)" : "var(--muted-foreground)" }}>
-                        {step.label}
+                        {t(`steps.${step.tk}.label`)}
                       </p>
                       <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-                        {isCurrent ? step.desc : reached ? "Terminé" : ""}
+                        {isCurrent ? t(`steps.${step.tk}.desc`) : reached ? t("done") : ""}
                       </p>
                       {stepDate && (
                         <p className="text-[10px] mt-1" style={{ color: "var(--muted-foreground)" }}>{stepDate}</p>
@@ -432,37 +427,37 @@ export default function OrderTrackingPage() {
 
         {items.length > 0 && (
           <div className="rounded-lg border p-5" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-            <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--foreground)" }}>Articles ({items.length})</h2>
+            <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--foreground)" }}>{t("items", { count: items.length })}</h2>
             <div className="space-y-3">
               {items.map((item: any, idx: number) => (
                 <div key={item.id || idx} className="flex items-center gap-3">
                   <div className="w-14 h-14 rounded-md overflow-hidden flex items-center justify-center shrink-0" style={{ background: "var(--surface)" }}>
                     {item.image ? (
-                      <Image src={item.image} alt={item.productName || "Produit"} width={56} height={56} className="object-cover" />
+                      <Image src={item.image} alt={item.productName || t("product")} width={56} height={56} className="object-cover" />
                     ) : (
                       <ShoppingBag className="w-5 h-5" style={{ color: "var(--border-strong)" }} />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate" style={{ color: "var(--foreground)" }}>{item.productName || "Produit"}</p>
+                    <p className="text-sm font-medium truncate" style={{ color: "var(--foreground)" }}>{item.productName || t("product")}</p>
                     <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-                      Qté {item.quantity || 1}{item.variantSummary ? ` · ${item.variantSummary}` : ""}
+                      {t("qty", { count: item.quantity || 1 })}{item.variantSummary ? ` · ${item.variantSummary}` : ""}
                     </p>
                   </div>
-                  <span className="text-sm font-semibold shrink-0" style={{ color: "var(--foreground)" }}>{formatPrice(item.totalPrice || 0)}</span>
+                  <span className="text-sm font-semibold shrink-0" style={{ color: "var(--foreground)" }}>{formatPrice(orderUsd(order, item.totalPrice || 0))}</span>
                 </div>
               ))}
             </div>
             <div className="flex justify-between items-center pt-3 mt-3" style={{ borderTop: "1px solid var(--border)" }}>
-              <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Total</span>
-              <span className="text-sm font-bold" style={{ color: "var(--foreground)" }}>{formatPrice(order.total || 0)}</span>
+              <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>{t("total")}</span>
+              <span className="text-sm font-bold" style={{ color: "var(--foreground)" }}>{formatPrice(orderUsd(order, order.total || 0))}</span>
             </div>
           </div>
         )}
 
         {shippingInfo.address && (
           <div className="rounded-lg border p-5" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-            <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--foreground)" }}>Adresse de livraison</h2>
+            <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--foreground)" }}>{t("address")}</h2>
             <div className="flex items-start gap-2.5">
               <MapPin className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "var(--muted-foreground)" }} />
               <div className="text-sm" style={{ color: "var(--foreground)" }}>
@@ -482,20 +477,20 @@ export default function OrderTrackingPage() {
 
         {order.paymentMethod && (
           <div className="rounded-lg border p-5" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-            <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--foreground)" }}>Paiement</h2>
+            <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--foreground)" }}>{t("payment")}</h2>
             <div className="space-y-2">
               <div className="flex justify-between items-center text-sm">
-                <span style={{ color: "var(--muted-foreground)" }}>Méthode</span>
+                <span style={{ color: "var(--muted-foreground)" }}>{t("method")}</span>
                 <span className="font-medium capitalize" style={{ color: "var(--foreground)" }}>{order.paymentMethod}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span style={{ color: "var(--muted-foreground)" }}>Statut</span>
+                <span style={{ color: "var(--muted-foreground)" }}>{t("paymentStatus")}</span>
                 <span
                   className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
                     order.paymentStatus === "PAID" ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"
                   }`}
                 >
-                  {order.paymentStatus === "PAID" ? "Payé" : "Paiement en attente"}
+                  {order.paymentStatus === "PAID" ? t("paid") : t("unpaid")}
                 </span>
               </div>
             </div>
@@ -506,8 +501,8 @@ export default function OrderTrackingPage() {
           <div className="flex items-center gap-2.5">
             <HelpCircle className="w-5 h-5 shrink-0" style={{ color: "var(--muted-foreground)" }} />
             <div>
-              <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>Besoin d'aide avec cette commande ?</p>
-              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>Remboursée automatiquement en cas de non-livraison</p>
+              <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>{t("helpTitle")}</p>
+              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>{t("helpText")}</p>
             </div>
           </div>
           <button
@@ -515,7 +510,7 @@ export default function OrderTrackingPage() {
             className="px-3 py-1.5 rounded-md text-xs shrink-0 transition-transform duration-150 active:scale-95"
             style={{ border: "1px solid var(--border)", color: "var(--foreground)" }}
           >
-            Contacter
+            {t("contact")}
           </button>
         </div>
       </main>

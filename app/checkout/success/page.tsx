@@ -1,8 +1,8 @@
 'use client';
 
-import { Suspense } from "react";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Header } from "@/components/header";
 import { MobileHeader } from "@/components/mobile-header";
 import MobileNav from "@/components/mobile-nav";
@@ -11,102 +11,110 @@ import { CheckCircle2, Package, MapPin, Calendar, Truck, Clock, Loader2, ArrowLe
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter";
-import { apiFetch } from "@/lib/api";  // ✅ AJOUTE CET IMPORT
+import { useLocale } from "@/context/LocaleProvider";
+import { ordersApi } from "@/lib/admin/api-client";
+import { apiFetch } from "@/lib/api";
 
 const brandColor = "#2B4F3C";
 const softBg = "#F8FAF9";
 
-// Composant séparé qui utilise useSearchParams
+// Le webhook GeniusPay peut arriver quelques secondes après le retour du client :
+// on interroge la commande toutes les 3 s pendant 30 s au maximum.
+const MAX_TRIES = 10;
+const DELAY_MS = 3000;
+const KNOWN_STATUSES = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED", "REFUNDED"];
+
+type Etat = "loading" | "paid" | "pending" | "error";
+
 function CheckoutSuccessContent() {
+  const t = useTranslations("checkoutResult");
+  const tTrack = useTranslations("orderTracking");
+  const { language } = useLocale();
   const searchParams = useSearchParams();
   const router = useRouter();
   const { formatPrice } = useCurrencyFormatter();
-  
-  const [order, setOrder] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [paymentVerified, setPaymentVerified] = useState(false);
 
-  const orderId = searchParams.get('orderId');
-  const reference = searchParams.get('reference');
+  const [order, setOrder] = useState<any>(null);
+  const [etat, setEtat] = useState<Etat>("loading");
+
+  const orderId = searchParams.get("orderId");
 
   useEffect(() => {
-    if (!orderId && !reference) {
-      router.push('/account/orders');
+    if (!orderId) {
+      router.push("/account/orders");
       return;
     }
 
-    const verifyAndFetchOrder = async () => {
-      try {
-        const token = localStorage.getItem('adullam_token');
-        
-        // ✅ ÉTAPE 1 : Vérifier le statut du paiement
-        let paymentStatus = false;
-        if (reference) {
-          const paymentRes = await apiFetch(`/api/payment/verify?reference=${reference}`);
-          const paymentData = await paymentRes.json();
-          paymentStatus = paymentData.status === 'success' && paymentData.success;
-          
-          if (!paymentStatus) {
-            setError("Paiement non confirmé. Veuillez réessayer.");
-            setLoading(false);
+    let annule = false;
+    const attendre = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+    (async () => {
+      let verifie = false;
+      for (let i = 0; i < MAX_TRIES; i++) {
+        if (annule) return;
+        try {
+          const res: any = await ordersApi.get(orderId);
+          const o = res?.data;
+          if (!res?.success || !o) {
+            if (!annule) setEtat("error");
             return;
           }
-        }
-        
-        // ✅ ÉTAPE 2 : Récupérer la commande
-        const orderRes = await apiFetch(`/api/orders/${orderId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (orderRes.ok) {
-          const orderData = await orderRes.json();
-          
-          // ✅ ÉTAPE 3 : Vérifier que la commande est bien marquée comme payée
-          if (orderData.status !== 'PAID' && orderData.status !== 'CONFIRMED') {
-            setError("La commande n'a pas été payée. Veuillez compléter le paiement.");
-            setLoading(false);
+          if (annule) return;
+          if (o.paymentStatus === "PAID") {
+            setOrder(o);
+            setEtat("paid");
             return;
           }
-          
-          setOrder(orderData);
-          setPaymentVerified(true);
-        } else {
-          setError("Commande non trouvée");
+          // Webhook en retard : on demande la confirmation directement (idempotent côté serveur)
+          const ref = o.metadata?.paymentReference;
+          if (ref && !verifie && i >= 1) {
+            verifie = true;
+            try {
+              await apiFetch(`/api/payment/verify?reference=${encodeURIComponent(String(ref))}&method=geniuspay`);
+            } catch {
+              /* on continue d'interroger la commande */
+            }
+            continue;
+          }
+          setOrder(o);
+        } catch {
+          if (!annule) setEtat("error");
+          return;
         }
-      } catch (err) {
-        setError("Erreur lors de la vérification");
-      } finally {
-        setLoading(false);
+        await attendre(DELAY_MS);
       }
+      if (!annule) setEtat("pending");
+    })();
+
+    return () => {
+      annule = true;
     };
+  }, [orderId, router]);
 
-    verifyAndFetchOrder();
-  }, [orderId, reference, router]);
-
-  if (loading) {
+  if (etat === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: softBg }}>
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3" style={{ color: brandColor }} />
-          <p className="text-sm text-gray-500">Vérification de votre paiement...</p>
+          <p className="text-sm text-gray-500">{t("verifying")}</p>
         </div>
       </div>
     );
   }
 
-  if (error || !order || !paymentVerified) {
+  if (etat === "pending" || etat === "error") {
+    const enAttente = etat === "pending";
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: softBg }}>
         <div className="text-center max-w-md mx-auto px-4">
-          <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-            <XCircle className="w-8 h-8 text-red-500" />
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${enAttente ? "bg-amber-100" : "bg-red-100"}`}>
+            {enAttente ? <Clock className="w-8 h-8 text-amber-600" /> : <XCircle className="w-8 h-8 text-red-500" />}
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Paiement non confirmé</h2>
-          <p className="text-gray-600 mb-6">{error || "Commande non trouvée"}</p>
-          <Link href="/checkout">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{enAttente ? t("pendingTitle") : t("notFoundTitle")}</h2>
+          <p className="text-gray-600 mb-6">{enAttente ? t("pendingText") : t("errorText")}</p>
+          <Link href="/account/orders">
             <Button className="w-full" style={{ background: `linear-gradient(135deg, #2B4F3C 0%, #3A6B4E 100%)` }}>
-              Réessayer le paiement
+              {t("myOrders")}
             </Button>
           </Link>
         </div>
@@ -114,38 +122,22 @@ function CheckoutSuccessContent() {
     );
   }
 
-  // Si tout est OK, afficher le succès (le reste de ton code inchangé)
   const estimatedDate = new Date(order.createdAt);
   estimatedDate.setDate(estimatedDate.getDate() + 15);
-  const estimatedDelivery = estimatedDate.toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  });
-
-  const orderDate = new Date(order.createdAt).toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  const estimatedDelivery = estimatedDate.toLocaleDateString(language, { day: "2-digit", month: "2-digit", year: "numeric" });
+  const orderDate = new Date(order.createdAt).toLocaleDateString(language, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 
   const shippingInfo = order.shippingInfo || {};
-  const address = `${shippingInfo.address || ''}${shippingInfo.quartier ? `, ${shippingInfo.quartier}` : ''}, ${shippingInfo.city || ''}`;
+  const address = `${shippingInfo.address || ""}${shippingInfo.quartier ? `, ${shippingInfo.quartier}` : ""}, ${shippingInfo.city || ""}`;
   const itemCount = order.items?.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0) || 0;
-
-  const getStatusText = (status: string) => {
-    const statusMap: Record<string, string> = {
-      'PAID': 'Payée',
-      'CONFIRMED': 'Confirmée',
-      'PROCESSING': 'En préparation',
-      'SHIPPED': 'Expédiée',
-      'DELIVERED': 'Livrée',
-      'CANCELLED': 'Annulée'
-    };
-    return statusMap[status] || status;
-  };
+  const statusText = KNOWN_STATUSES.includes(order.status) ? tTrack(`status.${order.status}`) : order.status;
+  const email = order.user?.email || shippingInfo.email;
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: softBg }}>
@@ -154,41 +146,38 @@ function CheckoutSuccessContent() {
 
       <main className="py-6 lg:py-10">
         <div className="max-w-2xl mx-auto px-4">
-          
+
           <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-6 transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            Retour
+            <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
+            {t("back")}
           </button>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8 text-center mb-6">
             <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5" style={{ backgroundColor: `${brandColor}10` }}>
               <CheckCircle2 className="w-10 h-10" style={{ color: brandColor }} />
             </div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Paiement confirmé !</h1>
-            <p className="text-gray-500 mb-6">
-              Votre paiement a été accepté. Votre commande est en cours de traitement.
-            </p>
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">{t("confirmedTitle")}</h1>
+            <p className="text-gray-500 mb-6">{t("confirmedText")}</p>
             <div className="inline-flex flex-col items-center p-4 bg-gray-50 rounded-xl">
-              <span className="text-xs text-gray-500 uppercase tracking-wide">Numéro de commande</span>
+              <span className="text-xs text-gray-500 uppercase tracking-wide">{t("orderNumber")}</span>
               <span className="text-lg lg:text-xl font-bold mt-1" style={{ color: brandColor }}>{order.orderNumber || order.id}</span>
             </div>
           </div>
 
-          {/* Le reste de ton code pour afficher les détails... */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8 mb-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-5 flex items-center gap-2">
               <Package className="w-5 h-5" style={{ color: brandColor }} />
-              Détails de la commande
+              {t("detailsTitle")}
             </h2>
-            
+
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${brandColor}10` }}>
                   <Clock className="w-4 h-4" style={{ color: brandColor }} />
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">Statut</p>
-                  <p className="text-sm text-gray-500">{getStatusText(order.status)}</p>
+                  <p className="font-medium text-gray-900">{t("status")}</p>
+                  <p className="text-sm text-gray-500">{statusText}</p>
                 </div>
               </div>
 
@@ -197,7 +186,7 @@ function CheckoutSuccessContent() {
                   <Calendar className="w-4 h-4" style={{ color: brandColor }} />
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">Date de commande</p>
+                  <p className="font-medium text-gray-900">{t("orderDate")}</p>
                   <p className="text-sm text-gray-500">{orderDate}</p>
                 </div>
               </div>
@@ -207,23 +196,21 @@ function CheckoutSuccessContent() {
                   <Truck className="w-4 h-4" style={{ color: brandColor }} />
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">Livraison estimée</p>
+                  <p className="font-medium text-gray-900">{t("estimatedDelivery")}</p>
                   <p className="text-sm text-gray-500">{estimatedDelivery}</p>
                 </div>
               </div>
 
-              {address && (
+              {shippingInfo.address && (
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${brandColor}10` }}>
                     <MapPin className="w-4 h-4" style={{ color: brandColor }} />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">Adresse de livraison</p>
+                    <p className="font-medium text-gray-900">{t("address")}</p>
                     <p className="text-sm text-gray-500">{address}</p>
-                    <p className="text-sm text-gray-500">{shippingInfo.country || "Côte d'Ivoire"}</p>
-                    {shippingInfo.phone && (
-                      <p className="text-sm text-gray-500 mt-1">📞 {shippingInfo.phone}</p>
-                    )}
+                    {shippingInfo.country && <p className="text-sm text-gray-500">{shippingInfo.country}</p>}
+                    {shippingInfo.phone && <p className="text-sm text-gray-500 mt-1">📞 {shippingInfo.phone}</p>}
                   </div>
                 </div>
               )}
@@ -233,7 +220,7 @@ function CheckoutSuccessContent() {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8 mb-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-5 flex items-center gap-2">
               <ShoppingBag className="w-5 h-5" style={{ color: brandColor }} />
-              Récapitulatif
+              {t("recap")}
             </h2>
 
             <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
@@ -241,10 +228,8 @@ function CheckoutSuccessContent() {
                 <div key={idx} className="flex justify-between items-start py-2 border-b border-gray-100 last:border-0">
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-800">{item.productName}</p>
-                    {item.variantSummary && (
-                      <p className="text-xs text-gray-400">{item.variantSummary}</p>
-                    )}
-                    <p className="text-xs text-gray-400 mt-1">Quantité: {item.quantity}</p>
+                    {item.variantSummary && <p className="text-xs text-gray-400">{item.variantSummary}</p>}
+                    <p className="text-xs text-gray-400 mt-1">{t("quantity", { count: item.quantity })}</p>
                   </div>
                   <span className="text-sm font-medium text-gray-800">{formatPrice(item.totalPrice)}</span>
                 </div>
@@ -253,21 +238,21 @@ function CheckoutSuccessContent() {
 
             <div className="space-y-2 pt-3 border-t border-gray-100">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Sous-total ({itemCount} article{itemCount > 1 ? 's' : ''})</span>
+                <span className="text-gray-500">{t("subtotal", { count: itemCount })}</span>
                 <span className="text-gray-700">{formatPrice(order.subtotal)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Livraison</span>
+                <span className="text-gray-500">{t("shipping")}</span>
                 <span className="text-gray-700">{formatPrice(order.shippingCost)}</span>
               </div>
               {order.couponDiscount > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-green-600">🎫 Réduction ({order.couponCode})</span>
+                  <span className="text-green-600">🎫 {t("discount", { code: order.couponCode || "" })}</span>
                   <span className="text-green-600">- {formatPrice(order.couponDiscount)}</span>
                 </div>
               )}
               <div className="flex justify-between pt-3 border-t border-gray-100">
-                <span className="font-semibold text-gray-900">Total</span>
+                <span className="font-semibold text-gray-900">{t("total")}</span>
                 <span className="font-bold text-xl" style={{ color: brandColor }}>{formatPrice(order.total)}</span>
               </div>
             </div>
@@ -276,21 +261,19 @@ function CheckoutSuccessContent() {
           <div className="flex flex-col sm:flex-row gap-3">
             <Link href="/" className="flex-1">
               <Button variant="outline" className="w-full h-12 border-gray-200 hover:bg-gray-50">
-                <Home className="w-4 h-4 mr-2" />
-                Accueil
+                <Home className="w-4 h-4 me-2" />
+                {t("home")}
               </Button>
             </Link>
             <Link href="/account/orders" className="flex-1">
               <Button className="w-full h-12 text-white font-medium" style={{ background: `linear-gradient(135deg, #2B4F3C 0%, #3A6B4E 100%)` }}>
-                <Package className="w-4 h-4 mr-2" />
-                Voir mes commandes
+                <Package className="w-4 h-4 me-2" />
+                {t("myOrders")}
               </Button>
             </Link>
           </div>
 
-          <p className="text-center text-xs text-gray-400 mt-6">
-            Un email de confirmation vous a été envoyé à {order.user?.email || shippingInfo.email}
-          </p>
+          {email && <p className="text-center text-xs text-gray-400 mt-6">{t("emailSent", { email })}</p>}
         </div>
       </main>
 
@@ -300,16 +283,21 @@ function CheckoutSuccessContent() {
   );
 }
 
+function SuccessFallback() {
+  const t = useTranslations("checkoutResult");
+  return (
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: softBg }}>
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3" style={{ color: brandColor }} />
+        <p className="text-sm text-gray-500">{t("loading")}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function CheckoutSuccessPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: softBg }}>
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3" style={{ color: brandColor }} />
-          <p className="text-sm text-gray-500">Chargement...</p>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<SuccessFallback />}>
       <CheckoutSuccessContent />
     </Suspense>
   );

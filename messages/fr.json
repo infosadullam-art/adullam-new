@@ -1,4 +1,111 @@
 {
+  "orderTracking": {
+    "title": "Suivi de commande",
+    "back": "Retour",
+    "backToOrders": "Retour à mes commandes",
+    "notFound": "Commande introuvable",
+    "loadError": "Impossible de charger cette commande",
+    "cancelledTitle": "Commande annulée",
+    "cancelledDefault": "Cette commande a été annulée. Un paiement déjà effectué est remboursé automatiquement.",
+    "cancelledOn": "Le {date}",
+    "refundedTitle": "Commande remboursée",
+    "refundedText": "Le montant de cette commande a été remboursé.",
+    "deliveryStatus": "Statut de la livraison",
+    "estimated": "Livraison estimée : {date}",
+    "pendingNote": "Le suivi démarre dès que le paiement est confirmé.",
+    "trackingNo": "N° de suivi :",
+    "copy": "Copier",
+    "copied": "Copié",
+    "carrier": "Suivi en temps réel chez le transporteur",
+    "done": "Terminé",
+    "items": "Articles ({count})",
+    "product": "Produit",
+    "qty": "Qté {count}",
+    "total": "Total",
+    "address": "Adresse de livraison",
+    "payment": "Paiement",
+    "method": "Méthode",
+    "paymentStatus": "Statut",
+    "paid": "Payé",
+    "unpaid": "Paiement en attente",
+    "helpTitle": "Besoin d'aide avec cette commande ?",
+    "helpText": "Remboursée automatiquement en cas de non-livraison",
+    "contact": "Contacter",
+    "status": {
+      "PENDING": "Paiement en attente",
+      "CONFIRMED": "Confirmée",
+      "PROCESSING": "En préparation",
+      "SHIPPED": "Expédiée",
+      "IN_TRANSIT": "En transit",
+      "OUT_FOR_DELIVERY": "En cours de livraison",
+      "DELIVERED": "Livrée",
+      "CANCELLED": "Annulée",
+      "REFUNDED": "Remboursée"
+    },
+    "steps": {
+      "confirmed": {
+        "label": "Commande confirmée",
+        "desc": "Votre paiement est validé et la commande est enregistrée"
+      },
+      "processing": {
+        "label": "En préparation",
+        "desc": "Votre colis est préparé dans notre entrepôt"
+      },
+      "shipped": {
+        "label": "Expédiée",
+        "desc": "Votre colis a quitté l'entrepôt fournisseur"
+      },
+      "inTransit": {
+        "label": "En transit",
+        "desc": "Votre colis est en acheminement international"
+      },
+      "outForDelivery": {
+        "label": "En cours de livraison",
+        "desc": "Votre colis est en tournée de livraison locale"
+      },
+      "delivered": {
+        "label": "Livrée",
+        "desc": "Votre colis est arrivé à destination"
+      }
+    }
+  },
+  "checkoutResult": {
+    "verifying": "Vérification de votre paiement...",
+    "loading": "Chargement...",
+    "confirmedTitle": "Paiement confirmé !",
+    "confirmedText": "Votre paiement a été accepté. Votre commande est en cours de traitement.",
+    "orderNumber": "Numéro de commande",
+    "detailsTitle": "Détails de la commande",
+    "status": "Statut",
+    "orderDate": "Date de commande",
+    "estimatedDelivery": "Livraison estimée",
+    "address": "Adresse de livraison",
+    "recap": "Récapitulatif",
+    "quantity": "Quantité : {count}",
+    "subtotal": "Sous-total ({count, plural, one {# article} other {# articles}})",
+    "shipping": "Livraison",
+    "discount": "Réduction ({code})",
+    "total": "Total",
+    "home": "Accueil",
+    "myOrders": "Voir mes commandes",
+    "emailSent": "Un e-mail de confirmation vous a été envoyé à {email}",
+    "back": "Retour",
+    "pendingTitle": "Paiement en cours de confirmation",
+    "pendingText": "Nous n'avons pas encore reçu la confirmation de votre paiement. Cela peut prendre quelques minutes. Vous recevrez un e-mail dès qu'il sera validé.",
+    "notFoundTitle": "Commande introuvable",
+    "errorText": "Impossible de vérifier votre commande. Consultez la liste de vos commandes.",
+    "failedTitle": "Paiement échoué",
+    "failedText": "Le paiement n'a pas pu être complété. Veuillez réessayer.",
+    "reference": "Référence de la transaction",
+    "causesTitle": "Causes possibles :",
+    "cause1": "Solde insuffisant",
+    "cause2": "Code OTP incorrect ou expiré",
+    "cause3": "Problème de connexion réseau",
+    "cause4": "Transaction annulée par l'utilisateur",
+    "retry": "Réessayer le paiement",
+    "viewCart": "Voir le panier",
+    "support": "Un problème ? Contactez notre service client :"
+  },
   "productCard": {
   "badge": {
     "forYou": "Pour vous",

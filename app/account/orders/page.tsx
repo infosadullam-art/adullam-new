@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl"
 import { useLocale } from "@/context/LocaleProvider"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { ordersApi } from "@/lib/admin/api-client"  // ✅ AJOUTÉ
+import { orderUsd } from "@/lib/order-amounts"
 
 interface Order {
   id: string
@@ -22,6 +23,7 @@ interface Order {
 
 export default function OrdersPage() {
   const t = useTranslations("orders")
+  const tTrack = useTranslations("orderTracking")
   const { language } = useLocale()
   const router = useRouter()
   const { user } = useAuth()
@@ -61,23 +63,18 @@ export default function OrdersPage() {
   const getStatusIcon = (status: string) => {
     switch(status) {
       case "DELIVERED": return <CheckCircle className="w-5 h-5 text-green-600" />
-      case "CANCELLED": return <XCircle className="w-5 h-5 text-red-600" />
-      case "SHIPPED": return <Truck className="w-5 h-5 text-blue-600" />
+      case "CANCELLED":
+      case "REFUNDED": return <XCircle className="w-5 h-5 text-red-600" />
+      case "SHIPPED":
+      case "IN_TRANSIT":
+      case "OUT_FOR_DELIVERY": return <Truck className="w-5 h-5 text-blue-600" />
       default: return <Clock className="w-5 h-5 text-yellow-600" />
     }
   }
 
-  const getStatusLabel = (status: string): string => {
-    const statusMap: Record<string, string> = {
-      "PENDING": t("statusPENDING"),
-      "CONFIRMED": t("statusCONFIRMED"),
-      "PROCESSING": t("statusPROCESSING"),
-      "SHIPPED": t("statusSHIPPED"),
-      "DELIVERED": t("statusDELIVERED"),
-      "CANCELLED": t("statusCANCELLED")
-    }
-    return statusMap[status] || status
-  }
+  const KNOWN_STATUSES = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED", "REFUNDED"]
+  const getStatusLabel = (status: string): string =>
+    KNOWN_STATUSES.includes(status) ? tTrack(`status.${status}`) : status
 
   const getStatusColor = (status: string): string => {
     const colorMap: Record<string, string> = {
@@ -86,7 +83,10 @@ export default function OrdersPage() {
       "PROCESSING": "bg-purple-100 text-purple-700",
       "SHIPPED": "bg-indigo-100 text-indigo-700",
       "DELIVERED": "bg-green-100 text-green-700",
-      "CANCELLED": "bg-red-100 text-red-700"
+      "IN_TRANSIT": "bg-sky-100 text-sky-700",
+      "OUT_FOR_DELIVERY": "bg-orange-100 text-orange-700",
+      "CANCELLED": "bg-red-100 text-red-700",
+      "REFUNDED": "bg-slate-100 text-slate-700"
     }
     return colorMap[status] || "bg-gray-100 text-gray-700"
   }
@@ -163,7 +163,7 @@ export default function OrdersPage() {
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.status)}`}>
                         {getStatusLabel(order.status)}
                       </span>
-                      <span className="font-bold text-lg">{formatPrice(order.total)}</span>
+                      <span className="font-bold text-lg">{formatPrice(orderUsd(order, order.total))}</span>
                     </div>
                   </div>
                 </div>

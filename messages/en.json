@@ -1,4 +1,111 @@
 {
+  "orderTracking": {
+    "title": "Order tracking",
+    "back": "Back",
+    "backToOrders": "Back to my orders",
+    "notFound": "Order not found",
+    "loadError": "Unable to load this order",
+    "cancelledTitle": "Order cancelled",
+    "cancelledDefault": "This order was cancelled. Any payment already made is refunded automatically.",
+    "cancelledOn": "On {date}",
+    "refundedTitle": "Order refunded",
+    "refundedText": "The amount of this order has been refunded.",
+    "deliveryStatus": "Delivery status",
+    "estimated": "Estimated delivery: {date}",
+    "pendingNote": "Tracking starts as soon as payment is confirmed.",
+    "trackingNo": "Tracking no.:",
+    "copy": "Copy",
+    "copied": "Copied",
+    "carrier": "Real-time tracking with the carrier",
+    "done": "Done",
+    "items": "Items ({count})",
+    "product": "Product",
+    "qty": "Qty {count}",
+    "total": "Total",
+    "address": "Delivery address",
+    "payment": "Payment",
+    "method": "Method",
+    "paymentStatus": "Status",
+    "paid": "Paid",
+    "unpaid": "Payment pending",
+    "helpTitle": "Need help with this order?",
+    "helpText": "Automatically refunded if not delivered",
+    "contact": "Contact",
+    "status": {
+      "PENDING": "Payment pending",
+      "CONFIRMED": "Confirmed",
+      "PROCESSING": "Being prepared",
+      "SHIPPED": "Shipped",
+      "IN_TRANSIT": "In transit",
+      "OUT_FOR_DELIVERY": "Out for delivery",
+      "DELIVERED": "Delivered",
+      "CANCELLED": "Cancelled",
+      "REFUNDED": "Refunded"
+    },
+    "steps": {
+      "confirmed": {
+        "label": "Order confirmed",
+        "desc": "Your payment is confirmed and the order is recorded"
+      },
+      "processing": {
+        "label": "Being prepared",
+        "desc": "Your parcel is being prepared in our warehouse"
+      },
+      "shipped": {
+        "label": "Shipped",
+        "desc": "Your parcel has left the supplier's warehouse"
+      },
+      "inTransit": {
+        "label": "In transit",
+        "desc": "Your parcel is on its way internationally"
+      },
+      "outForDelivery": {
+        "label": "Out for delivery",
+        "desc": "Your parcel is out for local delivery"
+      },
+      "delivered": {
+        "label": "Delivered",
+        "desc": "Your parcel has arrived"
+      }
+    }
+  },
+  "checkoutResult": {
+    "verifying": "Verifying your payment...",
+    "loading": "Loading...",
+    "confirmedTitle": "Payment confirmed!",
+    "confirmedText": "Your payment was accepted. Your order is being processed.",
+    "orderNumber": "Order number",
+    "detailsTitle": "Order details",
+    "status": "Status",
+    "orderDate": "Order date",
+    "estimatedDelivery": "Estimated delivery",
+    "address": "Delivery address",
+    "recap": "Summary",
+    "quantity": "Quantity: {count}",
+    "subtotal": "Subtotal ({count, plural, one {# item} other {# items}})",
+    "shipping": "Shipping",
+    "discount": "Discount ({code})",
+    "total": "Total",
+    "home": "Home",
+    "myOrders": "View my orders",
+    "emailSent": "A confirmation email was sent to {email}",
+    "back": "Back",
+    "pendingTitle": "Payment being confirmed",
+    "pendingText": "We have not received the confirmation of your payment yet. This can take a few minutes. You will receive an email as soon as it is confirmed.",
+    "notFoundTitle": "Order not found",
+    "errorText": "We could not check your order. Please see your list of orders.",
+    "failedTitle": "Payment failed",
+    "failedText": "The payment could not be completed. Please try again.",
+    "reference": "Transaction reference",
+    "causesTitle": "Possible causes:",
+    "cause1": "Insufficient balance",
+    "cause2": "Incorrect or expired OTP code",
+    "cause3": "Network connection problem",
+    "cause4": "Transaction cancelled by the user",
+    "retry": "Try the payment again",
+    "viewCart": "View cart",
+    "support": "A problem? Contact our customer service:"
+  },
   "productCard": {
   "badge": {
     "forYou": "For you",

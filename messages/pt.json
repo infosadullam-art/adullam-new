@@ -1,4 +1,111 @@
 {
+  "orderTracking": {
+    "title": "Acompanhamento do pedido",
+    "back": "Voltar",
+    "backToOrders": "Voltar aos meus pedidos",
+    "notFound": "Pedido não encontrado",
+    "loadError": "Não foi possível carregar este pedido",
+    "cancelledTitle": "Pedido cancelado",
+    "cancelledDefault": "Este pedido foi cancelado. Qualquer pagamento já efetuado é reembolsado automaticamente.",
+    "cancelledOn": "Em {date}",
+    "refundedTitle": "Pedido reembolsado",
+    "refundedText": "O valor deste pedido foi reembolsado.",
+    "deliveryStatus": "Estado da entrega",
+    "estimated": "Entrega estimada: {date}",
+    "pendingNote": "O acompanhamento começa assim que o pagamento for confirmado.",
+    "trackingNo": "N.º de rastreio:",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "carrier": "Rastreio em tempo real na transportadora",
+    "done": "Concluído",
+    "items": "Artigos ({count})",
+    "product": "Produto",
+    "qty": "Qtd. {count}",
+    "total": "Total",
+    "address": "Endereço de entrega",
+    "payment": "Pagamento",
+    "method": "Método",
+    "paymentStatus": "Estado",
+    "paid": "Pago",
+    "unpaid": "Pagamento pendente",
+    "helpTitle": "Precisa de ajuda com este pedido?",
+    "helpText": "Reembolso automático em caso de não entrega",
+    "contact": "Contactar",
+    "status": {
+      "PENDING": "Pagamento pendente",
+      "CONFIRMED": "Confirmado",
+      "PROCESSING": "Em preparação",
+      "SHIPPED": "Enviado",
+      "IN_TRANSIT": "Em trânsito",
+      "OUT_FOR_DELIVERY": "Em entrega",
+      "DELIVERED": "Entregue",
+      "CANCELLED": "Cancelado",
+      "REFUNDED": "Reembolsado"
+    },
+    "steps": {
+      "confirmed": {
+        "label": "Pedido confirmado",
+        "desc": "O seu pagamento foi validado e o pedido está registado"
+      },
+      "processing": {
+        "label": "Em preparação",
+        "desc": "A sua encomenda está a ser preparada no nosso armazém"
+      },
+      "shipped": {
+        "label": "Enviado",
+        "desc": "A sua encomenda saiu do armazém do fornecedor"
+      },
+      "inTransit": {
+        "label": "Em trânsito",
+        "desc": "A sua encomenda está em transporte internacional"
+      },
+      "outForDelivery": {
+        "label": "Em entrega",
+        "desc": "A sua encomenda está em distribuição local"
+      },
+      "delivered": {
+        "label": "Entregue",
+        "desc": "A sua encomenda chegou ao destino"
+      }
+    }
+  },
+  "checkoutResult": {
+    "verifying": "A verificar o seu pagamento...",
+    "loading": "A carregar...",
+    "confirmedTitle": "Pagamento confirmado!",
+    "confirmedText": "O seu pagamento foi aceite. O seu pedido está a ser processado.",
+    "orderNumber": "Número do pedido",
+    "detailsTitle": "Detalhes do pedido",
+    "status": "Estado",
+    "orderDate": "Data do pedido",
+    "estimatedDelivery": "Entrega estimada",
+    "address": "Endereço de entrega",
+    "recap": "Resumo",
+    "quantity": "Quantidade: {count}",
+    "subtotal": "Subtotal ({count, plural, one {# artigo} other {# artigos}})",
+    "shipping": "Entrega",
+    "discount": "Desconto ({code})",
+    "total": "Total",
+    "home": "Início",
+    "myOrders": "Ver os meus pedidos",
+    "emailSent": "Foi enviado um e-mail de confirmação para {email}",
+    "back": "Voltar",
+    "pendingTitle": "Pagamento em confirmação",
+    "pendingText": "Ainda não recebemos a confirmação do seu pagamento. Pode demorar alguns minutos. Receberá um e-mail assim que for validado.",
+    "notFoundTitle": "Pedido não encontrado",
+    "errorText": "Não foi possível verificar o seu pedido. Consulte a lista dos seus pedidos.",
+    "failedTitle": "Pagamento falhou",
+    "failedText": "Não foi possível concluir o pagamento. Tente novamente.",
+    "reference": "Referência da transação",
+    "causesTitle": "Causas possíveis:",
+    "cause1": "Saldo insuficiente",
+    "cause2": "Código OTP incorreto ou expirado",
+    "cause3": "Problema de ligação à rede",
+    "cause4": "Transação cancelada pelo utilizador",
+    "retry": "Tentar o pagamento novamente",
+    "viewCart": "Ver o carrinho",
+    "support": "Algum problema? Contacte o nosso apoio ao cliente:"
+  },
   "productCard": {
   "badge": {
     "forYou": "Para você",
