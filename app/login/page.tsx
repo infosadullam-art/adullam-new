@@ -44,6 +44,8 @@ function flagEmoji(code: string): string {
 
 const DEFAULT_DIAL_CODE = "+225"
 
+const FORGOT_LABEL: Record<string, string> = { fr: "Mot de passe oublié ?", en: "Forgot password?", pt: "Esqueceu a senha?", ar: "نسيت كلمة المرور؟" }
+
 // Compose un numéro au format international à partir de l'indicatif détecté/choisi et de la saisie locale
 function toE164Phone(dial: string, raw: string): string {
   const digits = raw.replace(/\D/g, '').replace(/^0+/, '')
@@ -634,6 +636,14 @@ function UserLoginContent() {
                     </button>
                   </div>
                 </div>
+
+                {step === "login" && loginMethod === "email" && (
+                  <div className="-mt-2 text-end">
+                    <Link href={formData.email ? `/forgot-password?email=${encodeURIComponent(formData.email)}` : "/forgot-password"} className="text-sm text-accent hover:underline">
+                      {FORGOT_LABEL[language as string] ?? FORGOT_LABEL.fr}
+                    </Link>
+                  </div>
+                )}
 
                 {step === "register" && (
                   <div className="space-y-2">

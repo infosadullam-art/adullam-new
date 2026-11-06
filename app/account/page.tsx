@@ -26,6 +26,21 @@ function flagEmoji(code: string): string {
 
 const DEFAULT_DIAL_CODE = "+225"
 
+// Suppression de compte (onglet Securite) — textes absents des fichiers de traduction
+const DEL_LABEL: Record<string, Record<string, string>> = {
+  delete: { fr: "Supprimer mon compte", en: "Delete my account", pt: "Eliminar a minha conta", ar: "حذف حسابي" },
+  title: { fr: "Supprimer le compte", en: "Delete account", pt: "Eliminar conta", ar: "حذف الحساب" },
+  warn: { fr: "Action définitive : vos informations personnelles, adresses, favoris et notifications seront effacées. Vos commandes passées sont conservées pour la comptabilité.", en: "This cannot be undone: your personal details, addresses, favourites and notifications will be erased. Past orders are kept for accounting.", pt: "Ação definitiva: os seus dados pessoais, moradas, favoritos e notificações serão apagados. As encomendas passadas são mantidas para contabilidade.", ar: "إجراء نهائي: سيتم مسح بياناتك الشخصية وعناوينك ومفضلاتك وإشعاراتك. تُحفظ الطلبات السابقة لأغراض محاسبية." },
+  pw: { fr: "Mot de passe pour confirmer", en: "Password to confirm", pt: "Senha para confirmar", ar: "كلمة المرور للتأكيد" },
+  confirm: { fr: "Supprimer définitivement", en: "Delete permanently", pt: "Eliminar definitivamente", ar: "حذف نهائي" },
+  cancel: { fr: "Annuler", en: "Cancel", pt: "Cancelar", ar: "إلغاء" },
+  busy: { fr: "Suppression…", en: "Deleting…", pt: "A eliminar…", ar: "جارٍ الحذف…" },
+  pwRequired: { fr: "Saisissez votre mot de passe", en: "Enter your password", pt: "Introduza a sua senha", ar: "أدخل كلمة المرور" },
+  wrongPw: { fr: "Mot de passe incorrect", en: "Wrong password", pt: "Senha incorreta", ar: "كلمة المرور غير صحيحة" },
+  tooMany: { fr: "Trop de tentatives. Réessayez dans 15 minutes.", en: "Too many attempts. Try again in 15 minutes.", pt: "Demasiadas tentativas. Tente em 15 minutos.", ar: "محاولات كثيرة. حاول بعد 15 دقيقة." },
+  error: { fr: "Une erreur est survenue. Vérifiez votre connexion.", en: "Something went wrong. Check your connection.", pt: "Ocorreu um erro. Verifique a ligação.", ar: "حدث خطأ. تحقق من اتصالك." },
+}
+
 // Petits libelles absents des fichiers de traduction
 const OU_LABEL: Record<string, string> = { fr: "Ou", en: "Or", pt: "Ou", ar: "أو" }
 const ORDER_LABEL: Record<string, string> = { fr: "Commande", en: "Order", pt: "Pedido", ar: "طلب" }
@@ -330,6 +345,31 @@ export default function AccountPage() {
   const [isLogged, setIsLogged] = useState(false)
   const [showLogin, setShowLogin] = useState(true)
   const [activeTab, setActiveTab] = useState("dashboard")
+  const [delOpen, setDelOpen] = useState(false)
+  const [delPw, setDelPw] = useState("")
+  const [delErr, setDelErr] = useState("")
+  const [delBusy, setDelBusy] = useState(false)
+  const fd = (k: string) => DEL_LABEL[k]?.[language as string] ?? DEL_LABEL[k]?.fr ?? k
+  const handleDeleteAccount = async () => {
+    if (!delPw) { setDelErr(fd("pwRequired")); return }
+    setDelBusy(true); setDelErr("")
+    try {
+      const token = (localStorage.getItem("adullam_token") || "").replace(/["']/g, "").trim()
+      const res = await fetch("https://api.adullamarket.com/api/auth/account", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ password: delPw }),
+      })
+      if (res.ok) {
+        setDelOpen(false)
+        try { await logout() } catch {}
+        return
+      }
+      setDelErr(res.status === 403 ? fd("wrongPw") : res.status === 429 ? fd("tooMany") : fd("error"))
+    } catch {
+      setDelErr(fd("error"))
+    } finally { setDelBusy(false) }
+  }
   
   // États pour les données utilisateur
   const [orders, setOrders] = useState<any[]>([])
@@ -929,6 +969,14 @@ export default function AccountPage() {
                       </div>
                     </div>
 
+                    {step === "login" && (
+                      <div className="-mt-1 text-end">
+                        <a href={formData.email ? `/forgot-password?email=${encodeURIComponent(formData.email)}` : "/forgot-password"} className="text-xs hover:underline" style={{ color: 'var(--accent)' }}>
+                          {({ fr: "Mot de passe oublié ?", en: "Forgot password?", pt: "Esqueceu a senha?", ar: "نسيت كلمة المرور؟" } as Record<string, string>)[language as string] ?? "Mot de passe oublié ?"}
+                        </a>
+                      </div>
+                    )}
+
                     {step === "register" && (
                       <div>
                         <label className="block text-xs font-medium mb-1" style={{ color: 'var(--foreground)' }}>
@@ -1483,6 +1531,30 @@ export default function AccountPage() {
                     <span className="text-[10px] text-green-600">{t("currentSession")}</span>
                   </div>
                 </div>
+              </div>
+
+              <div className="p-4 rounded-lg border" style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
+                <h3 className="text-sm font-medium mb-1" style={{ color: 'var(--foreground)' }}>{fd("title")}</h3>
+                <p className="text-xs mb-3" style={{ color: 'var(--muted-foreground)' }}>{fd("warn")}</p>
+                {!delOpen ? (
+                  <button type="button" onClick={() => { setDelPw(""); setDelErr(""); setDelOpen(true) }} className="px-3 py-1 border rounded-md text-xs transition-colors" style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
+                    {fd("delete")}
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <label htmlFor="delPw" className="block text-xs" style={{ color: 'var(--muted-foreground)' }}>{fd("pw")}</label>
+                    <input id="delPw" type="password" autoComplete="current-password" value={delPw} onChange={(e) => { setDelPw(e.target.value); setDelErr("") }} disabled={delBusy} className="w-full rounded-md border px-3 py-2 text-sm bg-transparent" style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }} />
+                    {delErr && <p className="text-xs text-accent">{delErr}</p>}
+                    <div className="flex gap-2">
+                      <button type="button" onClick={handleDeleteAccount} disabled={delBusy} className="px-3 py-1 text-white text-xs rounded-md transition-colors" style={{ background: "var(--accent)" }}>
+                        {delBusy ? fd("busy") : fd("confirm")}
+                      </button>
+                      <button type="button" onClick={() => setDelOpen(false)} disabled={delBusy} className="px-3 py-1 border rounded-md text-xs transition-colors" style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
+                        {fd("cancel")}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
