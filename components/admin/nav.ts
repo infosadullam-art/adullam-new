@@ -17,6 +17,8 @@ import {
   Activity,
   Cog,
   Ticket,
+  Smartphone,
+  FlaskConical,
   type LucideIcon,
 } from "lucide-react"
 
@@ -64,6 +66,13 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     title: "Intelligence IA",
     items: [{ name: "Recommandations", href: `${base}/ia`, icon: Brain, end: true }],
+  },
+  {
+    title: "App mobile",
+    items: [
+      { name: "Application", href: `${base}/app`, icon: Smartphone },
+      { name: "Bêta", href: `${base}/beta`, icon: FlaskConical },
+    ],
   },
   {
     title: "Système",

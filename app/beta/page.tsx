@@ -96,6 +96,13 @@ export default function BetaPage() {
 
   // Si une plateforme est complete, on ne laisse pas la selection dessus
   useEffect(() => { if (platform && isFull(platform)) setPlatform("") }, [places]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem("beta_visit_sent")) return
+      sessionStorage.setItem("beta_visit_sent", "1")
+    } catch {}
+    fetch(`${API}/api/app/track`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ platform: "web", events: ["beta_visit"] }), keepalive: true }).catch(() => {})
+  }, [])
 
   const setField = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((f) => ({ ...f, [k]: e.target.value.replace(/[<>]/g, "") }))

@@ -263,6 +263,11 @@ export const authApi = {
 
 // ------------------- Dashboard (métriques) -------------------
 export const dashboardApi = {
+  getAppStats: (days = 30) =>
+    apiClient<{ success: boolean; data: any }>("/api/admin/app-stats", { params: { days } }),
+  getBetaList: () => apiClient<{ success: boolean; data: any[] }>("/api/admin/beta"),
+  setBetaStatus: (id: string, status: "PENDING" | "APPROVED" | "REJECTED") =>
+    apiClient<{ success: boolean; data: any }>("/api/admin/beta", { method: "PATCH", body: JSON.stringify({ id, status }) }),
   getStats: (startDate?: string, endDate?: string) => {
     devLog("🟡 [dashboardApi] getStats")
     return apiClient<{ success: boolean; data: any }>("/api/admin/dashboard", {
