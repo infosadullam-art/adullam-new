@@ -180,6 +180,20 @@ async function syncCartToServer(items: CartItem[]): Promise<void> {
 // ============================================================
 // PROVIDER
 // ============================================================
+// Fusion a la connexion : on garde les articles des deux paniers ; si un article est dans les deux, on garde la plus grande quantite (pas la somme).
+const cartKeyOf = (it: CartItem): string => it.variantKey || `${it.id}_${it.color || ''}_${it.eurSize || ''}`;
+function mergeCartItems(local: CartItem[], server: CartItem[]): CartItem[] {
+  const merged = new Map<string, CartItem>();
+  for (const it of server) merged.set(cartKeyOf(it), it);
+  for (const it of local) {
+    const k = cartKeyOf(it);
+    const found = merged.get(k);
+    if (!found) merged.set(k, it);
+    else if (it.quantity > found.quantity) merged.set(k, { ...found, quantity: it.quantity });
+  }
+  return Array.from(merged.values());
+}
+
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const { country } = useLocale();
 
@@ -233,7 +247,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       fetchServerCart().then((serverItems) => {
         if (serverItems === null) return;
         if (serverItems.length > 0) {
-          commitCart(serverItems);
+          commitCart(mergeCartItems(cartRef.current, serverItems));
         } else if (localCart.length > 0) {
           syncCartToServer(localCart);
         }
