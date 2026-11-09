@@ -266,8 +266,8 @@ export const dashboardApi = {
   getAppStats: (days = 30) =>
     apiClient<{ success: boolean; data: any }>("/api/admin/app-stats", { params: { days } }),
   getBetaList: () => apiClient<{ success: boolean; data: any[] }>("/api/admin/beta"),
-  setBetaStatus: (id: string, status: "PENDING" | "APPROVED" | "REJECTED") =>
-    apiClient<{ success: boolean; data: any }>("/api/admin/beta", { method: "PATCH", body: JSON.stringify({ id, status }) }),
+  setBetaStatus: (id: string, status: "PENDING" | "APPROVED" | "REJECTED", invite?: { link: string; message: string }) =>
+    apiClient<{ success: boolean; data: any; email?: string }>("/api/admin/beta", { method: "PATCH", body: JSON.stringify({ id, status, invite }) }),
   getStats: (startDate?: string, endDate?: string) => {
     devLog("🟡 [dashboardApi] getStats")
     return apiClient<{ success: boolean; data: any }>("/api/admin/dashboard", {

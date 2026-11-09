@@ -23,6 +23,7 @@ const nf = (n: number) => new Intl.NumberFormat("fr-FR").format(Math.round(n))
 const LINK_KEY = "beta_install_link"
 const TPL_KEY = "beta_invite_template"
 const SENT_KEY = "beta_invited_ids"
+const AUTO_KEY = "beta_auto_email"
 const DEFAULT_LINK = "https://expo.dev/accounts/adullam-global/projects/adullam/builds/54c93f44-ccd0-473b-8a13-bb2927c0f686"
 const DEFAULT_SUBJECT = "Votre accès bêta Adullamarket"
 const DEFAULT_TEMPLATE = `Bonjour {prenom},
@@ -61,10 +62,13 @@ export default function BetaAdminPage() {
   const [template, setTemplate] = useState(DEFAULT_TEMPLATE)
   const [invited, setInvited] = useState<Set<string>>(new Set())
   const [copiedId, setCopiedId] = useState("")
+  const [autoEmail, setAutoEmail] = useState(true)
+  const [notice, setNotice] = useState("")
 
   useEffect(() => {
     const l = readLS(LINK_KEY); if (l) setLink(l)
     const t = readLS(TPL_KEY); if (t) setTemplate(t)
+    if (readLS(AUTO_KEY) === "0") setAutoEmail(false)
     try { const s = readLS(SENT_KEY); if (s) setInvited(new Set(JSON.parse(s) as string[])) } catch { /* ignore */ }
   }, [])
 
@@ -88,10 +92,21 @@ export default function BetaAdminPage() {
   const change = async (t: Tester, status: Status) => {
     setBusyId(t.id)
     setError("")
+    setNotice("")
     try {
-      const res = await dashboardApi.setBetaStatus(t.id, status)
-      if (res.success) setItems((prev) => prev.map((x) => (x.id === t.id ? { ...x, status } : x)))
-      else setError("La modification a échoué.")
+      const sendInvite = status === "APPROVED" && t.status !== "APPROVED" && t.platform === "ANDROID" && autoEmail && linkOk
+      const res = await dashboardApi.setBetaStatus(t.id, status, sendInvite ? { link: link.trim(), message: template } : undefined)
+      if (res.success) {
+        setItems((prev) => prev.map((x) => (x.id === t.id ? { ...x, status } : x)))
+        if (sendInvite) {
+          if (res.email === "sent") {
+            markInvited(t.id)
+            setNotice("E-mail d'invitation envoyé à " + t.email + ".")
+          } else {
+            setError("Testeur approuvé, mais l'e-mail n'a pas pu partir : utilisez WhatsApp ou le bouton E-mail.")
+          }
+        }
+      } else setError("La modification a échoué.")
     } catch {
       setError("La modification a échoué.")
     } finally {
@@ -149,6 +164,7 @@ export default function BetaAdminPage() {
       </div>
 
       {error && <p className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">{error}</p>}
+      {notice && <p className="rounded-md border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-800" role="status">{notice}</p>}
 
       <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
         {(["ANDROID", "IOS"] as const).map((p) => (
@@ -181,6 +197,15 @@ export default function BetaAdminPage() {
             <Input id="beta-link" value={link} onChange={(e) => { setLink(e.target.value); writeLS(LINK_KEY, e.target.value) }} placeholder="https://expo.dev/…" />
             <p className="mt-1 text-xs text-muted-foreground">À mettre à jour après chaque nouveau build de l'app. {linkOk ? "" : "Le lien doit commencer par https://"}</p>
           </div>
+          <label className="flex items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={autoEmail}
+              onChange={(e) => { setAutoEmail(e.target.checked); writeLS(AUTO_KEY, e.target.checked ? "1" : "0") }}
+            />
+            <span>Envoyer l'e-mail d'invitation automatiquement quand j'approuve un testeur Android (depuis contact@adullamarket.com, à l'adresse indiquée à l'inscription).</span>
+          </label>
           <div>
             <label htmlFor="beta-template" className="mb-1 block text-sm font-medium">Message (modifiable)</label>
             <textarea
