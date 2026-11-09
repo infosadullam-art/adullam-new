@@ -33,6 +33,7 @@ Merci de votre inscription au programme bêta d'Adullamarket ! Votre place est c
 Pour installer l'application sur votre téléphone Android :
 1. Ouvrez ce lien depuis votre téléphone : {lien}
 2. Touchez « Install » (Installer) et autorisez l'installation si Android le demande.
+   Si Google Play Protect affiche « Appli bloquée », c'est normal pendant la bêta (l'application n'est pas encore sur le Play Store) : touchez « Installer quand même » (le petit texte en gras, pas le bouton OK).
 3. Ouvrez Adullam et créez votre compte.
 
 Pendant 21 jours, utilisez l'application comme un vrai client : recherche de produits, recherche par photo, panier, commande, demande de devis, assistant Adu.
