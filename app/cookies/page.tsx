@@ -1,33 +1,21 @@
 import { getTranslations } from "next-intl/server"
+import { LegalPage, type LegalSection } from "@/components/legal-page"
 
-export default async function CookiesPage() {
+export async function generateMetadata() {
+  const t = await getTranslations("pageCookies")
+  return { title: String(t.raw("title")) }
+}
+
+export default async function Page() {
   const t = await getTranslations("pageCookies")
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-6">{t("title")}</h1>
-
-      <div className="space-y-4">
-        <section>
-          <h2 className="text-xl font-semibold mb-2">{t("whatTitle")}</h2>
-          <p>{t("whatText")}</p>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold mb-2">{t("usedTitle")}</h2>
-          <ul className="list-disc list-inside mt-2">
-            <li>{t("used1")}</li>
-            <li>{t("used2")}</li>
-            <li>{t("used3")}</li>
-            <li>{t("used4")}</li>
-          </ul>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold mb-2">{t("manageTitle")}</h2>
-          <p>{t("manageText")}</p>
-          <p className="mt-2">{t("manageText2")}</p>
-        </section>
-      </div>
-    </div>
+    <LegalPage
+      title={String(t.raw("title"))}
+      updated={String(t.raw("updated"))}
+      intro={String(t.raw("intro"))}
+      tocLabel={String(t.raw("toc"))}
+      numbered
+      sections={t.raw("sections") as LegalSection[]}
+    />
   )
 }

@@ -38,7 +38,7 @@ export default getRequestConfig(async () => {
     ? fromCookie
     : resolveCountry(store.get(COUNTRY_COOKIE)?.value).language
 
-  const base = (await import("../messages/fr.json")).default as Messages
+  const base = (await import("../messages/fr.json")).default as unknown as Messages
   const localized =
     locale === "fr"
       ? base
