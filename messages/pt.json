@@ -942,7 +942,7 @@
     "s4": "4. Valide a encomenda e avance para o pagamento",
     "q2": "Quais são os modos de entrega?",
     "seaName": "Marítimo (barco)",
-    "seaInfo": " : 35-50 dias - Económico",
+    "seaInfo": " : 45-50 dias - Económico",
     "airName": "Aéreo (avião)",
     "airInfo": " : 15-20 dias - Rápido",
     "expressName": "Expresso",
@@ -958,203 +958,571 @@
     "sections": [
       {
         "title": "Áreas que nos interessam",
-        "items": [
-          "Desenvolvimento de software, web e móvel.",
-          "Apoio ao cliente e relação com os compradores.",
-          "Logística e coordenação de exportação.",
-          "Sourcing e relação com fornecedores."
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "Desenvolvimento de software, web e móvel.",
+              "Apoio ao cliente e relação com os compradores.",
+              "Logística e coordenação de exportação.",
+              "Sourcing e relação com fornecedores."
+            ]
+          }
         ]
       },
       {
-        "title": "Candidatura espontânea",
-        "paragraphs": [
-          "Envie o seu CV e algumas linhas sobre o seu percurso para contact@adullamarket.com, com o assunto \"Candidatura\" e a área pretendida. Analisamos cada candidatura e respondemos se o seu perfil corresponder a uma necessidade."
+        "title": "Enviar uma candidatura espontânea",
+        "blocks": [
+          {
+            "t": "ol",
+            "i": [
+              "Escreva para contact@adullamarket.com com o assunto «Candidatura» e a área pretendida.",
+              "Junte o seu CV e algumas linhas sobre o seu percurso.",
+              "Analisamos cada candidatura e respondemos se o seu perfil corresponder a uma necessidade."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Os seus dados de candidatura",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "O seu CV e as suas mensagens só servem para analisar a sua candidatura. Pode pedir a sua eliminação a qualquer momento no mesmo endereço. Veja a [política de privacidade](/confidentialite)."
+          }
         ]
       }
     ]
   },
   "pageCookies": {
-    "title": "Cookies e rastreadores",
-    "updated": "Última atualização: 11 de novembro de 2026",
+    "title": "Cookies e armazenamento do navegador",
+    "updated": "Versão 1.0 · Última atualização: 12 de novembro de 2026",
     "toc": "Índice",
-    "intro": "Um cookie é um pequeno ficheiro guardado no seu dispositivo. Usamos também o armazenamento local do navegador, que desempenha um papel equivalente. Eis tudo o que o site utiliza.",
+    "print": "Imprimir ou guardar em PDF",
+    "intro": "Um cookie é um pequeno ficheiro guardado no seu dispositivo. Usamos também o armazenamento local do navegador, que desempenha um papel equivalente. Esta página lista tudo o que o site utiliza, com a duração e a função.",
+    "summaryTitle": "O essencial em 3 pontos",
+    "summary": [
+      "Os elementos essenciais (início de sessão, carrinho, idioma) são necessários ao funcionamento do site e não pedem o seu consentimento.",
+      "O Meta Pixel (publicidade) só carrega com o seu consentimento.",
+      "Pode mudar de ideias a qualquer momento a partir desta página."
+    ],
     "sections": [
       {
-        "title": "Indispensáveis ao funcionamento",
-        "items": [
-          "Início de sessão: token de autenticação que mantém a sua sessão aberta.",
-          "Carrinho e modo de entrega: guardados no seu dispositivo.",
-          "Idioma e país: memorizam a sua escolha de apresentação e de moeda.",
-          "Tema claro ou escuro.",
-          "Identificador de sessão (24 horas no máximo): liga as suas visitas para o carrinho, as recomendações e o assistente Adu."
+        "title": "Essenciais ao funcionamento",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Sem eles, o site não funciona corretamente. Não exigem consentimento."
+          },
+          {
+            "t": "tb",
+            "h": [
+              "Nome",
+              "Tipo",
+              "Duração",
+              "Função"
+            ],
+            "r": [
+              [
+                "adullam_token",
+                "Armazenamento local",
+                "Até ao fim da sessão",
+                "Manter a sua sessão aberta"
+              ],
+              [
+                "Cookie de sessão de início de sessão",
+                "Cookie",
+                "Duração da sessão de início de sessão",
+                "Renovar a sessão sem reescrever a palavra-passe"
+              ],
+              [
+                "cart, shippingMode",
+                "Armazenamento local",
+                "Até eliminação",
+                "Guardar o carrinho e o modo de entrega"
+              ],
+              [
+                "nx_locale e cookie de país",
+                "Cookie",
+                "Duração limitada",
+                "Memorizar o idioma e o país de apresentação, logo a moeda"
+              ],
+              [
+                "sessionId",
+                "Cookie",
+                "24 horas",
+                "Ligar as suas visitas para o carrinho e as recomendações"
+              ],
+              [
+                "adullam_session_id",
+                "Armazenamento local",
+                "Até eliminação",
+                "Idem, do lado do navegador"
+              ],
+              [
+                "Tema",
+                "Armazenamento local",
+                "Até eliminação",
+                "Memorizar o modo claro ou escuro"
+              ],
+              [
+                "adullam_consent",
+                "Armazenamento local",
+                "Até eliminação",
+                "Memorizar a sua escolha nesta página"
+              ]
+            ]
+          }
         ]
       },
       {
         "title": "Conforto de utilização",
-        "items": [
-          "Assistente Adu: identificador de conversa para reencontrar a sua discussão.",
-          "Pesquisa por foto: resultado guardado temporariamente durante a sessão.",
-          "Ecrã de arranque: memoriza que foi apresentado durante a sessão."
+        "blocks": [
+          {
+            "t": "tb",
+            "h": [
+              "Nome",
+              "Tipo",
+              "Duração",
+              "Função"
+            ],
+            "r": [
+              [
+                "chat_session_id",
+                "Armazenamento local",
+                "Até eliminação",
+                "Reencontrar a sua conversa com o Adu"
+              ],
+              [
+                "checkout_visited",
+                "Armazenamento local",
+                "Até eliminação",
+                "Memorizar que abriu a página de pagamento (assistente Adu)"
+              ],
+              [
+                "just_clicked_product",
+                "Armazenamento de sessão",
+                "Fecho do separador",
+                "Memorizar o último produto aberto (assistente Adu)"
+              ],
+              [
+                "photoSearch",
+                "Armazenamento de sessão",
+                "Fecho do separador",
+                "Guardar o resultado da sua pesquisa por foto"
+              ],
+              [
+                "splashShown",
+                "Armazenamento de sessão",
+                "Fecho do separador",
+                "Não voltar a mostrar o ecrã de arranque"
+              ]
+            ]
+          }
         ]
       },
       {
         "title": "Medição de audiência",
-        "paragraphs": [
-          "Vercel Analytics (Vercel Inc.): páginas vistas e desempenho do site, de forma agregada."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "O Vercel Analytics (Vercel Inc.) mede as páginas vistas e o desempenho do site de forma agregada. Não usa cookies."
+          }
         ]
       },
       {
-        "title": "Publicidade",
-        "paragraphs": [
-          "Meta Pixel (Meta Platforms): regista as suas visitas e certas ações (página vista, adição ao carrinho, início de pagamento, compra) para medir e melhorar os nossos anúncios no Facebook e no Instagram. Estes dados são transmitidos à Meta."
+        "title": "Publicidade: só com o seu consentimento",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "O Meta Pixel (Meta Platforms) regista as suas visitas e certas ações (página vista, adição ao carrinho, início de pagamento, compra) para medir e melhorar os nossos anúncios no Facebook e no Instagram. Estes dados são transmitidos à Meta. Só carrega depois do seu consentimento."
+          },
+          {
+            "t": "tb",
+            "h": [
+              "Nome",
+              "Tipo",
+              "Duração",
+              "Função"
+            ],
+            "r": [
+              [
+                "_fbp, _fbc",
+                "Cookie (Meta)",
+                "Até 3 meses",
+                "Medir a eficácia dos anúncios"
+              ]
+            ]
+          }
         ]
       },
       {
         "title": "Gerir as suas escolhas",
-        "items": [
-          "Navegador: bloqueie ou elimine os cookies e o armazenamento local nas definições. Algumas funções, como o início de sessão e o carrinho, deixarão de funcionar.",
-          "Publicidade: gira as suas preferências nas definições de anúncios da sua conta Facebook ou Instagram.",
-          "Uma questão: contact@adullamarket.com."
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "Aqui: pode reabrir a escolha a qualquer momento com o botão abaixo.",
+              "No navegador: bloqueie ou elimine os cookies e o armazenamento local. Algumas funções, como o início de sessão e o carrinho, deixarão de funcionar.",
+              "Quanto à publicidade: gira as suas preferências nas definições de anúncios da sua conta Facebook ou Instagram."
+            ]
+          },
+          {
+            "t": "btn",
+            "x": "Alterar a minha escolha sobre cookies"
+          },
+          {
+            "t": "p",
+            "x": "Uma questão: contact@adullamarket.com."
+          }
         ]
       }
     ]
   },
   "pageConfidentialite": {
     "title": "Política de Privacidade",
-    "updated": "Última atualização: 11 de novembro de 2026",
+    "updated": "Versão 1.0 · Última atualização: 12 de novembro de 2026",
     "toc": "Índice",
-    "intro": "Esta política explica que dados a Adullam Global recolhe, porquê, com quem são partilhados e como exercer os seus direitos. Não vendemos os seus dados.",
+    "print": "Imprimir ou guardar em PDF",
+    "intro": "Esta política explica, sem jargão, que dados a Adullam Global recolhe, porquê, com quem os partilhamos, durante quanto tempo os guardamos e como exercer os seus direitos. Inspira-se nos princípios do RGPD e nas boas práticas internacionais de proteção de dados.",
+    "summaryTitle": "O essencial em 5 pontos",
+    "summary": [
+      "Recolhemos apenas o que serve para tratar as suas encomendas, proteger a plataforma e melhorar o serviço.",
+      "Não vendemos os seus dados.",
+      "O seu pagamento é tratado pelo nosso prestador: não vemos nem guardamos os dados do seu cartão ou Mobile Money.",
+      "As ferramentas publicitárias (Meta) só são ativadas com o seu consentimento.",
+      "Pode pedir o acesso, a correção ou a eliminação dos seus dados por e-mail: resposta num mês."
+    ],
     "sections": [
       {
-        "title": "Responsável pelo tratamento",
-        "paragraphs": [
-          "A Adullam Global, sociedade em processo de constituição nos Estados Unidos, é responsável pelo tratamento dos seus dados. Para qualquer questão ou pedido: contact@adullamarket.com."
+        "title": "Quem é responsável pelos seus dados",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "A Adullam Global, sociedade em processo de constituição nos Estados Unidos, decide porquê e como os seus dados são tratados: é a responsável pelo tratamento. Para qualquer questão ou pedido, um único contacto: contact@adullamarket.com."
+          }
         ]
       },
       {
-        "title": "Dados recolhidos",
-        "items": [
-          "Conta: nome, endereço de e-mail, palavra-passe (nunca guardada em texto simples), idioma e país.",
-          "Encomenda e entrega: produtos encomendados, morada de entrega, telefone do destinatário, histórico de encomendas.",
-          "Pagamento: estado e montante do pagamento. Os dados do cartão e do Mobile Money são introduzidos junto do nosso prestador de pagamento, não junto de nós.",
-          "Pedidos de sourcing e mensagens: o conteúdo que nos envia, incluindo fotografias e ficheiros anexos.",
-          "Assistente Adu e pesquisa por foto: as suas mensagens e as imagens que envia.",
-          "Carrinho e favoritos.",
-          "Dados técnicos: tipo de dispositivo e de navegador, páginas consultadas, identificador de sessão, endereço IP."
+        "title": "Os dados que recolhemos",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "O quadro abaixo indica, para cada tipo de dados, para que serve, com que fundamento jurídico e durante quanto tempo o guardamos."
+          },
+          {
+            "t": "tb",
+            "h": [
+              "Dados",
+              "Porquê",
+              "Fundamento",
+              "Prazo de conservação"
+            ],
+            "r": [
+              [
+                "Conta: nome, e-mail, palavra-passe (nunca em claro), idioma, país, telefone (facultativo)",
+                "Criar e gerir a sua conta, escrever-lhe sobre as suas encomendas",
+                "Execução do contrato",
+                "Enquanto a conta estiver ativa"
+              ],
+              [
+                "Encomenda e entrega: produtos, morada, nome e telefone do destinatário, histórico",
+                "Tratar a encomenda, entregar, assegurar o serviço pós-venda",
+                "Execução do contrato",
+                "Duração da relação, depois o prazo legal de conservação dos documentos contabilísticos"
+              ],
+              [
+                "Pagamento: estado, montante, referência da transação (nunca número de cartão nem código Mobile Money)",
+                "Cobrar, reembolsar, combater a fraude",
+                "Execução do contrato, interesse legítimo",
+                "Prazo legal contabilístico"
+              ],
+              [
+                "Pedidos de sourcing e mensagens: conteúdo, ficheiros anexos, e-mail",
+                "Responder aos seus pedidos e preparar uma proposta",
+                "Diligências pré-contratuais, contrato",
+                "O tempo de tratar o pedido e eventuais litígios"
+              ],
+              [
+                "Assistente Adu e pesquisa por foto: mensagens, imagens, identificador de conversa",
+                "Responder-lhe e encontrar produtos semelhantes",
+                "Execução do serviço, interesse legítimo",
+                "O tempo necessário ao serviço; eliminação a pedido"
+              ],
+              [
+                "Carrinho, favoritos, navegação: produtos consultados ou adicionados, identificador de sessão",
+                "Guardar o seu carrinho, propor-lhe produtos adequados",
+                "Contrato, interesse legítimo",
+                "Carrinho: enquanto a conta estiver ativa. Identificador de sessão: 24 horas no máximo"
+              ],
+              [
+                "Dados técnicos: dispositivo, navegador, endereço IP, registos de erros",
+                "Proteger a plataforma, prevenir a fraude, corrigir erros",
+                "Interesse legítimo",
+                "Limitado às necessidades de segurança"
+              ],
+              [
+                "Audiência e publicidade: eventos (página vista, adição ao carrinho, início de pagamento, compra), identificadores Meta",
+                "Medir a eficácia dos nossos anúncios no Facebook e no Instagram",
+                "O seu consentimento",
+                "Segundo a Meta (cookie _fbp: até 3 meses)"
+              ]
+            ]
+          }
         ]
       },
       {
-        "title": "Porque usamos estes dados",
-        "paragraphs": [
-          "Base jurídica: execução do contrato para as encomendas, o nosso interesse legítimo na segurança e na melhoria do serviço, e o seu consentimento quando a lei o exige."
-        ],
-        "items": [
-          "Executar a sua encomenda: pagamento, expedição, entrega.",
-          "Gerir a sua conta e enviar-lhe os e-mails ligados às suas encomendas.",
-          "Responder aos seus pedidos de sourcing e de apoio ao cliente.",
-          "Propor-lhe produtos adequados através dos nossos sistemas de recomendação.",
-          "Medir a audiência do site e a eficácia da nossa publicidade.",
-          "Prevenir a fraude e proteger a plataforma."
+        "title": "Inteligência artificial: o que acontece às suas mensagens e imagens",
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "Assistente Adu: as suas mensagens são enviadas a um prestador de tratamento de linguagem para gerar a resposta. O Adu pode enganar-se e não deve receber palavras-passe nem dados de pagamento.",
+              "Pesquisa por foto: a imagem que envia é analisada para encontrar produtos semelhantes no catálogo.",
+              "Tradução: os textos dos produtos podem ser traduzidos automaticamente por um prestador de tradução.",
+              "Recomendações: usamos os produtos que consulta ou adiciona ao carrinho para ordenar as sugestões."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "Nenhuma decisão com efeito jurídico sobre si (recusa de encomenda, suspensão de conta) é tomada apenas pelo assistente. Essas decisões são tomadas pela Adullam."
+          }
         ]
       },
       {
         "title": "Com quem partilhamos os seus dados",
-        "paragraphs": [
-          "Só partilhamos dados quando é necessário:"
-        ],
-        "items": [
-          "Pagamento: o nosso prestador de pagamento (GeniusPay) trata o seu pagamento por Mobile Money ou cartão.",
-          "Entrega: os transitários e transportadores recebem o nome, a morada e o telefone do destinatário.",
-          "E-mail: a Resend envia os nossos e-mails de confirmação e de serviço.",
-          "Alojamento: a Hetzner (Alemanha) aloja os nossos servidores, a Vercel (Estados Unidos) aloja o site.",
-          "Publicidade e audiência: Meta (Meta Pixel) e Vercel Analytics, ver a página [Cookies](/cookies).",
-          "Inteligência artificial: prestadores de tratamento de linguagem e de imagem ajudam-nos no assistente Adu, na tradução e na pesquisa por foto."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Não vendemos os seus dados. Partilhamo-los apenas com os prestadores de que precisamos para fornecer o serviço:"
+          },
+          {
+            "t": "tb",
+            "h": [
+              "Destinatário",
+              "Função",
+              "Dados em causa"
+            ],
+            "r": [
+              [
+                "GeniusPay",
+                "Pagamento Mobile Money e cartão",
+                "Montante, referência da encomenda, dados necessários ao pagamento"
+              ],
+              [
+                "Transitários e transportadores",
+                "Transporte e entrega",
+                "Nome, morada e telefone do destinatário, conteúdo do volume"
+              ],
+              [
+                "Resend",
+                "Envio dos nossos e-mails de confirmação e de serviço",
+                "Endereço de e-mail e conteúdo dos e-mails"
+              ],
+              [
+                "Hetzner Online GmbH (Alemanha)",
+                "Alojamento dos nossos servidores e da base de dados",
+                "Conjunto dos dados do serviço"
+              ],
+              [
+                "Vercel Inc. (Estados Unidos)",
+                "Alojamento do site, medição de audiência agregada",
+                "Dados técnicos de navegação"
+              ],
+              [
+                "Sentry",
+                "Monitorização de erros do site",
+                "Dados técnicos, registos de erros"
+              ],
+              [
+                "Meta Platforms",
+                "Medição publicitária (Meta Pixel), só com o seu consentimento",
+                "Eventos de navegação e de compra, identificadores Meta"
+              ],
+              [
+                "Prestadores de inteligência artificial e de tradução",
+                "Funcionamento do Adu, da pesquisa por foto e da tradução",
+                "Mensagens, imagens ou textos a tratar"
+              ]
+            ]
+          },
+          {
+            "t": "p",
+            "x": "Podemos também comunicar dados se uma lei ou uma autoridade competente o exigir."
+          }
         ]
       },
       {
-        "title": "Transferências internacionais",
-        "paragraphs": [
-          "Os seus dados podem ser tratados fora do seu país, nomeadamente na Alemanha e nos Estados Unidos. Escolhemos prestadores que aplicam medidas de segurança adequadas."
+        "title": "Transferências para fora do seu país",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Os seus dados podem ser tratados fora do seu país, nomeadamente na Alemanha e nos Estados Unidos, bem como nos países onde se situam os nossos prestadores. Escolhemos prestadores que se comprometem a proteger os dados e limitamos os dados transmitidos ao necessário."
+          }
         ]
       },
       {
-        "title": "Prazo de conservação",
-        "paragraphs": [
-          "Conservamos os seus dados enquanto a sua conta estiver ativa e, depois, o tempo necessário para cumprir as nossas obrigações legais e contabilísticas e tratar eventuais litígios. Pode pedir a eliminação da sua conta a qualquer momento."
+        "title": "Os seus direitos e como os exercer",
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "Aceder aos seus dados e receber uma cópia.",
+              "Corrigir dados inexatos.",
+              "Pedir a eliminação dos seus dados ou da sua conta.",
+              "Pedir a limitação de um tratamento ou opor-se-lhe.",
+              "Recuperar os seus dados num formato corrente (portabilidade).",
+              "Retirar o seu consentimento a qualquer momento (por exemplo para a publicidade)."
+            ]
+          },
+          {
+            "t": "ol",
+            "i": [
+              "Escreva para contact@adullamarket.com a partir do e-mail da sua conta.",
+              "Se tivermos dúvidas sobre a sua identidade, podemos pedir-lhe uma confirmação.",
+              "Respondemos no prazo máximo de um mês."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "Pode também recorrer à autoridade de proteção de dados do seu país de residência. Alguns dados devem ser conservados para cumprir uma obrigação legal (por exemplo contabilística): indicamo-lo então."
+          }
         ]
       },
       {
         "title": "Segurança",
-        "paragraphs": [
-          "Ligações cifradas (HTTPS), palavras-passe nunca guardadas em texto simples, acesso aos dados limitado a quem deles precisa. Nenhum sistema é infalível: em caso de violação de dados que o afete, informamo-lo nos termos da lei aplicável."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "As trocas com o site são cifradas (HTTPS), as palavras-passe nunca são guardadas em claro e o acesso aos dados está limitado a quem deles precisa. Nenhum sistema é infalível: se uma violação de dados o afetar, informamo-lo nas condições previstas pela lei aplicável."
+          }
         ]
       },
       {
-        "title": "Os seus direitos",
-        "paragraphs": [
-          "Pode pedir o acesso, a retificação, a eliminação ou a exportação dos seus dados, opor-se a certos tratamentos e retirar o seu consentimento. Escreva para contact@adullamarket.com a partir do e-mail da sua conta. Respondemos no prazo máximo de um mês."
-        ]
-      },
-      {
-        "title": "Cookies e rastreadores",
-        "paragraphs": [
-          "A lista completa do que o site utiliza está na página [Cookies](/cookies)."
+        "title": "Cookies",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "A lista completa dos cookies e do armazenamento do navegador, com as respetivas durações, está na página [Cookies](/cookies)."
+          }
         ]
       },
       {
         "title": "Menores",
-        "paragraphs": [
-          "O serviço destina-se a pessoas maiores de idade. Não recolhemos conscientemente dados de menores."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "O serviço é reservado a pessoas maiores de idade. Não recolhemos conscientemente dados de menores. Se achar que um menor nos transmitiu dados, escreva-nos e eliminá-los-emos."
+          }
         ]
       },
       {
         "title": "Alterações",
-        "paragraphs": [
-          "Atualizamos esta política se as nossas práticas mudarem. A data da última atualização consta no topo da página."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Atualizamos esta política quando as nossas práticas mudam. A versão e a data de atualização constam no topo desta página. Em caso de alteração importante, informamo-lo no site."
+          }
         ]
       }
     ]
   },
   "pageMentions": {
     "title": "Menções legais",
-    "updated": "Última atualização: 11 de novembro de 2026",
+    "updated": "Versão 1.0 · Última atualização: 12 de novembro de 2026",
+    "toc": "Índice",
+    "print": "Imprimir ou guardar em PDF",
     "sections": [
       {
-        "title": "Editor",
-        "paragraphs": [
-          "Adullam Global, sociedade em processo de constituição nos Estados Unidos. O número de registo e a morada oficial serão publicados aqui assim que a constituição estiver concluída.",
-          "Site: adullamarket.com. Contacto: contact@adullamarket.com"
+        "title": "Editor do site e da aplicação",
+        "blocks": [
+          {
+            "t": "tb",
+            "h": [
+              "Informação",
+              "Detalhe"
+            ],
+            "r": [
+              [
+                "Denominação",
+                "Adullam Global"
+              ],
+              [
+                "Estatuto",
+                "Sociedade em processo de constituição nos Estados Unidos"
+              ],
+              [
+                "Registo",
+                "Em curso. O número de registo e a morada oficial serão publicados aqui assim que estiverem disponíveis"
+              ],
+              [
+                "Site",
+                "adullamarket.com"
+              ],
+              [
+                "Contacto",
+                "contact@adullamarket.com (resposta em 24 horas úteis)"
+              ]
+            ]
+          }
         ]
       },
       {
         "title": "Alojamento",
-        "items": [
-          "Site: Vercel Inc., Estados Unidos.",
-          "Servidores e base de dados: Hetzner Online GmbH, Alemanha."
+        "blocks": [
+          {
+            "t": "tb",
+            "h": [
+              "Serviço",
+              "Anfitrião"
+            ],
+            "r": [
+              [
+                "Site",
+                "Vercel Inc., Estados Unidos"
+              ],
+              [
+                "Servidores e base de dados",
+                "Hetzner Online GmbH, Alemanha"
+              ]
+            ]
+          }
         ]
       },
       {
         "title": "Propriedade intelectual",
-        "paragraphs": [
-          "O nome Adullam, o logótipo, os textos, a interface e o código do site pertencem à Adullam Global. As fotografias e descrições dos produtos pertencem aos respetivos fornecedores. Qualquer reprodução sem autorização escrita é proibida."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "O nome Adullam, o logótipo, os textos, a interface e o código do site e da aplicação pertencem à Adullam Global. As fotografias e descrições dos produtos pertencem aos respetivos fornecedores. Qualquer reprodução sem autorização escrita é proibida."
+          }
         ]
       },
       {
         "title": "Responsabilidade",
-        "paragraphs": [
-          "Zelamos pela exatidão das informações publicadas, mas podem subsistir erros. Não controlamos os sites de terceiros para os quais o site possa remeter."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Zelamos pela exatidão das informações publicadas, mas podem ocorrer erros ou interrupções. Não controlamos os sites de terceiros para os quais o site possa remeter. As regras próprias das compras constam das [CGV](/cgv)."
+          }
+        ]
+      },
+      {
+        "title": "Denunciar um conteúdo ilícito",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Para denunciar um conteúdo que considere ilícito ou uma violação dos seus direitos, escreva para contact@adullamarket.com, assunto «Denúncia», indicando o endereço da página em causa e o motivo. Analisamos cada denúncia."
+          }
         ]
       },
       {
         "title": "Dados pessoais e cookies",
-        "paragraphs": [
-          "Veja a [política de privacidade](/confidentialite) e a página [Cookies](/cookies)."
-        ]
-      },
-      {
-        "title": "Contacto",
-        "paragraphs": [
-          "Para qualquer pedido, escreva para contact@adullamarket.com. Respondemos em 24 horas úteis."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Veja a [política de privacidade](/confidentialite) e a página [Cookies](/cookies)."
+          }
         ]
       }
     ]
@@ -1164,113 +1532,237 @@
     "intro": "Informações verificáveis sobre a Adullam para jornalistas, analistas e parceiros.",
     "sections": [
       {
-        "title": "Em resumo",
-        "items": [
-          "Adullamarket: marketplace que liga compradores de África a fabricantes na China, na Turquia, no Dubai e nos Estados Unidos.",
-          "Pagamento por Mobile Money e cartão bancário, em 42 moedas.",
-          "Garantia de reembolso se a encomenda não for entregue.",
-          "Site e aplicação em francês, inglês, português e árabe.",
-          "Editor: Adullam Global, sociedade em processo de constituição nos Estados Unidos."
-        ]
-      },
-      {
-        "title": "Mercados",
-        "paragraphs": [
-          "Prioridade aos Camarões, ao Mali e ao Burquina Faso."
+        "title": "Ficha de identidade",
+        "blocks": [
+          {
+            "t": "tb",
+            "h": [
+              "Informação",
+              "Detalhe"
+            ],
+            "r": [
+              [
+                "Editor",
+                "Adullam Global, sociedade em processo de constituição nos Estados Unidos"
+              ],
+              [
+                "Atividade",
+                "Marketplace que liga compradores de África a fabricantes na China, na Turquia, no Dubai e nos Estados Unidos"
+              ],
+              [
+                "Mercados prioritários",
+                "Camarões, Mali, Burquina Faso"
+              ],
+              [
+                "Pagamento",
+                "Mobile Money e cartão bancário, em 42 moedas"
+              ],
+              [
+                "Transporte",
+                "Marítimo, aéreo, expresso, com prazos apresentados antes do pagamento"
+              ],
+              [
+                "Garantia",
+                "Reembolso integral se a encomenda não for entregue dentro do prazo máximo"
+              ],
+              [
+                "Idiomas",
+                "Francês, inglês, português, árabe"
+              ],
+              [
+                "Plataformas",
+                "Site e aplicação Android (em beta)"
+              ]
+            ]
+          }
         ]
       },
       {
         "title": "Contacto para media",
-        "paragraphs": [
-          "Escreva para contact@adullamarket.com com o assunto \"Imprensa\". Indique o seu órgão de comunicação e o seu prazo: respondemos em 24 horas úteis."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Escreva para contact@adullamarket.com com o assunto «Imprensa». Indique o seu órgão de comunicação e o seu prazo: respondemos em 24 horas úteis."
+          }
         ]
       },
       {
         "title": "Comunicados e artigos",
-        "paragraphs": [
-          "Não há nenhum comunicado publicado de momento. Aparecerão aqui."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Não há nenhum comunicado publicado de momento. Aparecerão aqui."
+          }
         ]
       }
     ]
   },
   "pageRetours": {
     "title": "Devoluções e reembolsos",
-    "intro": "Eis, com clareza, o que está coberto, o que não está e como pedir um reembolso.",
+    "updated": "Versão 1.0 · Última atualização: 12 de novembro de 2026",
+    "print": "Imprimir ou guardar em PDF",
+    "intro": "Esta página resume as nossas regras de reembolso. O texto completo está nas [condições gerais de venda](/cgv).",
+    "summaryTitle": "Em resumo",
+    "summary": [
+      "Encomenda não entregue dentro do prazo máximo: reembolso integral, entrega incluída.",
+      "Produto danificado ou diferente da encomenda: comunique nos 7 dias seguintes, com fotografias.",
+      "Sem cancelamento após o pagamento e sem retoma por simples mudança de ideias."
+    ],
     "sections": [
       {
-        "title": "O que está coberto",
-        "paragraphs": [
-          "Reembolso integral do preço dos produtos e dos custos de entrega se a sua encomenda não for enviada ou não chegar ao destino."
+        "title": "Quando é reembolsado",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "É reembolsado na totalidade (preço dos produtos e custos de entrega) se a encomenda não for expedida ou não chegar ao destino dentro do prazo máximo:"
+          },
+          {
+            "t": "tb",
+            "h": [
+              "Modo de transporte",
+              "Prazo máximo desde o pagamento"
+            ],
+            "r": [
+              [
+                "Marítimo",
+                "55 dias"
+              ],
+              [
+                "Aéreo",
+                "25 dias"
+              ],
+              [
+                "Expresso",
+                "15 dias"
+              ]
+            ]
+          }
         ]
       },
       {
         "title": "Como pedir um reembolso",
-        "items": [
-          "Escreva para contact@adullamarket.com com o número da encomenda, assunto \"Reembolso\".",
-          "Verificamos a situação com o transportador e o fornecedor e respondemos em 24 horas úteis.",
-          "Se a não entrega for confirmada, o reembolso é feito no meio de pagamento utilizado, em 14 dias."
+        "blocks": [
+          {
+            "t": "ol",
+            "i": [
+              "Escreva para contact@adullamarket.com com o número da encomenda, assunto «Reembolso».",
+              "Verificamos com o transportador e o fornecedor e respondemos em 24 horas úteis.",
+              "Se a não entrega for confirmada, o reembolso é feito no meio de pagamento utilizado, no prazo de 14 dias."
+            ]
+          }
         ]
       },
       {
         "title": "Produto danificado ou diferente da encomenda",
-        "paragraphs": [
-          "Escreva-nos nos 7 dias seguintes à receção, com fotografias do produto e do volume. Analisamos cada caso com o fornecedor e propomos uma solução."
+        "blocks": [
+          {
+            "t": "ol",
+            "i": [
+              "Escreva-nos nos 7 dias seguintes à receção.",
+              "Junte fotografias do produto e do volume, e o número da encomenda.",
+              "Analisamos o caso com o fornecedor e propomos uma solução adequada."
+            ]
+          }
         ]
       },
       {
         "title": "O que não está coberto",
-        "items": [
-          "A mudança de ideias: os produtos são encomendados por pedido a fabricantes no estrangeiro e não são retomados.",
-          "Uma morada ou um telefone de entrega errados fornecidos pelo comprador."
-        ]
-      },
-      {
-        "title": "Ver também",
-        "paragraphs": [
-          "As [condições gerais de venda](/cgv)."
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "A mudança de ideias: os produtos são encomendados especialmente a fabricantes no estrangeiro e não são retomados.",
+              "O cancelamento de uma encomenda já paga.",
+              "Uma morada ou um telefone de entrega errados dados pelo comprador."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "Estas regras aplicam-se sem prejuízo dos direitos imperativos que a lei do seu país de residência lhe reconhece."
+          }
         ]
       }
     ]
   },
   "pageAbout": {
     "title": "Quem somos",
-    "intro": "A Adullamarket permite aos compradores de África encomendar diretamente às fábricas, sem intermediários, com pagamento local e entrega à porta.",
+    "intro": "A Adullamarket permite aos compradores de África encomendar diretamente a fabricantes, com pagamento em moeda local e entrega à porta. Tratamos de toda a cadeia: compra ao fornecedor, transporte internacional e entrega.",
     "sections": [
       {
-        "title": "O que fazemos",
-        "items": [
-          "Listamos produtos de fabricantes na China, na Turquia, no Dubai e nos Estados Unidos.",
-          "Tratamos da sua encomenda junto do fornecedor e organizamos o transporte internacional.",
-          "Paga por Mobile Money ou cartão, na sua moeda local (42 moedas).",
-          "Entregamos no seu país e acompanha a encomenda a partir da sua conta.",
-          "Para um produto que não encontra, o nosso serviço de sourcing à medida procura-o por si."
+        "title": "Como decorre uma encomenda",
+        "blocks": [
+          {
+            "t": "ol",
+            "i": [
+              "Escolhe os seus produtos e o modo de transporte (mar, ar ou expresso).",
+              "Paga por Mobile Money ou cartão bancário, na sua moeda local.",
+              "Confirmamos a encomenda junto do fornecedor em 5 dias no máximo.",
+              "O volume viaja: 45 a 50 dias por mar, 15 a 20 dias por avião, 7 a 10 dias em expresso.",
+              "Recebe um número de seguimento por e-mail logo que é expedida e acompanha a encomenda a partir da sua conta."
+            ]
+          }
         ]
       },
       {
-        "title": "Para quem",
-        "paragraphs": [
-          "Empresários, comerciantes e particulares, em primeiro lugar nos Camarões, no Mali e no Burquina Faso, e mais largamente em África. O site e a aplicação estão disponíveis em francês, inglês, português e árabe."
+        "title": "O que sabe antes de pagar",
+        "blocks": [
+          {
+            "t": "tb",
+            "h": [
+              "Informação",
+              "Onde ver"
+            ],
+            "r": [
+              [
+                "Preço final, entrega e alfândega incluídas",
+                "Carrinho e página de pagamento"
+              ],
+              [
+                "Modo de transporte e prazo estimado",
+                "Ficha do produto, carrinho e página de pagamento"
+              ],
+              [
+                "Garantia de reembolso",
+                "[Devoluções e reembolsos](/retours) e [CGV](/cgv)"
+              ],
+              [
+                "Quantidade mínima de encomenda",
+                "Ficha do produto"
+              ]
+            ]
+          }
         ]
       },
       {
-        "title": "Os nossos compromissos",
-        "items": [
-          "Preços apresentados com clareza, com os custos de entrega incluídos no pagamento.",
-          "Uma garantia de reembolso se a encomenda não for entregue.",
-          "O modo de transporte e o prazo estimado apresentados antes de pagar.",
-          "Um só contacto, contact@adullamarket.com, com resposta em 24 horas úteis."
+        "title": "As nossas ferramentas, na prática",
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "Pesquisa por foto: envia uma fotografia, analisamos a imagem e propomos produtos semelhantes do catálogo.",
+              "Adu, o assistente de compras: uma inteligência artificial que responde às suas perguntas, ajuda a comparar e a preparar a encomenda. O Adu pode enganar-se: só as informações apresentadas na ficha do produto, no carrinho e no pagamento nos vinculam.",
+              "Recomendações: usamos os produtos que consulta ou adiciona ao carrinho para lhe sugerir artigos. O detalhe dos dados utilizados está na [política de privacidade](/confidentialite).",
+              "Sourcing à medida: para um produto que não encontra, envia-nos um pedido e respondemos com uma proposta."
+            ]
+          }
         ]
       },
       {
-        "title": "A nossa tecnologia",
-        "paragraphs": [
-          "A Adullam apoia-se na pesquisa por foto, num assistente de compras (Adu) e num sistema de recomendação para o ajudar a encontrar e encomendar mais depressa."
+        "title": "Para quem e onde",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Empresários, comerciantes e particulares, em primeiro lugar nos Camarões, no Mali e no Burquina Faso, e mais largamente em África. O site e a aplicação estão disponíveis em francês, inglês, português e árabe."
+          }
         ]
       },
       {
         "title": "Adullam Global",
-        "paragraphs": [
-          "A Adullamarket é editada pela Adullam Global, sociedade em processo de constituição nos Estados Unidos. Veja as [menções legais](/mentions-legales)."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "A Adullamarket é editada pela Adullam Global, sociedade em processo de constituição nos Estados Unidos. O nosso único contacto é contact@adullamarket.com (resposta em 24 horas úteis). Veja as [menções legais](/mentions-legales)."
+          }
         ]
       }
     ]
@@ -1509,109 +2001,335 @@
   },
   "pageCgv": {
     "title": "Condições Gerais de Venda",
-    "updated": "Em vigor desde 11 de novembro de 2026",
+    "updated": "Versão 1.0 · Em vigor desde 12 de novembro de 2026",
     "toc": "Índice",
-    "intro": "As presentes condições gerais de venda (CGV) regem qualquer encomenda feita em adullamarket.com e na aplicação móvel Adullam. Ao encomendar, aceita-as.",
+    "print": "Imprimir ou guardar em PDF",
+    "intro": "Estas condições gerais de venda (CGV) fixam as regras entre a Adullam Global e si para qualquer encomenda feita em adullamarket.com ou na aplicação Adullam. Foram escritas para serem lidas: dedique alguns minutos a percorrê-las antes de encomendar.",
+    "summaryTitle": "O essencial em 5 pontos",
+    "summary": [
+      "A Adullam Global vende-lhe os produtos, compra-os ao fornecedor e organiza o transporte até si.",
+      "O total apresentado no pagamento é o preço final: produtos, entrega, direitos e taxas aduaneiras incluídos. Nada a pagar na entrega.",
+      "A encomenda é confirmada no máximo 5 dias após o pagamento e o transporte demora depois 45 a 50 dias por mar, 15 a 20 dias por avião ou 7 a 10 dias em expresso.",
+      "Se a sua encomenda não chegar dentro do prazo máximo, é reembolsado na totalidade, entrega incluída.",
+      "Uma encomenda paga não pode ser cancelada e os produtos não são retomados por simples mudança de ideias."
+    ],
     "sections": [
       {
-        "title": "Editor e estatuto jurídico",
-        "paragraphs": [
-          "O site e a aplicação são editados pela Adullam Global, sociedade em processo de constituição nos Estados Unidos. Enquanto a constituição não estiver concluída, o número de registo e a morada oficial não são publicados. Serão acrescentados a esta página e às [menções legais](/mentions-legales) assim que estiverem disponíveis.",
-          "Contacto: contact@adullamarket.com"
+        "title": "Quem somos e a quem se aplicam estas CGV",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "O site adullamarket.com (o «Site») e a aplicação móvel Adullam (a «Aplicação») são editados pela Adullam Global («Adullam», «nós»), sociedade em processo de constituição nos Estados Unidos. O «Cliente» é qualquer pessoa maior de idade que faça uma encomenda."
+          },
+          {
+            "t": "p",
+            "x": "Enquanto a constituição não estiver concluída, o número de registo e a morada oficial não são publicados. Serão acrescentados às [menções legais](/mentions-legales) assim que estiverem disponíveis. O nosso único canal de contacto é contact@adullamarket.com."
+          },
+          {
+            "t": "p",
+            "x": "Ao fazer uma encomenda, declara ter lido e aceitado estas CGV."
+          }
         ]
       },
       {
-        "title": "Objeto",
-        "paragraphs": [
-          "A Adullamarket é um marketplace que liga compradores, sobretudo em África, a fabricantes e fornecedores localizados nomeadamente na China, na Turquia, no Dubai e nos Estados Unidos. A Adullam Global trata por si da encomenda junto do fornecedor, do pagamento, do transporte internacional e da entrega."
+        "title": "O que fazemos",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "A Adullamarket lista produtos propostos por fabricantes e fornecedores localizados nomeadamente na China, na Turquia, no Dubai e nos Estados Unidos. A Adullam vende estes produtos ao Cliente, compra-os ao fornecedor e organiza o seu transporte internacional e a entrega."
+          },
+          {
+            "t": "ul",
+            "i": [
+              "Catálogo: cada ficha de produto indica o preço, as características, a quantidade mínima de encomenda (MOQ) quando existe e as variantes disponíveis.",
+              "Sourcing à medida: para um produto que não esteja no catálogo, envia um pedido e respondemos com uma proposta. O contrato só é celebrado quando aceita a proposta e a paga.",
+              "Ferramentas de ajuda: o assistente Adu, a pesquisa por foto e as recomendações são descritos no artigo 13."
+            ]
+          }
         ]
       },
       {
-        "title": "Produtos e pedidos de sourcing",
-        "paragraphs": [
-          "Cada ficha de produto indica o preço, as características, a quantidade mínima de encomenda quando existe e as variantes disponíveis. As fotografias são indicativas. Se um produto deixar de estar disponível depois da sua encomenda, avisamo-lo e reembolsamo-lo integralmente (artigo 8).",
-          "Para um produto que não esteja no catálogo, pode enviar um pedido de sourcing. Respondemos com uma proposta: a encomenda só é firme depois de a proposta ser aceite e paga."
+        "title": "A sua conta",
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "Deve ser maior de idade e fornecer informações exatas (nome, e-mail, morada de entrega, telefone do destinatário).",
+              "Protege a sua palavra-passe. Qualquer ação feita a partir da sua conta é considerada sua, salvo se nos comunicar sem demora um acesso não autorizado.",
+              "Podemos suspender ou encerrar uma conta em caso de fraude, uso abusivo ou violação destas CGV."
+            ]
+          }
         ]
       },
       {
-        "title": "Preços e moedas",
-        "paragraphs": [
-          "Os preços são fixados em dólares americanos (USD). São apresentados na sua moeda local a título indicativo, segundo uma taxa de conversão mantida pela Adullam. O montante exato a pagar, em moeda local, é mostrado antes da confirmação do pagamento. Os preços podem mudar: o preço aplicável é o apresentado no momento da encomenda."
+        "title": "Produtos e disponibilidade",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "As fotografias e descrições provêm dos fornecedores e são indicativas: são possíveis ligeiras diferenças de cor, dimensão ou acabamento. As quantidades mínimas e as variantes apresentadas aplicam-se à encomenda."
+          },
+          {
+            "t": "p",
+            "x": "A disponibilidade é verificada na confirmação da encomenda junto do fornecedor (artigo 7). Se um produto acabar por não estar disponível, avisamo-lo e reembolsamo-lo integralmente, salvo se aceitar uma alternativa que lhe proponhamos."
+          }
         ]
       },
       {
-        "title": "Custos de entrega",
-        "paragraphs": [
-          "Os custos de entrega são calculados segundo o peso e o volume dos produtos, o modo de transporte escolhido e o país de destino. São mostrados no carrinho e no pagamento, e estão incluídos no total a pagar. Não é pedido nenhum valor adicional na entrega.",
-          "Se escolher a entrega porta a porta, é cobrada uma só vez para todo o carrinho."
+        "title": "Preços, moedas e taxas",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Os preços são fixados em dólares americanos (USD). São apresentados na sua moeda local (42 moedas) a título indicativo, segundo uma taxa de conversão mantida atualizada pela Adullam. O montante exato a pagar, na moeda de pagamento, é mostrado antes da confirmação: é esse montante que prevalece."
+          },
+          {
+            "t": "co",
+            "x": "O total apresentado no pagamento inclui o preço dos produtos, os custos de entrega, e os direitos e taxas aduaneiras. Não pedimos nenhum valor adicional na entrega.",
+            "title": "Preço final"
+          },
+          {
+            "t": "p",
+            "x": "Os encargos eventualmente cobrados pelo seu operador Mobile Money ou pelo seu banco não estão incluídos e ficam a seu cargo. Em caso de erro de preço manifesto, podemos cancelar a encomenda em causa e reembolsá-lo integralmente."
+          },
+          {
+            "t": "p",
+            "x": "Os custos de entrega são calculados segundo o peso e o volume dos produtos, o modo de transporte escolhido e o país de destino. Se escolher a entrega porta a porta, é cobrada uma só vez para todo o carrinho."
+          }
         ]
       },
       {
-        "title": "Encomenda e pagamento",
-        "paragraphs": [
-          "A encomenda é firme após a confirmação do pagamento. O pagamento faz-se por Mobile Money ou cartão bancário, através do nosso prestador de pagamento. A Adullam não guarda os dados do seu cartão nem as suas credenciais Mobile Money.",
-          "Recebe um e-mail de confirmação com o número da encomenda e, depois, um e-mail a cada mudança de estado. Podemos cancelar uma encomenda em caso de suspeita de fraude ou de erro de preço manifesto, com reembolso integral."
+        "title": "Encomendar e pagar",
+        "blocks": [
+          {
+            "t": "ol",
+            "i": [
+              "Compõe o seu carrinho, escolhe um modo de transporte e verifica o total.",
+              "Paga por Mobile Money ou cartão bancário, através do nosso prestador de pagamento (GeniusPay).",
+              "Recebe um e-mail de confirmação do pagamento com o número da encomenda.",
+              "Confirmamos depois a encomenda junto do fornecedor (artigo 7)."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "A encomenda torna-se firme logo que o pagamento é confirmado. A Adullam não vê nem guarda os dados do seu cartão nem as suas credenciais Mobile Money."
+          },
+          {
+            "t": "p",
+            "x": "Podemos recusar ou cancelar uma encomenda, com reembolso integral, em caso de suspeita de fraude, de produto proibido ou sujeito a autorização de importação no país de destino, ou de morada que não servimos."
+          }
         ]
       },
       {
-        "title": "Modos de transporte e prazos",
-        "paragraphs": [
-          "São propostos três modos de transporte consoante o produto e o país: marítimo, aéreo e expresso. O prazo estimado de cada modo é apresentado antes do pagamento. São estimativas: contam a partir da confirmação do pagamento e podem ser prolongadas por controlos aduaneiros, pelo clima ou por acontecimentos alheios à nossa vontade."
-        ],
-        "items": [
-          "Marítimo: o mais barato, o mais demorado, adequado a volumes pesados ou volumosos.",
-          "Aéreo: mais rápido, mais caro.",
-          "Expresso: o mais rápido, para pequenos volumes."
+        "title": "Confirmação, expedição e prazos",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Após o pagamento, a Adullam confirma a encomenda junto do fornecedor no prazo máximo de 5 dias. O prazo de transporte conta a partir dessa confirmação."
+          },
+          {
+            "t": "tb",
+            "h": [
+              "Modo de transporte",
+              "Prazo de transporte",
+              "Posicionamento"
+            ],
+            "r": [
+              [
+                "Marítimo",
+                "45 a 50 dias",
+                "Económico"
+              ],
+              [
+                "Aéreo",
+                "15 a 20 dias",
+                "Rápido"
+              ],
+              [
+                "Expresso",
+                "7 a 10 dias",
+                "Muito rápido"
+              ]
+            ]
+          },
+          {
+            "t": "p",
+            "x": "São estimativas. Podem prolongar-se por causa de controlos aduaneiros, do clima, de greves ou de qualquer acontecimento alheio à nossa vontade. O prazo estimado é mostrado antes do pagamento."
+          },
+          {
+            "t": "p",
+            "x": "Os produtos de uma mesma encomenda são agrupados por modo de transporte. Uma encomenda pode assim dar origem a vários volumes, entregues em datas diferentes consoante o modo. Os custos de entrega apresentados no pagamento cobrem toda a encomenda."
+          },
+          {
+            "t": "p",
+            "x": "Recebe um número de seguimento por e-mail logo que a encomenda é expedida e acompanha-a a partir da sua conta."
+          }
         ]
       },
       {
-        "title": "Garantia de reembolso",
-        "paragraphs": [
-          "É reembolsado na totalidade se a sua encomenda não for enviada ou não chegar ao destino."
-        ],
-        "items": [
-          "Uma encomenda é considerada não entregue se não tiver chegado no fim do prazo máximo indicado no pagamento, ou se já não puder ser enviada.",
-          "Para pedir o reembolso, escreva para contact@adullamarket.com com o número da encomenda.",
-          "O reembolso é feito no meio de pagamento utilizado, no prazo de 14 dias após a confirmação da não entrega.",
-          "A garantia cobre o preço dos produtos e os custos de entrega pagos."
+        "title": "Entrega e receção",
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "Deve indicar uma morada de entrega e um telefone do destinatário exatos. Um volume devolvido por informação errada pode originar custos de reenvio.",
+              "Na receção, verifique o estado do volume. Comunique qualquer anomalia (volume danificado, produto em falta ou diferente) nos 7 dias seguintes, com fotografias e o número da encomenda.",
+              "Até à entrega, a perda do volume está coberta pela garantia de reembolso do artigo 9."
+            ]
+          }
         ]
       },
       {
-        "title": "Devoluções e mudança de ideias",
-        "paragraphs": [
-          "Os produtos são encomendados por pedido a fabricantes no estrangeiro, pelo que as devoluções por simples mudança de ideias não são aceites. Se receber um produto danificado ou diferente da encomenda, escreva-nos nos 7 dias seguintes à receção, com fotografias e o número da encomenda: analisamos cada caso com o fornecedor. Veja também a página [Devoluções e reembolsos](/retours)."
+        "title": "Garantia de reembolso em caso de não entrega",
+        "blocks": [
+          {
+            "t": "co",
+            "x": "Se a sua encomenda não for expedida ou não chegar ao destino dentro do prazo máximo, é reembolsado na totalidade: preço dos produtos e custos de entrega.",
+            "title": "O nosso compromisso"
+          },
+          {
+            "t": "p",
+            "x": "O prazo máximo conta-se a partir da data do pagamento: 5 dias de confirmação, mais o prazo máximo de transporte do modo escolhido."
+          },
+          {
+            "t": "tb",
+            "h": [
+              "Modo de transporte",
+              "Prazo máximo desde o pagamento"
+            ],
+            "r": [
+              [
+                "Marítimo",
+                "55 dias"
+              ],
+              [
+                "Aéreo",
+                "25 dias"
+              ],
+              [
+                "Expresso",
+                "15 dias"
+              ]
+            ]
+          },
+          {
+            "t": "ol",
+            "i": [
+              "Escreva para contact@adullamarket.com com o número da encomenda, assunto «Reembolso».",
+              "Verificamos a situação com o transportador e o fornecedor e respondemos em 24 horas úteis.",
+              "Se a não entrega for confirmada, reembolsamo-lo no meio de pagamento utilizado, no prazo de 14 dias. Os prazos do seu banco ou operador podem acrescer."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "A garantia não se aplica se o atraso ou a não entrega resultar de informação errada dada pelo Cliente (morada, telefone) ou da recusa em receber o volume."
+          }
         ]
       },
       {
-        "title": "Receção da encomenda",
-        "paragraphs": [
-          "Verifique o estado do volume na receção e comunique qualquer anomalia nos 7 dias seguintes. Deve fornecer uma morada de entrega e um número de telefone do destinatário exatos: um volume devolvido por informações erradas pode originar custos de reenvio."
+        "title": "Cancelamento, devoluções e volume danificado",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Os produtos são encomendados especialmente a fabricantes no estrangeiro logo que a encomenda é confirmada. É por isso que uma encomenda paga não pode ser cancelada pelo Cliente e que os produtos não são retomados nem trocados por simples mudança de ideias. Mantêm-se aplicáveis a garantia do artigo 9 e os casos em que o erro é nosso."
+          },
+          {
+            "t": "p",
+            "x": "Se receber um produto danificado ou diferente da encomenda, escreva-nos nos 7 dias seguintes à receção com fotografias do produto e do volume. Analisamos cada caso com o fornecedor e propomos uma solução adequada."
+          },
+          {
+            "t": "p",
+            "x": "Estas regras aplicam-se sem prejuízo dos direitos imperativos que a lei do seu país de residência lhe reconhece (livre resolução, garantia legal). Quando esses direitos existem, prevalecem sobre esta cláusula."
+          }
         ]
       },
       {
         "title": "Responsabilidade",
-        "paragraphs": [
-          "A Adullam Global é responsável pela boa execução da encomenda, do pagamento à entrega. Na medida permitida pela lei, a sua responsabilidade não cobre atrasos ou danos causados por força maior, por um transportador, pelas autoridades aduaneiras ou por informações erradas fornecidas pelo comprador. Nada nestas CGV limita os direitos imperativos que a lei do seu país lhe confere."
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "A Adullam responde pela boa execução da encomenda, do pagamento à entrega.",
+              "A Adullam não é responsável por atrasos ou danos causados por força maior, por um transportador ou pelas autoridades aduaneiras fora dos casos cobertos pelo artigo 9, ou por informação errada fornecida pelo Cliente.",
+              "Cabe ao Cliente verificar que o produto encomendado pode ser legalmente importado, detido e utilizado no seu país."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "Salvo negligência grave, dolo ou direito imperativo em contrário, a responsabilidade total da Adullam perante o Cliente por uma encomenda está limitada ao montante pago por essa encomenda. A Adullam não é responsável por danos indiretos, como a perda de receitas ou de clientes em caso de revenda dos produtos."
+          }
+        ]
+      },
+      {
+        "title": "Propriedade intelectual e avaliações publicadas",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "O nome Adullam, o logótipo, os textos, a interface e o código do Site e da Aplicação pertencem à Adullam Global. Dispõe de um direito de uso pessoal: qualquer extração massiva de dados, cópia ou reutilização sem autorização escrita é proibida."
+          },
+          {
+            "t": "p",
+            "x": "Se publicar uma avaliação ou outro conteúdo, garante que é lícito e que lhe pertence. Concede-nos o direito não exclusivo de o apresentar no Site e na Aplicação. Podemos retirar qualquer conteúdo injurioso, enganoso ou ilícito."
+          }
+        ]
+      },
+      {
+        "title": "Assistente Adu, pesquisa por foto e recomendações",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "O Adu é um assistente de compras baseado em inteligência artificial. Ajuda-o a pesquisar, comparar e preparar uma encomenda. Pode enganar-se."
+          },
+          {
+            "t": "ul",
+            "i": [
+              "Só as informações apresentadas na ficha do produto, no carrinho e no pagamento vinculam a Adullam. As respostas do Adu não são nem uma oferta nem um aconselhamento jurídico, aduaneiro ou financeiro.",
+              "Nunca escreva palavra-passe nem dados de pagamento no chat.",
+              "A pesquisa por foto analisa a imagem que envia para propor produtos semelhantes. Os resultados são indicativos.",
+              "As recomendações baseiam-se nos produtos que consulta ou adiciona ao carrinho."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "O tratamento destes dados está detalhado na [política de privacidade](/confidentialite)."
+          }
         ]
       },
       {
         "title": "Dados pessoais",
-        "paragraphs": [
-          "Os seus dados são tratados de acordo com a nossa [política de privacidade](/confidentialite)."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Tratamos os seus dados em conformidade com a nossa [política de privacidade](/confidentialite) e com a nossa página [Cookies](/cookies). Para exercer os seus direitos, escreva para contact@adullamarket.com."
+          }
         ]
       },
       {
-        "title": "Lei aplicável e litígios",
-        "paragraphs": [
-          "Em caso de problema, contacte-nos primeiro em contact@adullamarket.com: procuramos uma solução amigável. Na sua falta, as presentes CGV são regidas pela lei do estado norte-americano em que a Adullam Global está constituída, sem privar o consumidor da proteção imperativa da lei do seu país de residência. Esta cláusula será precisada no fim da constituição."
+        "title": "Litígios, lei aplicável e língua",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Em caso de problema, escreva-nos primeiro para contact@adullamarket.com: procuramos uma solução amigável. Na sua falta, estas CGV são regidas pela lei do estado norte-americano em que a Adullam Global está constituída, sem o privar da proteção imperativa da lei do seu país de residência. Os tribunais competentes são determinados pela lei aplicável. Esta cláusula será precisada no fim da constituição."
+          },
+          {
+            "t": "p",
+            "x": "O Site e a Aplicação estão traduzidos em várias línguas. Em caso de divergência, prevalece a versão francesa."
+          }
         ]
       },
       {
-        "title": "Alteração das CGV",
-        "paragraphs": [
-          "Podemos alterar estas CGV. A versão aplicável a uma encomenda é a que estiver em vigor no dia em que é feita. A data de atualização consta no topo da página."
+        "title": "Alteração e validade",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Podemos alterar estas CGV. A versão aplicável a uma encomenda é a que estiver em vigor no dia em que é feita. A versão e a data constam no topo desta página. Se uma cláusula for considerada inválida, as restantes continuam aplicáveis."
+          }
         ]
       }
     ]
+  },
+  "consent": {
+    "text": "Usamos cookies essenciais para fazer o site funcionar. Com o seu consentimento, ativamos também o Meta Pixel para medir os nossos anúncios.",
+    "accept": "Aceitar",
+    "refuse": "Recusar",
+    "more": "Saber mais"
   }
 }

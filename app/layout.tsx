@@ -10,6 +10,7 @@ import { AuthProvider } from "@/lib/admin/auth-context"
 import { Toaster } from "react-hot-toast"
 import * as Sentry from "@sentry/nextjs"
 import SplashScreen from "@/components/SplashScreen"
+import ConsentBanner from "@/components/consent-banner"
 import { ChatbotProvider } from "@/components/chatbot-provider"
 // AJOUT REFONTE — thème clair/sombre/système (présentation uniquement)
 import { ThemeProvider, themeNoFlashScript } from "@/components/theme-provider"
@@ -123,30 +124,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <meta name="theme-color" content="#0A0A0A" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
 
-        {/* Meta Pixel */}
-        <Script id="meta-pixel" strategy="afterInteractive">
-          {`
-            !function(f,b,e,v,n,t,s)
-            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-            n.queue=[];t=b.createElement(e);t.async=!0;
-            t.src=v;s=b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t,s)}(window, document,'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '${process.env.NEXT_PUBLIC_META_PIXEL_ID}');
-            fbq('track', 'PageView');
-          `}
-        </Script>
-        <noscript>
-          <img
-            height={1}
-            width={1}
-            style={{ display: "none" }}
-            src={`https://www.facebook.com/tr?id=${process.env.NEXT_PUBLIC_META_PIXEL_ID}&ev=PageView&noscript=1`}
-            alt=""
-          />
-        </noscript>
+        {/* Meta Pixel : la bibliotheque n'est chargee qu'apres accord (components/consent-banner.tsx). Ce stub evite les erreurs fbq() avant l'accord. */}
+          <Script id="fbq-stub" strategy="afterInteractive">
+            {`!function(f){if(f.fbq)return;var n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[]}(window);`}
+          </Script>
       </head>
       {/* bg-white text-gray-900 -> tokens, indispensable pour le mode sombre */}
       <body className="antialiased bg-background text-foreground font-sans">
@@ -199,6 +180,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               </AuthProvider>
             </GlobalErrorBoundary>
             <Analytics />
+            <ConsentBanner />
           </div>
         </ThemeProvider>
         </NextIntlClientProvider>

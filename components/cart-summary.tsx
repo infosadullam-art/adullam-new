@@ -111,7 +111,7 @@ export function CartSummary() {
               strokeLinecap="round"
             />
           </svg>
-          <span>Retour gratuit sous 14 jours</span>
+          <span>Remboursement garanti si non livré</span>
         </div>
       </div>
     </div>

@@ -942,7 +942,7 @@
     "s4": "4. Confirm your order and proceed to payment",
     "q2": "What are the delivery methods?",
     "seaName": "Sea (ship)",
-    "seaInfo": " : 35-50 days - Economical",
+    "seaInfo": " : 45-50 days - Economical",
     "airName": "Air (plane)",
     "airInfo": " : 15-20 days - Fast",
     "expressName": "Express",
@@ -958,203 +958,571 @@
     "sections": [
       {
         "title": "Areas we are interested in",
-        "items": [
-          "Software development, web and mobile.",
-          "Customer service and buyer relations.",
-          "Logistics and export coordination.",
-          "Sourcing and supplier relations."
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "Software development, web and mobile.",
+              "Customer service and buyer relations.",
+              "Logistics and export coordination.",
+              "Sourcing and supplier relations."
+            ]
+          }
         ]
       },
       {
-        "title": "Unsolicited application",
-        "paragraphs": [
-          "Send your CV and a few lines about your background to contact@adullamarket.com, with the subject \"Application\" and the area you are interested in. We review every application and reply if your profile matches a need."
+        "title": "Send an unsolicited application",
+        "blocks": [
+          {
+            "t": "ol",
+            "i": [
+              "Write to contact@adullamarket.com with the subject \"Application\" and the area you are interested in.",
+              "Attach your CV and a few lines about your background.",
+              "We review every application and reply if your profile matches a need."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Your application data",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Your CV and messages are used only to review your application. You can ask for their deletion at any time at the same address. See the [privacy policy](/confidentialite)."
+          }
         ]
       }
     ]
   },
   "pageCookies": {
-    "title": "Cookies and trackers",
-    "updated": "Last updated: 11 November 2026",
+    "title": "Cookies and browser storage",
+    "updated": "Version 1.0 · Last updated: 12 November 2026",
     "toc": "Contents",
-    "intro": "A cookie is a small file saved on your device. We also use the browser's local storage, which plays an equivalent role. Here is everything the site uses.",
+    "print": "Print or save as PDF",
+    "intro": "A cookie is a small file saved on your device. We also use the browser's local storage, which plays an equivalent role. This page lists everything the site uses, with its duration and purpose.",
+    "summaryTitle": "The essentials in 3 points",
+    "summary": [
+      "Essential items (login, cart, language) are needed for the site to work and do not require your consent.",
+      "The Meta Pixel (advertising) loads only with your consent.",
+      "You can change your mind at any time from this page."
+    ],
     "sections": [
       {
         "title": "Essential to operation",
-        "items": [
-          "Login: authentication token that keeps your session open.",
-          "Cart and delivery mode: kept on your device.",
-          "Language and country: remember your display and currency choice.",
-          "Light or dark theme.",
-          "Session identifier (24 hours at most): links your visits for the cart, recommendations and the Adu assistant."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Without them, the site cannot work properly. They do not require consent."
+          },
+          {
+            "t": "tb",
+            "h": [
+              "Name",
+              "Type",
+              "Duration",
+              "Purpose"
+            ],
+            "r": [
+              [
+                "adullam_token",
+                "Local storage",
+                "Until logout",
+                "Keep your session open"
+              ],
+              [
+                "Login session cookie",
+                "Cookie",
+                "Length of the login session",
+                "Renew the session without retyping the password"
+              ],
+              [
+                "cart, shippingMode",
+                "Local storage",
+                "Until deleted",
+                "Keep the cart and the delivery mode"
+              ],
+              [
+                "nx_locale and country cookie",
+                "Cookie",
+                "Limited duration",
+                "Remember the display language and country, hence the currency"
+              ],
+              [
+                "sessionId",
+                "Cookie",
+                "24 hours",
+                "Link your visits for the cart and recommendations"
+              ],
+              [
+                "adullam_session_id",
+                "Local storage",
+                "Until deleted",
+                "Same, on the browser side"
+              ],
+              [
+                "Theme",
+                "Local storage",
+                "Until deleted",
+                "Remember light or dark mode"
+              ],
+              [
+                "adullam_consent",
+                "Local storage",
+                "Until deleted",
+                "Remember your choice on this page"
+              ]
+            ]
+          }
         ]
       },
       {
         "title": "Comfort of use",
-        "items": [
-          "Adu assistant: conversation identifier so you can find your discussion again.",
-          "Photo search: result kept temporarily during the session.",
-          "Start screen: remembers it was shown during the session."
+        "blocks": [
+          {
+            "t": "tb",
+            "h": [
+              "Name",
+              "Type",
+              "Duration",
+              "Purpose"
+            ],
+            "r": [
+              [
+                "chat_session_id",
+                "Local storage",
+                "Until deleted",
+                "Find your conversation with Adu again"
+              ],
+              [
+                "checkout_visited",
+                "Local storage",
+                "Until deleted",
+                "Remember that you opened the payment page (Adu assistant)"
+              ],
+              [
+                "just_clicked_product",
+                "Session storage",
+                "Tab closed",
+                "Remember the last product opened (Adu assistant)"
+              ],
+              [
+                "photoSearch",
+                "Session storage",
+                "Tab closed",
+                "Keep the result of your photo search"
+              ],
+              [
+                "splashShown",
+                "Session storage",
+                "Tab closed",
+                "Do not show the start screen again"
+              ]
+            ]
+          }
         ]
       },
       {
         "title": "Audience measurement",
-        "paragraphs": [
-          "Vercel Analytics (Vercel Inc.): page views and site performance, in aggregated form."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Vercel Analytics (Vercel Inc.) measures page views and site performance in aggregated form. It does not use cookies."
+          }
         ]
       },
       {
-        "title": "Advertising",
-        "paragraphs": [
-          "Meta Pixel (Meta Platforms): records your visits and certain actions (page view, add to cart, start of payment, purchase) to measure and improve our ads on Facebook and Instagram. This data is sent to Meta."
+        "title": "Advertising: only with your consent",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "The Meta Pixel (Meta Platforms) records your visits and certain actions (page view, add to cart, start of payment, purchase) to measure and improve our ads on Facebook and Instagram. This data is sent to Meta. It loads only after your consent."
+          },
+          {
+            "t": "tb",
+            "h": [
+              "Name",
+              "Type",
+              "Duration",
+              "Purpose"
+            ],
+            "r": [
+              [
+                "_fbp, _fbc",
+                "Cookie (Meta)",
+                "Up to 3 months",
+                "Measure the effectiveness of ads"
+              ]
+            ]
+          }
         ]
       },
       {
         "title": "Managing your choices",
-        "items": [
-          "Browser: block or delete cookies and local storage in its settings. Some features, such as login and the cart, will stop working.",
-          "Advertising: manage your preferences in the ad settings of your Facebook or Instagram account.",
-          "A question: contact@adullamarket.com."
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "Here: you can reopen the choice at any time with the button below.",
+              "In your browser: block or delete cookies and local storage. Some features, such as login and the cart, will stop working.",
+              "For advertising: manage your preferences in the ad settings of your Facebook or Instagram account."
+            ]
+          },
+          {
+            "t": "btn",
+            "x": "Change my cookie choice"
+          },
+          {
+            "t": "p",
+            "x": "A question: contact@adullamarket.com."
+          }
         ]
       }
     ]
   },
   "pageConfidentialite": {
     "title": "Privacy Policy",
-    "updated": "Last updated: 11 November 2026",
+    "updated": "Version 1.0 · Last updated: 12 November 2026",
     "toc": "Contents",
-    "intro": "This policy explains what data Adullam Global collects, why, who it is shared with and how to exercise your rights. We do not sell your data.",
+    "print": "Print or save as PDF",
+    "intro": "This policy explains, without jargon, what data Adullam Global collects, why, who we share it with, how long we keep it and how to exercise your rights. It draws on the principles of the GDPR and international data protection good practice.",
+    "summaryTitle": "The essentials in 5 points",
+    "summary": [
+      "We collect only what is needed to process your orders, secure the platform and improve the service.",
+      "We do not sell your data.",
+      "Your payment is processed by our provider: we neither see nor store your card or Mobile Money details.",
+      "Advertising tools (Meta) are activated only with your consent.",
+      "You can ask for access, correction or deletion of your data by email: reply within one month."
+    ],
     "sections": [
       {
-        "title": "Data controller",
-        "paragraphs": [
-          "Adullam Global, a company currently being incorporated in the United States, is responsible for processing your data. For any question or request: contact@adullamarket.com."
+        "title": "Who is responsible for your data",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Adullam Global, a company currently being incorporated in the United States, decides why and how your data is processed: it is the data controller. For any question or request, one contact: contact@adullamarket.com."
+          }
         ]
       },
       {
-        "title": "Data we collect",
-        "items": [
-          "Account: name, email address, password (never stored in plain text), language and country.",
-          "Orders and delivery: products ordered, delivery address, recipient phone number, order history.",
-          "Payment: payment status and amount. Card and Mobile Money details are entered with our payment provider, not with us.",
-          "Sourcing requests and messages: the content you send us, including attached photos and files.",
-          "Adu assistant and photo search: your messages and the images you send.",
-          "Cart and favourites.",
-          "Technical data: device and browser type, pages viewed, session identifier, IP address."
+        "title": "The data we collect",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "The table below says, for each type of data, what it is used for, on what legal basis and how long we keep it."
+          },
+          {
+            "t": "tb",
+            "h": [
+              "Data",
+              "Why",
+              "Basis",
+              "Retention"
+            ],
+            "r": [
+              [
+                "Account: name, email, password (never in clear), language, country, phone (optional)",
+                "Create and manage your account, write to you about your orders",
+                "Performance of the contract",
+                "While the account is active"
+              ],
+              [
+                "Order and delivery: products, address, recipient name and phone, history",
+                "Process the order, deliver, provide after-sales service",
+                "Performance of the contract",
+                "Duration of the relationship, then the legal retention period for accounting records"
+              ],
+              [
+                "Payment: status, amount, transaction reference (never a card number or Mobile Money code)",
+                "Collect payment, refund, fight fraud",
+                "Performance of the contract, legitimate interest",
+                "Legal accounting period"
+              ],
+              [
+                "Sourcing requests and messages: content, attached files, email",
+                "Answer your requests and prepare an offer",
+                "Pre-contractual steps, contract",
+                "The time needed to handle the request and any disputes"
+              ],
+              [
+                "Adu assistant and photo search: messages, images, conversation identifier",
+                "Reply to you and find similar products",
+                "Performance of the service, legitimate interest",
+                "The time needed for the service; deletion on request"
+              ],
+              [
+                "Cart, favourites, browsing: products viewed or added, session identifier",
+                "Keep your cart, suggest suitable products",
+                "Contract, legitimate interest",
+                "Cart: while the account is active. Session identifier: 24 hours at most"
+              ],
+              [
+                "Technical data: device, browser, IP address, error logs",
+                "Secure the platform, prevent fraud, fix bugs",
+                "Legitimate interest",
+                "Limited to security needs"
+              ],
+              [
+                "Audience and advertising: events (page view, add to cart, start of payment, purchase), Meta identifiers",
+                "Measure the effectiveness of our ads on Facebook and Instagram",
+                "Your consent",
+                "Per Meta (_fbp cookie: up to 3 months)"
+              ]
+            ]
+          }
         ]
       },
       {
-        "title": "Why we use this data",
-        "paragraphs": [
-          "Legal basis: performance of the contract for orders, our legitimate interest in security and improving the service, and your consent where the law requires it."
-        ],
-        "items": [
-          "Fulfil your order: payment, shipping, delivery.",
-          "Manage your account and send you emails about your orders.",
-          "Answer your sourcing requests and customer service questions.",
-          "Suggest suitable products through our recommendation systems.",
-          "Measure site audience and the effectiveness of our advertising.",
-          "Prevent fraud and secure the platform."
+        "title": "Artificial intelligence: what happens to your messages and images",
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "Adu assistant: your messages are sent to a language-processing provider to generate the reply. Adu can be wrong, and must not receive passwords or payment data.",
+              "Photo search: the image you send is analysed to find similar products in the catalogue.",
+              "Translation: product texts may be translated automatically by a translation provider.",
+              "Recommendations: we use the products you view or add to your cart to rank suggestions."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "No decision with a legal effect on you (order refusal, account suspension) is taken solely by the assistant. Such decisions are taken by Adullam."
+          }
         ]
       },
       {
         "title": "Who we share your data with",
-        "paragraphs": [
-          "We share data only when necessary:"
-        ],
-        "items": [
-          "Payment: our payment provider (GeniusPay) processes your Mobile Money or card payment.",
-          "Delivery: freight forwarders and carriers receive the recipient's name, address and phone number.",
-          "Email: Resend sends our confirmation and service emails.",
-          "Hosting: Hetzner (Germany) hosts our servers, Vercel (United States) hosts the website.",
-          "Advertising and audience: Meta (Meta Pixel) and Vercel Analytics, see the [Cookies](/cookies) page.",
-          "Artificial intelligence: language and image processing providers help us with the Adu assistant, translation and photo search."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "We do not sell your data. We share it only with the providers we need to deliver the service:"
+          },
+          {
+            "t": "tb",
+            "h": [
+              "Recipient",
+              "Role",
+              "Data concerned"
+            ],
+            "r": [
+              [
+                "GeniusPay",
+                "Mobile Money and card payment",
+                "Amount, order reference, details needed for payment"
+              ],
+              [
+                "Freight forwarders and carriers",
+                "Transport and delivery",
+                "Recipient name, address and phone, parcel contents"
+              ],
+              [
+                "Resend",
+                "Sending our confirmation and service emails",
+                "Email address and email content"
+              ],
+              [
+                "Hetzner Online GmbH (Germany)",
+                "Hosting of our servers and database",
+                "All service data"
+              ],
+              [
+                "Vercel Inc. (United States)",
+                "Website hosting, aggregated audience measurement",
+                "Technical browsing data"
+              ],
+              [
+                "Sentry",
+                "Website error monitoring",
+                "Technical data, error logs"
+              ],
+              [
+                "Meta Platforms",
+                "Advertising measurement (Meta Pixel), only with your consent",
+                "Browsing and purchase events, Meta identifiers"
+              ],
+              [
+                "Artificial intelligence and translation providers",
+                "Operation of Adu, photo search and translation",
+                "Messages, images or texts to process"
+              ]
+            ]
+          },
+          {
+            "t": "p",
+            "x": "We may also disclose data if a law or a competent authority requires it."
+          }
         ]
       },
       {
-        "title": "International transfers",
-        "paragraphs": [
-          "Your data may be processed outside your country, notably in Germany and the United States. We choose providers that apply appropriate security measures."
+        "title": "Transfers outside your country",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Your data may be processed outside your country, notably in Germany and the United States, and in the countries where our providers are located. We choose providers that commit to protecting data and we limit the data sent to what is necessary."
+          }
         ]
       },
       {
-        "title": "Retention",
-        "paragraphs": [
-          "We keep your data while your account is active, then for as long as needed to meet our legal and accounting obligations and handle any disputes. You can ask for your account to be deleted at any time."
+        "title": "Your rights and how to exercise them",
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "Access your data and receive a copy.",
+              "Correct inaccurate data.",
+              "Ask for deletion of your data or your account.",
+              "Ask for a processing to be restricted or object to it.",
+              "Get your data in a common format (portability).",
+              "Withdraw your consent at any time (for example for advertising)."
+            ]
+          },
+          {
+            "t": "ol",
+            "i": [
+              "Write to contact@adullamarket.com from your account email address.",
+              "If we have doubts about your identity, we may ask you for confirmation.",
+              "We reply within one month at most."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "You may also contact the data protection authority of your country of residence. Some data must be kept to meet a legal obligation (for example accounting): we then tell you so."
+          }
         ]
       },
       {
         "title": "Security",
-        "paragraphs": [
-          "Encrypted connections (HTTPS), passwords never stored in plain text, data access limited to those who need it. No system is infallible: if a data breach affects you, we will inform you as required by applicable law."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Exchanges with the site are encrypted (HTTPS), passwords are never stored in clear and access to data is limited to those who need it. No system is infallible: if a data breach affects you, we inform you under the conditions set by applicable law."
+          }
         ]
       },
       {
-        "title": "Your rights",
-        "paragraphs": [
-          "You can request access to, correction, deletion or export of your data, object to certain processing and withdraw your consent. Write to contact@adullamarket.com from your account email address. We reply within one month at most."
-        ]
-      },
-      {
-        "title": "Cookies and trackers",
-        "paragraphs": [
-          "The full list of what the site uses is on the [Cookies](/cookies) page."
+        "title": "Cookies",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "The full list of cookies and browser storage, with their durations, is on the [Cookies](/cookies) page."
+          }
         ]
       },
       {
         "title": "Minors",
-        "paragraphs": [
-          "The service is intended for adults. We do not knowingly collect data about minors."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "The service is reserved for adults. We do not knowingly collect data about minors. If you think a minor has sent us data, write to us and we will delete it."
+          }
         ]
       },
       {
         "title": "Changes",
-        "paragraphs": [
-          "We update this policy if our practices change. The date of the last update is shown at the top of the page."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "We update this policy when our practices change. The version and update date are shown at the top of this page. For an important change, we inform you on the site."
+          }
         ]
       }
     ]
   },
   "pageMentions": {
     "title": "Legal notice",
-    "updated": "Last updated: 11 November 2026",
+    "updated": "Version 1.0 · Last updated: 12 November 2026",
+    "toc": "Contents",
+    "print": "Print or save as PDF",
     "sections": [
       {
-        "title": "Publisher",
-        "paragraphs": [
-          "Adullam Global, a company currently being incorporated in the United States. The registration number and official address will be published here once incorporation is complete.",
-          "Website: adullamarket.com. Contact: contact@adullamarket.com"
+        "title": "Publisher of the website and the app",
+        "blocks": [
+          {
+            "t": "tb",
+            "h": [
+              "Information",
+              "Detail"
+            ],
+            "r": [
+              [
+                "Name",
+                "Adullam Global"
+              ],
+              [
+                "Status",
+                "Company currently being incorporated in the United States"
+              ],
+              [
+                "Registration",
+                "In progress. The registration number and official address will be published here as soon as they are available"
+              ],
+              [
+                "Website",
+                "adullamarket.com"
+              ],
+              [
+                "Contact",
+                "contact@adullamarket.com (reply within 24 business hours)"
+              ]
+            ]
+          }
         ]
       },
       {
         "title": "Hosting",
-        "items": [
-          "Website: Vercel Inc., United States.",
-          "Servers and database: Hetzner Online GmbH, Germany."
+        "blocks": [
+          {
+            "t": "tb",
+            "h": [
+              "Service",
+              "Host"
+            ],
+            "r": [
+              [
+                "Website",
+                "Vercel Inc., United States"
+              ],
+              [
+                "Servers and database",
+                "Hetzner Online GmbH, Germany"
+              ]
+            ]
+          }
         ]
       },
       {
         "title": "Intellectual property",
-        "paragraphs": [
-          "The Adullam name, logo, texts, interface and code of the site belong to Adullam Global. Product photos and descriptions belong to their suppliers. Any reproduction without written permission is prohibited."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "The Adullam name, logo, texts, interface and code of the website and the app belong to Adullam Global. Product photos and descriptions belong to their suppliers. Any reproduction without written permission is prohibited."
+          }
         ]
       },
       {
         "title": "Liability",
-        "paragraphs": [
-          "We take care to keep published information accurate, but errors may remain. We do not control the third-party sites the website may link to."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "We take care to keep published information accurate, but errors or interruptions may occur. We do not control the third-party sites the website may link to. The rules specific to purchases are in the [T&C](/cgv)."
+          }
+        ]
+      },
+      {
+        "title": "Reporting unlawful content",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "To report content you believe to be unlawful or an infringement of your rights, write to contact@adullamarket.com, subject \"Report\", giving the address of the page concerned and the reason. We review every report."
+          }
         ]
       },
       {
         "title": "Personal data and cookies",
-        "paragraphs": [
-          "See the [privacy policy](/confidentialite) and the [Cookies](/cookies) page."
-        ]
-      },
-      {
-        "title": "Contact",
-        "paragraphs": [
-          "For any request, write to contact@adullamarket.com. We reply within 24 business hours."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "See the [privacy policy](/confidentialite) and the [Cookies](/cookies) page."
+          }
         ]
       }
     ]
@@ -1164,113 +1532,237 @@
     "intro": "Verifiable information about Adullam for journalists, analysts and partners.",
     "sections": [
       {
-        "title": "At a glance",
-        "items": [
-          "Adullamarket: a marketplace connecting buyers in Africa with manufacturers in China, Turkey, Dubai and the United States.",
-          "Payment by Mobile Money and bank card, in 42 currencies.",
-          "Refund guarantee if the order is not delivered.",
-          "Website and app in French, English, Portuguese and Arabic.",
-          "Publisher: Adullam Global, a company currently being incorporated in the United States."
-        ]
-      },
-      {
-        "title": "Markets",
-        "paragraphs": [
-          "Priority on Cameroon, Mali and Burkina Faso."
+        "title": "Fact sheet",
+        "blocks": [
+          {
+            "t": "tb",
+            "h": [
+              "Information",
+              "Detail"
+            ],
+            "r": [
+              [
+                "Publisher",
+                "Adullam Global, a company currently being incorporated in the United States"
+              ],
+              [
+                "Activity",
+                "Marketplace connecting buyers in Africa with manufacturers in China, Turkey, Dubai and the United States"
+              ],
+              [
+                "Priority markets",
+                "Cameroon, Mali, Burkina Faso"
+              ],
+              [
+                "Payment",
+                "Mobile Money and bank card, in 42 currencies"
+              ],
+              [
+                "Transport",
+                "Sea, air, express, with lead times shown before payment"
+              ],
+              [
+                "Guarantee",
+                "Full refund if the order is not delivered within the maximum time"
+              ],
+              [
+                "Languages",
+                "French, English, Portuguese, Arabic"
+              ],
+              [
+                "Platforms",
+                "Website and Android app (in beta)"
+              ]
+            ]
+          }
         ]
       },
       {
         "title": "Media contact",
-        "paragraphs": [
-          "Write to contact@adullamarket.com with the subject \"Press\". Tell us your outlet and your deadline: we reply within 24 business hours."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Write to contact@adullamarket.com with the subject \"Press\". Tell us your outlet and your deadline: we reply within 24 business hours."
+          }
         ]
       },
       {
         "title": "Press releases and articles",
-        "paragraphs": [
-          "No press release is published at the moment. They will appear here."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "No press release is published at the moment. They will appear here."
+          }
         ]
       }
     ]
   },
   "pageRetours": {
     "title": "Returns and refunds",
-    "intro": "Here is what is covered, what is not, and how to request a refund.",
+    "updated": "Version 1.0 · Last updated: 12 November 2026",
+    "print": "Print or save as PDF",
+    "intro": "This page summarises our refund rules. The full text is in the [terms and conditions of sale](/cgv).",
+    "summaryTitle": "In brief",
+    "summary": [
+      "Order not delivered within the maximum time: full refund, delivery included.",
+      "Damaged product or one that differs from the order: report it within 7 days with photos.",
+      "No cancellation after payment and no take-back for a simple change of mind."
+    ],
     "sections": [
       {
-        "title": "What is covered",
-        "paragraphs": [
-          "Full refund of the price of the products and the delivery costs if your order is not shipped or does not reach its destination."
+        "title": "When you are refunded",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "You are refunded in full (price of the products and delivery costs) if the order is not shipped or does not reach its destination within the maximum time:"
+          },
+          {
+            "t": "tb",
+            "h": [
+              "Transport mode",
+              "Maximum time from payment"
+            ],
+            "r": [
+              [
+                "Sea",
+                "55 days"
+              ],
+              [
+                "Air",
+                "25 days"
+              ],
+              [
+                "Express",
+                "15 days"
+              ]
+            ]
+          }
         ]
       },
       {
         "title": "How to request a refund",
-        "items": [
-          "Write to contact@adullamarket.com with your order number, subject \"Refund\".",
-          "We check the situation with the carrier and the supplier, and reply within 24 business hours.",
-          "If non-delivery is confirmed, the refund is made to the payment method used, within 14 days."
+        "blocks": [
+          {
+            "t": "ol",
+            "i": [
+              "Write to contact@adullamarket.com with your order number, subject \"Refund\".",
+              "We check with the carrier and the supplier, and reply within 24 business hours.",
+              "If non-delivery is confirmed, the refund is made to the payment method used, within 14 days."
+            ]
+          }
         ]
       },
       {
         "title": "Damaged product or different from the order",
-        "paragraphs": [
-          "Write to us within 7 days of receipt, with photos of the product and the parcel. We review each case with the supplier and propose a solution."
+        "blocks": [
+          {
+            "t": "ol",
+            "i": [
+              "Write to us within 7 days of receipt.",
+              "Attach photos of the product and the parcel, and your order number.",
+              "We review the case with the supplier and propose a suitable solution."
+            ]
+          }
         ]
       },
       {
         "title": "What is not covered",
-        "items": [
-          "Change of mind: products are ordered on request from manufacturers abroad and are not taken back.",
-          "An incorrect delivery address or phone number supplied by the buyer."
-        ]
-      },
-      {
-        "title": "See also",
-        "paragraphs": [
-          "The [terms and conditions of sale](/cgv)."
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "Change of mind: products are ordered specially from manufacturers abroad and are not taken back.",
+              "Cancellation of an order already paid.",
+              "An incorrect delivery address or phone number given by the buyer."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "These rules apply subject to the mandatory rights that the law of your country of residence gives you."
+          }
         ]
       }
     ]
   },
   "pageAbout": {
     "title": "About us",
-    "intro": "Adullamarket lets buyers in Africa order directly from factories, with no middlemen, local payment and delivery to their door.",
+    "intro": "Adullamarket lets buyers in Africa order directly from manufacturers, with payment in local currency and delivery to their door. We handle the whole chain: purchase from the supplier, international transport and delivery.",
     "sections": [
       {
-        "title": "What we do",
-        "items": [
-          "We list products from manufacturers in China, Turkey, Dubai and the United States.",
-          "We handle your order with the supplier and organise international transport.",
-          "You pay by Mobile Money or card, in your local currency (42 currencies).",
-          "We deliver to your country and you track the order from your account.",
-          "For a product you cannot find, our custom sourcing service looks for it on your behalf."
+        "title": "How an order works",
+        "blocks": [
+          {
+            "t": "ol",
+            "i": [
+              "You choose your products and your transport mode (sea, air or express).",
+              "You pay by Mobile Money or bank card, in your local currency.",
+              "We confirm the order with the supplier within 5 days at most.",
+              "The parcel travels: 45 to 50 days by sea, 15 to 20 days by air, 7 to 10 days by express.",
+              "You receive a tracking number by email as soon as it ships and you follow the order from your account."
+            ]
+          }
         ]
       },
       {
-        "title": "Who it is for",
-        "paragraphs": [
-          "Entrepreneurs, traders and individuals, first in Cameroon, Mali and Burkina Faso, and more widely across Africa. The website and the app are available in French, English, Portuguese and Arabic."
+        "title": "What you know before paying",
+        "blocks": [
+          {
+            "t": "tb",
+            "h": [
+              "Information",
+              "Where to see it"
+            ],
+            "r": [
+              [
+                "Final price, delivery and customs included",
+                "Cart and payment page"
+              ],
+              [
+                "Transport mode and estimated lead time",
+                "Product page, cart and payment page"
+              ],
+              [
+                "Refund guarantee",
+                "[Returns and refunds](/retours) and [T&C](/cgv)"
+              ],
+              [
+                "Minimum order quantity",
+                "Product page"
+              ]
+            ]
+          }
         ]
       },
       {
-        "title": "Our commitments",
-        "items": [
-          "Clearly displayed prices, with delivery costs included at payment.",
-          "A refund guarantee if the order is not delivered.",
-          "The transport mode and estimated lead time shown before you pay.",
-          "One contact, contact@adullamarket.com, with a reply within 24 business hours."
+        "title": "Our tools, in practice",
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "Photo search: you send a photo, we analyse the image and suggest similar products from the catalogue.",
+              "Adu, the shopping assistant: an artificial intelligence that answers your questions, helps you compare and prepare your order. Adu can be wrong: only the information shown on the product page, in the cart and at payment binds us.",
+              "Recommendations: we use the products you view or add to your cart to suggest items. The data used is detailed in the [privacy policy](/confidentialite).",
+              "Custom sourcing: for a product you cannot find, you send us a request and we reply with an offer."
+            ]
+          }
         ]
       },
       {
-        "title": "Our technology",
-        "paragraphs": [
-          "Adullam relies on photo search, a shopping assistant (Adu) and a recommendation system to help you find and order faster."
+        "title": "Who it is for and where",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Entrepreneurs, traders and individuals, first in Cameroon, Mali and Burkina Faso, and more widely across Africa. The website and the app are available in French, English, Portuguese and Arabic."
+          }
         ]
       },
       {
         "title": "Adullam Global",
-        "paragraphs": [
-          "Adullamarket is published by Adullam Global, a company currently being incorporated in the United States. See the [legal notice](/mentions-legales)."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Adullamarket is published by Adullam Global, a company currently being incorporated in the United States. Our only contact is contact@adullamarket.com (reply within 24 business hours). See the [legal notice](/mentions-legales)."
+          }
         ]
       }
     ]
@@ -1509,109 +2001,335 @@
   },
   "pageCgv": {
     "title": "Terms and Conditions of Sale",
-    "updated": "In force since 11 November 2026",
+    "updated": "Version 1.0 · In force since 12 November 2026",
     "toc": "Contents",
-    "intro": "These terms and conditions of sale (T&C) govern every order placed on adullamarket.com and in the Adullam mobile app. By placing an order, you accept them.",
+    "print": "Print or save as PDF",
+    "intro": "These terms and conditions of sale (T&C) set the rules between Adullam Global and you for any order placed on adullamarket.com or in the Adullam app. They are written to be read: please take a few minutes to go through them before ordering.",
+    "summaryTitle": "The essentials in 5 points",
+    "summary": [
+      "Adullam Global sells you the products, buys them from the supplier and arranges transport to you.",
+      "The total shown at payment is the final price: products, delivery, customs duties and taxes included. Nothing to pay on delivery.",
+      "The order is confirmed within 5 days at most after payment, then transport takes 45 to 50 days by sea, 15 to 20 days by air or 7 to 10 days by express.",
+      "If your order does not arrive within the maximum time, you are refunded in full, delivery included.",
+      "A paid order cannot be cancelled, and products are not taken back for a simple change of mind."
+    ],
     "sections": [
       {
-        "title": "Publisher and legal status",
-        "paragraphs": [
-          "The website and the app are published by Adullam Global, a company currently being incorporated in the United States. Until incorporation is completed, the registration number and official address are not published. They will be added to this page and to the [legal notice](/mentions-legales) as soon as they are available.",
-          "Contact: contact@adullamarket.com"
+        "title": "Who we are and who these T&C apply to",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "The website adullamarket.com (the \"Website\") and the Adullam mobile app (the \"App\") are published by Adullam Global (\"Adullam\", \"we\"), a company currently being incorporated in the United States. The \"Customer\" is any adult who places an order."
+          },
+          {
+            "t": "p",
+            "x": "Until incorporation is completed, the registration number and official address are not published. They will be added to the [legal notice](/mentions-legales) as soon as they are available. Our only contact channel is contact@adullamarket.com."
+          },
+          {
+            "t": "p",
+            "x": "By placing an order, you declare that you have read and accepted these T&C."
+          }
         ]
       },
       {
-        "title": "Purpose",
-        "paragraphs": [
-          "Adullamarket is a marketplace that connects buyers, mainly in Africa, with manufacturers and suppliers in China, Turkey, Dubai and the United States, among others. Adullam Global handles the order with the supplier, the payment, international transport and delivery on your behalf."
+        "title": "What we do",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Adullamarket lists products offered by manufacturers and suppliers located in China, Turkey, Dubai and the United States, among others. Adullam sells these products to the Customer, buys them from the supplier, and arranges their international transport and delivery."
+          },
+          {
+            "t": "ul",
+            "i": [
+              "Catalogue: each product page shows the price, specifications, the minimum order quantity (MOQ) when there is one, and the available variants.",
+              "Custom sourcing: for a product that is not in the catalogue, you send a request and we reply with an offer. The contract is formed only when you accept the offer and pay for it.",
+              "Help tools: the Adu assistant, photo search and recommendations are described in article 13."
+            ]
+          }
         ]
       },
       {
-        "title": "Products and sourcing requests",
-        "paragraphs": [
-          "Each product page shows the price, specifications, the minimum order quantity when there is one, and the available variants. Photos are indicative. If a product is no longer available after your order, we tell you and refund you in full (article 8).",
-          "For a product that is not in the catalogue, you can send a sourcing request. We reply with an offer: the order is binding only once the offer is accepted and paid."
+        "title": "Your account",
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "You must be an adult and provide accurate information (name, email, delivery address, recipient phone number).",
+              "You protect your password. Any action taken from your account is deemed to be yours, unless you tell us without delay about unauthorised access.",
+              "We may suspend or close an account in case of fraud, abuse or breach of these T&C."
+            ]
+          }
         ]
       },
       {
-        "title": "Prices and currencies",
-        "paragraphs": [
-          "Prices are set in US dollars (USD). They are displayed in your local currency for information, based on a conversion rate maintained by Adullam. The exact amount to pay, in local currency, is shown before you confirm payment. Prices may change: the applicable price is the one displayed when you place the order."
+        "title": "Products and availability",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Photos and descriptions come from suppliers and are indicative: slight differences in colour, size or finish are possible. The minimum quantities and variants displayed apply to the order."
+          },
+          {
+            "t": "p",
+            "x": "Availability is checked when the order is confirmed with the supplier (article 7). If a product turns out to be unavailable, we tell you and refund you in full, unless you accept an alternative we offer."
+          }
         ]
       },
       {
-        "title": "Delivery costs",
-        "paragraphs": [
-          "Delivery costs are calculated from the weight and volume of the products, the transport mode chosen and the destination country. They are shown in the cart and at payment, and are included in the total to pay. No extra amount is requested on delivery.",
-          "If you choose door-to-door delivery, it is charged only once for the whole cart."
+        "title": "Prices, currencies and taxes",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Prices are set in US dollars (USD). They are displayed in your local currency (42 currencies) for information, based on a conversion rate kept up to date by Adullam. The exact amount to pay, in the payment currency, is shown before confirmation: that amount prevails."
+          },
+          {
+            "t": "co",
+            "x": "The total shown at payment includes the price of the products, delivery costs, and customs duties and taxes. We ask for no extra payment on delivery.",
+            "title": "Final price"
+          },
+          {
+            "t": "p",
+            "x": "Any fees charged by your Mobile Money operator or your bank are not included and remain your responsibility. In case of an obvious pricing error, we may cancel the order concerned and refund you in full."
+          },
+          {
+            "t": "p",
+            "x": "Delivery costs are calculated from the weight and volume of the products, the transport mode chosen and the destination country. If you choose door-to-door delivery, it is charged only once for the whole cart."
+          }
         ]
       },
       {
-        "title": "Order and payment",
-        "paragraphs": [
-          "The order is binding once payment is confirmed. Payment is made by Mobile Money or bank card, through our payment provider. Adullam does not store your card data or Mobile Money credentials.",
-          "You receive a confirmation email with your order number, then an email at each status change. We may cancel an order in case of suspected fraud or an obvious pricing error, with a full refund."
+        "title": "Ordering and paying",
+        "blocks": [
+          {
+            "t": "ol",
+            "i": [
+              "You build your cart, choose a transport mode and check the total.",
+              "You pay by Mobile Money or bank card, through our payment provider (GeniusPay).",
+              "You receive a payment confirmation email with your order number.",
+              "We then confirm the order with the supplier (article 7)."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "The order becomes binding as soon as payment is confirmed. Adullam neither sees nor keeps your card data or Mobile Money credentials."
+          },
+          {
+            "t": "p",
+            "x": "We may refuse or cancel an order, with a full refund, in case of suspected fraud, a product that is prohibited or subject to authorisation for import into the destination country, or an address we do not serve."
+          }
         ]
       },
       {
-        "title": "Transport modes and lead times",
-        "paragraphs": [
-          "Three transport modes are offered depending on the product and the country: sea, air and express. The estimated lead time of each mode is shown before payment. These are estimates: they start when payment is confirmed and may be extended by customs checks, weather or events beyond our control."
-        ],
-        "items": [
-          "Sea: lowest cost, longest lead time, suited to heavy or bulky parcels.",
-          "Air: faster, higher cost.",
-          "Express: fastest, for small parcels."
+        "title": "Confirmation, shipping and lead times",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "After payment, Adullam confirms the order with the supplier within 5 days at most. The transport lead time starts from that confirmation."
+          },
+          {
+            "t": "tb",
+            "h": [
+              "Transport mode",
+              "Transport lead time",
+              "Positioning"
+            ],
+            "r": [
+              [
+                "Sea",
+                "45 to 50 days",
+                "Economical"
+              ],
+              [
+                "Air",
+                "15 to 20 days",
+                "Fast"
+              ],
+              [
+                "Express",
+                "7 to 10 days",
+                "Very fast"
+              ]
+            ]
+          },
+          {
+            "t": "p",
+            "x": "These are estimates. They may be extended by customs checks, weather, strikes or any event beyond our control. The estimated lead time is shown before payment."
+          },
+          {
+            "t": "p",
+            "x": "Products in the same order are grouped by transport mode. An order may therefore result in several parcels, delivered on different dates depending on the mode. The delivery costs shown at payment cover the whole order."
+          },
+          {
+            "t": "p",
+            "x": "You receive a tracking number by email as soon as the order ships, and you can follow your order from your account."
+          }
         ]
       },
       {
-        "title": "Refund guarantee",
-        "paragraphs": [
-          "You are refunded in full if your order is not shipped or does not reach its destination."
-        ],
-        "items": [
-          "An order is considered undelivered if it has not arrived by the maximum lead time shown at payment, or if it can no longer be shipped.",
-          "To request a refund, write to contact@adullamarket.com with your order number.",
-          "The refund is made to the payment method used, within 14 days after non-delivery is confirmed.",
-          "The guarantee covers the price of the products and the delivery costs paid."
+        "title": "Delivery and receipt",
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "You must give an accurate delivery address and recipient phone number. A parcel returned because of incorrect information may lead to re-shipping costs.",
+              "On receipt, check the condition of the parcel. Report any problem (damaged parcel, missing or different product) within 7 days, with photos and your order number.",
+              "Until delivery, loss of the parcel is covered by the refund guarantee in article 9."
+            ]
+          }
         ]
       },
       {
-        "title": "Returns and change of mind",
-        "paragraphs": [
-          "Products are ordered on request from manufacturers abroad, so returns for a simple change of mind are not accepted. If you receive a damaged product or one that differs from your order, write to us within 7 days of receipt with photos and your order number: we review each case with the supplier. See also the [Returns and refunds](/retours) page."
+        "title": "Refund guarantee in case of non-delivery",
+        "blocks": [
+          {
+            "t": "co",
+            "x": "If your order is not shipped or does not reach its destination within the maximum time, you are refunded in full: price of the products and delivery costs.",
+            "title": "Our commitment"
+          },
+          {
+            "t": "p",
+            "x": "The maximum time is counted from the payment date: 5 days of confirmation, plus the maximum transport time of the chosen mode."
+          },
+          {
+            "t": "tb",
+            "h": [
+              "Transport mode",
+              "Maximum time from payment"
+            ],
+            "r": [
+              [
+                "Sea",
+                "55 days"
+              ],
+              [
+                "Air",
+                "25 days"
+              ],
+              [
+                "Express",
+                "15 days"
+              ]
+            ]
+          },
+          {
+            "t": "ol",
+            "i": [
+              "Write to contact@adullamarket.com with your order number, subject \"Refund\".",
+              "We check the situation with the carrier and the supplier and reply within 24 business hours.",
+              "If non-delivery is confirmed, we refund you to the payment method used, within 14 days. Your bank's or operator's own delays may be added."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "The guarantee does not apply if the delay or non-delivery comes from incorrect information given by the Customer (address, phone) or from refusal to accept the parcel."
+          }
         ]
       },
       {
-        "title": "Receiving your parcel",
-        "paragraphs": [
-          "Check the condition of the parcel on receipt and report any problem within 7 days. You must provide an accurate delivery address and recipient phone number: a parcel returned because of incorrect details may lead to re-shipping costs."
+        "title": "Cancellation, returns and damaged parcels",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Products are ordered specially from manufacturers abroad as soon as the order is confirmed. This is why a paid order cannot be cancelled by the Customer, and products are neither taken back nor exchanged for a simple change of mind. The guarantee in article 9 and cases where the error is ours remain applicable."
+          },
+          {
+            "t": "p",
+            "x": "If you receive a damaged product or one that differs from your order, write to us within 7 days of receipt with photos of the product and the parcel. We review each case with the supplier and propose a suitable solution."
+          },
+          {
+            "t": "p",
+            "x": "These rules apply subject to the mandatory rights that the law of your country of residence gives you (withdrawal, statutory warranty). Where those rights exist, they prevail over this clause."
+          }
         ]
       },
       {
         "title": "Liability",
-        "paragraphs": [
-          "Adullam Global is responsible for the proper handling of the order, from payment to delivery. To the extent permitted by law, its liability does not cover delays or damage caused by force majeure, a carrier, customs authorities or incorrect information supplied by the buyer. Nothing in these T&C limits the mandatory rights that the law of your country gives you."
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "Adullam is responsible for the proper handling of the order, from payment to delivery.",
+              "Adullam is not responsible for delays or damage caused by force majeure, by a carrier or by customs authorities outside the cases covered by article 9, or by incorrect information supplied by the Customer.",
+              "It is for the Customer to check that the ordered product can be lawfully imported, held and used in their country."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "Except for gross negligence, wilful misconduct or a contrary mandatory right, Adullam's total liability to the Customer for an order is limited to the amount paid for that order. Adullam is not liable for indirect damage, such as loss of revenue or customers if the products are resold."
+          }
+        ]
+      },
+      {
+        "title": "Intellectual property and published reviews",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "The Adullam name, logo, texts, interface and code of the Website and the App belong to Adullam Global. You have a personal right of use: any mass extraction of data, copying or reuse without written permission is prohibited."
+          },
+          {
+            "t": "p",
+            "x": "If you publish a review or other content, you guarantee that it is lawful and belongs to you. You grant us a non-exclusive right to display it on the Website and the App. We may remove any content that is abusive, misleading or unlawful."
+          }
+        ]
+      },
+      {
+        "title": "Adu assistant, photo search and recommendations",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Adu is a shopping assistant based on artificial intelligence. It helps you search, compare and prepare an order. It can be wrong."
+          },
+          {
+            "t": "ul",
+            "i": [
+              "Only the information shown on the product page, in the cart and at payment binds Adullam. Adu's answers are neither an offer nor legal, customs or financial advice.",
+              "Never type a password or payment data in the chat.",
+              "Photo search analyses the image you send to suggest similar products. Results are indicative.",
+              "Recommendations rely on the products you view or add to your cart."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "The processing of this data is detailed in the [privacy policy](/confidentialite)."
+          }
         ]
       },
       {
         "title": "Personal data",
-        "paragraphs": [
-          "Your data is processed in line with our [privacy policy](/confidentialite)."
+        "blocks": [
+          {
+            "t": "p",
+            "x": "We process your data in accordance with our [privacy policy](/confidentialite) and our [Cookies](/cookies) page. To exercise your rights, write to contact@adullamarket.com."
+          }
         ]
       },
       {
-        "title": "Governing law and disputes",
-        "paragraphs": [
-          "If there is a problem, contact us first at contact@adullamarket.com: we look for an amicable solution. Failing that, these T&C are governed by the law of the US state in which Adullam Global is incorporated, without depriving consumers of the mandatory protection of the law of their country of residence. This clause will be specified once incorporation is complete."
+        "title": "Disputes, governing law and language",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "If there is a problem, write to us first at contact@adullamarket.com: we look for an amicable solution. Failing that, these T&C are governed by the law of the US state in which Adullam Global is incorporated, without depriving you of the mandatory protection of the law of your country of residence. The competent courts are determined by the applicable law. This clause will be specified once incorporation is complete."
+          },
+          {
+            "t": "p",
+            "x": "The Website and the App are translated into several languages. In case of discrepancy, the French version prevails."
+          }
         ]
       },
       {
-        "title": "Changes to these T&C",
-        "paragraphs": [
-          "We may change these T&C. The version that applies to an order is the one in force on the day it is placed. The update date is shown at the top of the page."
+        "title": "Changes and validity",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "We may change these T&C. The version that applies to an order is the one in force on the day it is placed. The version and date are shown at the top of this page. If a clause is held invalid, the others remain applicable."
+          }
         ]
       }
     ]
+  },
+  "consent": {
+    "text": "We use essential cookies to make the site work. With your consent, we also enable the Meta Pixel to measure our ads.",
+    "accept": "Accept",
+    "refuse": "Refuse",
+    "more": "Learn more"
   }
 }

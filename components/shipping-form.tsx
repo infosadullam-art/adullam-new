@@ -47,8 +47,6 @@ export function ShippingForm({ onNext }: ShippingFormProps) {
                 Cocody, Rue des Jardins, Villa 45
                 <br />
                 Abidjan, Côte d'Ivoire
-                <br />
-                Tél: +225 07 08 09 10 11
               </p>
             </div>
           </label>
@@ -75,8 +73,6 @@ export function ShippingForm({ onNext }: ShippingFormProps) {
                 Plateau, Avenue Houdaille, Immeuble Alpha 2000
                 <br />
                 Abidjan, Côte d'Ivoire
-                <br />
-                Tél: +225 07 08 09 10 11
               </p>
             </div>
           </label>

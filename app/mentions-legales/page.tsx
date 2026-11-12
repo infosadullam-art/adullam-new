@@ -1,19 +1,17 @@
-import { getTranslations } from "next-intl/server"
-import { LegalPage, type LegalSection } from "@/components/legal-page"
+import { getMessages } from "next-intl/server"
+import { LegalPage, type LegalDoc } from "@/components/legal-page"
+
+async function getDoc(): Promise<LegalDoc> {
+  const messages = (await getMessages()) as Record<string, any>
+  return messages["pageMentions"] as LegalDoc
+}
 
 export async function generateMetadata() {
-  const t = await getTranslations("pageMentions")
-  return { title: String(t.raw("title")) }
+  const doc = await getDoc()
+  return { title: String(doc?.title || "") }
 }
 
 export default async function Page() {
-  const t = await getTranslations("pageMentions")
-  return (
-    <LegalPage
-      title={String(t.raw("title"))}
-      updated={String(t.raw("updated"))}
-      numbered
-      sections={t.raw("sections") as LegalSection[]}
-    />
-  )
+  const doc = await getDoc()
+  return <LegalPage doc={doc} numbered />
 }
