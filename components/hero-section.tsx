@@ -55,6 +55,8 @@ const suppliers = [
 
 // Police via variable CSS : même pile qu'avant en LTR, Cairo en arabe (voir globals.css)
 const amazonFont = "var(--font-amazon)"
+// Bannieres traduites : fr = image d'origine, en/pt/ar = image suffixee (ex. hero-1-direct-usine-en.webp)
+const heroSrc = (src: string, lang: string) => (["en", "pt", "ar"].includes(lang) ? src.replace(".webp", `-${lang}.webp`) : src)
 
 export function HeroSection() {
   const { country, language } = useLocale()
@@ -143,7 +145,7 @@ export function HeroSection() {
             style={{ opacity: index === currentSlide ? 1 : 0, zIndex: index === currentSlide ? 10 : 0 }}
           >
             <Image
-              src={slide.image}
+              src={heroSrc(slide.image, language)}
               alt={t(slide.titleKey)}
               fill
               className="object-cover"
@@ -309,7 +311,7 @@ export function HeroSection() {
                   className="absolute inset-0 transition-opacity duration-700"
                   style={{ opacity: index === currentSlide ? 1 : 0 }}
                 >
-                  <Image src={slide.image} alt={t(slide.titleKey)} fill className="object-cover" sizes="50vw" priority={index === 0} />
+                  <Image src={heroSrc(slide.image, language)} alt={t(slide.titleKey)} fill className="object-cover" sizes="50vw" priority={index === 0} />
                 </div>
               ))}
             </div>
