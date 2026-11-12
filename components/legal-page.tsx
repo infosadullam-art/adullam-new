@@ -6,7 +6,7 @@ import { MobileHeader } from "@/components/mobile-header"
 import { Footer } from "@/components/footer"
 import MobileNav from "@/components/mobile-nav"
 
-export type LegalSection = { title: string; paragraphs?: string[]; items?: string[] }
+export type LegalSection = { title: string; paragraphs?: string[] | Record<string, string>; items?: string[] | Record<string, string> }
 
 type Props = {
   title: string
@@ -14,7 +14,7 @@ type Props = {
   intro?: string
   tocLabel?: string
   numbered?: boolean
-  sections: LegalSection[]
+  sections: LegalSection[] | Record<string, LegalSection>
 }
 
 // Mini-format des textes : **gras**, [texte](/lien), et l'adresse e-mail de contact cliquable.
@@ -38,7 +38,18 @@ function inline(text: string): ReactNode[] {
   return out
 }
 
-export function LegalPage({ title, updated, intro, tocLabel, numbered, sections }: Props) {
+// next-intl peut renvoyer les listes sous forme d'objet {"0": ..., "1": ...} : on remet toujours un vrai tableau.
+function arr<T>(x: unknown): T[] {
+  if (Array.isArray(x)) return x as T[]
+  if (x && typeof x === "object") {
+    const o = x as Record<string, T>
+    return Object.keys(o).sort((a, b) => Number(a) - Number(b)).map((k) => o[k])
+  }
+  return []
+}
+
+export function LegalPage({ title, updated, intro, tocLabel, numbered, sections: rawSections }: Props) {
+  const sections = arr<LegalSection>(rawSections)
   const showToc = !!tocLabel && sections.length > 4
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -71,12 +82,12 @@ export function LegalPage({ title, updated, intro, tocLabel, numbered, sections 
           {sections.map((s, i) => (
             <section key={i} id={`s${i + 1}`} className="py-6 border-b border-border last:border-b-0 scroll-mt-24">
               <h2 className="text-lg font-semibold mb-3">{numbered ? `${i + 1}. ` : ""}{s.title}</h2>
-              {s.paragraphs?.map((p, j) => (
+              {arr<string>(s.paragraphs).map((p, j) => (
                 <p key={j} className="text-[15px] leading-7 text-muted-foreground mb-3 last:mb-0">{inline(p)}</p>
               ))}
-              {s.items && (
+              {arr<string>(s.items).length > 0 && (
                 <ul className="list-disc pl-5 rtl:pl-0 rtl:pr-5 space-y-1.5 text-[15px] leading-7 text-muted-foreground marker:text-border">
-                  {s.items.map((it, j) => <li key={j}>{inline(it)}</li>)}
+                  {arr<string>(s.items).map((it, j) => <li key={j}>{inline(it)}</li>)}
                 </ul>
               )}
             </section>
