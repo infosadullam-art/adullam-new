@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { useLocale } from "./LocaleProvider";
 import { apiFetch } from "@/lib/api";
+import { hasMetaConsent } from "@/lib/consent"
 import { getAccessToken } from "@/lib/auth";
 import { toast } from "react-hot-toast";
 
@@ -108,7 +109,7 @@ function trackAddToCart(item: CartItem, quantity: number) {
     }
 
     // 2️⃣ Conversions API (serveur) — via le backend existant
-    apiFetch("/api/meta/track", {
+    hasMetaConsent() && apiFetch("/api/meta/track", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

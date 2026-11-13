@@ -292,6 +292,7 @@ import { wishlistApi } from "@/lib/admin/api-client"
 import { useAuth } from "@/lib/admin/auth-context"
 import { Loader } from "@/components/Loader"
 import { apiFetch } from "@/lib/api"
+import { hasMetaConsent } from "@/lib/consent"
 import { useTranslations } from "next-intl"
 
 // Compteur animé (1 → cible) pour rendre le MOQ bien visible
@@ -805,7 +806,7 @@ export default function ProductPage() {
           )
         }
 
-        apiFetch("/api/meta/track", {
+        hasMetaConsent() && apiFetch("/api/meta/track", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

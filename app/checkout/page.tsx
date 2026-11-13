@@ -170,6 +170,7 @@ import { getCountryName } from "@/lib/country-config";
 import { PaymentButton } from "@/components/PaymentButton";
 import { CouponInput } from "@/components/CouponInput";
 import { apiFetch } from "@/lib/api";
+import { hasMetaConsent } from "@/lib/consent"
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -420,7 +421,7 @@ export default function CheckoutPage() {
         );
       }
 
-      apiFetch("/api/meta/track", {
+      hasMetaConsent() && apiFetch("/api/meta/track", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
