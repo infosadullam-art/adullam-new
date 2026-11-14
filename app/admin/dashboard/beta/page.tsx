@@ -24,7 +24,7 @@ const LINK_KEY = "beta_install_link"
 const TPL_KEY = "beta_invite_template"
 const SENT_KEY = "beta_invited_ids"
 const AUTO_KEY = "beta_auto_email"
-const DEFAULT_LINK = "https://expo.dev/accounts/adullam-global/projects/adullam/builds/54c93f44-ccd0-473b-8a13-bb2927c0f686"
+const DEFAULT_LINK = "https://expo.dev/accounts/adullam-global/projects/adullam/builds/9cf93600-931b-4d55-a41a-c328d01bf75f"
 const DEFAULT_SUBJECT = "Votre accès bêta Adullamarket"
 const DEFAULT_TEMPLATE = `Bonjour {prenom},
 
