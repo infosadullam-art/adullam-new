@@ -490,6 +490,7 @@ export default function CheckoutPage() {
           },
           defaultShippingMode,
           deviceType: 'web',
+          metaConsent: hasMetaConsent(),
           locale: language,
           currency,
         }),
