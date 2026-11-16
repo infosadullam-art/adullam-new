@@ -2331,5 +2331,118 @@
     "accept": "Accept",
     "refuse": "Refuse",
     "more": "Learn more"
+  },
+  "pageSupprimerCompte": {
+    "title": "Delete my account",
+    "updated": "Version 1.0 · Last updated: 16 November 2026",
+    "toc": "Contents",
+    "print": "Print or save as PDF",
+    "intro": "This page explains how to delete your Adullamarket account, whether you created it on adullamarket.com or in the Adullam app. It also states what is erased and what we are required to keep.",
+    "summaryTitle": "The essentials in 4 points",
+    "summary": [
+      "You can delete your account yourself, from the app or from the website, by confirming with your password.",
+      "Deletion is immediate and permanent.",
+      "Your name, email, phone number, addresses, wishlist and notifications are erased or made anonymous.",
+      "Some order data may be kept to meet our legal and accounting obligations."
+    ],
+    "sections": [
+      {
+        "title": "Delete your account yourself",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "**In the Adullam app**"
+          },
+          {
+            "t": "ol",
+            "i": [
+              "Open the \"Account\" tab.",
+              "Tap \"Delete my account\".",
+              "Enter your password to confirm."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "**On adullamarket.com**"
+          },
+          {
+            "t": "ol",
+            "i": [
+              "Sign in, then open the \"My account\" page.",
+              "Choose the option to delete your account.",
+              "Enter your password to confirm."
+            ]
+          },
+          {
+            "t": "co",
+            "x": "Deletion is permanent: we cannot recover a deleted account. If you want to order again later, you will need to create a new account.",
+            "title": "Permanent"
+          }
+        ]
+      },
+      {
+        "title": "What is deleted",
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "Your name and phone number.",
+              "Your email address, replaced by an anonymous identifier: it can no longer be used to find you.",
+              "Your password, made unusable.",
+              "Your saved addresses, wishlist and notifications.",
+              "Your active sessions: you are signed out everywhere."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "In rare cases where a linked item cannot be erased automatically, your account is still made anonymous. You can then ask us by email to erase the rest."
+          }
+        ]
+      },
+      {
+        "title": "What may be kept",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Your order and payment history may be kept, including the delivery details they contain. We need them for our accounting and tax obligations, fraud prevention, and handling any refund or dispute. This data is no longer attached to a usable account."
+          },
+          {
+            "t": "p",
+            "x": "The app's anonymous measurements use a random identifier that is not linked to your account: they cannot identify you."
+          },
+          {
+            "t": "p",
+            "x": "For retention periods and your other rights, see the [privacy policy](/confidentialite)."
+          }
+        ]
+      },
+      {
+        "title": "Before you delete",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "If an order is on its way, wait until it is delivered or write to us first: we need to be able to reach you for delivery and, if applicable, a refund."
+          }
+        ]
+      },
+      {
+        "title": "You cannot access your account",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "If you forgot your password or sign in with a third-party service, deleting from the app is not possible. Write to contact@adullamarket.com with the subject \"Account deletion\", from the email address of your account."
+          },
+          {
+            "t": "p",
+            "x": "We may ask you to confirm your identity. We reply and carry out the deletion within one month."
+          },
+          {
+            "t": "co",
+            "x": "Write to contact@adullamarket.com, subject \"Account deletion\".",
+            "title": "By email"
+          }
+        ]
+      }
+    ]
   }
 }

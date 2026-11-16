@@ -2331,5 +2331,118 @@
     "accept": "Accepter",
     "refuse": "Refuser",
     "more": "En savoir plus"
+  },
+  "pageSupprimerCompte": {
+    "title": "Supprimer mon compte",
+    "updated": "Version 1.0 · Dernière mise à jour : 16 novembre 2026",
+    "toc": "Sommaire",
+    "print": "Imprimer ou enregistrer en PDF",
+    "intro": "Cette page explique comment supprimer votre compte Adullamarket, que vous l'ayez créé sur le site adullamarket.com ou dans l'application Adullam. Elle indique aussi ce qui est effacé et ce que nous devons conserver.",
+    "summaryTitle": "L'essentiel en 4 points",
+    "summary": [
+      "Vous pouvez supprimer votre compte vous-même, depuis l'application ou depuis le site, en confirmant avec votre mot de passe.",
+      "La suppression est immédiate et définitive.",
+      "Votre nom, votre e-mail, votre téléphone, vos adresses, votre liste d'envies et vos notifications sont effacés ou rendus anonymes.",
+      "Certaines données de commande peuvent être conservées pour respecter nos obligations légales et comptables."
+    ],
+    "sections": [
+      {
+        "title": "Supprimer votre compte vous-même",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "**Dans l'application Adullam**"
+          },
+          {
+            "t": "ol",
+            "i": [
+              "Ouvrez l'onglet « Compte ».",
+              "Touchez « Supprimer mon compte ».",
+              "Saisissez votre mot de passe pour confirmer."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "**Sur le site adullamarket.com**"
+          },
+          {
+            "t": "ol",
+            "i": [
+              "Connectez-vous, puis ouvrez la page « Mon compte ».",
+              "Choisissez l'option de suppression du compte.",
+              "Saisissez votre mot de passe pour confirmer."
+            ]
+          },
+          {
+            "t": "co",
+            "x": "La suppression est définitive : nous ne pouvons pas récupérer un compte supprimé. Si vous souhaitez encore commander plus tard, vous devrez créer un nouveau compte.",
+            "title": "Définitif"
+          }
+        ]
+      },
+      {
+        "title": "Ce qui est supprimé",
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "Votre nom et votre numéro de téléphone.",
+              "Votre adresse e-mail, remplacée par un identifiant anonyme : elle ne permet plus de vous retrouver.",
+              "Votre mot de passe, rendu inutilisable.",
+              "Vos adresses enregistrées, votre liste d'envies et vos notifications.",
+              "Vos connexions en cours : vous êtes déconnecté partout."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "Dans de rares cas où une donnée liée ne peut pas être effacée automatiquement, votre compte est tout de même rendu anonyme. Vous pouvez alors nous demander par e-mail d'effacer le reste."
+          }
+        ]
+      },
+      {
+        "title": "Ce qui peut être conservé",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "L'historique de vos commandes et de vos paiements peut être conservé, y compris les informations de livraison qui y figurent. Nous en avons besoin pour nos obligations comptables et fiscales, la prévention de la fraude et le traitement d'un éventuel remboursement ou litige. Ces données ne sont plus rattachées à un compte utilisable."
+          },
+          {
+            "t": "p",
+            "x": "Les mesures anonymes de l'application utilisent un identifiant aléatoire qui n'est pas lié à votre compte : elles ne permettent pas de vous identifier."
+          },
+          {
+            "t": "p",
+            "x": "Pour la durée de conservation et vos autres droits, voir la [politique de confidentialité](/confidentialite)."
+          }
+        ]
+      },
+      {
+        "title": "Avant de supprimer",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Si une commande est en cours de livraison, attendez qu'elle soit livrée ou écrivez-nous d'abord : nous avons besoin de pouvoir vous joindre pour la livraison et, le cas échéant, le remboursement."
+          }
+        ]
+      },
+      {
+        "title": "Vous ne pouvez pas accéder à votre compte",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Si vous avez oublié votre mot de passe ou si vous vous connectez avec un service tiers, la suppression depuis l'application n'est pas possible. Écrivez à contact@adullamarket.com avec l'objet « Suppression de compte », depuis l'adresse e-mail de votre compte."
+          },
+          {
+            "t": "p",
+            "x": "Nous pouvons vous demander de confirmer votre identité. Nous répondons et effectuons la suppression sous un mois."
+          },
+          {
+            "t": "co",
+            "x": "Écrivez à contact@adullamarket.com, objet « Suppression de compte ».",
+            "title": "Par e-mail"
+          }
+        ]
+      }
+    ]
   }
 }

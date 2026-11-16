@@ -2331,5 +2331,118 @@
     "accept": "Aceitar",
     "refuse": "Recusar",
     "more": "Saber mais"
+  },
+  "pageSupprimerCompte": {
+    "title": "Eliminar a minha conta",
+    "updated": "Versão 1.0 · Última atualização: 16 de novembro de 2026",
+    "toc": "Índice",
+    "print": "Imprimir ou guardar em PDF",
+    "intro": "Esta página explica como eliminar a sua conta Adullamarket, quer a tenha criado no site adullamarket.com ou na aplicação Adullam. Indica também o que é apagado e o que somos obrigados a conservar.",
+    "summaryTitle": "O essencial em 4 pontos",
+    "summary": [
+      "Pode eliminar a sua conta, na aplicação ou no site, confirmando com a sua palavra-passe.",
+      "A eliminação é imediata e definitiva.",
+      "O seu nome, e-mail, telefone, moradas, lista de desejos e notificações são apagados ou tornados anónimos.",
+      "Alguns dados de encomendas podem ser conservados para cumprir as nossas obrigações legais e contabilísticas."
+    ],
+    "sections": [
+      {
+        "title": "Eliminar a sua conta",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "**Na aplicação Adullam**"
+          },
+          {
+            "t": "ol",
+            "i": [
+              "Abra o separador \"Conta\".",
+              "Toque em \"Eliminar a minha conta\".",
+              "Introduza a sua palavra-passe para confirmar."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "**No site adullamarket.com**"
+          },
+          {
+            "t": "ol",
+            "i": [
+              "Inicie sessão e abra a página \"A minha conta\".",
+              "Escolha a opção de eliminar a conta.",
+              "Introduza a sua palavra-passe para confirmar."
+            ]
+          },
+          {
+            "t": "co",
+            "x": "A eliminação é definitiva: não podemos recuperar uma conta eliminada. Se quiser voltar a encomendar, terá de criar uma nova conta.",
+            "title": "Definitivo"
+          }
+        ]
+      },
+      {
+        "title": "O que é apagado",
+        "blocks": [
+          {
+            "t": "ul",
+            "i": [
+              "O seu nome e número de telefone.",
+              "O seu endereço de e-mail, substituído por um identificador anónimo: já não permite encontrá-lo.",
+              "A sua palavra-passe, tornada inutilizável.",
+              "As suas moradas guardadas, lista de desejos e notificações.",
+              "As suas sessões ativas: a sessão é terminada em todos os dispositivos."
+            ]
+          },
+          {
+            "t": "p",
+            "x": "Em casos raros em que um dado associado não possa ser apagado automaticamente, a sua conta é ainda assim tornada anónima. Pode então pedir-nos por e-mail que apaguemos o resto."
+          }
+        ]
+      },
+      {
+        "title": "O que pode ser conservado",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "O histórico das suas encomendas e pagamentos pode ser conservado, incluindo os dados de entrega que neles constam. Precisamos deles para as obrigações contabilísticas e fiscais, a prevenção de fraude e o tratamento de um eventual reembolso ou litígio. Estes dados deixam de estar associados a uma conta utilizável."
+          },
+          {
+            "t": "p",
+            "x": "As medições anónimas da aplicação usam um identificador aleatório que não está ligado à sua conta: não permitem identificá-lo."
+          },
+          {
+            "t": "p",
+            "x": "Para os prazos de conservação e os seus outros direitos, consulte a [política de privacidade](/confidentialite)."
+          }
+        ]
+      },
+      {
+        "title": "Antes de eliminar",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Se uma encomenda estiver a caminho, aguarde a entrega ou escreva-nos primeiro: precisamos de o poder contactar para a entrega e, se for caso disso, o reembolso."
+          }
+        ]
+      },
+      {
+        "title": "Não consegue aceder à sua conta",
+        "blocks": [
+          {
+            "t": "p",
+            "x": "Se esqueceu a palavra-passe ou se inicia sessão com um serviço de terceiros, não é possível eliminar a partir da aplicação. Escreva para contact@adullamarket.com com o assunto \"Eliminação de conta\", a partir do e-mail da sua conta."
+          },
+          {
+            "t": "p",
+            "x": "Podemos pedir-lhe que confirme a sua identidade. Respondemos e efetuamos a eliminação no prazo de um mês."
+          },
+          {
+            "t": "co",
+            "x": "Escreva para contact@adullamarket.com, assunto \"Eliminação de conta\".",
+            "title": "Por e-mail"
+          }
+        ]
+      }
+    ]
   }
 }
