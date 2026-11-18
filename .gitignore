@@ -6,3 +6,5 @@ node_modules/
 ".env.production.txt" 
 ".env.local" 
 ".env" 
+
+.env.sentry-build-plugin
