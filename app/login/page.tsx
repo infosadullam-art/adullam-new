@@ -1,5 +1,6 @@
 "use client"
 
+import { friendlyError } from "@/lib/network-error"
 import { useState, useEffect, useRef, useMemo, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -424,7 +425,7 @@ function UserLoginContent() {
       }
     } catch (error: any) {
       console.error("❌ Erreur:", error)
-      setError(error.message || t("genericError"))
+      setError(friendlyError(error, t("genericError")))
       setAttempts(prev => prev + 1)
     } finally {
       setIsSubmitting(false)

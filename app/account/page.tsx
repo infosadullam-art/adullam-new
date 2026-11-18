@@ -1,5 +1,6 @@
 "use client"
 
+import { friendlyError } from "@/lib/network-error"
 import { useState, useEffect, useRef, useMemo } from "react"
 
 // ════════════════════════════════════════════════════════════
@@ -655,7 +656,7 @@ export default function AccountPage() {
       }
     } catch (error: any) {
       console.error("❌ Erreur:", error)
-      setError(error.message || tLogin("genericError"))
+      setError(friendlyError(error, tLogin("genericError")))
       setAttempts(prev => prev + 1)
     } finally {
       setIsSubmitting(false)

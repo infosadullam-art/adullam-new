@@ -1,5 +1,6 @@
 "use client"
 
+import { friendlyError } from "@/lib/network-error"
 import { ProductCard } from "@/components/product-card"
 import { useEffect, useRef, useState, useCallback, useLayoutEffect } from "react"
 import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
@@ -305,7 +306,7 @@ export function ForYouSection() {
     } catch (err: any) {
       if (err?.name === "AbortError") return
       console.error("[ForYou] Erreur fetch:", err.message)
-      setError(err.message)
+      setError(friendlyError(err))
       hasMoreRef.current = false
       setHasMore(false)
     } finally {
