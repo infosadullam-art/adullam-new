@@ -7,6 +7,7 @@ import { useCurrencyFormatter } from "@/hooks/useCurrencyFormatter"
 import { useApi } from "@/hooks/useApi"
 import { useTranslations } from "next-intl"
 import { getUiLocale, withLocale } from "@/lib/locale-client"
+import { COUNTRY_COOKIE } from "@/lib/country-config"
 
 interface Product {
   id: string
@@ -41,7 +42,12 @@ const STORAGE_KEY = "foryou_state"
 
 // Clé de sauvegarde PAR LANGUE : sinon, après un changement de langue, la liste restaurée
 // garderait pendant 30 minutes les noms de produits de l'ancienne langue.
-const storageKey = (sessionId: string) => `${STORAGE_KEY}_${sessionId}_${getUiLocale() ?? "default"}`
+// Contexte (langue + pays) au moment du chargement : la liste sauvegardee n'est restauree que pour le meme contexte.
+function currentContextKey(): string {
+  const country = typeof document === "undefined" ? "" : (document.cookie.split("; ").find((r) => r.startsWith(`${COUNTRY_COOKIE}=`))?.slice(COUNTRY_COOKIE.length + 1) ?? "")
+  return `${getUiLocale() ?? "default"}_${country || "xx"}`
+}
+const storageKey = (sessionId: string, ctx: string) => `${STORAGE_KEY}_${sessionId}_${ctx}`
 
 interface SavedState {
   products: Product[]
@@ -64,12 +70,12 @@ function getOrCreateSessionId(): string | null {
 function readSavedState(sessionId: string | null): SavedState | null {
   if (!sessionId || typeof window === "undefined") return null
   try {
-    const saved = sessionStorage.getItem(storageKey(sessionId))
+    const saved = sessionStorage.getItem(storageKey(sessionId, currentContextKey()))
     if (!saved) return null
     const state: SavedState = JSON.parse(saved)
     const age = Date.now() - state.timestamp
     if (age > 30 * 60 * 1000) {
-      sessionStorage.removeItem(storageKey(sessionId))
+      sessionStorage.removeItem(storageKey(sessionId, currentContextKey()))
       return null
     }
     return state
@@ -107,6 +113,7 @@ export function ForYouSection() {
   const trackQueueRef      = useRef<Set<string>>(new Set())
   const saveTimeoutRef     = useRef<NodeJS.Timeout>()
   const lastSavedScrollRef = useRef(0)
+  const mountKeyRef        = useRef<string>(currentContextKey())
   const pendingScrollRestoreRef = useRef<number | null>(initialSavedState?.scrollPosition ?? null)
 
   const saveState = useCallback(() => {
@@ -125,7 +132,7 @@ export function ForYouSection() {
     }
 
     try {
-      sessionStorage.setItem(storageKey(sessionId), JSON.stringify(state))
+      sessionStorage.setItem(storageKey(sessionId, mountKeyRef.current), JSON.stringify(state))
       lastSavedScrollRef.current = scrollY
     } catch (e) {
       console.error("Erreur sauvegarde état:", e)
