@@ -141,10 +141,10 @@ interface ChatbotWidgetProps {
 // CONSTANTES
 // ============================================================
 
-const TRIGGER_CHECK_INTERVAL = 60000
-const INACTIVITY_THRESHOLD   = 30
+const TRIGGER_CHECK_INTERVAL = 10000
+const INACTIVITY_THRESHOLD   = 22
 const MIN_VIEWS_BEFORE_TRIGGER = 3
-const FIRST_TRIGGER_DELAY = 30000
+const FIRST_TRIGGER_DELAY = 15000
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.adullamarket.com'
 
 // Langues de synthèse et de reconnaissance vocale du navigateur
@@ -170,7 +170,11 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   // ajouter lui-même (le panier est 100% côté client), donc c'est CE widget
   // qui exécute l'action quand le serveur confirme une variante validée
   // (voir data.cart_action plus bas dans sendMessage).
-  const { addToCart } = useCart()
+  const { addToCart, totalItems, cart } = useCart()
+  const cartInfoRef = useRef<{ count: number; preview: { name: string; price: number; quantity: number }[] }>({ count: 0, preview: [] })
+  cartInfoRef.current = { count: totalItems || 0, preview: (cart || []).slice(0, 3).map((i: any) => ({ name: String(i?.name ?? i?.productName ?? "").slice(0, 80), price: Number(i?.price) || 0, quantity: Number(i?.quantity) || 1 })) }
+  const recentViewedRef = useRef<string[]>([])
+  const lastTriggerCallRef = useRef(0)
   const router = useRouter()
 
   const [isOpen, setIsOpen] = useState(false)
@@ -459,7 +463,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   // la page produit, et potentiellement d'autres sources futures) pour
   // alimenter le trigger proactif.
   useEffect(() => {
-    const handleProductViewed = () => {
+    const handleProductViewed = (e?: Event) => {
+      const pid = String((e as CustomEvent | undefined)?.detail?.productId ?? "")
+      if (pid) recentViewedRef.current = [pid, ...recentViewedRef.current.filter((x) => x !== pid)].slice(0, 5)
       viewCountRef.current += 1
     }
     window.addEventListener('adullam:product-viewed', handleProductViewed)
@@ -824,8 +830,12 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
         const inactivitySeconds = (Date.now() - lastActionRef.current) / 1000
         const viewedCount = viewCountRef.current
 
-        if (viewedCount < MIN_VIEWS_BEFORE_TRIGGER) return
-        if (inactivitySeconds < INACTIVITY_THRESHOLD) return
+        if (document.hidden) return
+        if (/\/(checkout|payment)/.test(window.location.pathname)) return
+        if (viewedCount < MIN_VIEWS_BEFORE_TRIGGER && cartInfoRef.current.count === 0) return
+        if (inactivitySeconds < INACTIVITY_THRESHOLD || inactivitySeconds > 900) return
+        if (Date.now() - lastTriggerCallRef.current < 30000) return
+        lastTriggerCallRef.current = Date.now()
 
         try {
           const res = await fetch(`${API_BASE_URL}/api/chat/trigger`, {
@@ -840,6 +850,9 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
               has_added_to_cart: checkCartStatus(),
               has_visited_checkout: checkCheckoutStatus(),
               has_come_back: true,
+              cart_count: cartInfoRef.current.count,
+              cart_preview: cartInfoRef.current.preview,
+              recent_viewed_ids: recentViewedRef.current,
               language: language,
               country: country,
             }),
@@ -848,6 +861,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
           const data = await res.json()
 
           if (data.should_trigger && data.message) {
+            lastTriggerCallRef.current = Date.now() + 570000
             setProactiveMessage(data.message)
             setHasUnread(true)
             // ✅ Ouvre le chat automatiquement pour que le message proactif
@@ -894,7 +908,8 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
   }
 
   const checkCheckoutStatus = () => {
-    return localStorage.getItem('checkout_visited') === 'true'
+    const t = Number(localStorage.getItem('checkout_visited'))
+    return Number.isFinite(t) && t > 0 && Date.now() - t < 30 * 60 * 1000
   }
 
   // ============================================================
@@ -1074,7 +1089,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
       productElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
 
-    localStorage.setItem('checkout_visited', 'true')
+    localStorage.setItem('checkout_visited', String(Date.now()))
 
     try {
       await fetch(`${API_BASE_URL}/api/track`, {
