@@ -13,7 +13,8 @@ const nextConfig = {
   typescript: { ignoreBuildErrors: true },
 
   images: {
-    unoptimized: true,
+    loader: "custom",
+    loaderFile: "./lib/image-loader.ts",
   },
 
   turbopack: { root: resolve(__dirname) },

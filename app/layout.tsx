@@ -1,3 +1,4 @@
+import { ImageRetry } from "@/components/image-retry"
 import type { Metadata } from "next"
 import { Poppins, Fraunces } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
@@ -184,6 +185,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </div>
         </ThemeProvider>
         </NextIntlClientProvider>
+      <ImageRetry />
       </body>
     </html>
   )
