@@ -779,6 +779,7 @@ export default function ProductPage() {
         type: "VIEW",
         context: "PRODUCT_PAGE",
         sessionId,
+        country: (document.cookie.match(/(?:^|; )nx_country=([A-Za-z]{2})/) || [])[1],
       }),
     }).catch(() => {})
 

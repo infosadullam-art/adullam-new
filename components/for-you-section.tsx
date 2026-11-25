@@ -199,7 +199,7 @@ export function ForYouSection() {
         silent: true, // arrière-plan : une session expirée ne doit jamais renvoyer vers /login
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, type, context: "FOR_YOU", sessionId }),
+        body: JSON.stringify({ productId, type, context: "FOR_YOU", sessionId, country: (document.cookie.match(/(?:^|; )nx_country=([A-Za-z]{2})/) || [])[1] }),
       })
     } catch {
       // Silencieux
