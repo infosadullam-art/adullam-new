@@ -31,6 +31,32 @@ function SearchContent() {
   const tCat = useTranslations("categories")
   const searchParams = useSearchParams()
   const query = searchParams.get('q') || ''
+
+  // Suivi des recherches (alimente les IA) : une fois par requete, apres 1 s sur la page
+  useEffect(() => {
+    const q = query.trim()
+    if (q.length < 2) return
+    const timer = setTimeout(() => {
+      try {
+        if (sessionStorage.getItem("adullam_last_search") === q) return
+        sessionStorage.setItem("adullam_last_search", q)
+        let sessionId = localStorage.getItem("adullam_session_id")
+        if (!sessionId) {
+          sessionId = crypto.randomUUID()
+          localStorage.setItem("adullam_session_id", sessionId)
+        }
+        document.cookie = "sessionId=" + sessionId + "; path=/; max-age=86400; SameSite=Lax"
+        apiFetch("/api/track", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "SEARCH", context: "SEARCH", searchQuery: q, sessionId, country: (document.cookie.match(/(?:^|; )nx_country=([A-Za-z]{2})/) || [])[1] }),
+        }).catch(() => {})
+      } catch {
+        // le suivi ne doit jamais gener la recherche
+      }
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [query])
   
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
