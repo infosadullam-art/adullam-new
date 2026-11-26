@@ -39,6 +39,7 @@ interface IA {
   catalog: { seen: number; active: number; coveragePct: number | null }
   scroll: {
     avgDepth: number | null
+    avgDuration?: number | null
     maxDepth: number | null
     measured: number
     sessions: number
@@ -277,6 +278,12 @@ export default function IAPage() {
                 <Chiffre label="Produits vus par session" valeur={d.scroll.avgProductsViewed !== null ? String(d.scroll.avgProductsViewed).replace(".", ",") : "—"} sous={`Record : ${d.scroll.maxProductsViewed}`} />
                 <Chiffre label="Sessions avec un clic" valeur={formatNombre(d.scroll.sessionsWithClick)} />
               </div>
+              {d.scroll.measured > 0 && (
+                <div className="mt-4 grid grid-cols-2 gap-5">
+                  <Chiffre label="Profondeur moyenne" valeur={d.scroll.avgDepth !== null ? `${String(d.scroll.avgDepth).replace(".", ",")} %` : "-"} sous={`${formatNombre(d.scroll.measured)} fiches mesurees`} />
+                  <Chiffre label="Temps moyen par fiche" valeur={d.scroll.avgDuration != null ? `${formatNombre(d.scroll.avgDuration)} s` : "-"} />
+                </div>
+              )}
               {d.scroll.measured === 0 && (
                 <div className="mt-4">
                   <NonMesure>La profondeur de défilement et le temps passé ne sont pas enregistrés par le site. Ils restent « non mesurés » tant que ce suivi n'est pas ajouté.</NonMesure>

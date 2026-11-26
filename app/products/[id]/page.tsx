@@ -759,6 +759,59 @@ export default function ProductPage() {
   // TRACKING VIEW SUR LA PAGE PRODUIT
   // ============================================================
   const hasTrackedViewRef = useRef(false)
+  // ============================================================
+  // MESURE DE LECTURE : duree visible + defilement max (%), envoyes a la sortie de la fiche.
+  // Met a jour la ligne VIEW existante cote serveur (type VIEW_END) : aucune vue en double.
+  // ============================================================
+  const viewEndProductId = product?.id
+  useEffect(() => {
+    if (!viewEndProductId) return
+    let visibleMs = 0
+    let since = document.visibilityState === "visible" ? Date.now() : 0
+    let maxDepth = 0
+
+    const measure = () => {
+      const h = document.documentElement.scrollHeight || 1
+      maxDepth = Math.max(maxDepth, Math.min(100, Math.round(((window.scrollY + window.innerHeight) / h) * 100)))
+    }
+    const send = () => {
+      const secs = Math.round((visibleMs + (since ? Date.now() - since : 0)) / 1000)
+      if (secs < 1) return
+      let sid: string | null = null
+      try { sid = localStorage.getItem("adullam_session_id") } catch {}
+      if (!sid) return
+      apiFetch("/api/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        keepalive: true,
+        body: JSON.stringify({ type: "VIEW_END", productId: viewEndProductId, sessionId: sid, duration: secs, scrollDepth: maxDepth }),
+      }).catch(() => {})
+    }
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        if (since) { visibleMs += Date.now() - since; since = 0 }
+        measure()
+        send()
+      } else {
+        since = Date.now()
+      }
+    }
+    const onHide = () => { measure(); send() }
+
+    measure()
+    window.addEventListener("scroll", measure, { passive: true })
+    window.addEventListener("resize", measure)
+    document.addEventListener("visibilitychange", onVisibility)
+    window.addEventListener("pagehide", onHide)
+    return () => {
+      window.removeEventListener("scroll", measure)
+      window.removeEventListener("resize", measure)
+      document.removeEventListener("visibilitychange", onVisibility)
+      window.removeEventListener("pagehide", onHide)
+      measure()
+      send()
+    }
+  }, [viewEndProductId])
 
   useEffect(() => {
     if (!product?.id || hasTrackedViewRef.current) return
