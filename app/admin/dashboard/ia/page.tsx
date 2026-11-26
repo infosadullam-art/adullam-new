@@ -285,16 +285,16 @@ export default function IAPage() {
             </Bloc>
           </div>
 
-          <Bloc titre="Scores « Pour vous »" note="Ce qui alimente les recommandations personnalisées">
+          <Bloc titre="Personnalisation &laquo; Pour vous &raquo;" note="Moteur ALS (r&eacute;entra&icirc;n&eacute; chaque nuit) et session du visiteur">
             <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
-              <Chiffre label="Scores calculés" valeur={formatNombre(d.forYou.scores)} sous={`${formatNombre(d.forYou.products)} produits, ${d.forYou.users} utilisateurs`} />
-              <Chiffre label="Scores expirés" valeur={formatNombre(d.forYou.expired)} />
-              <Chiffre label="Dernier calcul" valeur={d.forYou.lastCalculatedAt ? formatDateHeure(d.forYou.lastCalculatedAt) : "—"} />
-              <Chiffre label="Scores du fil" valeur={formatNombre(d.forYou.feedScores)} />
+              <Chiffre label="Moteur ALS" valeur={d.services.als.up ? (d.services.als.trained ? "Entra\u00een\u00e9" : "Non entra\u00een\u00e9") : "Hors ligne"} />
+              <Chiffre label="Utilisateurs entra&icirc;n&eacute;s" valeur={formatNombre(d.services.als.users)} sous="connect&eacute;s et sessions anonymes" />
+              <Chiffre label="Produits" valeur={formatNombre(d.services.als.products)} />
+              <Chiffre label="Facteurs" valeur={formatNombre(d.services.als.factors)} />
             </div>
             {d.forYou.scores > 0 && d.forYou.expired === d.forYou.scores && (
               <div className="mt-4">
-                <NonMesure>Tous les scores sont expirés et le dernier calcul est ancien : la personnalisation « Pour vous » n'est plus mise à jour.</NonMesure>
+                <NonMesure>Les {formatNombre(d.forYou.scores)} anciens scores enregistr&eacute;s (dernier calcul : {d.forYou.lastCalculatedAt ? formatDateHeure(d.forYou.lastCalculatedAt) : "-"}) viennent d&apos;un ancien syst&egrave;me qui n&apos;est plus utilis&eacute; : &laquo; Pour vous &raquo; s&apos;appuie sur le moteur ALS et sur la session du visiteur.</NonMesure>
               </div>
             )}
           </Bloc>
