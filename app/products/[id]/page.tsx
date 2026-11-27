@@ -280,6 +280,7 @@ function TrustCarouselRow() {
 }
 
 import { useState, useEffect, useRef, useCallback } from "react"
+import { trackSite, trackSiteInteraction } from "../../../lib/app-track"
 import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import { motion } from "framer-motion"
@@ -836,6 +837,7 @@ export default function ProductPage() {
       }),
     }).catch(() => {})
 
+    trackSite("product_view")
     window.dispatchEvent(new CustomEvent("adullam:product-viewed", { detail: { productId: product.id } }))
 
     // 📊 META TRACKING - ViewContent (Pixel + Conversions API)
@@ -1628,6 +1630,7 @@ export default function ProductPage() {
 
     // ✅ Un seul appel atomique : le MOQ est vérifié sur la somme du lot
     const result = addItemsToCart(itemsToAdd)
+    if (result?.success) { trackSite("add_to_cart"); trackSiteInteraction(apiFetch, "ADD_TO_CART", String(product?.id || "")) }
 
     if (result.success) {
       // Retour a l'etat initial apres un ajout reussi (evite les doublons par clics repetes)

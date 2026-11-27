@@ -51,6 +51,7 @@ function SearchContent() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ type: "SEARCH", context: "SEARCH", searchQuery: q, sessionId, country: (document.cookie.match(/(?:^|; )nx_country=([A-Za-z]{2})/) || [])[1] }),
         }).catch(() => {})
+        void import("@/lib/app-track").then((m) => m.trackSite("search")).catch(() => {})
       } catch {
         // le suivi ne doit jamais gener la recherche
       }

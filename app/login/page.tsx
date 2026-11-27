@@ -416,6 +416,7 @@ function UserLoginContent() {
           // Téléphone optionnel saisi à l'inscription — normalisé en E.164, jamais confondu avec l'email
           const phoneE164 = formData.phone.trim() ? toE164Phone(countryCode, formData.phone) : undefined
           await register(formData.name, identifier, formData.password, phoneE164)
+          void import("@/lib/app-track").then((m) => m.trackSite("signup")).catch(() => {})
           setSuccess(t("accountCreated"))
           setTimeout(() => router.push(redirect), 2000)
         } else {

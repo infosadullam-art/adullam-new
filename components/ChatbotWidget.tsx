@@ -1193,6 +1193,7 @@ export function ChatbotWidget({ sessionId, userId, language = 'fr', token, onLog
     lastActionRef.current = Date.now()
 
     try {
+      void import("@/lib/app-track").then((m) => m.trackSite("adu_message")).catch(() => {})
       const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         credentials: 'include',

@@ -447,6 +447,7 @@ export default function CheckoutPage() {
 
   const createOrderIfNeeded = async (): Promise<string | null> => {
     if (hasCreatedOrderRef.current && lastOrderRef) return lastOrderRef;
+    void import("@/lib/app-track").then((m) => m.trackSite("checkout_start")).catch(() => {})
 
     try {
       const token = localStorage.getItem('adullam_token');
@@ -503,6 +504,7 @@ export default function CheckoutPage() {
       if (data.success && data.data?.orderId) {
         setLastOrderRef(data.data.orderId);
         hasCreatedOrderRef.current = true;
+        void import("@/lib/app-track").then((m) => m.trackSite("order")).catch(() => {})
         return data.data.orderId;
       } else {
         console.error('❌ Échec création commande:', data.error);

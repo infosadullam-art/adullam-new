@@ -592,6 +592,7 @@ function SourcingContent() {
         }, 200)
 
         response = await sourcingApi.createWithFiles(form)
+        if (response?.success) void import("@/lib/app-track").then((m) => m.trackSite("quote_request")).catch(() => {})
         
         clearInterval(progressInterval)
         setUploadProgress(100)
@@ -613,6 +614,7 @@ function SourcingContent() {
         }
 
         response = await sourcingApi.create(dataToSend)
+        if (response?.success) void import("@/lib/app-track").then((m) => m.trackSite("quote_request")).catch(() => {})
       }
 
       if (response.success) {
