@@ -69,6 +69,7 @@ export async function login(email: string, password: string): Promise<ApiRespons
 
   if (data?.accessToken) {
     setAccessToken(data.accessToken)
+    void import("@/lib/app-track").then((m) => m.trackSite("login")).catch(() => {})
   }
 
   return data
