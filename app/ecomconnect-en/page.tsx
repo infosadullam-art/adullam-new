@@ -146,27 +146,21 @@ const IconUsers = ({ className }: IconProps) => (
   </svg>
 )
 
-const IconBuilding = ({ className }: IconProps) => (
-  <svg viewBox="0 0 24 24" fill="none" className={className}>
-    <rect x="5" y="3" width="10" height="17" rx="1" stroke="currentColor" strokeWidth="1.6" />
-    <path d="M15 9h4v11h-4" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-    <path d="M8 6.8h1.2M11.3 6.8h1.2M8 10h1.2M11.3 10h1.2M8 13.2h1.2M11.3 13.2h1.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-)
-
 const SOURCING_URL = "/boutique-noel"
 const COUPON_CODE = "ECOMCONNECT"
 
+const WEBINAR_DATE = "2 December 2026"
+
 const PROBLEMES = [
-  { icon: IconPriceUp, titre: "Too expensive", texte: "Middlemen push prices up 2 to 3 times." },
-  { icon: IconShieldAlert, titre: "Too risky", texte: "Paying before you receive, with no guarantee at all." },
-  { icon: IconTangle, titre: "Too complicated", texte: "Suppliers you can't find, opaque logistics." },
+  { icon: IconPriceUp, titre: "Too expensive", texte: "Layers of middlemen add cost at every step." },
+  { icon: IconShieldAlert, titre: "Too risky", texte: "Paying a supplier you can't verify, with no protection." },
+  { icon: IconTangle, titre: "Too complicated", texte: "Finding the right factory, then handling freight and customs alone." },
 ]
 
 const SOLUTIONS = [
-  { icon: IconFactory, text: "Direct factory prices — no middlemen" },
-  { icon: IconSmartphone, text: "Pay by Mobile Money in your own currency" },
-  { icon: IconTruck, text: "Door-to-door delivery, guaranteed or refunded" },
+  { icon: IconFactory, text: "Direct from the factory, with transparent fees" },
+  { icon: IconShieldCheck, text: "Secure payment via Genius Pay, an approved provider" },
+  { icon: IconTruck, text: "Door-to-door delivery, delivered or refunded" },
 ]
 
 const ETAPES = [
@@ -175,8 +169,8 @@ const ETAPES = [
     titre: "You choose your product",
     texte: "Or simply describe what you're looking for.",
     details: [
-      "The catalog grows by thousands of factory listings every day.",
-      "Product not in the catalog? Describe it (photo, link, quantity) — that's on-demand sourcing.",
+      "Browse a growing catalog of factory listings.",
+      "Product not in the catalog, such as a machine or equipment? Describe it (photo, link, quantity). That's on-demand sourcing.",
       "Adu, our AI assistant, qualifies your request and guides you in English.",
       "Tiered pricing and minimum order quantity (MOQ) shown before you order.",
     ],
@@ -187,19 +181,19 @@ const ETAPES = [
     texte: "We locate the manufacturer and handle all the logistics.",
     details: [
       "We identify the factory in China, Turkey, Dubai or the USA and negotiate the price for you.",
-      "Full quote within 48h — factory price + freight + customs clearance, all included.",
+      "Full quote within 48h: factory price, freight and customs clearance included.",
       "You choose your shipping mode: Express 10 d, Air 15-17 d or Sea 45-50 d.",
-      "Pay with Mobile Money in your local currency or by bank card.",
+      "Pay securely via Genius Pay, with Mobile Money in your local currency or by bank card.",
     ],
   },
   {
     icon: IconHomeCheck,
     titre: "You receive it at home",
-    texte: "Guaranteed or refunded.",
+    texte: "Delivered or refunded.",
     details: [
-      "Door-to-door delivery, right to your address — not a warehouse across town.",
+      "Door-to-door delivery to your address, not a warehouse across town.",
       "Order tracking with a notification at every step.",
-      "Past the promised deadline? You are fully refunded, no discussion.",
+      "Order not delivered? You are refunded in full.",
       "A team based in Africa replies in your time zone.",
     ],
   },
@@ -212,36 +206,42 @@ const DELAIS = [
 ]
 
 const APPRENTISSAGES = [
-  "Order directly from a manufacturer in China, with no middleman",
-  "Use on-demand sourcing — describe a product, get a quote in 48h",
-  "Pay by mobile money and get delivered door-to-door",
-  "Understand how the refund guarantee protects your investment",
-  "See a live demo on the platform",
+  "How to order directly from manufacturers in China, Turkey, Dubai and the USA",
+  "How on-demand sourcing works: describe a product, get a quote within 48h",
+  "How to pay securely with Mobile Money or bank card through Genius Pay",
+  "How door-to-door delivery and the refund guarantee protect your order",
+  "A live demo on the platform",
 ]
 
 const GARANTIES = [
   {
     icon: IconShieldCheck,
-    titre: "Guaranteed or refunded",
-    texte: "If your parcel doesn't arrive on time, you are fully refunded. No questions asked.",
+    titre: "Delivered or refunded",
+    texte: "If your order does not arrive, you are refunded in full.",
   },
   {
     icon: IconFactory,
     titre: "Direct factory prices",
-    texte: "You pay the manufacturer's price. Zero middlemen, zero hidden costs.",
+    texte: "You pay the manufacturer's price, plus clear service and shipping fees. Standard customs duties are included in the price you see.",
   },
   {
     icon: IconSmartphone,
-    titre: "Native mobile money",
-    texte: "Mobile Money and bank card. You pay in your local currency.",
+    titre: "Secure payment via Genius Pay",
+    texte: "Pay by Mobile Money or bank card in your local currency, through Genius Pay, an approved payment provider.",
   },
 ]
 
 const PROFILS = [
-  { icon: IconBriefcase, texte: "Importing SMEs in French-speaking Africa" },
+  { icon: IconFactory, texte: "Processors who need machines and packaging equipment" },
+  { icon: IconBriefcase, texte: "SMEs importing equipment and raw materials" },
   { icon: IconStore, texte: "Resellers and wholesalers who want to cut their costs" },
   { icon: IconUsers, texte: "Cooperatives that order as a group" },
-  { icon: IconBuilding, texte: "Any business that wants access to manufacturer prices" },
+]
+
+const PREUVES = [
+  { valeur: "39", label: "African SMEs at our first webinar" },
+  { valeur: "9", label: "African countries with active buyers" },
+  { valeur: "ITC", label: "ecomConnect partner" },
 ]
 
 // Photos réelles de colis livrés — à placer dans public/delivery-proofs/
@@ -263,7 +263,7 @@ export default function EcomConnectPage() {
   const [etapeOuverte, setEtapeOuverte] = useState<number | null>(null)
 
   const handleCopyCode = () => {
-    navigator.clipboard?.writeText(COUPON_CODE)
+    navigator.clipboard?.writeText(COUPON_CODE)?.catch(() => {})
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -597,6 +597,11 @@ export default function EcomConnectPage() {
         .ec-copy-icon { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .ec-copy-btn:hover .ec-copy-icon { transform: scale(1.2) rotate(-8deg); }
 
+        /* CTA final : sans pulsation, seul le CTA du haut pulse */
+        .ec-cta-calm {
+          animation: none;
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .ec-marquee-track {
             animation: none;
@@ -619,11 +624,14 @@ export default function EcomConnectPage() {
         {/* ═══════════════ BLOC 1 — HERO ═══════════════ */}
         <section className="py-14 lg:py-20 bg-brand">
           <div className="anim-fade-up max-w-2xl mx-auto px-5 text-center">
+            <p className="inline-block rounded-full bg-white/15 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-white mb-5">
+              Live webinar · {WEBINAR_DATE}
+            </p>
             <h1 className="text-2xl lg:text-4xl font-extrabold tracking-[-0.02em] text-white leading-tight mb-4">
               Welcome to the<br className="hidden sm:block" /> ecomConnect x Adullam webinar
             </h1>
             <p className="text-base lg:text-lg text-white/75 mb-8 max-w-xl mx-auto">
-              Order directly from the factories. We handle everything. Guaranteed or refunded.
+              Order directly from the factories. We handle everything. Delivered or refunded.
             </p>
             <Link
               href={SOURCING_URL}
@@ -632,6 +640,23 @@ export default function EcomConnectPage() {
               Make my first sourcing request
               <IconArrowRight className="ec-cta-arrow w-4 h-4" />
             </Link>
+          </div>
+        </section>
+
+        {/* ═══════════════ BANDEAU CRÉDIBILITÉ ═══════════════ */}
+        <section className="py-8 bg-background border-b border-border">
+          <div className="max-w-3xl mx-auto px-5">
+            <div className="anim-fade-up grid grid-cols-3 gap-4 text-center">
+              {PREUVES.map(({ valeur, label }) => (
+                <div key={label}>
+                  <p className="text-xl lg:text-2xl font-extrabold text-accent">{valeur}</p>
+                  <p className="text-xs text-muted-foreground leading-snug mt-1">{label}</p>
+                </div>
+              ))}
+            </div>
+            <p className="anim-fade-up text-xs text-muted-foreground text-center mt-5">
+              Hosted by Mermoze Alloko, founder of Adullam Global
+            </p>
           </div>
         </section>
 
@@ -734,7 +759,7 @@ export default function EcomConnectPage() {
                       </div>
 
                       <p className="ec-step-hint text-[11px] font-semibold text-muted-foreground mt-3">
-                        {ouvert ? "Collapse —" : "Learn more +"}
+                        {ouvert ? "Show less" : "Learn more +"}
                       </p>
                     </button>
                   </div>
@@ -834,8 +859,6 @@ export default function EcomConnectPage() {
             </div>
           </div>
 
-          <div className="max-w-3xl mx-auto px-5">
-          </div>
         </section>
 
         {/* ═══════════════ SECTION 6 — À QUI S'ADRESSE CE WEBINAIRE ═══════════════ */}
@@ -883,7 +906,7 @@ export default function EcomConnectPage() {
               </button>
 
               <p className="text-sm lg:text-base font-medium text-white">
-                First sourcing request prioritized — processed in 24h instead of 48h
+                First sourcing request prioritized: quote in 24h instead of 48h
               </p>
               <p className="text-xs text-white/70 mt-1">
                 {copied ? "Code copied!" : "Click the code to copy it"}
@@ -892,13 +915,13 @@ export default function EcomConnectPage() {
 
             <Link
               href={SOURCING_URL}
-              className="ec-cta inline-flex items-center gap-2 rounded-lg px-7 py-4 text-base font-bold text-white bg-accent hover:bg-accent-hover"
+              className="ec-cta ec-cta-calm inline-flex items-center gap-2 rounded-lg px-7 py-4 text-base font-bold text-white bg-accent hover:bg-accent-hover"
             >
               Make my first sourcing request
               <IconArrowRight className="ec-cta-arrow w-4 h-4" />
             </Link>
             <p className="text-xs text-white/60 mt-3">
-              Reply within 24h for ecomConnect participants
+              Secure payment via Genius Pay, an approved payment provider
             </p>
           </div>
         </section>
@@ -906,7 +929,7 @@ export default function EcomConnectPage() {
 
       <footer className="py-6 border-t border-border">
         <p className="text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Adullam Global — adullamarket.com
+          © {new Date().getFullYear()} Adullam Global · adullamarket.com
         </p>
       </footer>
     </div>
